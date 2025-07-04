@@ -55,6 +55,7 @@ export default function FlashcardsPage() {
   const [currentCard, setCurrentCard] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [lastSuccessfulInput, setLastSuccessfulInput] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -95,6 +96,7 @@ export default function FlashcardsPage() {
     setFlashcards(null);
     setCurrentCard(0);
     setIsFlipped(false);
+    setLastSuccessfulInput(null);
 
     let notesInput: string;
 
@@ -117,6 +119,7 @@ export default function FlashcardsPage() {
       const result = await handleCreateFlashcards({ notes: notesInput });
       if (result && result.flashcards.length > 0) {
         setFlashcards(result.flashcards);
+        setLastSuccessfulInput(notesInput);
       } else {
         toast({
           variant: 'destructive',
@@ -133,7 +136,7 @@ export default function FlashcardsPage() {
       console.error(error);
     }
     setIsLoading(false);
-  }, [form, toast]);
+  }, [form, toast, selectedFile]);
 
   useEffect(() => {
     const notesFromStorage = sessionStorage.getItem('focusflow-notes-for-next-step');
@@ -143,8 +146,7 @@ export default function FlashcardsPage() {
       // Automatically trigger the form submission
       form.handleSubmit(onSubmit)();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [form, onSubmit]);
   
   const copySetToClipboard = () => {
     if (!flashcards) return;
@@ -343,12 +345,11 @@ export default function FlashcardsPage() {
                       Memorized your cards? Test your knowledge with a practice quiz.
                     </p>
                     <Button asChild variant="outline" className="w-full justify-start">
-                      <Link 
+                      <Link
                         href="/quiz"
                         onClick={() => {
-                            const notes = form.getValues('notes');
-                            if (notes) {
-                                sessionStorage.setItem('focusflow-notes-for-next-step', notes);
+                            if (lastSuccessfulInput) {
+                                sessionStorage.setItem('focusflow-notes-for-next-step', lastSuccessfulInput);
                             }
                         }}
                       >

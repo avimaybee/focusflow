@@ -56,6 +56,7 @@ export default function QuizPage() {
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [lastSuccessfulInput, setLastSuccessfulInput] = useState<string | null>(null);
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -94,6 +95,7 @@ export default function QuizPage() {
   const onSubmit = useCallback(async (data: QuizFormValues) => {
     setQuizState('generating');
     setQuizData(null);
+    setLastSuccessfulInput(null);
     let notesInput: string;
     try {
       if (selectedFile) {
@@ -115,6 +117,7 @@ export default function QuizPage() {
         setSelectedAnswer(null);
         setFeedback(null);
         setQuizState('in-progress');
+        setLastSuccessfulInput(notesInput);
       } else {
         toast({ variant: 'destructive', title: 'Quiz Generation Failed', description: 'Could not generate a quiz. Please try again with different content.' });
         setQuizState('idle');
@@ -123,7 +126,7 @@ export default function QuizPage() {
       toast({ variant: 'destructive', title: 'Error', description: 'Something went wrong.' });
       setQuizState('idle');
     }
-  }, [form, toast]);
+  }, [form, toast, selectedFile]);
 
   useEffect(() => {
     const notesFromStorage = sessionStorage.getItem('focusflow-notes-for-next-step');
@@ -132,8 +135,7 @@ export default function QuizPage() {
       form.setValue('notes', notesFromStorage);
       form.handleSubmit(onSubmit)();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [form, onSubmit]);
   
   const handleAnswerSubmit = () => {
     if (!selectedAnswer || !quizData) return;
@@ -310,9 +312,8 @@ export default function QuizPage() {
                           <Link 
                             href="/flashcards"
                             onClick={() => {
-                                const notes = form.getValues('notes');
-                                if (notes) {
-                                    sessionStorage.setItem('focusflow-notes-for-next-step', notes);
+                                if (lastSuccessfulInput) {
+                                    sessionStorage.setItem('focusflow-notes-for-next-step', lastSuccessfulInput);
                                 }
                             }}
                           >

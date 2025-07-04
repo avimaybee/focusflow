@@ -142,6 +142,16 @@ export default function SummarizerPage() {
     URL.revokeObjectURL(url);
   };
 
+  const shareSummary = () => {
+    if (!result) return;
+    const shareUrl = `https://focusflow.ai/summary/share/${Date.now()}`; // Simulated
+    navigator.clipboard.writeText(shareUrl);
+    toast({
+      title: 'Share Link Copied!',
+      description: 'A public link to your summary has been copied to your clipboard.',
+    });
+  };
+
   return (
     <div className="container mx-auto max-w-4xl py-12 px-4">
       <div className="text-center mb-12">
@@ -255,7 +265,7 @@ export default function SummarizerPage() {
                     <Button variant="ghost" size="icon" onClick={() => downloadSummary(result.summary)}>
                       <Download className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" onClick={shareSummary}>
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </div>

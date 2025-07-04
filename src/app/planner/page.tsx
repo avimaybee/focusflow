@@ -78,6 +78,15 @@ export default function PlannerPage() {
     }
     setIsLoading(false);
   };
+  
+  const sharePlan = () => {
+    const shareUrl = `https://focusflow.ai/planner/share/${Date.now()}`; // Simulated
+    navigator.clipboard.writeText(shareUrl);
+    toast({
+      title: 'Share Link Copied!',
+      description: 'A public link to your plan has been copied to your clipboard.',
+    });
+  };
 
   return (
     <div className="container mx-auto max-w-4xl py-12 px-4">
@@ -215,7 +224,7 @@ export default function PlannerPage() {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" onClick={sharePlan}>
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </div>
