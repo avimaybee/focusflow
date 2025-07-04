@@ -52,10 +52,10 @@ export default function Header() {
 
           <div className="flex items-center gap-4">
             <Button variant="ghost" asChild>
-              <Link href="#">Login</Link>
+              <Link href="/login">Login</Link>
             </Button>
             <Button asChild>
-              <Link href="#">
+              <Link href="/premium">
                 <Sparkles className="mr-2 h-4 w-4" /> Go Premium
               </Link>
             </Button>
@@ -93,8 +93,8 @@ export default function Header() {
                   ))}
                 </nav>
                 <div className="grid gap-4">
-                    <Button asChild><Link href="#">Login</Link></Button>
-                    <Button asChild variant="outline"><Link href="#">Go Premium</Link></Button>
+                    <Button asChild><Link href="/login">Login</Link></Button>
+                    <Button asChild variant="outline"><Link href="/premium">Go Premium</Link></Button>
                 </div>
               </div>
             </SheetContent>

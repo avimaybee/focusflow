@@ -219,7 +219,7 @@ export default function PlannerPage() {
                         <AlertDialogFooter>
                           <AlertDialogCancel>Maybe Later</AlertDialogCancel>
                           <AlertDialogAction asChild>
-                            <Link href="#">Go Premium</Link>
+                            <Link href="/premium">Go Premium</Link>
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
