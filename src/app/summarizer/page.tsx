@@ -143,7 +143,6 @@ export default function SummarizerPage() {
   };
 
   const shareSummary = () => {
-    if (!result) return;
     const shareUrl = `https://focusflow.ai/summary/share/${Date.now()}`; // Simulated
     navigator.clipboard.writeText(shareUrl);
     toast({
@@ -271,10 +270,10 @@ export default function SummarizerPage() {
                   </div>
                   <div className="mt-2 p-4 bg-muted/50 rounded-lg">
                     <h4 className="font-headline text-md mb-2">Next Steps</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-muted-foreground mb-4 text-balance">
                       Now that you have your summary, take your learning to the next level.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <Button asChild variant="outline" className="w-full justify-start">
                         <Link href="/flashcards" onClick={handleNextStepClick}>
                           <BookCopy className="mr-2" /> Create Flashcards
