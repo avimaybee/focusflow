@@ -52,8 +52,14 @@ export default function LoginPage() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const loginForm = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
-  const signupForm = useForm<SignupFormValues>({ resolver: zodResolver(signupSchema) });
+  const loginForm = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
+  const signupForm = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: { email: '', password: '' },
+  });
 
   useEffect(() => {
     if (user) {
