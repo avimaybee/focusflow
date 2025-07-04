@@ -10,10 +10,11 @@ import { Logo } from '../logo';
 
 const navLinks = [
   { href: '/summarizer', label: 'Summarizer' },
-  { href: '/planner', label: 'Planner' },
-  { href: '/tracker', label: 'Tracker' },
   { href: '/flashcards', label: 'Flashcards' },
   { href: '/quiz', label: 'Quiz' },
+  { href: '/planner', label: 'Planner' },
+  { href: '/tracker', label: 'Tracker' },
+  { href: '/dashboard', label: 'Dashboard' },
   { href: '/blog', label: 'Blog' },
 ];
 
