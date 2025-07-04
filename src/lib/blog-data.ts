@@ -5,6 +5,7 @@ export type BlogPost = {
     image: string;
     keywords: string[];
     content: string;
+    datePublished: string;
   };
   
   const blogPosts: BlogPost[] = [
@@ -14,6 +15,7 @@ export type BlogPost = {
       excerpt: 'Discover five practical ways artificial intelligence can revolutionize your study habits, from summarizing texts to creating personalized learning plans.',
       image: 'https://placehold.co/600x400.png',
       keywords: ['AI in Education', 'Study Techniques', 'Productivity'],
+      datePublished: '2024-05-15',
       content: `
         <p>In today's fast-paced academic world, leveraging technology is key to staying ahead. Artificial Intelligence (AI) is no longer a futuristic concept; it's a powerful tool that can transform your study routine. Here’s how you can use AI to study smarter.</p>
         <h2 class="font-headline">1. Instant Summarization with AI Tools</h2>
@@ -31,6 +33,7 @@ export type BlogPost = {
         excerpt: 'The classic time management method gets an upgrade. Learn how to combine the Pomodoro Technique with digital tools for maximum focus and productivity.',
         image: 'https://placehold.co/600x400.png',
         keywords: ['Time Management', 'Pomodoro Technique', 'Focus'],
+        datePublished: '2024-05-10',
         content: `
             <p>The Pomodoro Technique is a simple yet effective time management method developed by Francesco Cirillo in the late 1980s. It uses a timer to break down work into intervals, traditionally 25 minutes in length, separated by short breaks. Here’s how to master it with a modern, digital approach.</p>
             <h2 class="font-headline">The Core Principles</h2>
@@ -51,6 +54,7 @@ export type BlogPost = {
       excerpt: "Move beyond passive reading. We dive into the cognitive science behind active recall and spaced repetition, and how you can implement these powerful techniques.",
       image: 'https://placehold.co/600x400.png',
       keywords: ['Cognitive Science', 'Study Methods', 'Memory'],
+      datePublished: '2024-05-01',
       content: `
         <p>If your study method consists of rereading textbooks and highlighting passages, you might be working hard, but not smart. The key to durable, long-term learning lies in a concept called active recall.</p>
         <h2 class="font-headline">What is Active Recall?</h2>
