@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PublicSummaryPageProps) {
   const description = summary.summary.slice(0, 160);
 
   return {
-    title: `${summary.title} | AI Summary | FocusFlow AI`,
+    title: `AI Summary: ${summary.title} - FocusFlow AI`,
     description: description,
     keywords: summary.keywords.join(', '),
   };
