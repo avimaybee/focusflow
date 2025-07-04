@@ -24,53 +24,32 @@ import {
   ClipboardCheck,
   FileText,
   Flame,
+  Loader2,
   Target,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
-
-const activityStats = [
-  {
-    title: 'Hours Studied',
-    value: '12',
-    icon: <Target className="h-6 w-6 text-primary" />,
-  },
-  {
-    title: 'Summaries Made',
-    value: '5',
-    icon: <FileText className="h-6 w-6 text-primary" />,
-  },
-  {
-    title: 'Quizzes Taken',
-    value: '3',
-    icon: <ClipboardCheck className="h-6 w-6 text-primary" />,
-  },
-];
-
-const chartData = [
-  { subject: 'Math', logged: 8 },
-  { subject: 'History', logged: 6 },
-  { subject: 'Biology', logged: 5 },
-  { subject: 'English', logged: 6 },
-];
+import { useEffect, useState } from 'react';
+import { getDashboardStats, DashboardStats } from './actions';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const quickLinks = [
   { title: 'My Summaries', href: '/my-content/summaries', icon: <FileText className="h-8 w-8" /> },
   {
     title: 'My Study Plans',
-    href: '#',
+    href: '/my-content/plans',
     icon: <CalendarDays className="h-8 w-8" />,
   },
   {
     title: 'My Flashcards',
-    href: '#',
+    href: '/my-content/flashcards',
     icon: <BookCopy className="h-8 w-8" />,
   },
   {
     title: 'My Quizzes',
-    href: '#',
+    href: '/my-content/quizzes',
     icon: <ClipboardCheck className="h-8 w-8" />,
   },
 ];
@@ -85,15 +64,51 @@ const achievements = [
 export default function DashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!user) {
-    router.push('/login');
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    
+    async function fetchStats() {
+      setIsLoading(true);
+      const data = await getDashboardStats(user.uid);
+      setStats(data);
+      setIsLoading(false);
+    }
+    
+    fetchStats();
+  }, [user, router]);
+
+
+  if (!user && !isLoading) {
     return null;
   }
-
-  const displayName = user.displayName || user.email?.split('@')[0] || 'User';
-  const displayAvatar = user.photoURL || `https://placehold.co/100x100.png`;
-  const displayFallback = displayName.charAt(0).toUpperCase();
+  
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
+  const displayAvatar = user?.photoURL || `https://placehold.co/100x100.png`;
+  const displayFallback = displayName?.charAt(0).toUpperCase() || 'U';
+  
+  const activityStats = [
+    {
+      title: 'Hours Studied',
+      value: stats?.hoursStudied ?? 0,
+      icon: <Target className="h-6 w-6 text-primary" />,
+    },
+    {
+      title: 'Summaries Made',
+      value: stats?.summariesMade ?? 0,
+      icon: <FileText className="h-6 w-6 text-primary" />,
+    },
+    {
+      title: 'Quizzes Taken',
+      value: stats?.quizzesTaken ?? 0,
+      icon: <ClipboardCheck className="h-6 w-6 text-primary" />,
+    },
+  ];
 
   return (
     <div className="container mx-auto max-w-6xl py-12 px-4 space-y-8">
@@ -127,7 +142,11 @@ export default function DashboardPage() {
               {stat.icon}
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold">{stat.value}</div>
+              {isLoading ? (
+                <Skeleton className="h-10 w-1/2" />
+              ) : (
+                <div className="text-4xl font-bold">{stat.value}</div>
+              )}
               <p className="text-xs text-muted-foreground">in the last 7 days</p>
             </CardContent>
           </Card>
@@ -141,39 +160,52 @@ export default function DashboardPage() {
             <CardDescription>Hours you've logged this week.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div style={{ height: '300px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <XAxis
-                    dataKey="subject"
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: 'var(--radius)',
+            {isLoading ? (
+                <div className="flex items-center justify-center h-[300px]">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : (
+              <div style={{ height: '300px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stats?.weeklyActivity}
+                    margin={{
+                      top: 5,
+                      right: 20,
+                      left: -10,
+                      bottom: 5,
                     }}
-                    cursor={{ fill: 'hsl(var(--muted))' }}
-                  />
-                  <Bar
-                    dataKey="logged"
-                    fill="hsl(var(--primary))"
-                    name="Logged Hours"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+                  >
+                    <XAxis
+                      dataKey="subject"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: 'var(--radius)',
+                      }}
+                      cursor={{ fill: 'hsl(var(--muted))' }}
+                    />
+                    <Bar
+                      dataKey="logged"
+                      fill="hsl(var(--primary))"
+                      name="Logged Hours"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </CardContent>
         </Card>
 
