@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -12,21 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getTrackerData, logStudySession, setOrUpdateGoal, TrackerData } from './actions';
 
-
-const initialData = [
-  { subject: 'Math', goal: 10, logged: 8 },
-  { subject: 'History', goal: 8, logged: 6 },
-  { subject: 'Biology', goal: 12, logged: 5 },
-  { subject: 'English', goal: 6, logged: 6 },
-  { subject: 'Chemistry', goal: 10, logged: 9 },
-];
-
-type SubjectData = {
-    subject: string;
-    goal: number;
-    logged: number;
-}
 
 const logSessionSchema = z.object({
   subject: z.string().min(1, 'Please select a subject.'),
@@ -43,68 +32,82 @@ type SetGoalFormValues = z.infer<typeof setGoalSchema>;
 
 
 export default function TrackerPage() {
-    const [data, setData] = useState<SubjectData[]>(initialData);
+    const { user } = useAuth();
+    const router = useRouter();
     const { toast } = useToast();
+    
+    const [data, setData] = useState<TrackerData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const logSessionForm = useForm<LogSessionFormValues>({
         resolver: zodResolver(logSessionSchema),
-        defaultValues: {
-            subject: '',
-            hours: 1,
-        }
+        defaultValues: { subject: '', hours: 1 }
     });
 
     const setGoalForm = useForm<SetGoalFormValues>({
         resolver: zodResolver(setGoalSchema),
-        defaultValues: {
-            subject: '',
-            goal: 10,
-        }
+        defaultValues: { subject: '', goal: 10 }
     });
-
-    const handleLogSession = (values: LogSessionFormValues) => {
-        setData(currentData =>
-            currentData.map(item =>
-                item.subject.toLowerCase() === values.subject.toLowerCase()
-                    ? { ...item, logged: item.logged + values.hours }
-                    : item
-            )
-        );
-        toast({
-            title: 'Session Logged!',
-            description: `You've logged ${values.hours} hour(s) for ${values.subject}. Keep it up!`,
-        });
-        logSessionForm.reset({ subject: '', hours: 1 });
-    };
-
-    const handleSetGoal = (values: SetGoalFormValues) => {
-        const subjectExists = data.some(d => d.subject.toLowerCase() === values.subject.toLowerCase());
-
-        if (subjectExists) {
-            setData(currentData =>
-                currentData.map(item =>
-                    item.subject.toLowerCase() === values.subject.toLowerCase()
-                        ? { ...item, goal: values.goal }
-                        : item
-                )
-            );
-            toast({
-                title: 'Goal Updated!',
-                description: `Your weekly goal for ${values.subject} is now ${values.goal} hours.`,
-            });
-        } else {
-            setData(currentData => [
-                ...currentData,
-                { subject: values.subject, goal: values.goal, logged: 0 }
-            ]);
-            toast({
-                title: 'Subject Added!',
-                description: `${values.subject} has been added to your tracker with a goal of ${values.goal} hours.`,
-            });
+    
+    const fetchTrackerData = useCallback(async () => {
+        if (!user) return;
+        setIsLoading(true);
+        try {
+            const trackerData = await getTrackerData(user.uid);
+            setData(trackerData);
+        } catch (error) {
+            console.error("Failed to fetch tracker data:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not load your tracker data.' });
         }
-        setGoalForm.reset({ subject: '', goal: 10 });
+        setIsLoading(false);
+    }, [user, toast]);
+    
+    useEffect(() => {
+        if (!user) {
+            router.push('/login');
+        } else {
+            fetchTrackerData();
+        }
+    }, [user, router, fetchTrackerData]);
+
+    const handleLogSession = async (values: LogSessionFormValues) => {
+        if (!user) return;
+        try {
+            await logStudySession(user.uid, values);
+            toast({
+                title: 'Session Logged!',
+                description: `You've logged ${values.hours} hour(s) for ${values.subject}. Keep it up!`,
+            });
+            logSessionForm.reset({ subject: '', hours: 1 });
+            await fetchTrackerData();
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not log your session.' });
+        }
     };
 
+    const handleSetGoal = async (values: SetGoalFormValues) => {
+        if (!user) return;
+        try {
+            await setOrUpdateGoal(user.uid, values);
+            const subjectExists = data.some(d => d.subject.toLowerCase() === values.subject.toLowerCase());
+            toast({
+                title: subjectExists ? 'Goal Updated!' : 'Subject Added!',
+                description: `Your goal for ${values.subject} has been set to ${values.goal} hours.`,
+            });
+            setGoalForm.reset({ subject: '', goal: 10 });
+            await fetchTrackerData();
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not set your goal.' });
+        }
+    };
+    
+    if (isLoading) {
+        return (
+            <div className="flex h-[80vh] w-full items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        );
+    }
 
   return (
     <div className="container mx-auto max-w-6xl py-12 px-4">
@@ -125,23 +128,30 @@ export default function TrackerPage() {
             </CardHeader>
             <CardContent>
               <div style={{ width: '100%', height: 400 }}>
-                <ResponsiveContainer>
-                    <BarChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="subject" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                        <Tooltip
-                            contentStyle={{
-                                background: "hsl(var(--card))",
-                                border: "1px solid hsl(var(--border))",
-                                borderRadius: "var(--radius)"
-                            }}
-                        />
-                        <Legend wrapperStyle={{fontSize: "14px"}} />
-                        <Bar dataKey="goal" fill="hsl(var(--accent))" name="Goal Hours" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="logged" fill="hsl(var(--primary))" name="Logged Hours" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
+                 {data.length > 0 ? (
+                    <ResponsiveContainer>
+                        <BarChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis dataKey="subject" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                            <Tooltip
+                                contentStyle={{
+                                    background: "hsl(var(--card))",
+                                    border: "1px solid hsl(var(--border))",
+                                    borderRadius: "var(--radius)"
+                                }}
+                            />
+                            <Legend wrapperStyle={{fontSize: "14px"}} />
+                            <Bar dataKey="goal" fill="hsl(var(--accent))" name="Goal Hours" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="logged" fill="hsl(var(--primary))" name="Logged Hours" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                 ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-center">
+                        <p>No goals set yet.</p>
+                        <p className="text-sm">Add a subject and a goal to start tracking!</p>
+                    </div>
+                 )}
               </div>
             </CardContent>
           </Card>
@@ -164,7 +174,7 @@ export default function TrackerPage() {
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Subject</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value} disabled={data.length === 0}>
                                     <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select a subject" />
