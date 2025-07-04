@@ -96,17 +96,30 @@ export default function DashboardPage() {
     {
       title: 'Hours Studied',
       value: stats?.hoursStudied ?? 0,
+      suffix: '',
+      description: 'in the last 7 days',
       icon: <Target className="h-6 w-6 text-primary" />,
     },
     {
       title: 'Summaries Made',
       value: stats?.summariesMade ?? 0,
+      suffix: '',
+      description: 'in the last 7 days',
       icon: <FileText className="h-6 w-6 text-primary" />,
     },
     {
       title: 'Quizzes Taken',
       value: stats?.quizzesTaken ?? 0,
+      suffix: '',
+      description: 'in the last 7 days',
       icon: <ClipboardCheck className="h-6 w-6 text-primary" />,
+    },
+    {
+      title: 'Study Streak',
+      value: stats?.studyStreak ?? 0,
+      suffix: ' days',
+      description: 'consecutive study days',
+      icon: <Flame className="h-6 w-6 text-primary" />,
     },
   ];
 
@@ -132,7 +145,7 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {activityStats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -145,9 +158,9 @@ export default function DashboardPage() {
               {isLoading ? (
                 <Skeleton className="h-10 w-1/2" />
               ) : (
-                <div className="text-4xl font-bold">{stat.value}</div>
+                <div className="text-4xl font-bold">{stat.value}{stat.suffix}</div>
               )}
-              <p className="text-xs text-muted-foreground">in the last 7 days</p>
+              <p className="text-xs text-muted-foreground">{stat.description}</p>
             </CardContent>
           </Card>
         ))}

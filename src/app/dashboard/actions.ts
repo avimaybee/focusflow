@@ -1,12 +1,13 @@
 'use server';
 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, Timestamp, orderBy } from 'firebase/firestore';
 
 export interface DashboardStats {
     hoursStudied: number;
     summariesMade: number;
     quizzesTaken: number;
+    studyStreak: number;
     weeklyActivity: { subject: string; logged: number }[];
 }
 
@@ -22,8 +23,9 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
     startOfWeek.setHours(0, 0, 0, 0);
     const startOfWeekTimestamp = Timestamp.fromDate(startOfWeek);
     
-    // Get hours studied in last 7 days
     const sessionsRef = collection(db, 'users', userId, 'studySessions');
+
+    // Get hours studied in last 7 days
     const sessionsLast7DaysQuery = query(sessionsRef, where('date', '>=', sevenDaysAgoTimestamp));
     const sessionsSnapshot = await getDocs(sessionsLast7DaysQuery);
     const hoursStudied = sessionsSnapshot.docs.reduce((total, doc) => total + (doc.data().durationMinutes || 0), 0) / 60;
@@ -65,11 +67,43 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
             logged: Math.round((sessionsBySubject[subject] || 0) * 10) / 10,
         };
     });
+
+    // Calculate study streak
+    const allSessionsQuery = query(sessionsRef, orderBy('date', 'desc'));
+    const allSessionsSnapshot = await getDocs(allSessionsQuery);
+
+    const studyDays = new Set<string>();
+    allSessionsSnapshot.forEach(doc => {
+        const sessionDate = (doc.data().date as Timestamp).toDate();
+        studyDays.add(sessionDate.toISOString().split('T')[0]);
+    });
+
+    let streak = 0;
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    
+    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+
+    // Streak can only be active if user studied today or yesterday
+    if (studyDays.has(formatDate(today)) || studyDays.has(formatDate(yesterday))) {
+        let currentDate = new Date();
+        // If they didn't study today, start counting from yesterday
+        if (!studyDays.has(formatDate(currentDate))) {
+            currentDate.setDate(currentDate.getDate() - 1);
+        }
+        
+        while (studyDays.has(formatDate(currentDate))) {
+            streak++;
+            currentDate.setDate(currentDate.getDate() - 1);
+        }
+    }
     
     return {
         hoursStudied: Math.round(hoursStudied * 10) / 10,
         summariesMade,
         quizzesTaken,
+        studyStreak: streak,
         weeklyActivity,
     };
 }
