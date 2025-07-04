@@ -137,7 +137,7 @@ export default function Home() {
               </div>
             </div>
             <Image
-              src="https://placehold.co/1200x675.png"
+              src="https://placehold.co/1200x675.gif"
               alt="Animated preview of FocusFlow AI"
               width={1200}
               height={675}
