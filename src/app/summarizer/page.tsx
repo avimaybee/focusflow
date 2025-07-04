@@ -8,12 +8,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import { handleSummarize } from './actions';
-import { Loader2, Copy, Download, Share2, Sparkles, FileText, Upload, X, Paperclip, BookCopy, ClipboardCheck } from 'lucide-react';
+import { handleSummarize, handleSaveSummary } from './actions';
+import { Loader2, Copy, Download, Share2, Sparkles, FileText, Upload, X, Paperclip, BookCopy, ClipboardCheck, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 
 const summarizerSchema = z.object({
   notes: z.string(), // Validation is handled in onSubmit
@@ -38,6 +49,10 @@ const fileToDataUri = (file: File): Promise<string> => {
 export default function SummarizerPage() {
   const [result, setResult] = useState<SummaryResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [lastSuccessfulInput, setLastSuccessfulInput] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -80,6 +95,7 @@ export default function SummarizerPage() {
     setIsLoading(true);
     setResult(null);
     setLastSuccessfulInput(null);
+    setIsSaved(false);
 
     let notesInput: string;
 
@@ -119,6 +135,28 @@ export default function SummarizerPage() {
     }
     setIsLoading(false);
   };
+  
+  const onSave = async () => {
+    if (!user || !result || !lastSuccessfulInput) return;
+    setIsSaving(true);
+    const response = await handleSaveSummary(user.uid, result, lastSuccessfulInput);
+    if(response.success) {
+      setIsSaved(true);
+      toast({
+        title: "Summary Saved!",
+        description: "You can view your saved summaries on your dashboard.",
+      });
+    } else if (response.error === 'limit_reached') {
+      setShowPremiumModal(true);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Save Failed",
+        description: "Could not save your summary. Please try again.",
+      });
+    }
+    setIsSaving(false);
+  };
 
   const handleNextStepClick = () => {
     if (lastSuccessfulInput) {
@@ -154,168 +192,198 @@ export default function SummarizerPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl py-12 px-4">
-      <div className="text-center mb-12">
-        <Sparkles className="mx-auto h-12 w-12 text-primary" />
-        <h1 className="font-headline text-4xl md:text-5xl font-bold mt-4">AI Note Summarizer</h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          Transform lengthy notes or PDFs into concise summaries instantly.
-        </p>
-      </div>
+    <>
+      <AlertDialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-accent" />
+              Free Limit Reached
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              You've reached your limit of 5 saved summaries on the free plan. Upgrade to FocusFlow AI Premium to save unlimited summaries and unlock all features.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Maybe Later</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Link href="/premium">Go Premium</Link>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-headline">
-              <FileText className="h-6 w-6" /> Your Notes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Paste your text below or upload a PDF</FormLabel>
-                      {selectedFile && (
-                        <div className="flex items-center justify-between text-sm p-2 bg-muted rounded-md border">
-                            <div className="flex items-center gap-2 truncate">
-                                <Paperclip className="h-4 w-4 flex-shrink-0" />
-                                <span className="truncate">{selectedFile.name}</span>
-                            </div>
-                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={clearFile}>
-                                <X className="h-4 w-4"/>
-                            </Button>
-                        </div>
-                      )}
-                      <FormControl>
-                        <Textarea
-                          placeholder="Type or paste your notes here..."
-                          className="min-h-[300px] resize-y"
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            if (selectedFile) setSelectedFile(null);
-                          }}
-                          disabled={!!selectedFile}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept=".pdf"
-                    className="hidden"
-                  />
-                 <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
-                  <Upload className="mr-2 h-4 w-4" /> Upload PDF
-                </Button>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Summarizing...
-                    </>
-                  ) : (
-                    'Summarize Notes'
-                  )}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+      <div className="container mx-auto max-w-4xl py-12 px-4">
+        <div className="text-center mb-12">
+          <Sparkles className="mx-auto h-12 w-12 text-primary" />
+          <h1 className="font-headline text-4xl md:text-5xl font-bold mt-4">AI Note Summarizer</h1>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Transform lengthy notes or PDFs into concise summaries instantly.
+          </p>
+        </div>
 
-        <div className="sticky top-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 font-headline">
-                <Sparkles className="h-6 w-6 text-accent" /> AI Generated Summary
+                <FileText className="h-6 w-6" /> Your Notes
               </CardTitle>
             </CardHeader>
-            <CardContent className="min-h-[300px]">
-              {isLoading && (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                  <Loader2 className="h-8 w-8 animate-spin mb-4" />
-                  <p>Generating your summary...</p>
-                </div>
-              )}
-              {result && (
-                <div className="space-y-6 animate-in fade-in-50 duration-500">
-                  <div>
-                    <h3 className="font-headline text-lg mb-2">Summary</h3>
-                    <p className="text-muted-foreground whitespace-pre-wrap">{result.summary}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-headline text-lg mb-2">Keywords</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {result.keywords.split(',').map((keyword) => (
-                        <Badge key={keyword.trim()} variant="secondary">{keyword.trim()}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex gap-2 justify-end pt-4 border-t">
-                    <Button variant="ghost" size="icon" onClick={() => copyToClipboard(result.summary)}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => downloadSummary(result.summary)}>
-                      <Download className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={shareSummary}>
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  {!user && (
-                    <Card className="bg-primary/10 border-primary/20">
-                        <CardHeader className="pb-4">
-                            <CardTitle className="font-headline text-lg">Save Your Work</CardTitle>
-                            <CardDescription>
-                                Create a free account to save this summary and access your history from any device.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Button asChild className="w-full">
-                                <Link href="/login">Sign Up / Login</Link>
-                            </Button>
-                        </CardContent>
-                    </Card>
-                  )}
-
-                  <div className="mt-2 p-4 bg-muted/50 rounded-lg">
-                    <h4 className="font-headline text-md mb-2">Next Steps</h4>
-                    <p className="text-sm text-muted-foreground mb-4 text-balance">
-                      Now that you have your summary, take your learning to the next level.
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <Button asChild variant="outline" className="w-full justify-start">
-                        <Link href="/flashcards" onClick={handleNextStepClick}>
-                          <BookCopy className="mr-2" /> Create Flashcards
-                        </Link>
-                      </Button>
-                      <Button asChild variant="outline" className="w-full justify-start">
-                        <Link href="/quiz" onClick={handleNextStepClick}>
-                          <ClipboardCheck className="mr-2" /> Take a Practice Quiz
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {!isLoading && !result && (
-                <div className="flex items-center justify-center h-full text-center text-muted-foreground">
-                  <p>Your summary will appear here once generated.</p>
-                </div>
-              )}
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Paste your text below or upload a PDF</FormLabel>
+                        {selectedFile && (
+                          <div className="flex items-center justify-between text-sm p-2 bg-muted rounded-md border">
+                              <div className="flex items-center gap-2 truncate">
+                                  <Paperclip className="h-4 w-4 flex-shrink-0" />
+                                  <span className="truncate">{selectedFile.name}</span>
+                              </div>
+                              <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={clearFile}>
+                                  <X className="h-4 w-4"/>
+                              </Button>
+                          </div>
+                        )}
+                        <FormControl>
+                          <Textarea
+                            placeholder="Type or paste your notes here..."
+                            className="min-h-[300px] resize-y"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              if (selectedFile) setSelectedFile(null);
+                            }}
+                            disabled={!!selectedFile}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept=".pdf"
+                      className="hidden"
+                    />
+                  <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="mr-2 h-4 w-4" /> Upload PDF
+                  </Button>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Summarizing...
+                      </>
+                    ) : (
+                      'Summarize Notes'
+                    )}
+                  </Button>
+                </form>
+              </Form>
             </CardContent>
           </Card>
+
+          <div className="sticky top-24">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between font-headline">
+                  <span className="flex items-center gap-2">
+                    <Sparkles className="h-6 w-6 text-accent" /> AI Generated Summary
+                  </span>
+                  {user && result && (
+                    <Button size="sm" onClick={onSave} disabled={isSaving || isSaved}>
+                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                      {isSaved ? 'Saved!' : 'Save'}
+                    </Button>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="min-h-[300px]">
+                {isLoading && (
+                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                    <Loader2 className="h-8 w-8 animate-spin mb-4" />
+                    <p>Generating your summary...</p>
+                  </div>
+                )}
+                {result && (
+                  <div className="space-y-6 animate-in fade-in-50 duration-500">
+                    <div>
+                      <h3 className="font-headline text-lg mb-2">Summary</h3>
+                      <p className="text-muted-foreground whitespace-pre-wrap">{result.summary}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-headline text-lg mb-2">Keywords</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {result.keywords.split(',').map((keyword) => (
+                          <Badge key={keyword.trim()} variant="secondary">{keyword.trim()}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 justify-end pt-4 border-t">
+                      <Button variant="ghost" size="icon" onClick={() => copyToClipboard(result.summary)}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => downloadSummary(result.summary)}>
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={shareSummary}>
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {!user && (
+                      <Card className="bg-primary/10 border-primary/20">
+                          <CardHeader className="pb-4">
+                              <CardTitle className="font-headline text-lg">Save Your Work</CardTitle>
+                              <CardDescription>
+                                  Create a free account to save this summary and access your history from any device.
+                              </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                              <Button asChild className="w-full">
+                                  <Link href="/login">Sign Up / Login</Link>
+                              </Button>
+                          </CardContent>
+                      </Card>
+                    )}
+
+                    <div className="mt-2 p-4 bg-muted/50 rounded-lg">
+                      <h4 className="font-headline text-md mb-2">Next Steps</h4>
+                      <p className="text-sm text-muted-foreground mb-4 text-balance">
+                        Now that you have your summary, take your learning to the next level.
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Button asChild variant="outline" className="w-full justify-start">
+                          <Link href="/flashcards" onClick={handleNextStepClick}>
+                            <BookCopy className="mr-2" /> Create Flashcards
+                          </Link>
+                        </Button>
+                        <Button asChild variant="outline" className="w-full justify-start">
+                          <Link href="/quiz" onClick={handleNextStepClick}>
+                            <ClipboardCheck className="mr-2" /> Take a Practice Quiz
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {!isLoading && !result && (
+                  <div className="flex items-center justify-center h-full text-center text-muted-foreground">
+                    <p>Your summary will appear here once generated.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

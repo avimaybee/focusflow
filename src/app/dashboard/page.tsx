@@ -57,7 +57,7 @@ const chartData = [
 ];
 
 const quickLinks = [
-  { title: 'My Summaries', href: '#', icon: <FileText className="h-8 w-8" /> },
+  { title: 'My Summaries', href: '/my-content/summaries', icon: <FileText className="h-8 w-8" /> },
   {
     title: 'My Study Plans',
     href: '#',

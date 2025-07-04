@@ -25,6 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/blog',
     '/login',
     '/premium',
+    '/my-content/summaries',
   ];
 
   const staticUrls = staticRoutes.map(route => ({
