@@ -10,8 +10,8 @@ export const metadata = {
 const premiumFeatures = [
     { title: "Unlimited Summaries", description: "Generate as many summaries as you need without any monthly limits." },
     { title: "Unlimited Flashcards & Quizzes", description: "Create endless flashcard sets and practice quizzes from your notes." },
+    { title: "Cloud Storage & History", description: "Securely save all your summaries, plans, and quizzes to access them from any device."},
     { title: "Google Calendar Sync", description: "Automatically sync your generated study plans with your Google Calendar." },
-    { title: "Public Sharing & Custom URLs", description: "Share your summaries, flashcards, and plans with custom, memorable links." },
     { title: "Advanced Analytics", description: "Get deeper insights into your study habits and progress over time. (Coming Soon)" },
     { title: "Priority Support", description: "Get faster responses and dedicated help from our support team. (Coming Soon)" },
 ];
