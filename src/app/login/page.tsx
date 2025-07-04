@@ -74,7 +74,15 @@ export default function LoginPage() {
       toast({ title: 'Login Successful', description: "Welcome back!" });
       router.push('/dashboard');
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
+      if (error.code === 'auth/invalid-api-key') {
+        toast({
+          variant: 'destructive',
+          title: 'Configuration Error',
+          description: 'Firebase API Key is not valid. Please check your setup.',
+        });
+      } else {
+        toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
+      }
     }
     setIsLoading(false);
   };
@@ -93,7 +101,15 @@ export default function LoginPage() {
       toast({ title: 'Signup Successful', description: 'Welcome to FocusFlow AI!' });
       router.push('/dashboard');
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Signup Failed', description: error.message });
+      if (error.code === 'auth/invalid-api-key') {
+        toast({
+          variant: 'destructive',
+          title: 'Configuration Error',
+          description: 'Firebase API Key is not valid. Please check your setup.',
+        });
+      } else {
+        toast({ variant: 'destructive', title: 'Signup Failed', description: error.message });
+      }
     }
     setIsLoading(false);
   };
@@ -106,7 +122,15 @@ export default function LoginPage() {
         toast({ title: 'Signed in with Google!', description: 'Welcome to FocusFlow AI!' });
         router.push('/dashboard');
     } catch (error: any) {
+       if (error.code === 'auth/invalid-api-key') {
+        toast({
+          variant: 'destructive',
+          title: 'Configuration Error',
+          description: 'Firebase API Key is not valid. Please check your setup.',
+        });
+      } else {
         toast({ variant: 'destructive', title: 'Google Sign-In Failed', description: error.message });
+      }
     }
     setIsLoading(false);
   }

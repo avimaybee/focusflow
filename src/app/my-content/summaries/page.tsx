@@ -117,7 +117,7 @@ export default function MySummariesPage() {
                 <Button variant="outline" size="sm" disabled>View</Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="icon-sm">
+                    <Button variant="destructive" size="sm">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </AlertDialogTrigger>
