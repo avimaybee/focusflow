@@ -28,11 +28,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-
-const user = {
-  name: 'Alex Johnson',
-  avatar: 'https://placehold.co/100x100.png',
-};
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
 
 const activityStats = [
   {
@@ -86,17 +83,29 @@ const achievements = [
 ];
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
+
+  const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+  const displayAvatar = user.photoURL || `https://placehold.co/100x100.png`;
+  const displayFallback = displayName.charAt(0).toUpperCase();
+
   return (
     <div className="container mx-auto max-w-6xl py-12 px-4 space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={user.avatar} alt={user.name} data-ai-hint="person" />
-            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+            <AvatarImage src={displayAvatar} alt={displayName} data-ai-hint="person" />
+            <AvatarFallback>{displayFallback}</AvatarFallback>
           </Avatar>
           <div>
             <h1 className="font-headline text-3xl font-bold">
-              Welcome Back, {user.name}!
+              Welcome Back, {displayName}!
             </h1>
             <p className="text-muted-foreground">
               Here's a snapshot of your progress. Keep up the great work!

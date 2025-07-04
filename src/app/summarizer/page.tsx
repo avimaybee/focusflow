@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { handleSummarize } from './actions';
@@ -13,6 +13,7 @@ import { Loader2, Copy, Download, Share2, Sparkles, FileText, Upload, X, Papercl
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { useAuth } from '@/context/auth-context';
 
 const summarizerSchema = z.object({
   notes: z.string(), // Validation is handled in onSubmit
@@ -41,6 +42,7 @@ export default function SummarizerPage() {
   const [lastSuccessfulInput, setLastSuccessfulInput] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const form = useForm<SummarizerFormValues>({
     resolver: zodResolver(summarizerSchema),
@@ -268,6 +270,23 @@ export default function SummarizerPage() {
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </div>
+                  
+                  {!user && (
+                    <Card className="bg-primary/10 border-primary/20">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="font-headline text-lg">Save Your Work</CardTitle>
+                            <CardDescription>
+                                Create a free account to save this summary and access your history from any device.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Button asChild className="w-full">
+                                <Link href="/login">Sign Up / Login</Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                  )}
+
                   <div className="mt-2 p-4 bg-muted/50 rounded-lg">
                     <h4 className="font-headline text-md mb-2">Next Steps</h4>
                     <p className="text-sm text-muted-foreground mb-4 text-balance">

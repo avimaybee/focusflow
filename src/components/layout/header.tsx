@@ -3,10 +3,13 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Sparkles } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { Menu, Sparkles, LogOut } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Logo } from '../logo';
+import { useAuth } from '@/context/auth-context';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
 
 const navLinks = [
   { href: '/summarizer', label: 'Summarizer' },
@@ -14,12 +17,18 @@ const navLinks = [
   { href: '/quiz', label: 'Quiz' },
   { href: '/planner', label: 'Planner' },
   { href: '/tracker', label: 'Tracker' },
-  { href: '/dashboard', label: 'Dashboard' },
   { href: '/blog', label: 'Blog' },
 ];
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/');
+  };
 
   const NavLinks = ({ className }: { className?: string }) => (
     <nav className={cn('flex items-center gap-6 text-sm', className)}>
@@ -35,6 +44,17 @@ export default function Header() {
           {link.label}
         </Link>
       ))}
+      {user && (
+        <Link
+          href="/dashboard"
+          className={cn(
+            'font-medium transition-colors hover:text-primary',
+            pathname === '/dashboard' ? 'text-primary' : 'text-muted-foreground'
+          )}
+        >
+          Dashboard
+        </Link>
+      )}
     </nav>
   );
 
@@ -52,14 +72,29 @@ export default function Header() {
           <NavLinks className="ml-6" />
 
           <div className="flex items-center gap-4">
-            <Button variant="ghost" asChild>
-              <Link href="/login">Login</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/premium">
-                <Sparkles className="mr-2 h-4 w-4" /> Go Premium
-              </Link>
-            </Button>
+            {user ? (
+              <>
+                <Button variant="ghost" onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" /> Log Out
+                </Button>
+                <Button asChild>
+                  <Link href="/premium">
+                    <Sparkles className="mr-2 h-4 w-4" /> Go Premium
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/login">Login</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/premium">
+                    <Sparkles className="mr-2 h-4 w-4" /> Go Premium
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -92,9 +127,26 @@ export default function Header() {
                       {link.label}
                     </Link>
                   ))}
+                   {user && (
+                    <Link
+                      href="/dashboard"
+                      className={cn(
+                        'transition-colors hover:text-primary',
+                        pathname === '/dashboard'
+                          ? 'text-primary'
+                          : 'text-foreground'
+                      )}
+                    >
+                      Dashboard
+                    </Link>
+                  )}
                 </nav>
                 <div className="grid gap-4">
-                    <Button asChild><Link href="/login">Login</Link></Button>
+                    {user ? (
+                         <Button onClick={handleLogout}><LogOut className="mr-2"/>Log Out</Button>
+                    ) : (
+                         <Button asChild><Link href="/login">Login</Link></Button>
+                    )}
                     <Button asChild variant="outline"><Link href="/premium">Go Premium</Link></Button>
                 </div>
               </div>
