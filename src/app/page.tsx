@@ -16,20 +16,20 @@ import {
 } from '@/components/ui/carousel';
 import {
   ArrowRight,
-  BookOpen,
-  BarChart2,
+  BookCopy,
   CalendarDays,
-  Sparkles,
+  ClipboardCheck,
   FileText,
+  Sparkles,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Free AI Note Summarizer & Study Planner for Students | FocusFlow AI',
+  title: 'Free AI Study Tools: Summarizer, Flashcards, Quizzes & Planner | FocusFlow AI',
   description:
-    'Supercharge your studies with our free AI tools. Get instant note summaries, create smart study plans, and track your progress effortlessly. No signup required to start.',
+    'Supercharge your studies with free AI tools. Get instant note summaries, generate flashcards and quizzes, and create smart study plans. No signup required to start.',
 };
 
 const features = [
@@ -40,16 +40,22 @@ const features = [
       'Turn long lecture notes or articles into concise summaries. Just paste your text or upload a PDF to get key insights in seconds.',
   },
   {
+    icon: <BookCopy className="h-8 w-8 text-primary" />,
+    title: 'AI Flashcard Generator',
+    description:
+      'Automatically create digital flashcards from your notes. An effective way to practice active recall and memorize key concepts.',
+  },
+  {
+    icon: <ClipboardCheck className="h-8 w-8 text-primary" />,
+    title: 'AI Practice Quizzes',
+    description:
+      'Test your knowledge by instantly generating multiple-choice quizzes from your study materials, complete with answer explanations.',
+  },
+  {
     icon: <CalendarDays className="h-8 w-8 text-primary" />,
     title: 'AI Study Planner',
     description:
-      "Tell our AI your subjects and exam dates, and get a personalized, manageable study schedule designed for your success.",
-  },
-  {
-    icon: <BarChart2 className="h-8 w-8 text-primary" />,
-    title: 'Progress Tracker',
-    description:
-      'Log your study sessions and visually track your progress. Stay motivated by seeing how your hard work adds up over time.',
+      'Tell our AI your subjects and exam dates, and get a personalized, manageable study schedule designed for your success.',
   },
 ];
 
@@ -57,12 +63,17 @@ const faqItems = [
   {
     question: 'Is FocusFlow AI really free?',
     answer:
-      'Yes! Our core features—the AI Note Summarizer, Study Planner, and Progress Tracker—are available for free with generous monthly limits. We believe every student deserves access to tools that can help them succeed. We also offer a Premium plan for unlimited access and advanced features.',
+      'Yes! Our core features—including the AI Summarizer, Flashcard Generator, Quiz Creator, and Study Planner—are available for free with generous usage limits. We believe every student deserves access to tools that can help them succeed.',
   },
   {
-    question: 'What kind of notes can I summarize?',
+    question: 'What kind of notes can I use?',
     answer:
-      'You can either paste text directly into the summarizer or upload PDF files. Our AI is designed to handle various formats, from class lecture notes to dense academic articles, providing you with a clear, concise summary every time.',
+      'You can either paste text directly into our tools or upload PDF files. Our AI is designed to handle various formats, from class lecture notes to dense academic articles, transforming them into summaries, flashcards, or quizzes.',
+  },
+  {
+    question: 'How does the AI generate flashcards and quizzes?',
+    answer:
+      'Simply provide your study material, and our AI analyzes the key concepts to generate effective study aids. It creates clear question-and-answer pairs for flashcards and relevant multiple-choice questions with explanations for quizzes, helping you actively test your knowledge.',
   },
   {
     question: 'How does the AI Study Planner work?',
@@ -72,7 +83,7 @@ const faqItems = [
   {
     question: 'Do I need to create an account to get started?',
     answer:
-      'No signup is needed to try our tools! You can start summarizing notes and creating study plans right away. Creating an account allows you to save your history and access more features, but it\'s not required to experience the power of FocusFlow AI.',
+      "No signup is needed to try our tools! You can start summarizing, creating flashcards, and planning your studies right away. Creating an account allows you to save your history and access more features, but it's not required to experience the power of FocusFlow AI.",
   },
 ];
 
@@ -81,21 +92,21 @@ const testimonials = [
     name: 'Sarah L.',
     title: 'University Student',
     quote:
-      "FocusFlow AI is a game-changer. The summarizer saved me hours of reading, and the study planner finally got me organized for my midterms. I've never felt more in control of my studies.",
+      "FocusFlow AI is a game-changer. The summarizer saved me hours of reading, and the flashcard generator is perfect for quick reviews before class. I've never felt more in control of my studies.",
     avatar: 'https://placehold.co/100x100.png',
   },
   {
     name: 'David C.',
     title: 'High School Senior',
     quote:
-      "Preparing for my final exams was overwhelming until I found this app. The AI study plan laid everything out for me. It's like having a personal tutor who organizes your schedule.",
+      "The AI quiz creator is amazing for checking my understanding. It's like having unlimited practice tests. Plus, the study planner laid everything out for my final exams. So helpful!",
     avatar: 'https://placehold.co/100x100.png',
   },
   {
     name: 'Mei Ling',
     title: 'Postgraduate Researcher',
     quote:
-      "The ability to quickly summarize research papers is invaluable. FocusFlow AI helps me get the gist of a document in seconds, dramatically speeding up my literature review process. Highly recommend!",
+      'The ability to quickly summarize research papers and then turn them into flashcards is invaluable. FocusFlow AI dramatically speeds up my literature review process. Highly recommend!',
     avatar: 'https://placehold.co/100x100.png',
   },
 ];
@@ -108,12 +119,11 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <Sparkles className="mx-auto h-12 w-12 text-accent" />
           <h1 className="font-headline text-4xl md:text-6xl font-bold mt-4 max-w-4xl mx-auto">
-            Free AI Note Summarizer & Study Planner for Students
+            Your All-in-One AI Study Toolkit
           </h1>
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Stop drowning in notes and deadlines. Let our AI bring clarity and
-            focus to your studies. Instant summaries, smart schedules, and
-            progress tracking—all in one place.
+            Stop drowning in notes. Turn them into summaries, flashcards, and
+            quizzes with a single click. Plan your success, track your progress.
           </p>
           <div className="mt-8">
             <Button asChild size="lg" className="font-headline">
@@ -153,13 +163,13 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center">
             <h2 className="font-headline text-3xl md:text-4xl font-bold">
-              Your All-in-One Study Hub
+              Your Complete Study Workflow, Powered by AI
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              From disorganized notes to a clear path forward.
+              From disorganized notes to a clear path toward acing your exams.
             </p>
           </div>
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature) => (
               <Card key={feature.title} className="text-center bg-card/50">
                 <CardHeader>
@@ -275,7 +285,7 @@ export default function Home() {
           <div className="mt-8">
             <Button asChild size="lg" className="font-headline">
               <Link href="/summarizer">
-                Get Your Free Summary Now <ArrowRight className="ml-2 h-5 w-5" />
+                Start Studying Smarter Now <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </div>
