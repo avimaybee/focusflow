@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef } from 'react';
@@ -293,16 +294,8 @@ export default function SummarizerPage() {
           <div className="sticky top-24">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between font-headline">
-                  <span className="flex items-center gap-2">
-                    <Sparkles className="h-6 w-6 text-accent" /> AI Generated Summary
-                  </span>
-                  {user && result && (
-                    <Button size="sm" onClick={onSave} disabled={isSaving || isSaved}>
-                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                      {isSaved ? 'Saved!' : 'Save'}
-                    </Button>
-                  )}
+                <CardTitle className="flex items-center gap-2 font-headline">
+                  <Sparkles className="h-6 w-6 text-accent" /> AI Generated Summary
                 </CardTitle>
               </CardHeader>
               <CardContent className="min-h-[300px]">
@@ -326,16 +319,24 @@ export default function SummarizerPage() {
                         ))}
                       </div>
                     </div>
-                    <div className="flex gap-2 justify-end pt-4 border-t">
-                      <Button variant="ghost" size="icon" onClick={() => copyToClipboard(result.summary)}>
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => downloadSummary(result.summary)}>
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={shareSummary}>
-                        <Share2 className="h-4 w-4" />
-                      </Button>
+                    <div className="flex items-center pt-4 border-t">
+                      {user && result && (
+                          <Button size="sm" onClick={onSave} disabled={isSaving || isSaved}>
+                              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                              {isSaved ? 'Saved!' : 'Save'}
+                          </Button>
+                      )}
+                      <div className="flex gap-2 ml-auto">
+                        <Button variant="ghost" size="icon" onClick={() => copyToClipboard(result.summary)}>
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => downloadSummary(result.summary)}>
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={shareSummary}>
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     
                     {!user && (
