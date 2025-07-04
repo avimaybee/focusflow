@@ -13,6 +13,7 @@ const navLinks = [
   { href: '/planner', label: 'Planner' },
   { href: '/tracker', label: 'Tracker' },
   { href: '/flashcards', label: 'Flashcards' },
+  { href: '/quiz', label: 'Quiz' },
   { href: '/blog', label: 'Blog' },
 ];
 
