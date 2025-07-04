@@ -9,9 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { handleSummarize } from './actions';
-import { Loader2, Copy, Download, Share2, Sparkles, FileText, Upload, X, Paperclip } from 'lucide-react';
+import { Loader2, Copy, Download, Share2, Sparkles, FileText, Upload, X, Paperclip, BookCopy, ClipboardCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 const summarizerSchema = z.object({
   notes: z.string(), // Validation is handled in onSubmit
@@ -248,6 +249,24 @@ export default function SummarizerPage() {
                     <Button variant="ghost" size="icon">
                       <Share2 className="h-4 w-4" />
                     </Button>
+                  </div>
+                  <div className="mt-2 p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-headline text-md mb-2">Next Steps</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Now that you have your summary, take your learning to the next level.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button asChild variant="outline" className="w-full justify-start">
+                        <Link href="/flashcards">
+                          <BookCopy className="mr-2" /> Create Flashcards
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" className="w-full justify-start">
+                        <Link href="/quiz">
+                          <ClipboardCheck className="mr-2" /> Take a Practice Quiz
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}

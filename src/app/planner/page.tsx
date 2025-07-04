@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { handleCreatePlan } from './actions';
-import { Loader2, Calendar as CalendarIcon, Sparkles, CalendarDays, Share2 } from 'lucide-react';
+import { Loader2, Calendar as CalendarIcon, Sparkles, CalendarDays, Share2, BarChart2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -217,6 +217,17 @@ export default function PlannerPage() {
                     </AlertDialog>
                     <Button variant="ghost" size="icon">
                       <Share2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-headline text-md mb-2">What's Next?</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      You have a plan! Start tracking your sessions to stay on target.
+                    </p>
+                    <Button asChild variant="outline" className="w-full justify-start">
+                      <Link href="/tracker">
+                        <BarChart2 className="mr-2" /> Go to Progress Tracker
+                      </Link>
                     </Button>
                   </div>
                 </div>

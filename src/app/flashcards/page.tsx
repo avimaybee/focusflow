@@ -23,9 +23,11 @@ import {
   ChevronLeft,
   ChevronRight,
   RefreshCw,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 const flashcardSchema = z.object({
   notes: z.string(), // Validation is handled in onSubmit
@@ -308,6 +310,17 @@ export default function FlashcardsPage() {
                     </Button>
                     <Button variant="ghost" size="icon" onClick={shareSet}>
                         <Share2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-headline text-md mb-2">Next Step</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Memorized your cards? Test your knowledge with a practice quiz.
+                    </p>
+                    <Button asChild variant="outline" className="w-full justify-start">
+                      <Link href="/quiz">
+                        <ClipboardCheck className="mr-2" /> Create a Practice Quiz
+                      </Link>
                     </Button>
                   </div>
                 </div>
