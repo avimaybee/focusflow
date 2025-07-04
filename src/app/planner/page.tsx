@@ -15,7 +15,18 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import Link from 'next/link';
 
 const plannerSchema = z.object({
   subjects: z.string().min(3, 'Please enter at least one subject.'),
@@ -180,18 +191,30 @@ export default function PlannerPage() {
                 <div className="space-y-4 animate-in fade-in-50 duration-500">
                   <div dangerouslySetInnerHTML={{ __html: result }} />
                   <div className="flex gap-2 justify-end pt-4 border-t">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                           <Button variant="outline" disabled>
-                              <CalendarIcon className="mr-2 h-4 w-4" /> Copy to Google Calendar
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Premium Feature Coming Soon!</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline">
+                          <CalendarIcon className="mr-2 h-4 w-4" /> Copy to Google Calendar
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-accent" />
+                            Unlock Google Calendar Sync!
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This is a premium feature. Upgrade to FocusFlow AI Premium to automatically sync your study plans with your Google Calendar and stay organized effortlessly.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Maybe Later</AlertDialogCancel>
+                          <AlertDialogAction asChild>
+                            <Link href="#">Go Premium</Link>
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                     <Button variant="ghost" size="icon">
                       <Share2 className="h-4 w-4" />
                     </Button>
