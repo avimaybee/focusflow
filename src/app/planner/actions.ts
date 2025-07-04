@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { createStudyPlan } from '@/ai/flows/create-study-plan';
+import { createStudyPlan, CreateStudyPlanOutput } from '@/ai/flows/create-study-plan';
 
 const plannerSchema = z.object({
   subjects: z.string().min(3),
@@ -13,7 +13,7 @@ export async function handleCreatePlan(input: {
   subjects: string;
   examDate: string;
   weeklyStudyTime: number;
-}) {
+}): Promise<CreateStudyPlanOutput | null> {
   const validation = plannerSchema.safeParse(input);
   if (!validation.success) {
     console.error(validation.error.flatten().fieldErrors);

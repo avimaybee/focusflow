@@ -27,6 +27,9 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import Link from 'next/link';
+import type { CreateStudyPlanOutput } from '@/ai/flows/create-study-plan';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 
 const plannerSchema = z.object({
   subjects: z.string().min(3, 'Please enter at least one subject.'),
@@ -39,7 +42,7 @@ const plannerSchema = z.object({
 type PlannerFormValues = z.infer<typeof plannerSchema>;
 
 export default function PlannerPage() {
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<CreateStudyPlanOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -59,8 +62,8 @@ export default function PlannerPage() {
         ...data,
         examDate: format(data.examDate, 'yyyy-MM-dd'),
       });
-      if (planResult) {
-        setResult(planResult.studyPlan);
+      if (planResult && planResult.plan) {
+        setResult(planResult);
       } else {
         toast({
           variant: 'destructive',
@@ -189,7 +192,7 @@ export default function PlannerPage() {
                 <Sparkles className="h-6 w-6 text-accent" /> Your Weekly Plan
               </CardTitle>
             </CardHeader>
-            <CardContent className="min-h-[300px] prose-styles">
+            <CardContent className="min-h-[300px]">
               {isLoading && (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                   <Loader2 className="h-8 w-8 animate-spin mb-4" />
@@ -198,7 +201,24 @@ export default function PlannerPage() {
               )}
               {result && (
                 <div className="space-y-4 animate-in fade-in-50 duration-500">
-                  <div dangerouslySetInnerHTML={{ __html: result }} />
+                  <h3 className="font-headline text-lg font-semibold">{result.title}</h3>
+                   <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[100px]">Day</TableHead>
+                          <TableHead>Tasks</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {result.plan.map((item) => (
+                          <TableRow key={item.day}>
+                            <TableCell className="font-medium">{item.day}</TableCell>
+                            <TableCell>{item.tasks}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+
                   <div className="flex gap-2 justify-end pt-4 border-t">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>

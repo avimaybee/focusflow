@@ -22,12 +22,17 @@ const CreateStudyPlanInputSchema = z.object({
 });
 export type CreateStudyPlanInput = z.infer<typeof CreateStudyPlanInputSchema>;
 
+const DailyPlanSchema = z.object({
+    day: z.string().describe('The day of the week (e.g., Monday, Tuesday).'),
+    tasks: z.string().describe('A concise summary of the subjects and topics to study for that day.'),
+});
+
 const CreateStudyPlanOutputSchema = z.object({
-  studyPlan: z
-    .string()
-    .describe('A weekly study plan as a table or calendar format.'),
+  title: z.string().describe('A concise and relevant title for the study plan, like "Finals Prep for Biology & History".'),
+  plan: z.array(DailyPlanSchema).length(7).describe('A 7-day study plan, with one entry for each day of the week.'),
 });
 export type CreateStudyPlanOutput = z.infer<typeof CreateStudyPlanOutputSchema>;
+
 
 export async function createStudyPlan(input: CreateStudyPlanInput): Promise<CreateStudyPlanOutput> {
   return createStudyPlanFlow(input);
@@ -37,13 +42,20 @@ const prompt = ai.definePrompt({
   name: 'createStudyPlanPrompt',
   input: {schema: CreateStudyPlanInputSchema},
   output: {schema: CreateStudyPlanOutputSchema},
-  prompt: `You are an AI study planner. Generate a weekly study plan for a student based on the following information:
+  prompt: `You are an expert AI study planner. Your task is to generate a structured, effective weekly study plan for a student based on their inputs.
 
-Subjects: {{{subjects}}}
-Exam Date: {{{examDate}}}
-Weekly Study Time: {{{weeklyStudyTime}}} hours
+The plan should be for a full 7-day week.
 
-The study plan should be in a table format, showing each day of the week and the subjects to study for that day. Be concise and create the best possible plan for the student to succeed in their exams.`,config: {
+Based on the subjects, exam date, and available weekly study time, create a balanced schedule. Allocate more time to subjects that might need it and ensure a mix of topics to keep the student engaged.
+
+Generate a concise title for the plan.
+
+Student's Information:
+- Subjects: {{{subjects}}}
+- Exam Date: {{{examDate}}}
+- Total Weekly Study Time: {{{weeklyStudyTime}}} hours
+
+Please provide the output in the requested JSON format.`,config: {
     safetySettings: [
       {
         category: 'HARM_CATEGORY_HATE_SPEECH',
