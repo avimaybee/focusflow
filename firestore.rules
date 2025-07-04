@@ -1,45 +1,25 @@
-rules_version = '2';
 
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Public summaries are read-only for everyone
-    match /publicSummaries/{slug} {
-      allow read: if true;
-      allow write: if false; // Nobody can write to public summaries directly
+
+    // Helper function to check if the user is the owner of the document.
+    // This also implicitly checks if the user is authenticated.
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
     }
 
-    // User data
-    match /users/{userId} {
-      // Allow a user to create, read, and update their own profile document.
-      allow create, read, update: if request.auth.uid == userId;
-      // Do not allow users to delete their own profile document.
-      allow delete: if false;
-      
-      // Allow user to read/write their own summaries
-      match /summaries/{summaryId} {
-        allow read, write: if request.auth.uid == userId;
-      }
-      
-      // Allow user to read/write their own goals
-      match /goals/{goalId} {
-        allow read, write: if request.auth.uid == userId;
-      }
+    // Secure all user-specific data.
+    // A user can read or write any document within their own user directory.
+    // This includes their profile and all subcollections like summaries, goals, etc.
+    match /users/{userId}/{documents=**} {
+      allow read, write: if isOwner(userId);
+    }
 
-      // Allow user to read/write their own study sessions
-      match /studySessions/{sessionId} {
-        allow read, write: if request.auth.uid == userId;
-      }
-
-      // Allow user to read/write their own quizzes
-      match /quizzes/{quizId} {
-         allow read, write: if request.auth.uid == userId;
-      }
-
-      // Allow user to read/write their own flashcards
-      match /flashcardSets/{flashcardId} {
-         allow read, write: if request.auth.uid == userId;
-      }
+    // Public summaries collection: Allow anyone to read, but disallow client writes for security.
+    match /publicSummaries/{slug} {
+      allow read: if true;
+      allow write: if false;
     }
   }
 }
