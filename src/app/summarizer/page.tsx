@@ -38,6 +38,7 @@ export default function SummarizerPage() {
   const [result, setResult] = useState<SummaryResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [lastSuccessfulInput, setLastSuccessfulInput] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -76,6 +77,7 @@ export default function SummarizerPage() {
   const onSubmit = async (data: SummarizerFormValues) => {
     setIsLoading(true);
     setResult(null);
+    setLastSuccessfulInput(null);
 
     let notesInput: string;
 
@@ -97,6 +99,7 @@ export default function SummarizerPage() {
       const summaryResult = await handleSummarize({ notes: notesInput });
       if (summaryResult) {
         setResult(summaryResult);
+        setLastSuccessfulInput(notesInput);
       } else {
         toast({
           variant: 'destructive',
@@ -113,6 +116,12 @@ export default function SummarizerPage() {
       console.error(error);
     }
     setIsLoading(false);
+  };
+
+  const handleNextStepClick = () => {
+    if (lastSuccessfulInput) {
+      sessionStorage.setItem('focusflow-notes-for-next-step', lastSuccessfulInput);
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -257,12 +266,12 @@ export default function SummarizerPage() {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <Button asChild variant="outline" className="w-full justify-start">
-                        <Link href="/flashcards">
+                        <Link href="/flashcards" onClick={handleNextStepClick}>
                           <BookCopy className="mr-2" /> Create Flashcards
                         </Link>
                       </Button>
                       <Button asChild variant="outline" className="w-full justify-start">
-                        <Link href="/quiz">
+                        <Link href="/quiz" onClick={handleNextStepClick}>
                           <ClipboardCheck className="mr-2" /> Take a Practice Quiz
                         </Link>
                       </Button>

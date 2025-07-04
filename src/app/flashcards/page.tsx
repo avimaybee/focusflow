@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -77,7 +77,7 @@ export default function FlashcardsPage() {
         return;
       }
       setSelectedFile(file);
-      form.setValue('notes', file.name); // Use file name to satisfy form state
+      form.setValue('notes', file.name); 
       form.clearErrors('notes');
     }
   };
@@ -90,7 +90,7 @@ export default function FlashcardsPage() {
     }
   }
 
-  const onSubmit = async (data: FlashcardFormValues) => {
+  const onSubmit = useCallback(async (data: FlashcardFormValues) => {
     setIsLoading(true);
     setFlashcards(null);
     setCurrentCard(0);
@@ -102,7 +102,9 @@ export default function FlashcardsPage() {
       if (selectedFile) {
         notesInput = await fileToDataUri(selectedFile);
       } else {
-        if (data.notes.length < 50) {
+        notesInput = data.notes;
+        const isDataUri = notesInput.startsWith('data:');
+        if (!isDataUri && notesInput.length < 50) {
           form.setError('notes', {
             type: 'manual',
             message: 'Please enter at least 50 characters to generate flashcards.',
@@ -110,7 +112,6 @@ export default function FlashcardsPage() {
           setIsLoading(false);
           return;
         }
-        notesInput = data.notes;
       }
 
       const result = await handleCreateFlashcards({ notes: notesInput });
@@ -132,7 +133,18 @@ export default function FlashcardsPage() {
       console.error(error);
     }
     setIsLoading(false);
-  };
+  }, [form, toast]);
+
+  useEffect(() => {
+    const notesFromStorage = sessionStorage.getItem('focusflow-notes-for-next-step');
+    if (notesFromStorage) {
+      sessionStorage.removeItem('focusflow-notes-for-next-step');
+      form.setValue('notes', notesFromStorage);
+      // Automatically trigger the form submission
+      form.handleSubmit(onSubmit)();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const copySetToClipboard = () => {
     if (!flashcards) return;
@@ -157,7 +169,6 @@ export default function FlashcardsPage() {
   };
 
   const shareSet = () => {
-    // In a real app, this would generate and save a unique public URL.
     const shareUrl = `https://focusflow.ai/flashcards/set/${Date.now()}`;
     navigator.clipboard.writeText(shareUrl);
     toast({
@@ -206,35 +217,49 @@ export default function FlashcardsPage() {
                 <FormField
                   control={form.control}
                   name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Paste your text below or upload a PDF</FormLabel>
-                       {selectedFile && (
-                        <div className="flex items-center justify-between text-sm p-2 bg-muted rounded-md border">
+                  render={({ field }) => {
+                    const isImportedPdf = field.value.startsWith('data:application/pdf;base64,');
+                    return (
+                      <FormItem>
+                        <FormLabel>Paste your text below or upload a PDF</FormLabel>
+                        {selectedFile && (
+                          <div className="flex items-center justify-between text-sm p-2 bg-muted rounded-md border">
                             <div className="flex items-center gap-2 truncate">
-                                <Paperclip className="h-4 w-4 flex-shrink-0" />
-                                <span className="truncate">{selectedFile.name}</span>
+                              <Paperclip className="h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">{selectedFile.name}</span>
                             </div>
                             <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={clearFile}>
-                                <X className="h-4 w-4"/>
+                              <X className="h-4 w-4" />
                             </Button>
-                        </div>
-                      )}
-                      <FormControl>
-                        <Textarea
-                          placeholder="Type or paste your notes here..."
-                          className="min-h-[300px] resize-y"
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            if (selectedFile) setSelectedFile(null);
-                          }}
-                          disabled={!!selectedFile}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                          </div>
+                        )}
+                        {isImportedPdf && !selectedFile && (
+                            <div className="flex items-center justify-between text-sm p-2 bg-muted rounded-md border">
+                                <div className="flex items-center gap-2 truncate">
+                                    <Paperclip className="h-4 w-4 flex-shrink-0" />
+                                    <span className="truncate">Notes imported from previous step</span>
+                                </div>
+                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => form.setValue('notes', '')}>
+                                    <X className="h-4 w-4"/>
+                                </Button>
+                            </div>
+                        )}
+                        <FormControl>
+                          <Textarea
+                            placeholder="Type or paste your notes here..."
+                            className={cn('min-h-[300px] resize-y', { 'hidden': isImportedPdf && !selectedFile })}
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              if (selectedFile) setSelectedFile(null);
+                            }}
+                            disabled={!!selectedFile}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
                  <input
                     type="file"
@@ -318,7 +343,15 @@ export default function FlashcardsPage() {
                       Memorized your cards? Test your knowledge with a practice quiz.
                     </p>
                     <Button asChild variant="outline" className="w-full justify-start">
-                      <Link href="/quiz">
+                      <Link 
+                        href="/quiz"
+                        onClick={() => {
+                            const notes = form.getValues('notes');
+                            if (notes) {
+                                sessionStorage.setItem('focusflow-notes-for-next-step', notes);
+                            }
+                        }}
+                      >
                         <ClipboardCheck className="mr-2" /> Create a Practice Quiz
                       </Link>
                     </Button>

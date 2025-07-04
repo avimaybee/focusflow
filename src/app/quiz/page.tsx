@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -91,7 +91,7 @@ export default function QuizPage() {
     }
   }
 
-  const onSubmit = async (data: QuizFormValues) => {
+  const onSubmit = useCallback(async (data: QuizFormValues) => {
     setQuizState('generating');
     setQuizData(null);
     let notesInput: string;
@@ -99,12 +99,13 @@ export default function QuizPage() {
       if (selectedFile) {
         notesInput = await fileToDataUri(selectedFile);
       } else {
-        if (data.notes.length < 50) {
+        notesInput = data.notes;
+        const isDataUri = notesInput.startsWith('data:');
+        if (!isDataUri && notesInput.length < 50) {
           form.setError('notes', { type: 'manual', message: 'Please enter at least 50 characters.' });
           setQuizState('idle');
           return;
         }
-        notesInput = data.notes;
       }
       const result = await handleCreateQuiz({ notes: notesInput });
       if (result && result.questions.length > 0) {
@@ -122,7 +123,17 @@ export default function QuizPage() {
       toast({ variant: 'destructive', title: 'Error', description: 'Something went wrong.' });
       setQuizState('idle');
     }
-  };
+  }, [form, toast]);
+
+  useEffect(() => {
+    const notesFromStorage = sessionStorage.getItem('focusflow-notes-for-next-step');
+    if (notesFromStorage) {
+      sessionStorage.removeItem('focusflow-notes-for-next-step');
+      form.setValue('notes', notesFromStorage);
+      form.handleSubmit(onSubmit)();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const handleAnswerSubmit = () => {
     if (!selectedAnswer || !quizData) return;
@@ -198,7 +209,9 @@ export default function QuizPage() {
                 <FormField
                   control={form.control}
                   name="notes"
-                  render={({ field }) => (
+                  render={({ field }) => {
+                    const isImportedPdf = field.value.startsWith('data:application/pdf;base64,');
+                    return (
                     <FormItem>
                       <FormLabel>Paste your text or upload a PDF</FormLabel>
                        {selectedFile && (
@@ -209,13 +222,25 @@ export default function QuizPage() {
                           </div>
                           <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={clearFile}><X className="h-4 w-4"/></Button>
                         </div>
-                      )}
+                       )}
+                       {isImportedPdf && !selectedFile && (
+                            <div className="flex items-center justify-between text-sm p-2 bg-muted rounded-md border">
+                                <div className="flex items-center gap-2 truncate">
+                                    <Paperclip className="h-4 w-4 flex-shrink-0" />
+                                    <span className="truncate">Notes imported from previous step</span>
+                                </div>
+                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => form.setValue('notes', '')}>
+                                    <X className="h-4 w-4"/>
+                                </Button>
+                            </div>
+                        )}
                       <FormControl>
-                        <Textarea placeholder="Type or paste your notes here..." className="min-h-[300px] resize-y" {...field} onChange={(e) => {field.onChange(e); if (selectedFile) setSelectedFile(null); }} disabled={!!selectedFile}/>
+                        <Textarea placeholder="Type or paste your notes here..." className={cn("min-h-[300px] resize-y", { 'hidden': isImportedPdf && !selectedFile })} {...field} onChange={(e) => {field.onChange(e); if (selectedFile) setSelectedFile(null); }} disabled={!!selectedFile}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
-                  )}
+                    );
+                  }}
                 />
                  <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" className="hidden"/>
                  <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 h-4 w-4" /> Upload PDF</Button>
@@ -282,7 +307,15 @@ export default function QuizPage() {
                           Need to review? Turn these notes into flashcards.
                         </p>
                         <Button asChild variant="outline" className="w-full justify-start">
-                          <Link href="/flashcards">
+                          <Link 
+                            href="/flashcards"
+                            onClick={() => {
+                                const notes = form.getValues('notes');
+                                if (notes) {
+                                    sessionStorage.setItem('focusflow-notes-for-next-step', notes);
+                                }
+                            }}
+                          >
                             <BookCopy className="mr-2" /> Create Flashcards
                           </Link>
                         </Button>
