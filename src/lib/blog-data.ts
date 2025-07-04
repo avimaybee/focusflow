@@ -12,19 +12,18 @@ export type BlogPost = {
     {
       slug: 'how-to-use-ai-to-study-smarter',
       title: 'How to Use AI to Study Smarter, Not Harder',
-      excerpt: 'Discover five practical ways artificial intelligence can revolutionize your study habits, from summarizing texts to creating personalized learning plans.',
+      excerpt: 'Discover practical ways artificial intelligence can revolutionize your study habits, from summarizing texts to creating personalized learning plans.',
       image: 'https://placehold.co/600x400.png',
       keywords: ['AI in Education', 'Study Techniques', 'Productivity'],
       datePublished: '2024-05-15',
       content: `
         <p>In today's fast-paced academic world, leveraging technology is key to staying ahead. Artificial Intelligence (AI) is no longer a futuristic concept; it's a powerful tool that can transform your study routine. Here’s how you can use AI to study smarter.</p>
         <h2 class="font-headline">1. Instant Summarization with AI Tools</h2>
-        <p>Drowning in reading materials? AI summarizers, like the one offered by FocusFlow AI, can condense lengthy articles, research papers, and lecture notes into bite-sized summaries. This allows you to grasp key concepts quickly, saving you hours of reading time and helping you focus on the most important information.</p>
+        <p>Drowning in reading materials? AI summarizers, like our <a href="/summarizer">AI Note Summarizer</a>, can condense lengthy articles, research papers, and lecture notes into bite-sized summaries. This allows you to grasp key concepts quickly, saving you hours of reading time and helping you focus on the most important information.</p>
         <h2 class="font-headline">2. Personalized Study Plans</h2>
-        <p>Feeling overwhelmed by your schedule? AI study planners can create customized learning schedules based on your subjects, exam dates, and available time. By analyzing your inputs, these tools create a balanced and efficient plan, ensuring you cover all your topics without the stress of manual planning. This proactive approach helps prevent last-minute cramming.</p>
-        <h2 class="font-headline">3. Interactive Learning and Quizzes</h2>
-        <p>AI can act as a personal tutor by generating practice questions and quizzes on any topic. This active recall method is scientifically proven to be more effective for long-term memory than passive reading. Use AI to test your knowledge and identify areas where you need more review.</p>
-        <p>Ready to give it a try? <a href="/planner">Create your own AI-powered study plan</a> today and see the difference it makes.</p>
+        <p>Feeling overwhelmed by your schedule? Our <a href="/planner">AI Study Planner</a> can create customized learning schedules based on your subjects, exam dates, and available time. By analyzing your inputs, these tools create a balanced and efficient plan, ensuring you cover all your topics without the stress of manual planning. This proactive approach helps prevent last-minute cramming.</p>
+        <h2 class="font-headline">3. Interactive Learning with Quizzes and Flashcards</h2>
+        <p>AI can act as a personal tutor by generating study materials. Use our <a href="/quiz">AI Quiz Generator</a> to create practice questions on any topic. This active recall method is scientifically proven to be more effective for long-term memory than passive reading. You can also automatically create review materials with the <a href="/flashcards">AI Flashcard Generator</a>.</p>
         `
     },
     {
@@ -58,8 +57,7 @@ export type BlogPost = {
       content: `
         <p>If your study method consists of rereading textbooks and highlighting passages, you might be working hard, but not smart. The key to durable, long-term learning lies in a concept called active recall.</p>
         <h2 class="font-headline">What is Active Recall?</h2>
-        <p>Active recall, also known as retrieval practice, is the process of actively stimulating your memory for a piece of information. It's the opposite of passive review, where you simply re-consume the material. Examples of active recall include answering practice questions, using flashcards, or trying to summarize a topic from memory.</p>
-        <p>FocusFlow AI's <a href="/summarizer">Note Summarizer</a> is a great first step. After reading a summary, try to recall its key points without looking. This simple exercise can significantly boost your retention.</p>
+        <p>Active recall, also known as retrieval practice, is the process of actively stimulating your memory for a piece of information. It's the opposite of passive review, where you simply re-consume the material. Great examples of active recall include using our <a href="/flashcards">AI Flashcard Generator</a> or testing your knowledge with the <a href="/quiz">AI Quiz Generator</a>.</p>
         <h2 class="font-headline">Why It Works</h2>
         <p>Every time you retrieve a memory, you strengthen its neural pathway, making it easier to recall in the future. This effortful process signals to your brain that the information is important and should be stored for the long term. It's the mental equivalent of lifting weights—the struggle is what builds strength.</p>
       `
