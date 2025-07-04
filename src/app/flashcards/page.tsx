@@ -26,19 +26,6 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import Link from 'next/link';
-
 
 const flashcardSchema = z.object({
   notes: z.string(), // Validation is handled in onSubmit
@@ -165,6 +152,16 @@ export default function FlashcardsPage() {
     a.download = 'flashcards.txt';
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const shareSet = () => {
+    // In a real app, this would generate and save a unique public URL.
+    const shareUrl = `https://focusflow.ai/flashcards/set/${Date.now()}`;
+    navigator.clipboard.writeText(shareUrl);
+    toast({
+      title: 'Share Link Copied!',
+      description: 'A public link to your flashcard set has been copied to your clipboard.',
+    });
   };
 
   const navigateCard = (direction: 'next' | 'prev') => {
@@ -309,30 +306,9 @@ export default function FlashcardsPage() {
                     <Button variant="ghost" size="icon" onClick={downloadSet}>
                       <Download className="h-4 w-4" />
                     </Button>
-                     <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <Share2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="flex items-center gap-2">
-                            <Sparkles className="h-5 w-5 text-accent" />
-                            Share Your Flashcards!
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This is a premium feature. Upgrade to get a shareable link for your flashcard sets and study with friends!
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Maybe Later</AlertDialogCancel>
-                          <AlertDialogAction asChild>
-                            <Link href="#">Go Premium</Link>
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button variant="ghost" size="icon" onClick={shareSet}>
+                        <Share2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               )}
