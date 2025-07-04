@@ -12,6 +12,7 @@ const navLinks = [
   { href: '/summarizer', label: 'Summarizer' },
   { href: '/planner', label: 'Planner' },
   { href: '/tracker', label: 'Tracker' },
+  { href: '/flashcards', label: 'Flashcards' },
   { href: '/blog', label: 'Blog' },
 ];
 
