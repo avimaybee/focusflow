@@ -6,10 +6,10 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 
 export const metadata: Metadata = {
-  title: 'FocusFlow AI - Free AI Note Summarizer & Study Planner',
+  title: 'FocusFlow AI: AI Summarizer, Flashcards, Quizzes & Study Planner',
   description:
-    'Boost your productivity with FocusFlow AI. Get free AI-powered note summarization, personalized study plans, and progress tracking. Perfect for students aiming for academic success.',
-  keywords: ['AI study planner', 'note summarizer', 'student productivity', 'free study tools', 'exam preparation'],
+    'The ultimate AI-powered study toolkit. Generate summaries, flashcards, and quizzes from your notes. Create personalized study plans and track your progress. Study smarter with FocusFlow AI.',
+  keywords: ['AI study tools', 'note summarizer', 'flashcard generator', 'quiz creator', 'study planner', 'student productivity', 'exam prep'],
 };
 
 export default function RootLayout({
