@@ -1,7 +1,8 @@
 import { getBlogPosts } from '@/lib/blog-data';
+import { getPublicSummaries } from '@/lib/summaries-data';
 import { MetadataRoute } from 'next';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://focusflow.ai';
 
   // Get all blog posts
@@ -12,6 +13,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }));
+  
+  // Get all public summaries
+  const summaries = await getPublicSummaries();
+  const summaryUrls = summaries.map(summary => ({
+    url: `${baseUrl}/summaries/${summary.publicSlug}`,
+    lastModified: new Date(summary.publishedAt),
+    changeFrequency: 'yearly' as const,
+    priority: 0.7,
+  }));
+
 
   // Define static routes
   const staticRoutes = [
@@ -38,5 +49,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...staticUrls,
     ...blogPostUrls,
+    ...summaryUrls,
   ];
 }
