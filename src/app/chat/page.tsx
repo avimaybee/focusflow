@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, ReactNode } from 'react';
 import {
   SidebarProvider,
   Sidebar,
@@ -18,27 +18,60 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Plus, MessageSquare } from 'lucide-react';
+import { Send, Plus, MessageSquare, Bot, GraduationCap, Sparkles } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+
+const personas = [
+  {
+    id: 'neutral',
+    name: 'Neutral Assistant',
+    icon: <Bot className="h-5 w-5" />,
+    initialMessage: "Hello! I'm your AI study partner. How can I help you today? You can ask me to summarize notes, create a quiz, build a study plan, and much more.",
+  },
+  {
+    id: 'tutor',
+    name: 'Academic Tutor',
+    icon: <GraduationCap className="h-5 w-5" />,
+    initialMessage: "Greetings! I am your Academic Tutor. I can help you with in-depth explanations, create challenging quizzes, and guide you through complex subjects. What shall we tackle first?",
+  },
+  {
+    id: 'creative',
+    name: 'Creative Coach',
+    icon: <Sparkles className="h-5 w-5" />,
+    initialMessage: "Ready for some inspiration? As your Creative Coach, I can help you brainstorm ideas, create memory aids, and find new ways to approach your studies. Let's get creative!",
+  }
+];
 
 export default function ChatPage() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const [selectedPersonaId, setSelectedPersonaId] = useState(personas[0].id);
+  const selectedPersona = personas.find(p => p.id === selectedPersonaId)!;
+
   const [messages, setMessages] = useState<ChatMessageProps[]>([
     {
       role: 'model',
-      text: "Hello! I'm your AI study partner. How can I help you today? You can ask me to summarize notes, create a quiz, build a study plan, and much more.",
+      text: selectedPersona.initialMessage,
     },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Update initial message if persona is changed before conversation starts
+  useEffect(() => {
+    if (messages.length === 1 && messages[0].role === 'model') {
+        setMessages([{ role: 'model', text: selectedPersona.initialMessage }]);
+    }
+  }, [selectedPersonaId]);
+
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,15 +175,41 @@ export default function ChatPage() {
                 <span className="font-bold font-headline">FocusFlow AI</span>
             </div>
           </header>
+          
+          <div className="p-2 px-4 border-b flex items-center justify-between gap-2 bg-background z-10">
+              <h2 className="font-bold font-headline text-sm md:text-base">New Chat</h2>
+              <Select value={selectedPersonaId} onValueChange={setSelectedPersonaId}>
+                  <SelectTrigger className="w-auto h-9 gap-2">
+                      {selectedPersona.icon}
+                      <SelectValue placeholder="Select Persona" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {personas.map((persona) => (
+                        <SelectItem key={persona.id} value={persona.id}>
+                            <div className="flex items-center gap-2">
+                                {persona.icon}
+                                <span>{persona.name}</span>
+                            </div>
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+              </Select>
+          </div>
+
           <div className="flex-grow relative">
             <ScrollArea className="absolute inset-0" ref={scrollAreaRef}>
               <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
                 {messages.length <= 1 && !isMobile ? (
-                  <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-center">
-                    <Logo className="h-16 w-16 mb-4" />
+                  <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] text-center">
+                    <div className="p-4 rounded-full bg-primary/10 mb-4 border">
+                      {selectedPersona.icon}
+                    </div>
                     <h1 className="text-2xl font-bold font-headline">
-                      How can I help you today?
+                      {selectedPersona.name}
                     </h1>
+                     <p className="text-muted-foreground mt-2 max-w-md">
+                        {selectedPersona.initialMessage.split(' ')[0]} Start by typing a message below.
+                    </p>
                   </div>
                 ) : (
                   messages.map((msg, index) => (
