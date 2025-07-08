@@ -11,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const ExplainConceptInputSchema = z.object({
+export const ExplainConceptInputSchema = z.object({
   highlightedText: z
     .string()
     .describe('The specific text, term, or concept the user has highlighted and wants explained.'),

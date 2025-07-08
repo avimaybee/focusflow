@@ -11,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const CreateStudyPlanInputSchema = z.object({
+export const CreateStudyPlanInputSchema = z.object({
   subjects: z
     .string()
     .describe('List of subjects to study, separated by commas.'),
