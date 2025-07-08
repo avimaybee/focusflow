@@ -196,7 +196,7 @@ export default function PlannerPage() {
               {isLoading && (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                   <Loader2 className="h-8 w-8 animate-spin mb-4" />
-                  <p>Building your personalized schedule...</p>
+                  <p>Calculating the optimal schedule for your goals...</p>
                 </div>
               )}
               {result && (

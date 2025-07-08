@@ -261,13 +261,13 @@ export default function QuizPage() {
             </CardHeader>
             <CardContent className="min-h-[350px] flex flex-col">
               {quizState === 'generating' && (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground"><Loader2 className="h-8 w-8 animate-spin mb-4" /><p>Building your practice quiz...</p></div>
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground"><Loader2 className="h-8 w-8 animate-spin mb-4" /><p>Designing questions to test your knowledge...</p></div>
               )}
               {quizState === 'idle' && (
                 <div className="flex items-center justify-center h-full text-center text-muted-foreground"><p>Your practice quiz will appear here.</p></div>
               )}
               {quizState === 'in-progress' && quizData && (
-                <div className="space-y-6 animate-in fade-in-50 duration-500">
+                <div className="space-y-6 animate-in slide-in-from-bottom-5 duration-500">
                   <Progress value={((currentQuestionIndex + 1) / quizData.questions.length) * 100} className="w-full" />
                   <p className="text-sm text-muted-foreground">{quizData.title} - Question {currentQuestionIndex + 1} of {quizData.questions.length}</p>
                   <p className="font-semibold text-lg">{quizData.questions[currentQuestionIndex].questionText}</p>

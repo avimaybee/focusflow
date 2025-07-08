@@ -161,7 +161,7 @@ export default function MemoryAidsPage() {
               {isLoading && (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                   <Loader2 className="h-8 w-8 animate-spin mb-4" />
-                  <p>Crafting your memory aids...</p>
+                  <p>Thinking of creative acronyms and rhymes...</p>
                 </div>
               )}
               {result && (

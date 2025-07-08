@@ -299,7 +299,7 @@ export default function FlashcardsPage() {
               {isLoading && (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                   <Loader2 className="h-8 w-8 animate-spin mb-4" />
-                  <p>Building your flashcard deck...</p>
+                  <p>Identifying key concepts for your deck...</p>
                 </div>
               )}
               {flashcards && flashcards.length > 0 && (

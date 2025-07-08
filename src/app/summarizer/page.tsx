@@ -301,7 +301,7 @@ export default function SummarizerPage() {
                 {isLoading && (
                   <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                     <Loader2 className="h-8 w-8 animate-spin mb-4" />
-                    <p>Generating your summary...</p>
+                    <p>Analyzing notes and crafting a concise summary...</p>
                   </div>
                 )}
                 {result && (
