@@ -11,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const ExplainConceptInputSchema = z.object({
+const ExplainConceptInputSchema = z.object({
   highlightedText: z
     .string()
     .describe('The specific text, term, or concept the user has highlighted and wants explained.'),
@@ -21,7 +21,7 @@ export const ExplainConceptInputSchema = z.object({
 });
 export type ExplainConceptInput = z.infer<typeof ExplainConceptInputSchema>;
 
-export const ExplainConceptOutputSchema = z.object({
+const ExplainConceptOutputSchema = z.object({
   explanation: z
     .string()
     .describe('A simple, concise explanation of the highlighted concept, tailored to a student.'),
@@ -36,7 +36,15 @@ export type ExplainConceptOutput = z.infer<typeof ExplainConceptOutputSchema>;
 export async function explainConcept(
   input: ExplainConceptInput
 ): Promise<ExplainConceptOutput> {
-  return explainConceptFlow(input);
+  // Validate the input against the Zod schema.
+  const validationResult = ExplainConceptInputSchema.safeParse(input);
+  if (!validationResult.success) {
+    console.error('Invalid input for explainConcept:', validationResult.error.flatten());
+    throw new Error('Invalid input provided for concept explanation.');
+  }
+
+  // Call the flow with the validated data.
+  return explainConceptFlow(validationResult.data);
 }
 
 const prompt = ai.definePrompt({

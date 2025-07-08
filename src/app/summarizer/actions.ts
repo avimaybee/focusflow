@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { summarizeNotes, SummarizeNotesInput, SummarizeNotesOutput } from '@/ai/flows/summarize-notes';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, query, getCountFromServer, getDoc, doc } from 'firebase/firestore';
-import { explainConcept, ExplainConceptInput, ExplainConceptOutput, ExplainConceptInputSchema } from '@/ai/flows/explain-concept';
+import { explainConcept, ExplainConceptInput, ExplainConceptOutput } from '@/ai/flows/explain-concept';
 
 const summarizerSchema = z.object({
   notes: z.string().min(50, 'Please enter at least 50 characters or upload a PDF to summarize.'),
@@ -73,14 +73,8 @@ export async function handleSaveSummary(
 }
 
 export async function handleExplainConcept(input: ExplainConceptInput): Promise<ExplainConceptOutput | null> {
-    const validation = ExplainConceptInputSchema.safeParse(input);
-    if (!validation.success) {
-      console.error(validation.error.flatten().fieldErrors);
-      return null;
-    }
-  
     try {
-      const result = await explainConcept(validation.data);
+      const result = await explainConcept(input);
       return result;
     } catch (error) {
       console.error('Error in explainConcept flow:', error);
