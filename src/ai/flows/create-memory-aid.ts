@@ -11,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const CreateMemoryAidInputSchema = z.object({
+export const CreateMemoryAidInputSchema = z.object({
   concept: z.string().min(3).describe('The concept, term, or list to create a memory aid for.'),
 });
 export type CreateMemoryAidInput = z.infer<typeof CreateMemoryAidInputSchema>;

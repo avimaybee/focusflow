@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -11,7 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const SummarizeNotesInputSchema = z
+export const SummarizeNotesInputSchema = z
   .object({
     textNotes: z.string().optional().describe('The text notes to summarize.'),
     pdfNotes: z
@@ -21,7 +22,7 @@ const SummarizeNotesInputSchema = z
         "A PDF file of notes, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:application/pdf;base64,<encoded_data>'."
       ),
   })
-  .refine(data => data.textNotes || data.pdfNotes, {
+  .refine(async (data) => data.textNotes || data.pdfNotes, {
     message: 'Either text notes or PDF notes must be provided.',
   });
 export type SummarizeNotesInput = z.infer<typeof SummarizeNotesInputSchema>;

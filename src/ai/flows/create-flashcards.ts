@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -11,7 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const CreateFlashcardsInputSchema = z
+export const CreateFlashcardsInputSchema = z
   .object({
     sourceText: z.string().optional().describe('The text notes to create flashcards from.'),
     sourcePdf: z
@@ -21,7 +22,7 @@ const CreateFlashcardsInputSchema = z
         "A PDF file of notes, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:application/pdf;base64,<encoded_data>'."
       ),
   })
-  .refine(data => data.sourceText || data.sourcePdf, {
+  .refine(async (data) => data.sourceText || data.sourcePdf, {
     message: 'Either text notes or a PDF must be provided.',
   });
 export type CreateFlashcardsInput = z.infer<typeof CreateFlashcardsInputSchema>;

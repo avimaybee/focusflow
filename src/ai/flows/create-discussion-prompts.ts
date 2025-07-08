@@ -11,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const CreateDiscussionPromptsInputSchema = z.object({
+export const CreateDiscussionPromptsInputSchema = z.object({
   sourceText: z.string().min(50).describe('The source text to generate discussion prompts from.'),
 });
 export type CreateDiscussionPromptsInput = z.infer<typeof CreateDiscussionPromptsInputSchema>;
