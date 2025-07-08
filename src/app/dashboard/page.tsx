@@ -26,6 +26,7 @@ import {
   Flame,
   Loader2,
   Target,
+  Lightbulb,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,11 @@ const quickLinks = [
     title: 'My Quizzes',
     href: '/my-content/quizzes',
     icon: <ClipboardCheck className="h-8 w-8" />,
+  },
+  {
+    title: 'My Explanations',
+    href: '/my-content/explanations',
+    icon: <Lightbulb className="h-8 w-8" />,
   },
 ];
 
@@ -230,17 +236,17 @@ export default function DashboardPage() {
                 Quickly access your saved materials.
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-3 gap-4">
               {quickLinks.map((link) => (
                 <Button
                   key={link.title}
                   variant="outline"
-                  className="h-24 flex flex-col gap-2"
+                  className="h-24 flex flex-col gap-2 p-2 text-center"
                   asChild
                 >
                   <Link href={link.href}>
                     {link.icon}
-                    <span className="text-sm font-medium">{link.title}</span>
+                    <span className="text-xs font-medium leading-tight">{link.title}</span>
                   </Link>
                 </Button>
               ))}
