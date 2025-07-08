@@ -37,6 +37,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,6 +73,15 @@ export default function ChatPage() {
       scrollableView.scrollTo({ top: scrollableView.scrollHeight, behavior: 'smooth' });
     }
   }, [messages]);
+  
+  // This effect handles auto-resizing the textarea.
+  useEffect(() => {
+    if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto'; // Reset height
+        const scrollHeight = textareaRef.current.scrollHeight;
+        textareaRef.current.style.height = `${scrollHeight}px`;
+    }
+  }, [input]);
 
   return (
     <SidebarProvider>
@@ -155,30 +165,33 @@ export default function ChatPage() {
             <div className="max-w-4xl mx-auto">
                 <form
                   onSubmit={handleSendMessage}
-                  className="relative flex items-end gap-2"
+                  className="relative"
                 >
-                  <Textarea
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    placeholder="Ask me anything, or type 'summarize these notes...'"
-                    className="min-h-[44px] max-h-48 resize-y pr-12"
-                    rows={1}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage(e);
-                      }
-                    }}
-                  />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    className="absolute right-1 bottom-1 h-8 w-8"
-                    disabled={!input.trim() || isLoading}
-                  >
-                    <Send />
-                    <span className="sr-only">Send message</span>
-                  </Button>
+                  <div className="flex items-end gap-2 p-2 rounded-xl border bg-muted/50 focus-within:ring-2 focus-within:ring-ring transition-shadow">
+                    <Textarea
+                        ref={textareaRef}
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        placeholder="Ask me anything..."
+                        className="max-h-48 flex-1 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+                        rows={1}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              handleSendMessage(e);
+                          }
+                        }}
+                    />
+                    <Button
+                        type="submit"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        disabled={!input.trim() || isLoading}
+                    >
+                        <Send />
+                        <span className="sr-only">Send message</span>
+                    </Button>
+                  </div>
                 </form>
                 <p className="text-xs text-muted-foreground text-center mt-2 px-2">
                     FocusFlow AI can make mistakes. Check important info.
