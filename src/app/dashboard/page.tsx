@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -13,13 +14,19 @@ import {
   Bar,
   XAxis,
   YAxis,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   BookCopy,
   CalendarDays,
+  Check,
   CheckCircle,
   ClipboardCheck,
   FileText,
@@ -36,6 +43,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getDashboardStats, DashboardStats } from './actions';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 const quickLinks = [
   { title: 'My Summaries', href: '/my-content/summaries', icon: <FileText className="h-8 w-8" /> },
@@ -104,6 +112,8 @@ export default function DashboardPage() {
   const displayAvatar = user?.photoURL || `https://placehold.co/100x100.png`;
   const displayFallback = displayName?.charAt(0).toUpperCase() || 'U';
   
+  const streakIsActive = (stats?.studyStreak ?? 0) > 0;
+  
   const activityStats = [
     {
       title: 'Hours Studied',
@@ -131,7 +141,7 @@ export default function DashboardPage() {
       value: stats?.studyStreak ?? 0,
       suffix: ' days',
       description: 'consecutive study days',
-      icon: <Flame className="h-6 w-6 text-primary" />,
+      icon: <Flame className={cn("h-6 w-6 text-primary", streakIsActive && "text-accent animate-pulse")} />,
     },
   ];
 
@@ -213,7 +223,7 @@ export default function DashboardPage() {
                       tickLine={false}
                       axisLine={false}
                     />
-                    <Tooltip
+                    <RechartsTooltip
                       contentStyle={{
                         background: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
@@ -264,18 +274,47 @@ export default function DashboardPage() {
               <CardTitle className="font-headline">Achievements</CardTitle>
               <CardDescription>Badges you've earned.</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-wrap gap-4">
-              {achievements.map((ach) => {
-                const Icon = ach.icon;
-                return (
-                    <div key={ach.title} className="flex flex-col items-center gap-2" title={ach.unlocked ? `Unlocked: ${ach.title}` : `Locked: ${ach.title}`}>
-                        <div className={`relative rounded-full bg-muted p-4 ${!ach.unlocked && 'opacity-30'}`}>
-                            <Icon className={`h-5 w-5 ${ach.unlocked ? 'text-primary' : 'text-muted-foreground'}`} />
-                        </div>
-                        <Badge variant={ach.unlocked ? 'secondary' : 'outline'}>{ach.title}</Badge>
-                    </div>
-                )
-              })}
+            <CardContent>
+              <TooltipProvider>
+                <div className="flex flex-wrap items-start justify-center gap-x-4 gap-y-6">
+                  {achievements.map((ach) => {
+                    const Icon = ach.icon;
+                    return (
+                      <Tooltip key={ach.title}>
+                        <TooltipTrigger asChild>
+                          <div className="flex flex-col items-center gap-2 w-24 cursor-pointer text-center">
+                            <div className={cn(
+                              "relative flex h-20 w-20 items-center justify-center rounded-full bg-muted transition-all duration-300",
+                              ach.unlocked 
+                                ? 'bg-accent/20 border-2 border-accent shadow-lg' 
+                                : 'opacity-50 grayscale'
+                            )}>
+                              <Icon className={cn(
+                                "h-8 w-8",
+                                ach.unlocked ? 'text-accent' : 'text-muted-foreground'
+                              )} />
+                              {ach.unlocked && (
+                                <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary border-2 border-background">
+                                  <Check className="h-4 w-4 text-primary-foreground" />
+                                </div>
+                              )}
+                            </div>
+                            <p className={cn(
+                              "text-xs font-semibold text-balance",
+                              ach.unlocked ? 'text-foreground' : 'text-muted-foreground'
+                            )}>
+                              {ach.title}
+                            </p>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{ach.unlocked ? `Unlocked: ${ach.title}` : `Locked: ${ach.title}`}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  })}
+                </div>
+              </TooltipProvider>
             </CardContent>
           </Card>
         </div>
