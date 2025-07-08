@@ -376,8 +376,8 @@ export default function SummarizerPage() {
                   </div>
                 )}
                 {!isLoading && !result && (
-                  <div className="flex items-center justify-center h-full text-center text-muted-foreground">
-                    <p>Your summary will appear here once generated.</p>
+                  <div className="flex items-center justify-center h-full text-center text-muted-foreground p-8 animate-in fade-in-50">
+                    <p>Your AI summary will appear here. <br/> Try pasting some notes or uploading a PDF to get started!</p>
                   </div>
                 )}
               </CardContent>

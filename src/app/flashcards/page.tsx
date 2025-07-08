@@ -360,8 +360,8 @@ export default function FlashcardsPage() {
                 </div>
               )}
               {!isLoading && !flashcards && (
-                <div className="flex items-center justify-center h-full text-center text-muted-foreground">
-                  <p>Your flashcards will appear here.</p>
+                <div className="flex items-center justify-center h-full text-center text-muted-foreground p-8 animate-in fade-in-50">
+                  <p>Your interactive flashcards will appear here. <br/> Paste your notes to get started.</p>
                 </div>
               )}
             </CardContent>

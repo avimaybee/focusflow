@@ -264,7 +264,9 @@ export default function QuizPage() {
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground"><Loader2 className="h-8 w-8 animate-spin mb-4" /><p>Designing questions to test your knowledge...</p></div>
               )}
               {quizState === 'idle' && (
-                <div className="flex items-center justify-center h-full text-center text-muted-foreground"><p>Your practice quiz will appear here.</p></div>
+                <div className="flex items-center justify-center h-full text-center text-muted-foreground p-8 animate-in fade-in-50">
+                  <p>Your practice quiz will appear here. <br/> Provide your notes to generate a test.</p>
+                </div>
               )}
               {quizState === 'in-progress' && quizData && (
                 <div className="space-y-6 animate-in slide-in-from-bottom-5 duration-500">

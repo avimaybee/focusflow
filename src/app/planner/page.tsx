@@ -262,8 +262,8 @@ export default function PlannerPage() {
                 </div>
               )}
               {!isLoading && !result && (
-                <div className="flex items-center justify-center h-full text-center text-muted-foreground">
-                  <p>Your study plan will appear here.</p>
+                <div className="flex items-center justify-center h-full text-center text-muted-foreground p-8 animate-in fade-in-50">
+                  <p>Your personalized study plan will appear here. <br/> Fill in your details to generate a schedule.</p>
                 </div>
               )}
             </CardContent>

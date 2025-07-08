@@ -173,8 +173,8 @@ export default function MemoryAidsPage() {
                  </div>
               )}
               {!isLoading && !result && (
-                <div className="flex items-center justify-center h-full text-center text-muted-foreground">
-                  <p>Your creative memory aids will appear here.</p>
+                <div className="flex items-center justify-center h-full text-center text-muted-foreground p-8 animate-in fade-in-50">
+                  <p>Your creative memory aids will appear here. <br/> Enter a concept to get started.</p>
                 </div>
               )}
             </CardContent>
