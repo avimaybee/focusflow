@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import { handleSummarize, handleSaveSummary, handleExplainConcept } from './actions';
-import { Loader2, Copy, Download, Share2, Sparkles, FileText, Upload, X, Paperclip, BookCopy, ClipboardCheck, Save, BrainCircuit } from 'lucide-react';
+import { handleSummarize, handleSaveSummary } from './actions';
+import { Loader2, Copy, Download, Share2, Sparkles, FileText, Upload, X, Paperclip, BookCopy, ClipboardCheck, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -25,8 +25,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-
 
 const summarizerSchema = z.object({
   notes: z.string(), // Validation is handled in onSubmit
@@ -61,14 +59,6 @@ export default function SummarizerPage() {
   const { toast } = useToast();
   const { user } = useAuth();
   
-  // State for "Explain this concept" feature
-  const [explanation, setExplanation] = useState<{explanation: string, example: string} | null>(null);
-  const [isExplaining, setIsExplaining] = useState(false);
-  const [showExplanationSheet, setShowExplanationSheet] = useState(false);
-  const [selection, setSelection] = useState<{text: string; top: number; left: number} | null>(null);
-  const summaryContainerRef = useRef<HTMLDivElement>(null);
-
-
   const form = useForm<SummarizerFormValues>({
     resolver: zodResolver(summarizerSchema),
     defaultValues: {
@@ -200,66 +190,6 @@ export default function SummarizerPage() {
       description: 'A public link to your summary has been copied to your clipboard.',
     });
   };
-  
-  const handleMouseUp = () => {
-    const currentSelection = window.getSelection();
-    const selectedText = currentSelection?.toString().trim();
-  
-    if (selectedText && currentSelection && currentSelection.rangeCount > 0) {
-      const range = currentSelection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
-      const containerRect = summaryContainerRef.current?.getBoundingClientRect();
-  
-      if (containerRect) {
-        setSelection({
-          text: selectedText,
-          top: rect.top - containerRect.top + rect.height,
-          left: rect.left - containerRect.left + rect.width / 2,
-        });
-      }
-    } else {
-      setSelection(null);
-    }
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-        if (summaryContainerRef.current && !summaryContainerRef.current.contains(event.target as Node)) {
-            setSelection(null);
-        }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const handleExplainClick = async () => {
-    if (!selection || !result) return;
-    setIsExplaining(true);
-    setExplanation(null);
-    setShowExplanationSheet(true);
-    
-    const textToExplain = selection.text;
-    setSelection(null); // Hide button immediately
-
-    const explanationResult = await handleExplainConcept({
-        highlightedText: textToExplain,
-        fullContextText: result.summary,
-    });
-
-    if (explanationResult) {
-        setExplanation(explanationResult);
-    } else {
-        toast({
-            variant: "destructive",
-            title: "Explanation Failed",
-            description: "Could not explain the selected concept. Please try again.",
-        });
-        setShowExplanationSheet(false);
-    }
-    setIsExplaining(false);
-  }
 
   return (
     <>
@@ -282,38 +212,6 @@ export default function SummarizerPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <Sheet open={showExplanationSheet} onOpenChange={setShowExplanationSheet}>
-        <SheetContent className="sm:max-w-lg">
-            <SheetHeader>
-                <SheetTitle className="flex items-center gap-2 font-headline">
-                    <BrainCircuit className="h-6 w-6 text-primary" />
-                    Concept Explanation
-                </SheetTitle>
-            </SheetHeader>
-            <div className="py-4 space-y-6">
-                {isExplaining && (
-                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground pt-10">
-                        <Loader2 className="h-8 w-8 animate-spin mb-4" />
-                        <p>Thinking...</p>
-                    </div>
-                )}
-                {explanation && (
-                    <div className="space-y-4 animate-in fade-in-50 duration-500">
-                        <div>
-                            <h3 className="font-headline text-lg mb-2">Explanation</h3>
-                            <p className="text-muted-foreground whitespace-pre-wrap">{explanation.explanation}</p>
-                        </div>
-                        <div>
-                            <h3 className="font-headline text-lg mb-2">Example</h3>
-                            <p className="text-muted-foreground whitespace-pre-wrap">{explanation.example}</p>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </SheetContent>
-      </Sheet>
-
 
       <div className="container mx-auto max-w-4xl py-12 px-4">
         <div className="text-center mb-12">
@@ -408,19 +306,9 @@ export default function SummarizerPage() {
                 )}
                 {result && (
                   <div className="space-y-6 animate-in fade-in-50 duration-500">
-                    <div className="relative" ref={summaryContainerRef} onMouseUp={handleMouseUp}>
+                    <div>
                         <h3 className="font-headline text-lg mb-2">Summary</h3>
-                        <p className="text-muted-foreground whitespace-pre-wrap">{result.summary}</p>
-                        {selection && (
-                            <Button
-                                style={{ top: `${selection.top}px`, left: `${selection.left}px`, transform: 'translateX(-50%)' }}
-                                className="absolute mt-2 z-10"
-                                size="sm"
-                                onClick={handleExplainClick}
-                            >
-                                <Sparkles className="mr-2 h-4 w-4" /> Explain
-                            </Button>
-                        )}
+                        <p className="text-muted-foreground whitespace-pre-wrap" data-explainable="true">{result.summary}</p>
                     </div>
 
                     <div>
@@ -432,10 +320,10 @@ export default function SummarizerPage() {
                       </div>
                     </div>
                     <div className="flex items-center pt-4 border-t">
-                      {user && result && (
+                      {user && (
                           <Button size="sm" onClick={onSave} disabled={isSaving || isSaved}>
                               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                              {isSaved ? 'Saved!' : 'Save'}
+                              {isSaved ? 'Saved!' : <><Save className="mr-2 h-4 w-4"/>Save</>}
                           </Button>
                       )}
                       <div className="flex gap-2 ml-auto">
