@@ -17,7 +17,7 @@ export function ChatMessage({ role, text, image, userAvatar, userName }: ChatMes
   const isUser = role === 'user';
   
   return (
-    <div className={cn('flex items-start gap-3', isUser && 'justify-end')}>
+    <div className={cn('flex items-start gap-3 animate-in fade-in-50 slide-in-from-bottom-2 duration-500', isUser && 'justify-end')}>
       {!isUser && (
         <Avatar className="h-8 w-8">
             <AvatarFallback><Bot/></AvatarFallback>
@@ -25,7 +25,7 @@ export function ChatMessage({ role, text, image, userAvatar, userName }: ChatMes
       )}
       <div
         className={cn(
-          'max-w-md rounded-lg p-3 text-sm',
+          'max-w-xl rounded-lg p-3 text-sm',
           isUser
             ? 'bg-primary text-primary-foreground'
             : 'bg-muted'

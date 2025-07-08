@@ -67,11 +67,10 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollEl = scrollAreaRef.current.querySelector('div');
-      if (scrollEl) {
-        scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
-      }
+    // This is a workaround to get the scrollable element from the viewportRef
+    const scrollableView = scrollAreaRef.current?.children[1] as HTMLDivElement | undefined;
+    if (scrollableView) {
+      scrollableView.scrollTo({ top: scrollableView.scrollHeight, behavior: 'smooth' });
     }
   }, [messages]);
 
@@ -134,7 +133,7 @@ export default function ChatPage() {
             </div>
           </header>
           <div className="flex-grow relative">
-            <ScrollArea className="absolute inset-0" viewportRef={scrollAreaRef}>
+            <ScrollArea className="absolute inset-0" ref={scrollAreaRef}>
               <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
                 {messages.length <= 1 && !isMobile ? (
                   <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-center">
