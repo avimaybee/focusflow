@@ -1,3 +1,4 @@
+
 import {
   Accordion,
   AccordionContent,
@@ -35,27 +36,27 @@ export const metadata: Metadata = {
 const features = [
   {
     icon: <FileText className="h-8 w-8 text-primary" />,
-    title: 'AI Note Summarizer',
+    title: 'Instant Clarity, Not Just Summaries',
     description:
-      'Turn long lecture notes or articles into concise summaries. Just paste your text or upload a PDF to get key insights in seconds.',
+      'Turn long lecture notes or dense articles into concise, actionable summaries. Grasp key insights in seconds and spend less time reading.',
   },
   {
     icon: <BookCopy className="h-8 w-8 text-primary" />,
-    title: 'AI Flashcard Generator',
+    title: 'Master with Active Recall',
     description:
-      'Automatically create digital flashcards from your notes. An effective way to practice active recall and memorize key concepts.',
+      "Don't just re-read. Automatically generate flashcards from your notes to test your memory, a scientifically proven way to learn faster.",
   },
   {
     icon: <ClipboardCheck className="h-8 w-8 text-primary" />,
-    title: 'AI Practice Quizzes',
+    title: 'Test Your Understanding',
     description:
-      'Test your knowledge by instantly generating multiple-choice quizzes from your study materials, complete with answer explanations.',
+      'Generate relevant multiple-choice quizzes from any material. Get instant feedback with explanations to find and fill your knowledge gaps.',
   },
   {
     icon: <CalendarDays className="h-8 w-8 text-primary" />,
-    title: 'AI Study Planner',
+    title: 'Your Perfect Study Schedule',
     description:
-      'Tell our AI your subjects and exam dates, and get a personalized, manageable study schedule designed for your success.',
+      'Get a personalized, manageable study schedule based on your subjects and exam dates, all intelligently created by AI to keep you on track.',
   },
 ];
 
@@ -122,8 +123,7 @@ export default function Home() {
             Your All-in-One AI Study Toolkit
           </h1>
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Stop drowning in notes. Turn them into summaries, flashcards, and
-            quizzes with a single click. Plan your success, track your progress.
+            Stop juggling apps. Go from lecture notes to a full study plan in one seamless workflow. Summarize, create flashcards, generate quizzes, and plan your success.
           </p>
           <div className="mt-8">
             <Button asChild size="lg" className="font-headline">
@@ -163,10 +163,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center">
             <h2 className="font-headline text-3xl md:text-4xl font-bold">
-              Your Complete Study Workflow, Powered by AI
+              A Smarter Way to Learn, Not Just Study
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              From disorganized notes to a clear path toward acing your exams.
+              FocusFlow AI helps you actively engage with your material for deeper understanding and long-term retention.
             </p>
           </div>
           <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -294,3 +294,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
