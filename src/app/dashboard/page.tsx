@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -35,6 +36,7 @@ import {
   Target,
   Lightbulb,
   BrainCircuit,
+  BookOpen,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -145,6 +147,92 @@ export default function DashboardPage() {
     },
   ];
 
+  let snapshotSummary = "Here's a snapshot of your progress. Keep up the great work!";
+  if (stats && !isLoading) {
+    const hours = stats.hoursStudied;
+    const streak = stats.studyStreak;
+    const mainSubject = stats.weeklyActivity.length > 0 ? [...stats.weeklyActivity].sort((a, b) => b.logged - a.logged)[0].subject : null;
+
+    let summaryParts = [];
+    if (hours > 0) {
+      summaryParts.push(`You've studied ${hours} ${hours === 1 ? 'hour' : 'hours'} this week`);
+      if (mainSubject) {
+          summaryParts.push(`primarily focusing on ${mainSubject}.`);
+      } else {
+          summaryParts.push('.');
+      }
+    } else {
+        summaryParts.push("Ready to start studying this week?");
+    }
+
+    if (streak > 0) {
+        summaryParts.push(`Your ${streak}-day study streak is going strong!`);
+    } else if (hours > 0) {
+        summaryParts.push("Let's build up a new study streak.");
+    }
+    snapshotSummary = summaryParts.join(' ');
+  }
+
+  const getRecommendation = () => {
+    if (!stats || isLoading) return null;
+
+    if (stats.weeklyActivity.length === 0) {
+        return {
+            text: "Welcome! Add your subjects and weekly goals in the tracker to get started.",
+            link: "/tracker",
+            linkText: "Go to Tracker",
+            icon: <Target className="h-5 w-5 text-accent"/>
+        };
+    }
+
+    const subjectToStudy = stats.weeklyActivity.find(s => s.goal > 0 && s.logged < s.goal);
+
+    if (stats.hoursStudied === 0) {
+        return {
+            text: "It's a new week! Let's get started by creating a fresh study plan.",
+            link: "/planner",
+            linkText: "Create Study Plan",
+            icon: <CalendarDays className="h-5 w-5 text-accent"/>
+        };
+    }
+    
+    if (subjectToStudy) {
+         return {
+            text: `You're making progress towards your goal in ${subjectToStudy.subject}. Ready for a focused session?`,
+            link: `/study-mode?subject=${encodeURIComponent(subjectToStudy.subject)}`,
+            linkText: "Start Study Mode",
+            icon: <BookOpen className="h-5 w-5 text-accent"/>
+        };
+    }
+
+    if (stats.studyStreak === 0 && stats.hoursStudied > 0) {
+        return {
+            text: "You're off to a great start! Log another session tomorrow to build your study streak.",
+            link: "/tracker",
+            linkText: "Log Session",
+            icon: <Flame className="h-5 w-5 text-accent"/>
+        };
+    }
+
+    if (stats.quizzesTaken < stats.summariesMade) {
+        return {
+            text: "You've been creating summaries. Time to test your knowledge with a practice quiz!",
+            link: "/quiz",
+            linkText: "Create a Quiz",
+            icon: <ClipboardCheck className="h-5 w-5 text-accent"/>
+        };
+    }
+
+    return {
+        text: "You're on a roll! Why not solidify your knowledge by creating some flashcards?",
+        link: "/flashcards",
+        linkText: "Create Flashcards",
+        icon: <BookCopy className="h-5 w-5 text-accent"/>
+    };
+  };
+
+  const recommendation = getRecommendation();
+
   return (
     <div className="container mx-auto max-w-6xl py-12 px-4 space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -157,8 +245,8 @@ export default function DashboardPage() {
             <h1 className="font-headline text-3xl font-bold">
               Welcome Back, {displayName}!
             </h1>
-            <p className="text-muted-foreground">
-              Here's a snapshot of your progress. Keep up the great work!
+            <p className="text-muted-foreground max-w-2xl mt-1">
+              {isLoading ? <Skeleton className="h-5 w-3/4" /> : snapshotSummary}
             </p>
           </div>
         </div>
@@ -166,6 +254,23 @@ export default function DashboardPage() {
           <Link href="/planner">Create New Study Plan</Link>
         </Button>
       </div>
+
+      {recommendation && !isLoading && (
+        <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="flex items-center gap-4 flex-grow">
+                    <div className="hidden sm:block">{recommendation.icon}</div>
+                    <div>
+                        <p className="font-headline text-md font-semibold text-primary/90">Recommended Next Step</p>
+                        <p className="text-sm text-muted-foreground">{recommendation.text}</p>
+                    </div>
+                </div>
+                <Button asChild variant="secondary" size="sm" className="sm:ml-auto w-full sm:w-auto">
+                    <Link href={recommendation.link}>{recommendation.linkText}</Link>
+                </Button>
+            </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {activityStats.map((stat) => (
@@ -192,7 +297,7 @@ export default function DashboardPage() {
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle className="font-headline">Weekly Activity</CardTitle>
-            <CardDescription>Hours you've logged this week.</CardDescription>
+            <CardDescription>Hours you've logged this week vs your goal.</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -222,6 +327,7 @@ export default function DashboardPage() {
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
+                      label={{ value: 'Hours', angle: -90, position: 'insideLeft', offset: 10, style: { fill: 'hsl(var(--muted-foreground))' } }}
                     />
                     <RechartsTooltip
                       contentStyle={{

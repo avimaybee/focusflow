@@ -1,3 +1,4 @@
+
 'use server';
 
 import { db } from '@/lib/firebase';
@@ -8,7 +9,7 @@ export interface DashboardStats {
     summariesMade: number;
     quizzesTaken: number;
     studyStreak: number;
-    weeklyActivity: { subject: string; logged: number }[];
+    weeklyActivity: { subject: string; goal: number; logged: number }[];
 }
 
 export async function getDashboardStats(userId: string): Promise<DashboardStats> {
@@ -48,6 +49,12 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
     const weeklySessionsQuery = query(sessionsRef, where('date', '>=', startOfWeekTimestamp));
     const weeklySessionsSnapshot = await getDocs(weeklySessionsQuery);
     
+    const goalsBySubject: { [key: string]: number } = {};
+    goalsSnapshot.docs.forEach(doc => {
+        const goal = doc.data();
+        goalsBySubject[goal.subject] = goal.weeklyGoalHours;
+    });
+
     const sessionsBySubject: { [key: string]: number } = {};
     weeklySessionsSnapshot.docs.forEach(doc => {
         const session = doc.data();
@@ -57,13 +64,14 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
     });
 
     const allSubjects = new Set([
-        ...goalsSnapshot.docs.map(doc => doc.data().subject),
+        ...Object.keys(goalsBySubject),
         ...Object.keys(sessionsBySubject)
     ]);
 
     const weeklyActivity = Array.from(allSubjects).map(subject => {
         return {
             subject,
+            goal: goalsBySubject[subject] || 0,
             logged: Math.round((sessionsBySubject[subject] || 0) * 10) / 10,
         };
     });
