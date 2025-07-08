@@ -67,8 +67,7 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    // This is a workaround to get the scrollable element from the viewportRef
-    const scrollableView = scrollAreaRef.current?.children[1] as HTMLDivElement | undefined;
+    const scrollableView = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement | null;
     if (scrollableView) {
       scrollableView.scrollTo({ top: scrollableView.scrollHeight, behavior: 'smooth' });
     }
