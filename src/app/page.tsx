@@ -1,195 +1,254 @@
-
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarTrigger,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarInset,
-} from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Logo } from '@/components/logo';
-import { Send, Plus, MessageSquare } from 'lucide-react';
-import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
-import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Logo } from '@/components/logo';
+import {
+  ArrowRight,
+  BrainCircuit,
+  Combine,
+  Lightbulb,
+  Zap,
+} from 'lucide-react';
+import Image from 'next/image';
 
+const LandingHeader = () => (
+  <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm">
+    <div className="container mx-auto flex h-16 items-center justify-between px-4">
+      <Link href="/" className="flex items-center gap-2">
+        <Logo className="h-8 w-8" />
+        <span className="font-bold font-headline text-lg">FocusFlow AI</span>
+      </Link>
+      <nav className="hidden md:flex items-center gap-6">
+        <Link
+          href="#features"
+          className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Features
+        </Link>
+        <Link
+          href="#faq"
+          className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          FAQ
+        </Link>
+      </nav>
+      <Button asChild>
+        <Link href="/chat">
+          Get Started <ArrowRight className="ml-2 h-4 w-4" />
+        </Link>
+      </Button>
+    </div>
+  </header>
+);
 
-export default function ChatPage() {
-  const { user } = useAuth();
-  const isMobile = useIsMobile();
-  const [messages, setMessages] = useState<ChatMessageProps[]>([
+const LandingFooter = () => (
+  <footer className="border-t">
+    <div className="container mx-auto py-8 px-4 text-center text-muted-foreground text-sm">
+      <p>&copy; {new Date().getFullYear()} FocusFlow AI. All rights reserved.</p>
+    </div>
+  </footer>
+);
+
+export default function LandingPage() {
+  const features = [
     {
-      role: 'model',
-      text: "Hello! I'm your AI study partner. How can I help you today? You can ask me to summarize notes, create a quiz, build a study plan, and much more.",
+      icon: <Combine className="h-8 w-8 text-primary" />,
+      title: 'The Seamless AI Workflow',
+      description:
+        'Stop juggling apps. FocusFlow is your single, intelligent hub for every study need, from summaries to quizzes, all in one place.',
     },
-  ]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+    {
+      icon: <Lightbulb className="h-8 w-8 text-primary" />,
+      title: 'AI-Powered Active Learning',
+      description:
+        "Don't just read it, master it. Actively learn and truly understand with AI-generated flashcards, quizzes, and contextual explanations.",
+    },
+    {
+      icon: <BrainCircuit className="h-8 w-8 text-primary" />,
+      title: 'High-Quality, Contextual AI Output',
+      description:
+        'Get precise summaries, smart plans, and effective learning tools, powered by Gemini for intelligent, tailored study assistance.',
+    },
+    {
+      icon: <Zap className="h-8 w-8 text-primary" />,
+      title: 'Frictionless & Rewarding Experience',
+      description:
+        'Start studying smarter in seconds with no signup required. Enjoy a delightful and rewarding journey with a gamified dashboard.',
+    },
+  ];
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const faqs = [
+    {
+      question: 'Is FocusFlow AI free to use?',
+      answer:
+        'Yes! FocusFlow AI offers a generous free tier that includes access to all our core tools, including the summarizer, planner, and quiz generator. For advanced features like the AI Tutor, we offer a Premium plan.',
+    },
+    {
+      question: 'What makes FocusFlow AI different from other study tools?',
+      answer:
+        "FocusFlow AI is an all-in-one, integrated toolkit. Instead of using separate apps for summarizing, planning, and quizzing, you can do it all in a seamless workflow. Our conversational interface and deep, contextual learning features like 'Explain This Concept' provide a unique, interactive experience.",
+    },
+    {
+      question: 'What technology powers the AI?',
+      answer:
+        "Our AI features are powered by Google's state-of-the-art Gemini models, orchestrated through Genkit. This ensures high-quality, relevant, and safe responses tailored for educational purposes.",
+    },
+    {
+      question: 'Can I use my own notes or documents?',
+      answer:
+        'Absolutely. You can paste text directly into the chat or upload documents like PDFs. The AI will use your material as the source for generating summaries, flashcards, and quizzes.',
+    },
+  ];
 
-    const newMessages: ChatMessageProps[] = [
-      ...messages,
-      {
-        role: 'user',
-        text: input,
-        userAvatar: user?.photoURL,
-        userName: user?.displayName || user?.email || 'User',
-      },
-    ];
-    setMessages(newMessages);
-    setInput('');
-    setIsLoading(true);
-
-    // In a real app, you would call the AI here.
-    // For now, we can add a placeholder response.
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev,
-        { role: 'model', text: 'This is a placeholder response. In a real application, I would process your request.' },
-      ]);
-      setIsLoading(false);
-    }, 1500);
-  };
-
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollEl = scrollAreaRef.current.querySelector('div');
-      if (scrollEl) {
-        scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
-      }
-    }
-  }, [messages]);
+  const testimonials = [
+    {
+      quote:
+        'This app is a game-changer. I went from juggling three different apps to just one. The seamless flow from summary to flashcards is brilliant.',
+      name: 'Sarah J., University Student',
+      avatar: 'https://placehold.co/100x100.png',
+    },
+    {
+      quote:
+        "The 'Explain This' feature alone is worth its weight in gold. I can finally get unstuck without breaking my study flow. It's like having a tutor on standby 24/7.",
+      name: 'Mike T., High School Senior',
+      avatar: 'https://placehold.co/100x100.png',
+    },
+    {
+      quote:
+        'I love the dashboard and the study streak. It actually makes me want to log my hours and stay consistent. Who knew studying could be fun?',
+      name: 'Emily R., College Freshman',
+      avatar: 'https://placehold.co/100x100.png',
+    },
+  ];
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
-          <SidebarMenuButton className="w-full justify-start" variant="outline">
-            <Plus className="mr-2" /> New Chat
-          </SidebarMenuButton>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {/* Placeholder for past conversations */}
-            <p className="px-2 text-xs text-muted-foreground mb-2">Recent</p>
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Summary of Biology Notes" isActive>
-                <MessageSquare />
-                <span>Summary of Biology Notes</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip="History Quiz Prep">
-                <MessageSquare />
-                <span>History Quiz Prep</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-          {user ? (
-            <Link href="/dashboard" className="w-full">
-              <SidebarMenuButton className="w-full justify-start">
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage
-                      src={user.photoURL || undefined}
-                      data-ai-hint="person"
-                    />
-                    <AvatarFallback>
-                      {user.displayName?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span>{user.displayName || user.email}</span>
-              </SidebarMenuButton>
-            </Link>
-          ) : (
-            <Button asChild className="w-full">
-              <Link href="/login">Login / Sign Up</Link>
-            </Button>
-          )}
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <div className="flex flex-col h-[100dvh]">
-          <header className="p-2 border-b flex items-center gap-2 md:hidden sticky top-0 bg-background z-10">
-            <SidebarTrigger />
-            <div className="flex items-center gap-2">
-                <Logo className="h-6 w-6" />
-                <span className="font-bold font-headline">FocusFlow AI</span>
+    <div className="flex flex-col min-h-screen">
+      <LandingHeader />
+      <main className="flex-grow pt-16">
+        {/* Hero Section */}
+        <section className="py-20 md:py-32 text-center">
+          <div className="container mx-auto px-4">
+            <h1 className="text-4xl md:text-6xl font-bold font-headline max-w-4xl mx-auto">
+              Free AI Note Summarizer & Study Planner for Students
+            </h1>
+            <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+              Stop juggling apps. Summarize notes, create flashcards, build
+              study plans, and chat with an AI tutor—all in one place.
+            </p>
+            <div className="mt-8">
+              <Button size="lg" asChild>
+                <Link href="/chat">Start Free – No Signup Needed</Link>
+              </Button>
             </div>
-          </header>
-          <div className="flex-grow relative">
-            <ScrollArea className="absolute inset-0" viewportRef={scrollAreaRef}>
-              <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
-                {messages.length <= 1 && !isMobile ? (
-                  <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-center">
-                    <Logo className="h-16 w-16 mb-4" />
-                    <h1 className="text-2xl font-bold font-headline">
-                      How can I help you today?
-                    </h1>
-                  </div>
-                ) : (
-                  messages.map((msg, index) => (
-                    <ChatMessage key={index} {...msg} />
-                  ))
-                )}
-                 {isLoading && <ChatMessage role="model" text={<div className="h-5 w-5 border-2 rounded-full border-t-transparent animate-spin"></div>} />}
-              </div>
-            </ScrollArea>
+            <div className="mt-12">
+              <Image
+                src="https://placehold.co/1200x600.png"
+                width={1200}
+                height={600}
+                alt="FocusFlow AI App Preview"
+                className="rounded-lg shadow-2xl"
+                data-ai-hint="app interface"
+              />
+            </div>
           </div>
+        </section>
 
-          <div className="p-4 bg-background/95 w-full">
-            <div className="max-w-4xl mx-auto">
-                <form
-                  onSubmit={handleSendMessage}
-                  className="relative flex items-end gap-2"
-                >
-                  <Textarea
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    placeholder="Ask me anything, or type 'summarize these notes...'"
-                    className="min-h-[44px] max-h-48 resize-y pr-12"
-                    rows={1}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage(e);
-                      }
-                    }}
-                  />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    className="absolute right-1 bottom-1 h-8 w-8"
-                    disabled={!input.trim() || isLoading}
-                  >
-                    <Send />
-                    <span className="sr-only">Send message</span>
-                  </Button>
-                </form>
-                <p className="text-xs text-muted-foreground text-center mt-2 px-2">
-                    FocusFlow AI can make mistakes. Check important info.
-                </p>
+        {/* Features Section */}
+        <section id="features" className="py-20 bg-muted/50">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold font-headline text-center">
+              Your All-in-One AI Study Toolkit
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground text-center max-w-3xl mx-auto">
+              FocusFlow AI integrates every tool you need to study smarter, not
+              harder.
+            </p>
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {features.map((feature, index) => (
+                <Card key={index} className="text-center">
+                  <CardHeader>
+                    <div className="mx-auto bg-primary/10 rounded-full h-16 w-16 flex items-center justify-center">
+                      {feature.icon}
+                    </div>
+                    <CardTitle className="pt-4 font-headline text-xl">
+                      {feature.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground text-sm">
+                      {feature.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </section>
+
+        {/* Testimonials Section */}
+        <section id="testimonials" className="py-20">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold font-headline text-center">
+              Loved by Students Everywhere
+            </h2>
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <Card key={index}>
+                  <CardContent className="pt-6">
+                    <p className="italic">"{testimonial.quote}"</p>
+                    <div className="mt-4 flex items-center gap-3">
+                      <Image
+                        src={testimonial.avatar}
+                        width={40}
+                        height={40}
+                        alt={testimonial.name}
+                        className="rounded-full"
+                        data-ai-hint="person"
+                      />
+                      <p className="font-semibold text-sm">{testimonial.name}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section id="faq" className="py-20 bg-muted/50">
+          <div className="container mx-auto px-4 max-w-3xl">
+            <h2 className="text-3xl font-bold font-headline text-center">
+              Frequently Asked Questions
+            </h2>
+            <Accordion type="single" collapsible className="w-full mt-8">
+              {faqs.map((faq, index) => (
+                <AccordionItem value={`item-${index}`} key={index}>
+                  <AccordionTrigger className="text-lg text-left">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+      </main>
+      <LandingFooter />
+    </div>
   );
 }
