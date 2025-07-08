@@ -8,14 +8,14 @@ import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { BarChart2, PlusCircle, Target, Loader2 } from 'lucide-react';
+import { BarChart2, PlusCircle, Target, Loader2, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getTrackerData, logStudySession, setOrUpdateGoal, TrackerData } from './actions';
-
+import { Progress } from '@/components/ui/progress';
+import Link from 'next/link';
 
 const logSessionSchema = z.object({
   subject: z.string().min(1, 'Please select a subject.'),
@@ -29,7 +29,6 @@ const setGoalSchema = z.object({
 
 type LogSessionFormValues = z.infer<typeof logSessionSchema>;
 type SetGoalFormValues = z.infer<typeof setGoalSchema>;
-
 
 export default function TrackerPage() {
     const { user } = useAuth();
@@ -115,49 +114,51 @@ export default function TrackerPage() {
         <BarChart2 className="mx-auto h-12 w-12 text-primary" />
         <h1 className="font-headline text-4xl md:text-5xl font-bold mt-4">Progress Tracker</h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Log your study hours and watch your progress grow.
+          Log your study hours, set goals, and start a focused study session.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className='font-headline'>Weekly Study Progress</CardTitle>
-              <CardDescription>Goal vs. Logged Hours per Subject</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div style={{ width: '100%', height: 400 }}>
-                 {data.length > 0 ? (
-                    <ResponsiveContainer>
-                        <BarChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                            <XAxis dataKey="subject" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                            <Tooltip
-                                contentStyle={{
-                                    background: "hsl(var(--card))",
-                                    border: "1px solid hsl(var(--border))",
-                                    borderRadius: "var(--radius)"
-                                }}
-                            />
-                            <Legend wrapperStyle={{fontSize: "14px"}} />
-                            <Bar dataKey="goal" fill="hsl(var(--accent))" name="Goal Hours" radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="logged" fill="hsl(var(--primary))" name="Logged Hours" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                 ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-center">
-                        <p>No goals set yet.</p>
-                        <p className="text-sm">Add a subject and a goal to start tracking!</p>
-                    </div>
-                 )}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="lg:col-span-2 space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">My Subjects</CardTitle>
+                    <CardDescription>Your weekly progress for each subject. Start a study session from here.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {data.length > 0 ? (
+                        data.map(item => {
+                            const progress = item.goal > 0 ? (item.logged / item.goal) * 100 : 0;
+                            return (
+                                <div key={item.subject} className="p-4 border rounded-lg flex flex-col sm:flex-row items-center gap-4">
+                                    <div className="flex-grow w-full">
+                                        <div className="flex justify-between items-baseline mb-1">
+                                            <p className="font-semibold">{item.subject}</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                <span className="font-bold text-foreground">{Math.round(item.logged * 10) / 10}</span> / {item.goal} hrs
+                                            </p>
+                                        </div>
+                                        <Progress value={progress} />
+                                    </div>
+                                    <Button asChild className="w-full sm:w-auto flex-shrink-0">
+                                        <Link href={`/study-mode?subject=${encodeURIComponent(item.subject)}`}>
+                                            <BookOpen /> Start Study Mode
+                                        </Link>
+                                    </Button>
+                                </div>
+                            )
+                        })
+                    ) : (
+                        <div className="text-center text-muted-foreground py-10">
+                            <p>No subjects found.</p>
+                            <p className="text-sm">Add a subject and a goal to get started.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-8 lg:sticky lg:top-24">
             <Card>
                 <Form {...logSessionForm}>
                     <form onSubmit={logSessionForm.handleSubmit(handleLogSession)}>
