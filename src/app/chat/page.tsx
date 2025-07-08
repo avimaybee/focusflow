@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect, ReactNode } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   SidebarProvider,
   Sidebar,
@@ -25,6 +25,8 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { chat, ChatInput, Persona } from '@/ai/flows/chat-flow';
+import { updateUserPersona } from '@/lib/user-actions';
 
 
 const personas = [
@@ -49,7 +51,7 @@ const personas = [
 ];
 
 export default function ChatPage() {
-  const { user } = useAuth();
+  const { user, preferredPersona } = useAuth();
   const isMobile = useIsMobile();
   const [selectedPersonaId, setSelectedPersonaId] = useState(personas[0].id);
   const selectedPersona = personas.find(p => p.id === selectedPersonaId)!;
@@ -65,40 +67,78 @@ export default function ChatPage() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
-  // Update initial message if persona is changed before conversation starts
+  // This effect syncs the component's state with the user's preference from the DB
   useEffect(() => {
-    if (messages.length === 1 && messages[0].role === 'model') {
-        setMessages([{ role: 'model', text: selectedPersona.initialMessage }]);
+    if (preferredPersona && personas.some(p => p.id === preferredPersona)) {
+      setSelectedPersonaId(preferredPersona);
     }
-  }, [selectedPersonaId]);
+  }, [preferredPersona]);
+
+  // This effect updates the initial message and the DB when the persona changes
+  useEffect(() => {
+    // Only change initial message if it's the only message
+    if (messages.length === 1 && messages[0].role === 'model') {
+      const currentPersona = personas.find(p => p.id === selectedPersonaId)!;
+      setMessages([{ role: 'model', text: currentPersona.initialMessage }]);
+    }
+    // Update preference in Firestore if user is logged in
+    if (user?.uid) {
+      updateUserPersona(user.uid, selectedPersonaId);
+    }
+  }, [selectedPersonaId, user?.uid]);
 
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const newMessages: ChatMessageProps[] = [
+    const userInput = input;
+    const currentMessages: ChatMessageProps[] = [
       ...messages,
       {
         role: 'user',
-        text: input,
+        text: userInput,
         userAvatar: user?.photoURL,
         userName: user?.displayName || user?.email || 'User',
       },
     ];
-    setMessages(newMessages);
+    setMessages(currentMessages);
     setInput('');
     setIsLoading(true);
 
-    // In a real app, you would call the AI here.
-    // For now, we can add a placeholder response.
-    setTimeout(() => {
+    try {
+      const chatHistoryForAI = currentMessages
+        .slice(1) // Remove initial welcome message
+        .filter(m => typeof m.text === 'string') // Ensure we only send string messages
+        .map(m => ({
+          role: m.role,
+          text: m.text as string,
+        }));
+
+      const chatInput: ChatInput = {
+        message: userInput,
+        persona: selectedPersonaId as Persona,
+        history: chatHistoryForAI,
+      };
+
+      const result = await chat(chatInput);
+
       setMessages(prev => [
         ...prev,
-        { role: 'model', text: 'This is a placeholder response. In a real application, I would process your request.' },
+        { role: 'model', text: result.response },
       ]);
+    } catch (error) {
+      console.error('Error calling chat AI:', error);
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'model',
+          text: 'Sorry, something went wrong. Please try again.',
+        },
+      ]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   useEffect(() => {

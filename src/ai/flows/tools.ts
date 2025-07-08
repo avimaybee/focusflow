@@ -1,0 +1,139 @@
+'use server';
+/**
+ * @fileOverview Defines Genkit tools that wrap the individual AI flows.
+ * These tools are used by the main chat router flow to delegate tasks.
+ */
+import {ai} from '@/ai/genkit';
+import {
+  summarizeNotes,
+  SummarizeNotesInputSchema,
+} from './summarize-notes';
+import {
+  createStudyPlan,
+  CreateStudyPlanInputSchema,
+} from './create-study-plan';
+import {
+  createFlashcards,
+  CreateFlashcardsInputSchema,
+} from './create-flashcards';
+import { createQuiz, CreateQuizInputSchema } from './create-quiz';
+import { explainConcept, ExplainConceptInputSchema } from './explain-concept';
+import { createMemoryAid, CreateMemoryAidInputSchema } from './create-memory-aid';
+import { createDiscussionPrompts, CreateDiscussionPromptsInputSchema } from './create-discussion-prompts';
+import {z} from 'genkit';
+
+export const summarizeNotesTool = ai.defineTool(
+  {
+    name: 'summarizeNotes',
+    description: 'Summarizes a long piece of text or a document into a concise digest. Use this when the user asks to summarize their notes, a document, or pasted text.',
+    inputSchema: SummarizeNotesInputSchema,
+    outputSchema: z.string().describe('The generated summary text.'),
+  },
+  async input => {
+    const result = await summarizeNotes(input);
+    return `Summary:\n${result.summary}\n\nKeywords: ${result.keywords}`;
+  }
+);
+
+export const createStudyPlanTool = ai.defineTool(
+  {
+    name: 'createStudyPlan',
+    description: 'Generates a structured, weekly study plan based on subjects, exam dates, and available time. Use this when the user asks for a study plan or schedule.',
+    inputSchema: CreateStudyPlanInputSchema,
+    outputSchema: z.string().describe('A formatted string containing the full study plan.'),
+  },
+  async input => {
+    const result = await createStudyPlan(input);
+    let planString = `**${result.title}**\n\n`;
+    result.plan.forEach(day => {
+        planString += `**${day.day}:** ${day.tasks}\n`;
+    });
+    return planString;
+  }
+);
+
+export const createFlashcardsTool = ai.defineTool(
+    {
+        name: 'createFlashcards',
+        description: 'Generates a set of question-and-answer flashcards from a piece of text or a document. Use this when a user asks for flashcards.',
+        inputSchema: CreateFlashcardsInputSchema,
+        outputSchema: z.string().describe('A formatted string containing the flashcards.'),
+    },
+    async (input) => {
+        const result = await createFlashcards(input);
+        let flashcardString = 'Here are your flashcards:\n\n';
+        result.flashcards.forEach((card, index) => {
+            flashcardString += `**${index + 1}. Question:** ${card.question}\n**Answer:** ${card.answer}\n\n`;
+        });
+        return flashcardString;
+    }
+);
+
+export const createQuizTool = ai.defineTool(
+    {
+        name: 'createQuiz',
+        description: 'Generates a multiple-choice quiz from a piece of text or a document. Use this when a user asks for a quiz or wants to test their knowledge.',
+        inputSchema: CreateQuizInputSchema,
+        outputSchema: z.string().describe('A formatted string containing the quiz.'),
+    },
+    async (input) => {
+        const result = await createQuiz(input);
+        let quizString = `**${result.title}**\n\n`;
+        result.questions.forEach((q, index) => {
+            quizString += `**${index + 1}. ${q.questionText}**\n`;
+            q.options.forEach(opt => quizString += `- ${opt}\n`);
+            quizString += `*Correct Answer: ${q.correctAnswer}*\n`;
+            quizString += `*Explanation: ${q.explanation}*\n\n`;
+        });
+        return quizString;
+    }
+);
+
+export const explainConceptTool = ai.defineTool(
+    {
+        name: 'explainConcept',
+        description: 'Explains a specific highlighted term or concept within a larger body of text. Use this when a user asks "what is..." or "explain...". The user must provide both the term to explain and the full text for context.',
+        inputSchema: ExplainConceptInputSchema,
+        outputSchema: z.string().describe('A formatted string containing the explanation and an example.'),
+    },
+    async (input) => {
+        const result = await explainConcept(input);
+        return `**Explanation of "${input.highlightedText}"**\n\n${result.explanation}\n\n**Example:**\n${result.example}`;
+    }
+);
+
+export const createMemoryAidTool = ai.defineTool(
+    {
+        name: 'createMemoryAid',
+        description: 'Generates a mnemonic, rhyme, story, or other memory aid for a specific concept. Use this when a user asks for help remembering something.',
+        inputSchema: CreateMemoryAidInputSchema,
+        outputSchema: z.string().describe('A formatted string containing the generated memory aids.'),
+    },
+
+    async (input) => {
+        const result = await createMemoryAid(input);
+        let aidString = `Here are some memory aids for **${input.concept}**:\n\n`;
+        if (result.acronym) aidString += `**Acronym:** ${result.acronym}\n`;
+        if (result.rhyme) aidString += `**Rhyme:** ${result.rhyme}\n`;
+        if (result.story) aidString += `**Story:** ${result.story}\n`;
+        if (result.imagery) aidString += `**Imagery:** ${result.imagery}\n`;
+        return aidString;
+    }
+);
+
+export const createDiscussionPromptsTool = ai.defineTool(
+    {
+        name: 'createDiscussionPrompts',
+        description: 'Generates a set of discussion prompts or questions for a study group based on a piece of text. Use this when a user asks for discussion topics or questions.',
+        inputSchema: CreateDiscussionPromptsInputSchema,
+        outputSchema: z.string().describe('A formatted string containing the generated discussion prompts.'),
+    },
+    async (input) => {
+        const result = await createDiscussionPrompts(input);
+        let promptString = 'Here are some discussion prompts:\n\n';
+        result.prompts.forEach(p => {
+            promptString += `**[${p.type}]** ${p.text}\n\n`;
+        });
+        return promptString;
+    }
+);

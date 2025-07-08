@@ -97,6 +97,7 @@ export default function LoginPage() {
         displayName: values.email.split('@')[0],
         createdAt: serverTimestamp(),
         isPremium: false,
+        preferredPersona: 'neutral',
       });
       toast({ title: 'Signup Successful', description: 'Welcome to FocusFlow AI!' });
       router.push('/dashboard');

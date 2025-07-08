@@ -10,6 +10,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isPremium: boolean;
+  preferredPersona: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,6 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
+  const [preferredPersona, setPreferredPersona] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -33,15 +35,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             photoURL: user.photoURL,
             createdAt: serverTimestamp(),
             isPremium: false,
+            preferredPersona: 'neutral',
           });
           setIsPremium(false);
+          setPreferredPersona('neutral');
         } else {
             setIsPremium(userSnap.data().isPremium || false);
+            setPreferredPersona(userSnap.data().preferredPersona || 'neutral');
         }
         setUser(user);
       } else {
         setUser(null);
         setIsPremium(false);
+        setPreferredPersona(null);
       }
       setLoading(false);
     });
@@ -49,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const value = { user, loading, isPremium };
+  const value = { user, loading, isPremium, preferredPersona };
 
   if (loading) {
     return (
