@@ -8,3 +8,4 @@ import '@/ai/flows/create-quiz.ts';
 import '@/ai/flows/explain-concept.ts';
 import '@/ai/flows/create-memory-aid.ts';
 import '@/ai/flows/tutor-chat.ts';
+import '@/ai/flows/create-discussion-prompts.ts';

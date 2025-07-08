@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
 import { FileText } from "lucide-react";
+import { DiscussionPromptsGenerator } from "@/components/discussion-prompts-generator";
 
 type PublicSummaryPageProps = {
   params: {
@@ -92,6 +93,8 @@ export default async function PublicSummaryPage({ params }: PublicSummaryPagePro
             </div>
         </CardContent>
       </Card>
+
+      <DiscussionPromptsGenerator summaryText={summary.summary} />
     </div>
   );
 }
