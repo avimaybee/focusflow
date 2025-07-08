@@ -3,8 +3,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
-import Header from '@/components/layout/header';
-import Footer from '@/components/layout/footer';
 import { AuthProvider } from '@/context/auth-context';
 import { ExplanationProvider } from '@/context/explanation-context';
 
@@ -32,15 +30,12 @@ export default function RootLayout({
       </head>
       <body
         className={cn(
-          'min-h-screen bg-background font-body antialiased',
-          'flex flex-col'
+          'min-h-screen bg-background font-body antialiased'
         )}
       >
         <AuthProvider>
           <ExplanationProvider>
-            <Header />
-            <main className="flex-grow">{children}</main>
-            <Footer />
+            {children}
           </ExplanationProvider>
           <Toaster />
         </AuthProvider>
