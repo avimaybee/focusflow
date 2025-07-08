@@ -5,3 +5,4 @@ import '@/ai/flows/summarize-notes.ts';
 import '@/ai/flows/create-study-plan.ts';
 import '@/ai/flows/create-flashcards.ts';
 import '@/ai/flows/create-quiz.ts';
+import '@/ai/flows/explain-concept.ts';
