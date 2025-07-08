@@ -1,5 +1,3 @@
-'use server';
-
 /**
  * @fileOverview Generates a personalized weekly study plan based on user inputs.
  *

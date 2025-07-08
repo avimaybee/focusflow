@@ -1,5 +1,3 @@
-'use server';
-
 /**
  * @fileOverview AI flow for generating mnemonics and memory aids.
  *

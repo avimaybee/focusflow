@@ -1,4 +1,3 @@
-'use server';
 /**
  * @fileOverview Defines Genkit tools that wrap the individual AI flows.
  * These tools are used by the main chat router flow to delegate tasks.

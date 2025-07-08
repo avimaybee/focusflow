@@ -1,5 +1,3 @@
-'use server';
-
 /**
  * @fileOverview AI flow for explaining a concept within a body of text.
  *

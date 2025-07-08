@@ -1,6 +1,3 @@
-
-'use server';
-
 /**
  * @fileOverview AI flow for summarizing notes from text or PDF.
  *
@@ -22,7 +19,7 @@ export const SummarizeNotesInputSchema = z
         "A PDF file of notes, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:application/pdf;base64,<encoded_data>'."
       ),
   })
-  .refine(async (data) => data.textNotes || data.pdfNotes, {
+  .refine((data) => data.textNotes || data.pdfNotes, {
     message: 'Either text notes or PDF notes must be provided.',
   });
 export type SummarizeNotesInput = z.infer<typeof SummarizeNotesInputSchema>;

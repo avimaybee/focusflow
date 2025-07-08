@@ -1,6 +1,3 @@
-
-'use server';
-
 /**
  * @fileOverview AI flow for generating flashcards from notes.
  *
@@ -22,7 +19,7 @@ export const CreateFlashcardsInputSchema = z
         "A PDF file of notes, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:application/pdf;base64,<encoded_data>'."
       ),
   })
-  .refine(async (data) => data.sourceText || data.sourcePdf, {
+  .refine((data) => data.sourceText || data.sourcePdf, {
     message: 'Either text notes or a PDF must be provided.',
   });
 export type CreateFlashcardsInput = z.infer<typeof CreateFlashcardsInputSchema>;

@@ -1,5 +1,3 @@
-'use server';
-
 /**
  * @fileOverview AI flow for generating study group discussion prompts from notes.
  *
