@@ -27,6 +27,7 @@ import {
   Loader2,
   Target,
   Lightbulb,
+  BrainCircuit,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -57,6 +58,11 @@ const quickLinks = [
     title: 'My Explanations',
     href: '/my-content/explanations',
     icon: <Lightbulb className="h-8 w-8" />,
+  },
+  {
+    title: 'Memory Aids',
+    href: '/memory-aids',
+    icon: <BrainCircuit className="h-8 w-8" />,
   },
 ];
 

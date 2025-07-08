@@ -16,6 +16,7 @@ const navLinks = [
   { href: '/flashcards', label: 'Flashcards' },
   { href: '/quiz', label: 'Quiz' },
   { href: '/planner', label: 'Planner' },
+  { href: '/memory-aids', label: 'Memory Aids' },
   { href: '/tracker', label: 'Tracker' },
   { href: '/blog', label: 'Blog' },
 ];

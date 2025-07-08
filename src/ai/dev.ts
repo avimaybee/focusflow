@@ -6,3 +6,4 @@ import '@/ai/flows/create-study-plan.ts';
 import '@/ai/flows/create-flashcards.ts';
 import '@/ai/flows/create-quiz.ts';
 import '@/ai/flows/explain-concept.ts';
+import '@/ai/flows/create-memory-aid.ts';
