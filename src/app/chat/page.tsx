@@ -32,6 +32,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
+import { TextSelectionToolbar } from '@/components/text-selection-toolbar';
 
 type Attachment = {
   preview: string; // URL for image previews, or name for other files
@@ -133,6 +134,7 @@ export default function ChatPage() {
   const [personaPopoverOpen, setPersonaPopoverOpen] = useState(false);
   const [isHighlighting, setIsHighlighting] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [selectionData, setSelectionData] = useState<{ text: string; rect: DOMRect } | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -158,30 +160,23 @@ export default function ChatPage() {
   }, [selectedPersonaId, user?.uid]);
 
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if ((!input.trim() && !attachment) || isLoading) return;
+  const submitMessage = async (prompt: string, attachedFile: Attachment | null) => {
+    if ((!prompt.trim() && !attachedFile) || isLoading) return;
 
-    const userInput = input;
-    const userAttachment = attachment;
-
-    const currentMessages: ChatMessageProps[] = [
-      ...messages,
-      {
-        role: 'user',
-        text: userInput,
-        image: userAttachment?.type.startsWith('image/') ? userAttachment.preview : null,
-        userAvatar: user?.photoURL,
-        userName: user?.displayName || user?.email || 'User',
-      },
-    ];
-    setMessages(currentMessages);
-    setInput('');
-    setAttachment(null);
+    const userMessage: ChatMessageProps = {
+      role: 'user',
+      text: prompt,
+      image: attachedFile?.type.startsWith('image/') ? attachedFile.preview : null,
+      userAvatar: user?.photoURL,
+      userName: user?.displayName || user?.email || 'User',
+    };
+    
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setIsLoading(true);
 
     try {
-      const chatHistoryForAI = currentMessages
+      const chatHistoryForAI = newMessages
         .slice(1) // Remove initial welcome message
         .filter(m => typeof m.text === 'string') // Ensure we only send string messages
         .map(m => ({
@@ -190,16 +185,16 @@ export default function ChatPage() {
         }));
 
       const chatInput: ChatInput = {
-        message: userInput,
+        message: prompt,
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
       };
 
-      if (userAttachment) {
-        if (userAttachment.type.startsWith('image/')) {
-          chatInput.image = userAttachment.data;
-        } else if (userAttachment.type === 'application/pdf') {
-          chatInput.context = userAttachment.data;
+      if (attachedFile) {
+        if (attachedFile.type.startsWith('image/')) {
+          chatInput.image = attachedFile.data;
+        } else if (attachedFile.type === 'application/pdf') {
+          chatInput.context = attachedFile.data;
         }
       }
 
@@ -221,6 +216,13 @@ export default function ChatPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitMessage(input, attachment);
+    setInput('');
+    setAttachment(null);
   };
 
   const handleSelectPrompt = (prompt: string) => {
@@ -330,6 +332,32 @@ export default function ChatPage() {
     }
   };
 
+  const handleMouseUp = () => {
+    setTimeout(() => {
+      const selection = window.getSelection();
+      const selectedText = selection?.toString().trim();
+
+      if (selectedText && selectedText.length > 10) {
+        const range = selection.getRangeAt(0);
+        if (range.startContainer.parentElement?.closest('form, input, textarea, button')) {
+          setSelectionData(null);
+          return;
+        }
+        const rect = range.getBoundingClientRect();
+        setSelectionData({ text: selectedText, rect });
+      } else {
+        setSelectionData(null);
+      }
+    }, 10);
+  };
+
+  const handleToolAction = (promptTemplate: string) => {
+    if (!selectionData) return;
+    const prompt = promptTemplate.replace('[SELECTED_TEXT]', selectionData.text);
+    submitMessage(prompt, null);
+    setSelectionData(null);
+  };
+
 
   useEffect(() => {
     const scrollableView = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement | null;
@@ -424,8 +452,8 @@ export default function ChatPage() {
               <h2 className="font-bold text-sm md:text-base">New Chat</h2>
           </div>
 
-          <div className="flex-grow relative">
-            <ScrollArea className="absolute inset-0" ref={scrollAreaRef}>
+          <div className="flex-grow relative" onMouseUp={handleMouseUp}>
+            <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setSelectionData(null)}>
               <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
                 {messages.length <= 1 && !isMobile ? (
                   <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4 text-center">
@@ -583,6 +611,10 @@ export default function ChatPage() {
                 </p>
             </div>
           </div>
+          <TextSelectionToolbar
+            selectionData={selectionData}
+            onAction={handleToolAction}
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>
