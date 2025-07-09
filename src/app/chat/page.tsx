@@ -28,6 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { chat } from '@/ai/flows/chat-flow';
 import { updateUserPersona } from '@/lib/user-actions';
 import type { ChatInput, Persona } from '@/ai/flows/chat-types';
+import { PromptLibrary } from '@/components/prompt-library';
 
 
 const personas = [
@@ -326,6 +327,12 @@ export default function ChatPage() {
                   className="relative"
                 >
                   <div className="flex items-end gap-2 p-2 rounded-2xl bg-card shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
+                    <PromptLibrary
+                      onSelectPrompt={(prompt) => {
+                        setInput((prev) => prev + prompt);
+                        textareaRef.current?.focus();
+                      }}
+                    />
                     <Textarea
                         ref={textareaRef}
                         value={input}

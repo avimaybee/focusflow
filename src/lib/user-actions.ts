@@ -1,3 +1,4 @@
+
 'use server';
 
 import { db } from '@/lib/firebase';
@@ -18,4 +19,16 @@ export async function updateUserPersona(userId: string, persona: string) {
     console.error("Error updating user persona: ", error);
     // Optionally, re-throw or handle the error as needed
   }
+}
+
+export async function updateUserFavoritePrompts(userId: string, favoriteIds: string[]) {
+    if (!userId) return;
+    const userRef = doc(db, 'users', userId);
+    try {
+        await updateDoc(userRef, {
+            favoritePrompts: favoriteIds,
+        });
+    } catch (error) {
+        console.error("Error updating user favorite prompts: ", error);
+    }
 }

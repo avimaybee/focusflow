@@ -99,6 +99,7 @@ export default function LoginPage() {
         createdAt: serverTimestamp(),
         isPremium: false,
         preferredPersona: 'neutral',
+        favoritePrompts: [],
       });
       toast({ title: 'Signup Successful', description: 'Welcome to FocusFlow AI!' });
       router.push('/dashboard');
