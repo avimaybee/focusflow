@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, DragEvent } from 'react';
 import {
   SidebarProvider,
   Sidebar,
@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon } from 'lucide-react';
+import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -132,6 +132,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [personaPopoverOpen, setPersonaPopoverOpen] = useState(false);
   const [isHighlighting, setIsHighlighting] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -249,30 +250,83 @@ export default function ChatPage() {
     }, 0);
   };
   
+  const handleFileSelect = (file: File) => {
+    if (!file) return;
+  
+    // Validate type
+    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+      toast({
+        variant: 'destructive',
+        title: 'Unsupported File Type',
+        description: 'Please upload an image or a PDF file.',
+      });
+      return;
+    }
+  
+    // Validate size (e.g., 10MB limit)
+    const maxSizeInBytes = 10 * 1024 * 1024;
+    if (file.size > maxSizeInBytes) {
+      toast({
+        variant: 'destructive',
+        title: 'File Too Large',
+        description: `Please upload a file smaller than ${
+          maxSizeInBytes / 1024 / 1024
+        }MB.`,
+      });
+      return;
+    }
+  
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      const previewUrl = file.type.startsWith('image/')
+        ? URL.createObjectURL(file)
+        : file.name;
+      setAttachment({
+        preview: previewUrl,
+        data: dataUrl,
+        type: file.type,
+        name: file.name,
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
-          toast({
-            variant: 'destructive',
-            title: 'Unsupported File Type',
-            description: 'Please upload an image or a PDF file.',
-          });
-          return;
-      }
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-          const dataUrl = reader.result as string;
-          const previewUrl = file.type.startsWith('image/') ? URL.createObjectURL(file) : file.name;
-          setAttachment({
-              preview: previewUrl,
-              data: dataUrl,
-              type: file.type,
-              name: file.name,
-          });
-      };
-      reader.readAsDataURL(file);
+      handleFileSelect(file);
+    }
+  };
+
+  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(true);
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Check if the leave is to a child element
+    if (e.currentTarget.contains(e.relatedTarget as Node)) {
+      return;
+    }
+    setIsDraggingOver(false);
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleFileSelect(file);
     }
   };
 
@@ -343,7 +397,21 @@ export default function ChatPage() {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <div className="flex flex-col h-[100dvh]">
+        <div
+          className="flex flex-col h-[100dvh] relative"
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+        >
+           {isDraggingOver && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in">
+              <div className="flex flex-col items-center gap-4 text-white p-8 border-2 border-dashed border-white rounded-lg bg-black/20">
+                <UploadCloud className="h-16 w-16" />
+                <p className="text-lg font-semibold">Drop your file here</p>
+              </div>
+            </div>
+          )}
           <header className="p-2 border-b flex items-center gap-2 md:hidden sticky top-0 bg-[#1A1A1A] border-b border-[#2A2A2A] z-10">
             <SidebarTrigger />
             <div className="flex items-center gap-2">

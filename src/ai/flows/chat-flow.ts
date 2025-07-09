@@ -46,10 +46,17 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
   const personaInstruction = personaPrompts[input.persona];
   const systemPrompt = `${personaInstruction}
 
+You are an expert AI assistant that can use tools to help students.
+
 When you use a tool that has a 'persona' input field, you MUST pass the current persona ('${input.persona}') to it.
 
-If the user provides context via the 'context' field (from a file upload), you MUST use that context as the source for any tool that requires it (e.g., summarizeNotes, createQuiz).
-If the context is a data URI starting with 'data:application/pdf', pass it to the 'sourcePdf' argument of the tool. Otherwise, pass it to the 'sourceText' argument.
+A user may upload a file (image or PDF) to provide context.
+- If an image is provided in the 'image' field, you can analyze it directly in your response.
+- If a document is provided in the 'context' field, you MUST use that document as the source for any tool that requires it (e.g., summarizeNotes, createQuiz).
+- When calling a tool that needs source material:
+  - If the context is a data URI for a PDF, pass it to the 'sourcePdf' argument of the tool.
+  - If the context is plain text, pass it to the 'sourceText' argument.
+- You must decide which tool is most appropriate based on the user's message and the provided context. For example, if the user uploads a PDF and says "make a quiz", you must use the 'createQuiz' tool with the PDF as the 'sourcePdf'.
 `;
 
 
