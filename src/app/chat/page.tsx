@@ -25,8 +25,9 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { chat, ChatInput, Persona } from '@/ai/flows/chat-flow';
+import { chat } from '@/ai/flows/chat-flow';
 import { updateUserPersona } from '@/lib/user-actions';
+import type { ChatInput, Persona } from '@/ai/flows/chat-types';
 
 
 const personas = [
