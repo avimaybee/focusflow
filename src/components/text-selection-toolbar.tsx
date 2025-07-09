@@ -4,14 +4,14 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Bot, List, MessageSquare, Sparkles, Quote, ListTodo, Scale } from 'lucide-react';
+import { Bot, List, Sparkles, Quote, ListTodo, Scale, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tools = [
   {
     name: 'Explain',
     action: 'prompt',
-    value: 'Explain this concept in simple terms: "[SELECTED_TEXT]"',
+    value: 'Explain the main ideas in this text in simple terms: "[SELECTED_TEXT]"',
     icon: <Bot className="h-4 w-4" />,
   },
   {
@@ -29,7 +29,7 @@ const tools = [
   {
     name: 'Elaborate',
     action: 'prompt',
-    value: 'Elaborate on this point: "[SELECTED_TEXT]"',
+    value: 'Elaborate on the main points in this text, providing more detail or examples: "[SELECTED_TEXT]"',
     icon: <Sparkles className="h-4 w-4" />,
   },
   {
@@ -53,21 +53,21 @@ const tools = [
 ];
 
 interface TextSelectionToolbarProps {
-  selectionData: { text: string; rect: DOMRect } | null;
+  menuData: { text: string; rect: DOMRect } | null;
   onAction: (tool: typeof tools[0]) => void;
 }
 
 
-export function TextSelectionToolbar({ selectionData, onAction }: TextSelectionToolbarProps) {
+export function TextSelectionToolbar({ menuData: menuData, onAction }: TextSelectionToolbarProps) {
   const toolbarRef = React.useRef<HTMLDivElement>(null);
   const [position, setPosition] = React.useState({ top: 0, left: 0 });
 
   React.useLayoutEffect(() => {
-    if (selectionData && toolbarRef.current) {
-      const { rect } = selectionData;
+    if (menuData && toolbarRef.current) {
+      const { rect } = menuData;
       const toolbarRect = toolbarRef.current.getBoundingClientRect();
       
-      const top = window.scrollY + rect.top - toolbarRect.height - 8;
+      const top = window.scrollY + rect.bottom + 8;
       let left = window.scrollX + rect.left + rect.width / 2 - toolbarRect.width / 2;
 
       // Prevent going off-screen
@@ -75,9 +75,9 @@ export function TextSelectionToolbar({ selectionData, onAction }: TextSelectionT
 
       setPosition({ top, left });
     }
-  }, [selectionData]);
+  }, [menuData]);
   
-  const isOpen = !!selectionData;
+  const isOpen = !!menuData;
 
   return (
     <TooltipProvider>
@@ -93,6 +93,7 @@ export function TextSelectionToolbar({ selectionData, onAction }: TextSelectionT
           top: `${position.top}px`,
           left: `${position.left}px`,
         }}
+        onClick={(e) => e.stopPropagation()} // Prevents the main click handler from closing the menu
       >
         {tools.map((tool) => (
             <Tooltip key={tool.name} delayDuration={300}>

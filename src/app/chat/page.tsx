@@ -138,7 +138,7 @@ export default function ChatPage() {
   const [personaPopoverOpen, setPersonaPopoverOpen] = useState(false);
   const [isHighlighting, setIsHighlighting] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
-  const [selectionData, setSelectionData] = useState<{ text: string; rect: DOMRect } | null>(null);
+  const [toolMenu, setToolMenu] = useState<{ text: string; rect: DOMRect } | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -336,41 +336,30 @@ export default function ChatPage() {
     }
   };
 
-  const handleMouseUp = () => {
-    setTimeout(() => {
-      const selection = window.getSelection();
-      const selectedText = selection?.toString().trim();
-
-      if (selectedText && selectedText.length > 10) {
-        const range = selection.getRangeAt(0);
-        if (range.startContainer.parentElement?.closest('form, input, textarea, button')) {
-          setSelectionData(null);
-          return;
-        }
-        const rect = range.getBoundingClientRect();
-        setSelectionData({ text: selectedText, rect });
-      } else {
-        setSelectionData(null);
-      }
-    }, 10);
+  const handleShowTools = (text: string, rect: DOMRect) => {
+    if (toolMenu?.text === text) {
+      setToolMenu(null);
+    } else {
+      setToolMenu({ text, rect });
+    }
   };
 
   const handleToolAction = async (tool: { name: string; action: string; value: any; }) => {
-    if (!selectionData) return;
-    const selectedText = selectionData.text;
+    if (!toolMenu) return;
+    const messageText = toolMenu.text;
 
-    setSelectionData(null); // Close toolbar
+    setToolMenu(null); // Close toolbar
 
     // For prompt-based tools, we create a new message and submit it.
     if (tool.action === 'prompt') {
-        const prompt = tool.value.replace('[SELECTED_TEXT]', selectedText);
+        const prompt = tool.value.replace('[SELECTED_TEXT]', messageText);
         await submitMessage(prompt, null);
     } 
     // For dedicated backend actions, we call the specific flow.
     else if (tool.action === 'rewrite') {
         const userMessage: ChatMessageProps = {
             role: 'user',
-            text: `${tool.name}: "${selectedText.substring(0, 50)}..."`,
+            text: `${tool.name}: "${messageText.substring(0, 50)}..."`,
             userAvatar: user?.photoURL,
             userName: user?.displayName || user?.email || 'User',
         };
@@ -379,7 +368,7 @@ export default function ChatPage() {
 
         try {
             const result = await rewriteText({
-                textToRewrite: selectedText,
+                textToRewrite: messageText,
                 style: tool.value,
                 persona: selectedPersonaId as Persona,
             });
@@ -402,7 +391,7 @@ export default function ChatPage() {
     } else if (tool.action === 'addCitations') {
         const userMessage: ChatMessageProps = {
             role: 'user',
-            text: `Add citations to: "${selectedText.substring(0, 50)}..."`,
+            text: `Add citations to: "${messageText.substring(0, 50)}..."`,
             userAvatar: user?.photoURL,
             userName: user?.displayName || user?.email || 'User',
         };
@@ -411,7 +400,7 @@ export default function ChatPage() {
 
         try {
             const result = await addCitations({
-                textToCite: selectedText,
+                textToCite: messageText,
                 citationStyle: tool.value, // e.g., 'APA'
                 persona: selectedPersonaId as Persona,
             });
@@ -433,7 +422,7 @@ export default function ChatPage() {
     } else if (tool.action === 'bulletPoints') {
         const userMessage: ChatMessageProps = {
             role: 'user',
-            text: `Convert to bullet points: "${selectedText.substring(0, 50)}..."`,
+            text: `Convert to bullet points: "${messageText.substring(0, 50)}..."`,
             userAvatar: user?.photoURL,
             userName: user?.displayName || user?.email || 'User',
         };
@@ -442,7 +431,7 @@ export default function ChatPage() {
 
         try {
             const result = await generateBulletPoints({
-                textToConvert: selectedText,
+                textToConvert: messageText,
                 persona: selectedPersonaId as Persona,
             });
             const formattedResult = result.bulletPoints.map(pt => `- ${pt}`).join('\n');
@@ -464,7 +453,7 @@ export default function ChatPage() {
     } else if (tool.action === 'counterarguments') {
         const userMessage: ChatMessageProps = {
             role: 'user',
-            text: `Find counterarguments for: "${selectedText.substring(0, 50)}..."`,
+            text: `Find counterarguments for: "${messageText.substring(0, 50)}..."`,
             userAvatar: user?.photoURL,
             userName: user?.displayName || user?.email || 'User',
         };
@@ -473,7 +462,7 @@ export default function ChatPage() {
 
         try {
             const result = await generateCounterarguments({
-                statementToChallenge: selectedText,
+                statementToChallenge: messageText,
                 persona: selectedPersonaId as Persona,
             });
             const formattedResult = result.counterarguments.map((arg, i) => `${i + 1}. ${arg}`).join('\n\n');
@@ -568,6 +557,12 @@ export default function ChatPage() {
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
+          onClick={(e) => {
+            // Close the tool menu if clicking outside of it
+            if (toolMenu && !(e.target as HTMLElement).closest('[role="toolbar"]')) {
+              setToolMenu(null);
+            }
+          }}
         >
            {isDraggingOver && (
             <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in">
@@ -589,8 +584,8 @@ export default function ChatPage() {
               <h2 className="font-bold text-sm md:text-base">New Chat</h2>
           </div>
 
-          <div className="flex-grow relative" onMouseUp={handleMouseUp}>
-            <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setSelectionData(null)}>
+          <div className="flex-grow relative">
+            <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
               <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
                 {messages.length <= 1 && !isMobile ? (
                   <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4 text-center">
@@ -610,7 +605,15 @@ export default function ChatPage() {
                   </div>
                 ) : (
                   messages.map((msg, index) => (
-                    <ChatMessage key={index} {...msg} />
+                    <ChatMessage
+                      key={index}
+                      {...msg}
+                      onShowTools={
+                        msg.role === 'model' && typeof msg.text === 'string'
+                          ? (rect) => handleShowTools(msg.text as string, rect)
+                          : undefined
+                      }
+                    />
                   ))
                 )}
                  {isLoading && <ChatMessage role="model" text={<div className="h-5 w-5 border-2 rounded-full border-t-transparent animate-spin"></div>} />}
@@ -749,7 +752,7 @@ export default function ChatPage() {
             </div>
           </div>
           <TextSelectionToolbar
-            selectionData={selectionData}
+            menuData={toolMenu}
             onAction={handleToolAction}
           />
         </div>

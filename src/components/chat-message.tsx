@@ -1,10 +1,12 @@
 
 'use client';
 
+import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot } from 'lucide-react';
+import { Bot, Sparkles } from 'lucide-react';
 import Image from 'next/image';
+import { Button } from './ui/button';
 
 export type ChatMessageProps = {
   role: 'user' | 'model';
@@ -12,10 +14,19 @@ export type ChatMessageProps = {
   image?: string | null;
   userAvatar?: string | null;
   userName?: string;
+  onShowTools?: (rect: DOMRect) => void;
 };
 
-export function ChatMessage({ role, text, image, userAvatar, userName }: ChatMessageProps) {
+export function ChatMessage({ role, text, image, userAvatar, userName, onShowTools }: ChatMessageProps) {
   const isUser = role === 'user';
+  const toolsButtonRef = React.useRef<HTMLButtonElement>(null);
+
+  const handleToolButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // prevent closing the menu if it was just opened
+    if (toolsButtonRef.current && onShowTools) {
+      onShowTools(toolsButtonRef.current.getBoundingClientRect());
+    }
+  };
   
   return (
     <div className={cn('flex items-start gap-3 animate-in fade-in-50 slide-in-from-bottom-2 duration-500', isUser && 'justify-end')}>
@@ -24,20 +35,34 @@ export function ChatMessage({ role, text, image, userAvatar, userName }: ChatMes
             <AvatarFallback><Bot/></AvatarFallback>
         </Avatar>
       )}
-      <div
-        style={{ lineHeight: 1.5 }}
-        className={cn(
-          'max-w-xl rounded-xl p-3 text-sm',
-          isUser
-            ? 'bg-input text-primary'
-            : 'bg-muted'
-        )}
-      >
-        {typeof text === 'string' ? <p className="whitespace-pre-wrap">{text}</p> : text}
-        {image && (
-            <div className="mt-2 relative h-48 w-48">
-                <Image src={image} alt="User upload" layout="fill" className="rounded-md object-contain" />
-            </div>
+      <div className="flex flex-col items-start gap-1 group/message">
+        <div
+          style={{ lineHeight: 1.5 }}
+          className={cn(
+            'max-w-xl rounded-xl p-3 text-sm',
+            isUser
+              ? 'bg-input text-primary'
+              : 'bg-muted'
+          )}
+        >
+          {typeof text === 'string' ? <p className="whitespace-pre-wrap">{text}</p> : text}
+          {image && (
+              <div className="mt-2 relative h-48 w-48">
+                  <Image src={image} alt="User upload" layout="fill" className="rounded-md object-contain" />
+              </div>
+          )}
+        </div>
+        {!isUser && typeof text === 'string' && onShowTools && (
+            <Button
+                ref={toolsButtonRef}
+                variant="ghost"
+                size="sm"
+                className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground opacity-0 group-hover/message:opacity-100 focus-within:opacity-100 transition-opacity"
+                onClick={handleToolButtonClick}
+            >
+                <Sparkles className="h-3 w-3 mr-1" />
+                Tools
+            </Button>
         )}
       </div>
       {isUser && (
