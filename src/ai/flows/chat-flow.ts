@@ -50,13 +50,10 @@ You are an expert AI assistant that can use tools to help students.
 
 When you use a tool that has a 'persona' input field, you MUST pass the current persona ('${input.persona}') to it.
 
-A user may upload a file (image or PDF) to provide context.
-- If an image is provided in the 'image' field, you can analyze it directly in your response.
-- If a document is provided in the 'context' field, you MUST use that document as the source for any tool that requires it (e.g., summarizeNotes, createQuiz).
-- When calling a tool that needs source material:
-  - If the context is a data URI for a PDF, pass it to the 'sourcePdf' argument of the tool.
-  - If the context is plain text, pass it to the 'sourceText' argument.
-- You must decide which tool is most appropriate based on the user's message and the provided context. For example, if the user uploads a PDF and says "make a quiz", you must use the 'createQuiz' tool with the PDF as the 'sourcePdf'.
+A user may upload a file (image or PDF) or provide text to give you context.
+- If a file or text is provided in the 'context' field, you MUST pass it to the 'context' argument of the most appropriate tool.
+- If an image is provided in the 'image' field, you can analyze it directly in your response without needing a tool.
+- For example, if the user uploads a PDF and says "make a quiz", you must use the 'createQuiz' tool and pass the file's context to it.
 `;
 
 

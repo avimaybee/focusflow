@@ -10,10 +10,20 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { PersonaSchema } from './chat-types';
 
-export const CreateDiscussionPromptsInputSchema = z.object({
-  sourceText: z.string().min(50).describe('The source text to generate discussion prompts from.'),
-  persona: PersonaSchema.optional().describe('The AI persona to adopt when generating the prompts.'),
-});
+export const CreateDiscussionPromptsInputSchema = z
+  .object({
+    sourceText: z.string().optional().describe('The source text to generate discussion prompts from.'),
+    sourcePdf: z
+      .string()
+      .optional()
+      .describe(
+        "A PDF file of notes, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:application/pdf;base64,<encoded_data>'."
+      ),
+    persona: PersonaSchema.optional().describe('The AI persona to adopt when generating the prompts.'),
+  })
+  .refine(data => data.sourceText || data.sourcePdf, {
+    message: 'Either text or a PDF must be provided.',
+  });
 export type CreateDiscussionPromptsInput = z.infer<typeof CreateDiscussionPromptsInputSchema>;
 
 const PromptSchema = z.object({
@@ -51,10 +61,16 @@ Create a mix of the following types of prompts:
 
 Generate between 5 and 7 prompts in total.
 
+{{#if sourceText}}
 Source Text:
 ---
 {{{sourceText}}}
 ---
+{{/if}}
+
+{{#if sourcePdf}}
+Source Document: {{media url=sourcePdf}}
+{{/if}}
 `,
 });
 
