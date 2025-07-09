@@ -5,9 +5,9 @@
  * - CreateFlashcardsInput - The input type for the createFlashcards function.
  * - CreateFlashcardsOutput - The return type for the createFlashcards function.
  */
-
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { PersonaSchema } from './chat-types';
 
 export const CreateFlashcardsInputSchema = z
   .object({
@@ -18,8 +18,9 @@ export const CreateFlashcardsInputSchema = z
       .describe(
         "A PDF file of notes, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:application/pdf;base64,<encoded_data>'."
       ),
+    persona: PersonaSchema.optional().describe('The AI persona to adopt when generating the flashcards.'),
   })
-  .refine((data) => data.sourceText || data.sourcePdf, {
+  .refine(async (data) => data.sourceText || data.sourcePdf, {
     message: 'Either text notes or a PDF must be provided.',
   });
 export type CreateFlashcardsInput = z.infer<typeof CreateFlashcardsInputSchema>;
@@ -45,6 +46,15 @@ const prompt = ai.definePrompt({
   input: {schema: CreateFlashcardsInputSchema},
   output: {schema: CreateFlashcardsOutputSchema},
   prompt: `You are an expert educator specializing in creating effective study materials. Your task is to generate a set of high-quality, concise flashcards from the provided notes.
+
+{{#if persona}}
+You must adopt the persona of a {{persona}} when generating the flashcards.
+- A 'tutor' creates clear, precise question/answer pairs.
+- A 'creative' coach might frame questions in more imaginative ways.
+- A 'gen-z' mentor might use more casual language or examples.
+- A 'socratic' guide's questions might lead to more questions.
+- A 'neutral' assistant provides standard, objective flashcards.
+{{/if}}
 
 For each flashcard, create a clear question that tests a key concept, and a direct, accurate answer.
 

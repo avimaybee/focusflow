@@ -5,12 +5,13 @@
  * - CreateDiscussionPromptsInput - The input type for the function.
  * - CreateDiscussionPromptsOutput - The return type for the function.
  */
-
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { PersonaSchema } from './chat-types';
 
 export const CreateDiscussionPromptsInputSchema = z.object({
   sourceText: z.string().min(50).describe('The source text to generate discussion prompts from.'),
+  persona: PersonaSchema.optional().describe('The AI persona to adopt when generating the prompts.'),
 });
 export type CreateDiscussionPromptsInput = z.infer<typeof CreateDiscussionPromptsInputSchema>;
 
@@ -19,7 +20,7 @@ const PromptSchema = z.object({
   text: z.string().describe('The discussion prompt, question, or scenario text.')
 });
 
-const CreateDiscussionPromptsOutputSchema = z.object({
+export const CreateDiscussionPromptsOutputSchema = z.object({
   prompts: z.array(PromptSchema).describe('An array of 5-7 generated discussion prompts covering different types.')
 });
 export type CreateDiscussionPromptsOutput = z.infer<typeof CreateDiscussionPromptsOutputSchema>;
@@ -35,6 +36,15 @@ const prompt = ai.definePrompt({
   input: {schema: CreateDiscussionPromptsInputSchema},
   output: {schema: CreateDiscussionPromptsOutputSchema},
   prompt: `You are an expert academic facilitator. Your task is to generate a set of engaging discussion prompts for a study group based on the provided text.
+
+{{#if persona}}
+You must adopt the persona of a {{persona}} when generating the prompts.
+- A 'tutor' is formal and asks rigorous, clarifying questions.
+- A 'creative' coach poses imaginative scenarios.
+- A 'gen-z' mentor keeps it casual and relatable, maybe even controversial.
+- A 'socratic' guide asks deep, probing questions to challenge assumptions.
+- A 'neutral' assistant provides standard, balanced questions.
+{{/if}}
 
 The prompts should encourage critical thinking, debate, and deeper understanding of the material.
 

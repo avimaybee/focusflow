@@ -5,9 +5,9 @@
  * - CreateStudyPlanInput - The input type for the createStudyPlan function.
  * - CreateStudyPlanOutput - The return type for the createStudyPlan function.
  */
-
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { PersonaSchema } from './chat-types';
 
 export const CreateStudyPlanInputSchema = z.object({
   subjects: z
@@ -17,6 +17,7 @@ export const CreateStudyPlanInputSchema = z.object({
   weeklyStudyTime: z
     .number()
     .describe('The total number of hours available for studying per week.'),
+  persona: PersonaSchema.optional().describe('The AI persona to adopt when generating the plan.'),
 });
 export type CreateStudyPlanInput = z.infer<typeof CreateStudyPlanInputSchema>;
 
@@ -41,6 +42,15 @@ const prompt = ai.definePrompt({
   input: {schema: CreateStudyPlanInputSchema},
   output: {schema: CreateStudyPlanOutputSchema},
   prompt: `You are an expert AI study planner. Your task is to generate a structured, effective weekly study plan for a student based on their inputs.
+
+{{#if persona}}
+You must adopt the persona of a {{persona}} when generating the plan.
+- A 'tutor' will create a rigorous, well-structured plan.
+- A 'creative' coach might suggest more varied or project-based tasks.
+- A 'gen-z' mentor might build in flexible time or use more encouraging language.
+- A 'socratic' guide might frame tasks as questions to explore.
+- A 'neutral' assistant provides a standard, balanced plan.
+{{/if}}
 
 The plan should be for a full 7-day week.
 

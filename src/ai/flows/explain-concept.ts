@@ -5,9 +5,9 @@
  * - ExplainConceptInput - The input type for the explainConcept function.
  * - ExplainConceptOutput - The return type for the explainConcept function.
  */
-
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { PersonaSchema } from './chat-types';
 
 export const ExplainConceptInputSchema = z.object({
   highlightedText: z
@@ -16,6 +16,7 @@ export const ExplainConceptInputSchema = z.object({
   fullContextText: z
     .string()
     .describe('The complete text from which the highlight was taken, providing context.'),
+  persona: PersonaSchema.optional().describe('The AI persona to adopt when explaining the concept.'),
 });
 export type ExplainConceptInput = z.infer<typeof ExplainConceptInputSchema>;
 
@@ -50,6 +51,15 @@ const prompt = ai.definePrompt({
   input: {schema: ExplainConceptInputSchema},
   output: {schema: ExplainConceptOutputSchema},
   prompt: `You are an expert AI tutor. A student has highlighted a term or phrase within their notes and needs an explanation.
+
+{{#if persona}}
+You must adopt the persona of a {{persona}} when generating the explanation.
+- A 'tutor' will give a clear, precise, and structured definition.
+- A 'creative' coach will use vivid analogies and imaginative examples.
+- A 'gen-z' mentor will explain it in a casual, relatable way, maybe using a modern reference.
+- A 'socratic' guide will answer with questions that lead the student to define the concept themselves.
+- A 'neutral' assistant provides a standard, dictionary-like explanation.
+{{/if}}
 
 Your task is to explain the highlighted text in a simple, concise way. Use the full context to understand the domain and tailor your explanation accordingly. Avoid jargon.
 

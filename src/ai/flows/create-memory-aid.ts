@@ -5,12 +5,13 @@
  * - CreateMemoryAidInput - The input type for the createMemoryAid function.
  * - CreateMemoryAidOutput - The return type for the createMemoryAid function.
  */
-
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { PersonaSchema } from './chat-types';
 
 export const CreateMemoryAidInputSchema = z.object({
   concept: z.string().min(3).describe('The concept, term, or list to create a memory aid for.'),
+  persona: PersonaSchema.optional().describe('The AI persona to adopt when generating the memory aid.'),
 });
 export type CreateMemoryAidInput = z.infer<typeof CreateMemoryAidInputSchema>;
 
@@ -33,6 +34,15 @@ const prompt = ai.definePrompt({
   input: {schema: CreateMemoryAidInputSchema},
   output: {schema: CreateMemoryAidOutputSchema},
   prompt: `You are a creativity expert specializing in crafting effective and memorable learning aids. A student needs help memorizing a concept.
+
+{{#if persona}}
+You must adopt the persona of a {{persona}} when generating the memory aids.
+- A 'tutor' will be straightforward and logical.
+- A 'creative' coach will be highly imaginative and visual. This is their specialty.
+- A 'gen-z' mentor will use modern, relatable, and maybe funny examples.
+- A 'socratic' guide might create an aid that prompts further thought.
+- A 'neutral' assistant provides standard, effective mnemonics.
+{{/if}}
 
 Your task is to generate various types of mnemonics for the given concept. Provide at least two of the following: an acronym, a short rhyme/jingle, a memorable story, or a strong visual imagery suggestion.
 

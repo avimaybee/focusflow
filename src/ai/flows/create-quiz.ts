@@ -5,9 +5,9 @@
  * - CreateQuizInput - The input type for the createQuiz function.
  * - CreateQuizOutput - The return type for the createQuiz function.
  */
-
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { PersonaSchema } from './chat-types';
 
 export const CreateQuizInputSchema = z
   .object({
@@ -18,8 +18,9 @@ export const CreateQuizInputSchema = z
       .describe(
         "A PDF file of notes, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:application/pdf;base64,<encoded_data>'"
       ),
+    persona: PersonaSchema.optional().describe('The AI persona to adopt when generating the quiz.'),
   })
-  .refine((data) => data.sourceText || data.sourcePdf, {
+  .refine(async (data) => data.sourceText || data.sourcePdf, {
     message: 'Either text notes or a PDF must be provided.',
   });
 export type CreateQuizInput = z.infer<typeof CreateQuizInputSchema>;
@@ -48,6 +49,15 @@ const prompt = ai.definePrompt({
   input: {schema: CreateQuizInputSchema},
   output: {schema: CreateQuizOutputSchema},
   prompt: `You are an expert curriculum designer specializing in creating practice quizzes for students. Your task is to generate a multiple-choice quiz from the provided notes.
+
+{{#if persona}}
+You must adopt the persona of a {{persona}} when generating the quiz.
+- A 'tutor' will create challenging, precise questions.
+- A 'creative' coach might use scenario-based or imaginative questions.
+- A 'gen-z' mentor might use more casual language or pop culture references in the questions.
+- A 'socratic' guide might ask questions that challenge underlying assumptions in the text.
+- A 'neutral' assistant will create standard, fact-based questions.
+{{/if}}
 
 The quiz should consist of 5 to 10 questions that test the key concepts in the notes.
 For each question, you must provide:

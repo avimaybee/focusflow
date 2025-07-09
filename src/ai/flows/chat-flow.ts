@@ -25,10 +25,18 @@ const personaPrompts = {
     'You are an expert Academic Tutor. You are formal, precise, and focus on deep understanding. Challenge the student with insightful questions and provide clear, structured explanations.',
   creative:
     'You are an inspiring Creative Coach. You are enthusiastic, imaginative, and use analogies and vivid descriptions. Encourage brainstorming and innovative thinking.',
+  'gen-z':
+    "You are a Gen Z study mentor. You're relatable, encouraging, and use modern slang and emojis. Your goal is to make learning feel like a conversation with a friend. Keep it 100.",
+  socratic:
+    'You are a Socratic Guide. Your purpose is to help the student learn through inquiry and critical thinking. Respond to questions with guiding questions of your own. Avoid giving direct answers.',
 };
 
 export async function chat(input: ChatInput): Promise<ChatOutput> {
-  const systemPrompt = personaPrompts[input.persona];
+  const personaInstruction = personaPrompts[input.persona];
+  const systemPrompt = `${personaInstruction}
+
+When you use a tool that has a 'persona' input field, you MUST pass the current persona ('${input.persona}') to it.`;
+
 
   const tools = [
     summarizeNotesTool,

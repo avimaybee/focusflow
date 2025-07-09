@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Plus, MessageSquare, Bot, GraduationCap, Sparkles } from 'lucide-react';
+import { Send, Plus, MessageSquare, Bot, GraduationCap, Sparkles, HandHeart, Scale } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -48,6 +48,18 @@ const personas = [
     name: 'Creative Coach',
     icon: <Sparkles className="h-5 w-5" />,
     initialMessage: "Ready for some inspiration? As your Creative Coach, I can help you brainstorm ideas, create memory aids, and find new ways to approach your studies. Let's get creative!",
+  },
+  {
+    id: 'gen-z',
+    name: 'Gen Z Mentor',
+    icon: <HandHeart className="h-5 w-5" />,
+    initialMessage: "Ayo! I'm your study homie. Drop your questions, notes, whatever. We'll get this bread, no cap. Let's make learning a vibe. ✨",
+  },
+  {
+    id: 'socratic',
+    name: 'Socratic Guide',
+    icon: <Scale className="h-5 w-5" />,
+    initialMessage: "I am here not to provide answers, but to help you find them. Through dialogue, we can uncover the knowledge you seek. What is the first question you wish to explore?",
   }
 ];
 

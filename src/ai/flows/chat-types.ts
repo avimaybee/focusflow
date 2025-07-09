@@ -1,6 +1,6 @@
 import {z} from 'genkit';
 
-export const PersonaSchema = z.enum(['neutral', 'tutor', 'creative']);
+export const PersonaSchema = z.enum(['neutral', 'tutor', 'creative', 'gen-z', 'socratic']);
 export type Persona = z.infer<typeof PersonaSchema>;
 
 const ChatMessageSchema = z.object({
