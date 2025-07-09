@@ -456,19 +456,44 @@ export default function ChatPage() {
           <div className="p-4 bg-background/95 w-full">
             <div className="max-w-4xl mx-auto">
                 {attachment && (
-                    <div className="relative mb-2 w-full border rounded-md p-2 flex items-center gap-3">
-                        {attachment.type.startsWith('image/') ? (
-                           <Image src={attachment.preview} alt={attachment.name} width={40} height={40} className="object-contain rounded-md" />
-                        ) : (
-                           <FileIcon className="h-8 w-8 text-muted-foreground" />
-                        )}
-                        <div className="flex-1 text-sm text-muted-foreground truncate">
-                           {attachment.name}
-                        </div>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => setAttachment(null)}>
-                            <X className="h-4 w-4" />
-                        </Button>
+                  <div role="list" className="mb-2">
+                    <div
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Delete' || e.key === 'Backspace') {
+                          setAttachment(null);
+                          e.preventDefault();
+                        }
+                      }}
+                      className="group/pill inline-flex items-center gap-2 rounded-full border bg-muted/50 p-1.5 pr-1 text-sm text-muted-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+                      role="listitem"
+                      aria-label={`Attached file: ${attachment.name}. Press Delete to remove.`}
+                    >
+                      {attachment.type.startsWith('image/') ? (
+                        <Image
+                          src={attachment.preview}
+                          alt={attachment.name}
+                          width={24}
+                          height={24}
+                          className="h-6 w-6 rounded-full object-cover"
+                        />
+                      ) : (
+                        <FileIcon className="h-6 w-6 text-muted-foreground p-0.5" />
+                      )}
+                      <span className="max-w-[20ch] truncate">
+                        {attachment.name}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 rounded-full shrink-0"
+                        onClick={() => setAttachment(null)}
+                        aria-label={`Remove file ${attachment.name}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
+                  </div>
                 )}
                 <form
                   onSubmit={handleSendMessage}
