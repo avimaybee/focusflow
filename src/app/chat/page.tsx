@@ -15,6 +15,7 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
@@ -36,17 +37,73 @@ const personas = [
     name: 'Neutral Assistant',
     icon: <Bot className="h-5 w-5" />,
     initialMessage: "Hello! I'm your AI study partner. How can I help you today? You can ask me to summarize notes, create a quiz, build a study plan, and much more.",
+    useCase: "Best for general questions, straightforward tasks, and when you need a reliable, no-frills AI assistant.",
   },
-  { id: 'five-year-old', name: "Explain Like I'm 5", icon: <Baby className="h-5 w-5" />, initialMessage: "Hi there! I can explain big things using small, simple words. What do you want to learn about? It'll be super easy!" },
-  { id: 'casual', name: 'Casual Conversationalist', icon: <Coffee className="h-5 w-5" />, initialMessage: "Hey! Let's just chat about what you're studying. No pressure, no lectures. What's on your mind?" },
-  { id: 'entertaining', name: 'Entertaining Educator', icon: <Sparkles className="h-5 w-5" />, initialMessage: "Ready for a study session that's actually fun? I'll bring the jokes and pop culture refs. What topic are we making awesome today?" },
-  { id: 'brutally-honest', name: 'Brutally Honest Mentor', icon: <Filter className="h-5 w-5" />, initialMessage: "Alright, no holding back. Show me what you've got, and I'll tell you what needs work. Prepare for some tough love." },
-  { id: 'straight-shooter', name: 'Straight Shooter', icon: <List className="h-5 w-5" />, initialMessage: "Let's cut to the chase. No fluff, just facts and bullet points. What information do you need, right now?" },
-  { id: 'essay-sharpshooter', name: 'Essay Sharpshooter', icon: <PenSquare className="h-5 w-5" />, initialMessage: "I am ready to assist with academic writing. I can help structure your arguments, refine your thesis, and outline your essay. What is your topic?" },
-  { id: 'idea-generator', name: 'Idea Generator', icon: <Lightbulb className="h-5 w-5" />, initialMessage: "Feeling stuck? Let's brainstorm! I can help you generate creative ideas and explore new angles. What's our topic?" },
-  { id: 'cram-buddy', name: 'Cram Buddy', icon: <Timer className="h-5 w-5" />, initialMessage: "Time is short, let's go! I'll give you the high-impact facts and memory aids you need to ace this. What subject are we cramming?" },
-  { id: 'sassy', name: 'Sassy Teaching Assistant', icon: <Flame className="h-5 w-5" />, initialMessage: "Ugh, fine, I'll help you study. Just try to keep up. What concept are we conquering today, genius?" },
+  { 
+    id: 'five-year-old', 
+    name: "Explain Like I'm 5", 
+    icon: <Baby className="h-5 w-5" />, 
+    initialMessage: "Hi there! I can explain big things using small, simple words. What do you want to learn about? It'll be super easy!",
+    useCase: "Use this mode to break down complex, technical, or abstract topics into simple, easy-to-grasp concepts.",
+  },
+  { 
+    id: 'casual', 
+    name: 'Casual Conversationalist', 
+    icon: <Coffee className="h-5 w-5" />, 
+    initialMessage: "Hey! Let's just chat about what you're studying. No pressure, no lectures. What's on your mind?",
+    useCase: "Ideal for low-pressure brainstorming, exploring ideas, or when you want to discuss a topic in a relaxed, friendly way.",
+  },
+  { 
+    id: 'entertaining', 
+    name: 'Entertaining Educator', 
+    icon: <Sparkles className="h-5 w-5" />, 
+    initialMessage: "Ready for a study session that's actually fun? I'll bring the jokes and pop culture refs. What topic are we making awesome today?",
+    useCase: "Perfect for making dry or dense subjects more engaging. A great way to stay motivated and have fun while learning.",
+  },
+  { 
+    id: 'brutally-honest', 
+    name: 'Brutally Honest Mentor', 
+    icon: <Filter className="h-5 w-5" />, 
+    initialMessage: "Alright, no holding back. Show me what you've got, and I'll tell you what needs work. Prepare for some tough love.",
+    useCase: "Use when you need direct, unfiltered feedback on your essays, arguments, or practice responses. No sugarcoating.",
+  },
+  { 
+    id: 'straight-shooter', 
+    name: 'Straight Shooter', 
+    icon: <List className="h-5 w-5" />, 
+    initialMessage: "Let's cut to the chase. No fluff, just facts and bullet points. What information do you need, right now?",
+    useCase: "Best for when you need key information fast. Ask for summaries, definitions, or lists for concise, to-the-point answers.",
+  },
+  { 
+    id: 'essay-sharpshooter', 
+    name: 'Essay Sharpshooter', 
+    icon: <PenSquare className="h-5 w-5" />, 
+    initialMessage: "I am ready to assist with academic writing. I can help structure your arguments, refine your thesis, and outline your essay. What is your topic?",
+    useCase: "Your go-to for any writing task. Use it for help with outlines, thesis statements, paragraph structure, and formal tone.",
+  },
+  { 
+    id: 'idea-generator', 
+    name: 'Idea Generator', 
+    icon: <Lightbulb className="h-5 w-5" />, 
+    initialMessage: "Feeling stuck? Let's brainstorm! I can help you generate creative ideas and explore new angles. What's our topic?",
+    useCase: "Perfect for the start of a project. Use it to brainstorm essay topics, research questions, or creative solutions.",
+  },
+  { 
+    id: 'cram-buddy', 
+    name: 'Cram Buddy', 
+    icon: <Timer className="h-5 w-5" />, 
+    initialMessage: "Time is short, let's go! I'll give you the high-impact facts and memory aids you need to ace this. What subject are we cramming?",
+    useCase: "For last-minute exam prep. It will deliver key facts, mnemonics, and high-yield information for rapid review.",
+  },
+  { 
+    id: 'sassy', 
+    name: 'Sassy Teaching Assistant', 
+    icon: <Flame className="h-5 w-5" />, 
+    initialMessage: "Ugh, fine, I'll help you study. Just try to keep up. What concept are we conquering today, genius?",
+    useCase: "When you need a study break with a side of humor. Adds a witty, irreverent twist to explanations and answers.",
+  },
 ];
+
 
 export default function ChatPage() {
   const { user, preferredPersona } = useAuth();
@@ -238,7 +295,7 @@ export default function ChatPage() {
             <ScrollArea className="absolute inset-0" ref={scrollAreaRef}>
               <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
                 {messages.length <= 1 && !isMobile ? (
-                  <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] text-center">
+                  <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4 text-center">
                     <div className="p-4 rounded-full bg-primary/10 mb-4 border">
                       {selectedPersona.icon}
                     </div>
@@ -246,8 +303,14 @@ export default function ChatPage() {
                       {selectedPersona.name}
                     </h1>
                      <p className="text-muted-foreground mt-2 max-w-md">
-                        {selectedPersona.initialMessage.split(' ')[0]} Start by typing a message below.
+                        {selectedPersona.initialMessage}
                     </p>
+                    <Card className="mt-6 max-w-md w-full text-left bg-muted">
+                        <CardContent className="p-4">
+                            <p className="font-bold text-sm text-foreground">Best for:</p>
+                            <p className="text-muted-foreground text-sm mt-1">{selectedPersona.useCase}</p>
+                        </CardContent>
+                    </Card>
                   </div>
                 ) : (
                   messages.map((msg, index) => (
