@@ -11,14 +11,14 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { PersonaSchema } from './chat-types';
 
-export const RewriteTextInputSchema = z.object({
+const RewriteTextInputSchema = z.object({
   textToRewrite: z.string().describe('The text to be rewritten.'),
   style: z.string().describe('The desired style for the rewritten text (e.g., "clearer and more concise", "more formal", "like a story").'),
   persona: PersonaSchema.optional().describe('The AI persona to adopt when rewriting.'),
 });
 export type RewriteTextInput = z.infer<typeof RewriteTextInputSchema>;
 
-export const RewriteTextOutputSchema = z.object({
+const RewriteTextOutputSchema = z.object({
   rewrittenText: z.string().describe('The rewritten text.'),
 });
 export type RewriteTextOutput = z.infer<typeof RewriteTextOutputSchema>;
