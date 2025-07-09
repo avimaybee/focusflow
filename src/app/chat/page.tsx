@@ -24,11 +24,12 @@ import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { chat } from '@/ai/flows/chat-flow';
 import { updateUserPersona } from '@/lib/user-actions';
 import type { ChatInput, Persona } from '@/ai/flows/chat-types';
 import { PromptLibrary } from '@/components/prompt-library';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 
 const personas = [
@@ -119,6 +120,7 @@ export default function ChatPage() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [personaPopoverOpen, setPersonaPopoverOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
@@ -273,22 +275,6 @@ export default function ChatPage() {
           
           <div className="p-2 px-4 border-b flex items-center justify-between gap-2 bg-[#1A1A1A] border-b border-[#2A2A2A] z-10 h-14">
               <h2 className="font-bold text-sm md:text-base">New Chat</h2>
-              <Select value={selectedPersonaId} onValueChange={setSelectedPersonaId}>
-                  <SelectTrigger className="w-auto h-9 gap-2">
-                      {selectedPersona.icon}
-                      <SelectValue placeholder="Select Persona" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {personas.map((persona) => (
-                        <SelectItem key={persona.id} value={persona.id}>
-                            <div className="flex items-center gap-2">
-                                {persona.icon}
-                                <span>{persona.name}</span>
-                            </div>
-                        </SelectItem>
-                    ))}
-                  </SelectContent>
-              </Select>
           </div>
 
           <div className="flex-grow relative">
@@ -327,6 +313,48 @@ export default function ChatPage() {
                   className="relative"
                 >
                   <div className="flex items-end gap-2 p-2 rounded-2xl bg-card shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
+                    <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-12 w-12 shrink-0 rounded-full" aria-label="Select Persona">
+                                {selectedPersona.icon}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 mb-2">
+                            <div className="grid gap-4">
+                                <div className="space-y-1">
+                                    <h4 className="font-medium leading-none">Select a Study Mode</h4>
+                                    <p className="text-sm text-muted-foreground">
+                                        Change the AI's tone and response style.
+                                    </p>
+                                </div>
+                                <ScrollArea className="h-72 -mx-4">
+                                    <div className="grid gap-1 px-4">
+                                        {personas.map((persona) => (
+                                            <button
+                                                key={persona.id}
+                                                className={cn(
+                                                    'flex w-full cursor-pointer items-start gap-3 rounded-md p-2 text-left transition-colors hover:bg-muted',
+                                                    selectedPersonaId === persona.id && 'bg-muted'
+                                                )}
+                                                onClick={() => {
+                                                    setSelectedPersonaId(persona.id as Persona);
+                                                    setPersonaPopoverOpen(false);
+                                                }}
+                                            >
+                                                <div className="p-2 bg-primary/10 rounded-md mt-1">
+                                                    {persona.icon}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-semibold">{persona.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{persona.useCase}</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </ScrollArea>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                     <PromptLibrary
                       onSelectPrompt={(prompt) => {
                         setInput((prev) => prev + prompt);
