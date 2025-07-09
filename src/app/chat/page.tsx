@@ -35,6 +35,8 @@ import { useToast } from '@/hooks/use-toast';
 import { TextSelectionToolbar } from '@/components/text-selection-toolbar';
 import { rewriteText } from '@/ai/flows/rewrite-text';
 import { addCitations } from '@/ai/flows/add-citations';
+import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
+import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
 
 type Attachment = {
   preview: string; // URL for image previews, or name for other files
@@ -423,6 +425,68 @@ export default function ChatPage() {
               variant: 'destructive',
               title: 'Citation Failed',
               description: 'Could not add citations. Please try again.',
+            });
+            setMessages(prev => prev.slice(0, prev.length - 1));
+        } finally {
+            setIsLoading(false);
+        }
+    } else if (tool.action === 'bulletPoints') {
+        const userMessage: ChatMessageProps = {
+            role: 'user',
+            text: `Convert to bullet points: "${selectedText.substring(0, 50)}..."`,
+            userAvatar: user?.photoURL,
+            userName: user?.displayName || user?.email || 'User',
+        };
+        setMessages(prev => [...prev, userMessage]);
+        setIsLoading(true);
+
+        try {
+            const result = await generateBulletPoints({
+                textToConvert: selectedText,
+                persona: selectedPersonaId as Persona,
+            });
+            const formattedResult = result.bulletPoints.map(pt => `- ${pt}`).join('\n');
+            setMessages(prev => [
+                ...prev,
+                { role: 'model', text: formattedResult },
+            ]);
+        } catch (error) {
+            console.error('Error generating bullet points:', error);
+            toast({
+              variant: 'destructive',
+              title: 'Transformation Failed',
+              description: 'Could not convert to bullet points. Please try again.',
+            });
+            setMessages(prev => prev.slice(0, prev.length - 1));
+        } finally {
+            setIsLoading(false);
+        }
+    } else if (tool.action === 'counterarguments') {
+        const userMessage: ChatMessageProps = {
+            role: 'user',
+            text: `Find counterarguments for: "${selectedText.substring(0, 50)}..."`,
+            userAvatar: user?.photoURL,
+            userName: user?.displayName || user?.email || 'User',
+        };
+        setMessages(prev => [...prev, userMessage]);
+        setIsLoading(true);
+
+        try {
+            const result = await generateCounterarguments({
+                statementToChallenge: selectedText,
+                persona: selectedPersonaId as Persona,
+            });
+            const formattedResult = result.counterarguments.map((arg, i) => `${i + 1}. ${arg}`).join('\n\n');
+            setMessages(prev => [
+                ...prev,
+                { role: 'model', text: formattedResult },
+            ]);
+        } catch (error) {
+            console.error('Error generating counterarguments:', error);
+            toast({
+              variant: 'destructive',
+              title: 'Transformation Failed',
+              description: 'Could not generate counterarguments. Please try again.',
             });
             setMessages(prev => prev.slice(0, prev.length - 1));
         } finally {

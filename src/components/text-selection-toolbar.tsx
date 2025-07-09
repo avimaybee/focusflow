@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Bot, List, MessageSquare, Sparkles, Quote } from 'lucide-react';
+import { Bot, List, MessageSquare, Sparkles, Quote, ListTodo, Scale } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tools = [
@@ -37,6 +37,18 @@ const tools = [
     action: 'addCitations',
     value: 'APA',
     icon: <Quote className="h-4 w-4" />,
+  },
+  {
+    name: 'To Bullets',
+    action: 'bulletPoints',
+    value: '', // no value needed
+    icon: <ListTodo className="h-4 w-4" />,
+  },
+  {
+    name: 'Counterarguments',
+    action: 'counterarguments',
+    value: '', // no value needed
+    icon: <Scale className="h-4 w-4" />,
   },
 ];
 
