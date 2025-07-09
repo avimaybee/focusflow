@@ -263,16 +263,16 @@ export default function ChatPage() {
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col h-[100dvh]">
-          <header className="p-2 border-b flex items-center gap-2 md:hidden sticky top-0 bg-background z-10">
+          <header className="p-2 border-b flex items-center gap-2 md:hidden sticky top-0 bg-[#1A1A1A] border-b border-[#2A2A2A] z-10">
             <SidebarTrigger />
             <div className="flex items-center gap-2">
                 <Logo className="h-6 w-6" />
-                <span className="font-bold font-headline">FocusFlow AI</span>
+                <span className="font-bold">FocusFlow AI</span>
             </div>
           </header>
           
-          <div className="p-2 px-4 border-b flex items-center justify-between gap-2 bg-background z-10">
-              <h2 className="font-bold font-headline text-sm md:text-base">New Chat</h2>
+          <div className="p-2 px-4 border-b flex items-center justify-between gap-2 bg-[#1A1A1A] border-b border-[#2A2A2A] z-10">
+              <h2 className="font-bold text-sm md:text-base">New Chat</h2>
               <Select value={selectedPersonaId} onValueChange={setSelectedPersonaId}>
                   <SelectTrigger className="w-auto h-9 gap-2">
                       {selectedPersona.icon}
@@ -299,7 +299,7 @@ export default function ChatPage() {
                     <div className="p-4 rounded-full bg-primary/10 mb-4 border">
                       {selectedPersona.icon}
                     </div>
-                    <h1 className="text-2xl font-bold font-headline">
+                    <h1 className="text-2xl font-bold">
                       {selectedPersona.name}
                     </h1>
                      <p className="text-muted-foreground mt-2 max-w-md">
@@ -328,7 +328,7 @@ export default function ChatPage() {
                   onSubmit={handleSendMessage}
                   className="relative"
                 >
-                  <div className="flex items-end gap-2 p-2 rounded-xl border bg-muted/50 focus-within:ring-2 focus-within:ring-ring transition-shadow">
+                  <div className="flex items-end gap-2 p-2 rounded-xl bg-card shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
                     <Textarea
                         ref={textareaRef}
                         value={input}
@@ -346,7 +346,7 @@ export default function ChatPage() {
                     <Button
                         type="submit"
                         size="icon"
-                        className="h-8 w-8 shrink-0"
+                        className="h-12 w-12 shrink-0 rounded-full hover:scale-110 transition-transform"
                         disabled={!input.trim() || isLoading}
                     >
                         <Send />

@@ -1,3 +1,4 @@
+
 import type { Config } from 'tailwindcss';
 
 const config = {
@@ -18,8 +19,7 @@ const config = {
     },
     extend: {
       fontFamily: {
-        body: ['"PT Sans"', 'sans-serif'],
-        headline: ['"Poppins"', 'sans-serif'],
+        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',

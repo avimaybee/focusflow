@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -29,7 +30,7 @@ const LandingHeader = () => (
     <div className="container mx-auto flex h-16 items-center justify-between px-4">
       <Link href="/" className="flex items-center gap-2">
         <Logo className="h-8 w-8" />
-        <span className="font-bold font-headline text-lg">FocusFlow AI</span>
+        <span className="font-bold text-lg">FocusFlow AI</span>
       </Link>
       <nav className="hidden md:flex items-center gap-6">
         <Link
@@ -141,7 +142,7 @@ export default function LandingPage() {
         {/* Hero Section */}
         <section className="py-20 md:py-32 text-center">
           <div className="container mx-auto px-4">
-            <h1 className="text-4xl md:text-6xl font-bold font-headline max-w-4xl mx-auto">
+            <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto">
               Free AI Note Summarizer & Study Planner for Students
             </h1>
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -169,7 +170,7 @@ export default function LandingPage() {
         {/* Features Section */}
         <section id="features" className="py-20 bg-muted/50">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold font-headline text-center">
+            <h2 className="text-3xl font-bold text-center">
               Your All-in-One AI Study Toolkit
             </h2>
             <p className="mt-4 text-lg text-muted-foreground text-center max-w-3xl mx-auto">
@@ -183,7 +184,7 @@ export default function LandingPage() {
                     <div className="mx-auto bg-primary/10 rounded-full h-16 w-16 flex items-center justify-center">
                       {feature.icon}
                     </div>
-                    <CardTitle className="pt-4 font-headline text-xl">
+                    <CardTitle className="pt-4 text-xl">
                       {feature.title}
                     </CardTitle>
                   </CardHeader>
@@ -201,7 +202,7 @@ export default function LandingPage() {
         {/* Testimonials Section */}
         <section id="testimonials" className="py-20">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold font-headline text-center">
+            <h2 className="text-3xl font-bold text-center">
               Loved by Students Everywhere
             </h2>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -230,7 +231,7 @@ export default function LandingPage() {
         {/* FAQ Section */}
         <section id="faq" className="py-20 bg-muted/50">
           <div className="container mx-auto px-4 max-w-3xl">
-            <h2 className="text-3xl font-bold font-headline text-center">
+            <h2 className="text-3xl font-bold text-center">
               Frequently Asked Questions
             </h2>
             <Accordion type="single" collapsible className="w-full mt-8">

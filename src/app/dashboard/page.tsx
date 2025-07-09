@@ -28,7 +28,7 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto max-w-4xl py-12 px-4 space-y-8">
       <div className="space-y-2">
-        <h1 className="font-headline text-3xl font-bold">
+        <h1 className="text-3xl font-bold">
           Welcome Back, {displayName}!
         </h1>
         <p className="text-muted-foreground">
@@ -38,7 +38,7 @@ export default function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-6 w-6 text-primary" />
             Start a Conversation
           </CardTitle>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { cn } from '@/lib/utils';
@@ -24,10 +25,11 @@ export function ChatMessage({ role, text, image, userAvatar, userName }: ChatMes
         </Avatar>
       )}
       <div
+        style={{ lineHeight: 1.5 }}
         className={cn(
-          'max-w-xl rounded-lg p-3 text-sm',
+          'max-w-xl rounded-xl p-3 text-sm',
           isUser
-            ? 'bg-primary text-primary-foreground'
+            ? 'bg-[#333333] text-[#BB86FC]'
             : 'bg-muted'
         )}
       >
