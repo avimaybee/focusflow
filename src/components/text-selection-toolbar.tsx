@@ -7,33 +7,37 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Bot, List, MessageSquare, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface TextSelectionToolbarProps {
-  selectionData: { text: string; rect: DOMRect } | null;
-  onAction: (promptTemplate: string) => void;
-}
-
 const tools = [
   {
     name: 'Explain',
+    action: 'prompt',
+    value: 'Explain this concept in simple terms: "[SELECTED_TEXT]"',
     icon: <Bot className="h-4 w-4" />,
-    prompt: 'Explain this concept in simple terms: "[SELECTED_TEXT]"',
   },
   {
     name: 'Summarize',
+    action: 'prompt',
+    value: 'Summarize the key points of this text: "[SELECTED_TEXT]"',
     icon: <List className="h-4 w-4" />,
-    prompt: 'Summarize the key points of this text: "[SELECTED_TEXT]"',
   },
   {
-    name: 'Rephrase',
+    name: 'Improve',
+    action: 'rewrite',
+    value: 'clearer and more concise',
     icon: <MessageSquare className="h-4 w-4" />,
-    prompt: 'Rephrase this to be clearer and more concise: "[SELECTED_TEXT]"',
   },
   {
     name: 'Elaborate',
+    action: 'prompt',
+    value: 'Elaborate on this point: "[SELECTED_TEXT]"',
     icon: <Sparkles className="h-4 w-4" />,
-    prompt: 'Elaborate on this point: "[SELECTED_TEXT]"',
   },
 ];
+
+interface TextSelectionToolbarProps {
+  selectionData: { text: string; rect: DOMRect } | null;
+  onAction: (tool: typeof tools[0]) => void;
+}
 
 
 export function TextSelectionToolbar({ selectionData, onAction }: TextSelectionToolbarProps) {
@@ -75,7 +79,7 @@ export function TextSelectionToolbar({ selectionData, onAction }: TextSelectionT
         {tools.map((tool) => (
             <Tooltip key={tool.name} delayDuration={300}>
                 <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => onAction(tool.prompt)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => onAction(tool)}>
                         {tool.icon}
                         <span className="sr-only">{tool.name}</span>
                     </Button>

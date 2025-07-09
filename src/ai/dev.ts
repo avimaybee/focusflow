@@ -9,3 +9,4 @@ import '@/ai/flows/create-quiz.ts';
 import '@/ai/flows/explain-concept.ts';
 import '@/ai/flows/create-memory-aid.ts';
 import '@/ai/flows/create-discussion-prompts.ts';
+import '@/ai/flows/rewrite-text.ts';

@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { TextSelectionToolbar } from '@/components/text-selection-toolbar';
+import { rewriteText } from '@/ai/flows/rewrite-text';
 
 type Attachment = {
   preview: string; // URL for image previews, or name for other files
@@ -351,11 +352,51 @@ export default function ChatPage() {
     }, 10);
   };
 
-  const handleToolAction = (promptTemplate: string) => {
+  const handleToolAction = async (tool: { name: string; action: string; value: string; }) => {
     if (!selectionData) return;
-    const prompt = promptTemplate.replace('[SELECTED_TEXT]', selectionData.text);
-    submitMessage(prompt, null);
-    setSelectionData(null);
+    const selectedText = selectionData.text;
+
+    setSelectionData(null); // Close toolbar
+
+    // For prompt-based tools, we create a new message and submit it.
+    if (tool.action === 'prompt') {
+        const prompt = tool.value.replace('[SELECTED_TEXT]', selectedText);
+        await submitMessage(prompt, null);
+    } 
+    // For dedicated backend actions, we call the specific flow.
+    else if (tool.action === 'rewrite') {
+        const userMessage: ChatMessageProps = {
+            role: 'user',
+            text: `${tool.name}: "${selectedText.substring(0, 50)}..."`,
+            userAvatar: user?.photoURL,
+            userName: user?.displayName || user?.email || 'User',
+        };
+        setMessages(prev => [...prev, userMessage]);
+        setIsLoading(true);
+
+        try {
+            const result = await rewriteText({
+                textToRewrite: selectedText,
+                style: tool.value,
+                persona: selectedPersonaId as Persona,
+            });
+            setMessages(prev => [
+                ...prev,
+                { role: 'model', text: result.rewrittenText },
+            ]);
+        } catch (error) {
+            console.error('Error in rewrite action:', error);
+            toast({
+              variant: 'destructive',
+              title: 'Rewrite Failed',
+              description: 'Could not rewrite the text. Please try again.',
+            });
+            // remove the optimistic "user action" message on failure
+            setMessages(prev => prev.slice(0, prev.length - 1));
+        } finally {
+            setIsLoading(false);
+        }
+    }
   };
 
 
