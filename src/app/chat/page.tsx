@@ -37,15 +37,15 @@ const personas = [
     icon: <Bot className="h-5 w-5" />,
     initialMessage: "Hello! I'm your AI study partner. How can I help you today? You can ask me to summarize notes, create a quiz, build a study plan, and much more.",
   },
-  { id: 'five-year-old', name: "Explain Like I'm 5", icon: <Baby className="h-5 w-5" />, initialMessage: "Hi! I can explain big things with small words. What do you want to learn about today? It'll be super easy and fun!" },
-  { id: 'casual', name: 'Casual Conversationalist', icon: <Coffee className="h-5 w-5" />, initialMessage: "Hey! Let's chat about your study goals. What's on your mind? I'm here to help in a relaxed, friendly way." },
-  { id: 'entertaining', name: 'Entertaining Educator', icon: <Sparkles className="h-5 w-5" />, initialMessage: "Ready to learn with a laugh? I'll use jokes, memes, and fun facts to make studying awesome. What topic are we diving into?" },
-  { id: 'brutally-honest', name: 'Brutally Honest Mentor', icon: <Filter className="h-5 w-5" />, initialMessage: "Alright, let's get real. No sugarcoating. I'll give you the direct feedback you need to improve. What are we working on?" },
-  { id: 'straight-shooter', name: 'Straight Shooter', icon: <List className="h-5 w-5" />, initialMessage: "Let's cut to the chase. No fluff, just the key points and actionable steps. What do you need to know?" },
+  { id: 'five-year-old', name: "Explain Like I'm 5", icon: <Baby className="h-5 w-5" />, initialMessage: "Hi there! I can explain big things using small, simple words. What do you want to learn about? It'll be super easy!" },
+  { id: 'casual', name: 'Casual Conversationalist', icon: <Coffee className="h-5 w-5" />, initialMessage: "Hey! Let's just chat about what you're studying. No pressure, no lectures. What's on your mind?" },
+  { id: 'entertaining', name: 'Entertaining Educator', icon: <Sparkles className="h-5 w-5" />, initialMessage: "Ready for a study session that's actually fun? I'll bring the jokes and pop culture refs. What topic are we making awesome today?" },
+  { id: 'brutally-honest', name: 'Brutally Honest Mentor', icon: <Filter className="h-5 w-5" />, initialMessage: "Alright, no holding back. Show me what you've got, and I'll tell you what needs work. Prepare for some tough love." },
+  { id: 'straight-shooter', name: 'Straight Shooter', icon: <List className="h-5 w-5" />, initialMessage: "Let's cut to the chase. No fluff, just facts and bullet points. What information do you need, right now?" },
   { id: 'essay-sharpshooter', name: 'Essay Sharpshooter', icon: <PenSquare className="h-5 w-5" />, initialMessage: "I am ready to assist with academic writing. I can help structure your arguments, refine your thesis, and outline your essay. What is your topic?" },
   { id: 'idea-generator', name: 'Idea Generator', icon: <Lightbulb className="h-5 w-5" />, initialMessage: "Feeling stuck? Let's brainstorm! I can help you generate creative ideas and explore new angles. What's our topic?" },
   { id: 'cram-buddy', name: 'Cram Buddy', icon: <Timer className="h-5 w-5" />, initialMessage: "Time is short, let's go! I'll give you the high-impact facts and memory aids you need to ace this. What subject are we cramming?" },
-  { id: 'sassy', name: 'Sassy Teaching Assistant', icon: <Flame className="h-5 w-5" />, initialMessage: "Alright, settle down. I'm here to explain things, but don't expect me to be boring. What mystery are we unraveling today, Sherlock?" },
+  { id: 'sassy', name: 'Sassy Teaching Assistant', icon: <Flame className="h-5 w-5" />, initialMessage: "Ugh, fine, I'll help you study. Just try to keep up. What concept are we conquering today, genius?" },
 ];
 
 export default function ChatPage() {
