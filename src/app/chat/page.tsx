@@ -121,6 +121,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [personaPopoverOpen, setPersonaPopoverOpen] = useState(false);
+  const [isHighlighting, setIsHighlighting] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
@@ -197,6 +198,34 @@ export default function ChatPage() {
       setIsLoading(false);
     }
   };
+
+  const handleSelectPrompt = (prompt: string) => {
+    setInput(prompt);
+    setIsHighlighting(true);
+    setTimeout(() => setIsHighlighting(false), 300);
+
+    // Use a timeout to ensure the state update has been processed and the DOM is updated
+    // before we try to focus and set the selection.
+    setTimeout(() => {
+        if (textareaRef.current) {
+            textareaRef.current.focus();
+            
+            // Logic to place cursor or select placeholder text
+            const placeholderStart = prompt.indexOf('[');
+            const placeholderEnd = prompt.indexOf(']');
+
+            if (placeholderStart !== -1 && placeholderEnd !== -1) {
+                // If there's a placeholder like [YOUR TOPIC HERE], select it.
+                textareaRef.current.setSelectionRange(placeholderStart, placeholderEnd + 1);
+            } else {
+                // Otherwise, move the cursor to the end.
+                const len = prompt.length;
+                textareaRef.current.setSelectionRange(len, len);
+            }
+        }
+    }, 0);
+  };
+
 
   useEffect(() => {
     const scrollableView = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement | null;
@@ -356,17 +385,17 @@ export default function ChatPage() {
                         </PopoverContent>
                     </Popover>
                     <PromptLibrary
-                      onSelectPrompt={(prompt) => {
-                        setInput((prev) => prev + prompt);
-                        textareaRef.current?.focus();
-                      }}
+                      onSelectPrompt={handleSelectPrompt}
                     />
                     <Textarea
                         ref={textareaRef}
                         value={input}
                         onChange={e => setInput(e.target.value)}
                         placeholder="Ask me anything..."
-                        className="max-h-48 flex-1 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+                        className={cn(
+                            'max-h-48 flex-1 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 transition-colors duration-300 ease-in-out',
+                            isHighlighting && 'bg-primary/10'
+                        )}
                         rows={1}
                         onKeyDown={e => {
                           if (e.key === 'Enter' && !e.shiftKey) {
