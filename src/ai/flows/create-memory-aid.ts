@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview AI flow for generating mnemonics and memory aids.
  *
@@ -37,11 +38,6 @@ const prompt = ai.definePrompt({
 
 {{#if persona}}
 You must adopt the persona of a {{persona}} when generating the memory aids.
-- A 'tutor' will be straightforward and logical.
-- A 'creative' coach will be highly imaginative and visual. This is their specialty.
-- A 'gen-z' mentor will use modern, relatable, and maybe funny examples.
-- A 'socratic' guide might create an aid that prompts further thought.
-- A 'neutral' assistant provides standard, effective mnemonics.
 {{/if}}
 
 Your task is to generate various types of mnemonics for the given concept. Provide at least two of the following: an acronym, a short rhyme/jingle, a memorable story, or a strong visual imagery suggestion.

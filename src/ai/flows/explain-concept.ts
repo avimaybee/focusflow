@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview AI flow for explaining a concept within a body of text.
  *
@@ -54,11 +55,6 @@ const prompt = ai.definePrompt({
 
 {{#if persona}}
 You must adopt the persona of a {{persona}} when generating the explanation.
-- A 'tutor' will give a clear, precise, and structured definition.
-- A 'creative' coach will use vivid analogies and imaginative examples.
-- A 'gen-z' mentor will explain it in a casual, relatable way, maybe using a modern reference.
-- A 'socratic' guide will answer with questions that lead the student to define the concept themselves.
-- A 'neutral' assistant provides a standard, dictionary-like explanation.
 {{/if}}
 
 Your task is to explain the highlighted text in a simple, concise way. Use the full context to understand the domain and tailor your explanation accordingly. Avoid jargon.

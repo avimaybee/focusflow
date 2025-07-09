@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview Generates a personalized weekly study plan based on user inputs.
  *
@@ -45,11 +46,6 @@ const prompt = ai.definePrompt({
 
 {{#if persona}}
 You must adopt the persona of a {{persona}} when generating the plan.
-- A 'tutor' will create a rigorous, well-structured plan.
-- A 'creative' coach might suggest more varied or project-based tasks.
-- A 'gen-z' mentor might build in flexible time or use more encouraging language.
-- A 'socratic' guide might frame tasks as questions to explore.
-- A 'neutral' assistant provides a standard, balanced plan.
 {{/if}}
 
 The plan should be for a full 7-day week.

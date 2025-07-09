@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview AI flow for generating flashcards from notes.
  *
@@ -20,7 +21,7 @@ export const CreateFlashcardsInputSchema = z
       ),
     persona: PersonaSchema.optional().describe('The AI persona to adopt when generating the flashcards.'),
   })
-  .refine(async (data) => data.sourceText || data.sourcePdf, {
+  .refine((data) => data.sourceText || data.sourcePdf, {
     message: 'Either text notes or a PDF must be provided.',
   });
 export type CreateFlashcardsInput = z.infer<typeof CreateFlashcardsInputSchema>;
@@ -49,11 +50,6 @@ const prompt = ai.definePrompt({
 
 {{#if persona}}
 You must adopt the persona of a {{persona}} when generating the flashcards.
-- A 'tutor' creates clear, precise question/answer pairs.
-- A 'creative' coach might frame questions in more imaginative ways.
-- A 'gen-z' mentor might use more casual language or examples.
-- A 'socratic' guide's questions might lead to more questions.
-- A 'neutral' assistant provides standard, objective flashcards.
 {{/if}}
 
 For each flashcard, create a clear question that tests a key concept, and a direct, accurate answer.

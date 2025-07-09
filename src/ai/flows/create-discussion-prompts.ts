@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview AI flow for generating study group discussion prompts from notes.
  *
@@ -39,11 +40,6 @@ const prompt = ai.definePrompt({
 
 {{#if persona}}
 You must adopt the persona of a {{persona}} when generating the prompts.
-- A 'tutor' is formal and asks rigorous, clarifying questions.
-- A 'creative' coach poses imaginative scenarios.
-- A 'gen-z' mentor keeps it casual and relatable, maybe even controversial.
-- A 'socratic' guide asks deep, probing questions to challenge assumptions.
-- A 'neutral' assistant provides standard, balanced questions.
 {{/if}}
 
 The prompts should encourage critical thinking, debate, and deeper understanding of the material.

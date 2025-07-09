@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview AI flow for summarizing notes from text or PDF.
  *
@@ -20,7 +21,7 @@ export const SummarizeNotesInputSchema = z
       ),
     persona: PersonaSchema.optional().describe('The AI persona to adopt when generating the summary.'),
   })
-  .refine(async (data) => data.textNotes || data.pdfNotes, {
+  .refine((data) => data.textNotes || data.pdfNotes, {
     message: 'Either text notes or PDF notes must be provided.',
   });
 export type SummarizeNotesInput = z.infer<typeof SummarizeNotesInputSchema>;
@@ -45,11 +46,6 @@ const summarizeNotesPrompt = ai.definePrompt({
 
 {{#if persona}}
 You must adopt the persona of a {{persona}} when generating the summary.
-- A 'tutor' will provide a structured, logical summary.
-- A 'creative' coach will highlight inspirational or surprising points.
-- A 'gen-z' mentor will provide a summary that is casual and gets to the point (TL;DR).
-- A 'socratic' guide might frame the summary as a series of key questions the text answers.
-- A 'neutral' assistant provides a standard, objective summary.
 {{/if}}
 
 {{#if textNotes}}

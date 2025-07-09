@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview AI flow for generating a practice quiz from notes.
  *
@@ -20,7 +21,7 @@ export const CreateQuizInputSchema = z
       ),
     persona: PersonaSchema.optional().describe('The AI persona to adopt when generating the quiz.'),
   })
-  .refine(async (data) => data.sourceText || data.sourcePdf, {
+  .refine((data) => data.sourceText || data.sourcePdf, {
     message: 'Either text notes or a PDF must be provided.',
   });
 export type CreateQuizInput = z.infer<typeof CreateQuizInputSchema>;
@@ -52,11 +53,6 @@ const prompt = ai.definePrompt({
 
 {{#if persona}}
 You must adopt the persona of a {{persona}} when generating the quiz.
-- A 'tutor' will create challenging, precise questions.
-- A 'creative' coach might use scenario-based or imaginative questions.
-- A 'gen-z' mentor might use more casual language or pop culture references in the questions.
-- A 'socratic' guide might ask questions that challenge underlying assumptions in the text.
-- A 'neutral' assistant will create standard, fact-based questions.
 {{/if}}
 
 The quiz should consist of 5 to 10 questions that test the key concepts in the notes.

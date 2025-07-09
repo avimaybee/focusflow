@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Plus, MessageSquare, Bot, GraduationCap, Sparkles, HandHeart, Scale } from 'lucide-react';
+import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -37,30 +37,15 @@ const personas = [
     icon: <Bot className="h-5 w-5" />,
     initialMessage: "Hello! I'm your AI study partner. How can I help you today? You can ask me to summarize notes, create a quiz, build a study plan, and much more.",
   },
-  {
-    id: 'tutor',
-    name: 'Academic Tutor',
-    icon: <GraduationCap className="h-5 w-5" />,
-    initialMessage: "Greetings! I am your Academic Tutor. I can help you with in-depth explanations, create challenging quizzes, and guide you through complex subjects. What shall we tackle first?",
-  },
-  {
-    id: 'creative',
-    name: 'Creative Coach',
-    icon: <Sparkles className="h-5 w-5" />,
-    initialMessage: "Ready for some inspiration? As your Creative Coach, I can help you brainstorm ideas, create memory aids, and find new ways to approach your studies. Let's get creative!",
-  },
-  {
-    id: 'gen-z',
-    name: 'Gen Z Mentor',
-    icon: <HandHeart className="h-5 w-5" />,
-    initialMessage: "Ayo! I'm your study homie. Drop your questions, notes, whatever. We'll get this bread, no cap. Let's make learning a vibe. ✨",
-  },
-  {
-    id: 'socratic',
-    name: 'Socratic Guide',
-    icon: <Scale className="h-5 w-5" />,
-    initialMessage: "I am here not to provide answers, but to help you find them. Through dialogue, we can uncover the knowledge you seek. What is the first question you wish to explore?",
-  }
+  { id: 'five-year-old', name: "Explain Like I'm 5", icon: <Baby className="h-5 w-5" />, initialMessage: "Hi! I can explain big things with small words. What do you want to learn about today? It'll be super easy and fun!" },
+  { id: 'casual', name: 'Casual Conversationalist', icon: <Coffee className="h-5 w-5" />, initialMessage: "Hey! Let's chat about your study goals. What's on your mind? I'm here to help in a relaxed, friendly way." },
+  { id: 'entertaining', name: 'Entertaining Educator', icon: <Sparkles className="h-5 w-5" />, initialMessage: "Ready to learn with a laugh? I'll use jokes, memes, and fun facts to make studying awesome. What topic are we diving into?" },
+  { id: 'brutally-honest', name: 'Brutally Honest Mentor', icon: <Filter className="h-5 w-5" />, initialMessage: "Alright, let's get real. No sugarcoating. I'll give you the direct feedback you need to improve. What are we working on?" },
+  { id: 'straight-shooter', name: 'Straight Shooter', icon: <List className="h-5 w-5" />, initialMessage: "Let's cut to the chase. No fluff, just the key points and actionable steps. What do you need to know?" },
+  { id: 'essay-sharpshooter', name: 'Essay Sharpshooter', icon: <PenSquare className="h-5 w-5" />, initialMessage: "I am ready to assist with academic writing. I can help structure your arguments, refine your thesis, and outline your essay. What is your topic?" },
+  { id: 'idea-generator', name: 'Idea Generator', icon: <Lightbulb className="h-5 w-5" />, initialMessage: "Feeling stuck? Let's brainstorm! I can help you generate creative ideas and explore new angles. What's our topic?" },
+  { id: 'cram-buddy', name: 'Cram Buddy', icon: <Timer className="h-5 w-5" />, initialMessage: "Time is short, let's go! I'll give you the high-impact facts and memory aids you need to ace this. What subject are we cramming?" },
+  { id: 'sassy', name: 'Sassy Teaching Assistant', icon: <Flame className="h-5 w-5" />, initialMessage: "Alright, settle down. I'm here to explain things, but don't expect me to be boring. What mystery are we unraveling today, Sherlock?" },
 ];
 
 export default function ChatPage() {
