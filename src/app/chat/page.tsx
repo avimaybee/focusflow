@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame } from 'lucide-react';
+import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -30,6 +30,7 @@ import type { ChatInput, Persona } from '@/ai/flows/chat-types';
 import { PromptLibrary } from '@/components/prompt-library';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 
 const personas = [
@@ -119,11 +120,13 @@ export default function ChatPage() {
     },
   ]);
   const [input, setInput] = useState('');
+  const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [personaPopoverOpen, setPersonaPopoverOpen] = useState(false);
   const [isHighlighting, setIsHighlighting] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // This effect syncs the component's state with the user's preference from the DB
   useEffect(() => {
@@ -148,20 +151,24 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && !image) || isLoading) return;
 
     const userInput = input;
+    const userImage = image;
+
     const currentMessages: ChatMessageProps[] = [
       ...messages,
       {
         role: 'user',
         text: userInput,
+        image: userImage,
         userAvatar: user?.photoURL,
         userName: user?.displayName || user?.email || 'User',
       },
     ];
     setMessages(currentMessages);
     setInput('');
+    setImage(null);
     setIsLoading(true);
 
     try {
@@ -177,6 +184,7 @@ export default function ChatPage() {
         message: userInput,
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
+        image: userImage,
       };
 
       const result = await chat(chatInput);
@@ -224,6 +232,22 @@ export default function ChatPage() {
             }
         }
     }, 0);
+  };
+  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+        if (!file.type.startsWith('image/')) {
+            // TODO: Show toast error
+            console.error("Unsupported file type. Please upload an image.");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImage(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    }
   };
 
 
@@ -337,6 +361,14 @@ export default function ChatPage() {
 
           <div className="p-4 bg-background/95 w-full">
             <div className="max-w-4xl mx-auto">
+                {image && (
+                    <div className="relative mb-2 w-24 h-24 border rounded-md p-1 mx-auto">
+                        <Image src={image} alt="Upload preview" layout="fill" className="object-contain" />
+                        <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-muted text-muted-foreground" onClick={() => setImage(null)}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
                 <form
                   onSubmit={handleSendMessage}
                   className="relative"
@@ -387,6 +419,11 @@ export default function ChatPage() {
                     <PromptLibrary
                       onSelectPrompt={handleSelectPrompt}
                     />
+                    <Button type="button" variant="ghost" size="icon" className="h-12 w-12 shrink-0 rounded-full" onClick={() => fileInputRef.current?.click()}>
+                        <Paperclip />
+                        <span className="sr-only">Attach file</span>
+                    </Button>
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
                     <Textarea
                         ref={textareaRef}
                         value={input}
@@ -408,7 +445,7 @@ export default function ChatPage() {
                         type="submit"
                         size="icon"
                         className="h-12 w-12 shrink-0 rounded-full hover:scale-110 transition-transform"
-                        disabled={!input.trim() || isLoading}
+                        disabled={(!input.trim() && !image) || isLoading}
                     >
                         <Send />
                         <span className="sr-only">Send message</span>

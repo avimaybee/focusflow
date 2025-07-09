@@ -9,7 +9,7 @@ import Image from 'next/image';
 export type ChatMessageProps = {
   role: 'user' | 'model';
   text: string | React.ReactNode;
-  image?: string;
+  image?: string | null;
   userAvatar?: string | null;
   userName?: string;
 };
