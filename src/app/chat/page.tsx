@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X } from 'lucide-react';
+import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -31,7 +31,14 @@ import { PromptLibrary } from '@/components/prompt-library';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
 
+type Attachment = {
+  preview: string; // URL for image previews, or name for other files
+  data: string; // data URI for sending to AI
+  type: string; // mime type
+  name: string; // file name
+};
 
 const personas = [
   {
@@ -109,6 +116,7 @@ const personas = [
 
 export default function ChatPage() {
   const { user, preferredPersona } = useAuth();
+  const { toast } = useToast();
   const isMobile = useIsMobile();
   const [selectedPersonaId, setSelectedPersonaId] = useState(personas[0].id);
   const selectedPersona = personas.find(p => p.id === selectedPersonaId)!;
@@ -120,7 +128,7 @@ export default function ChatPage() {
     },
   ]);
   const [input, setInput] = useState('');
-  const [image, setImage] = useState<string | null>(null);
+  const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [personaPopoverOpen, setPersonaPopoverOpen] = useState(false);
   const [isHighlighting, setIsHighlighting] = useState(false);
@@ -151,24 +159,24 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!input.trim() && !image) || isLoading) return;
+    if ((!input.trim() && !attachment) || isLoading) return;
 
     const userInput = input;
-    const userImage = image;
+    const userAttachment = attachment;
 
     const currentMessages: ChatMessageProps[] = [
       ...messages,
       {
         role: 'user',
         text: userInput,
-        image: userImage,
+        image: userAttachment?.type.startsWith('image/') ? userAttachment.preview : null,
         userAvatar: user?.photoURL,
         userName: user?.displayName || user?.email || 'User',
       },
     ];
     setMessages(currentMessages);
     setInput('');
-    setImage(null);
+    setAttachment(null);
     setIsLoading(true);
 
     try {
@@ -184,8 +192,15 @@ export default function ChatPage() {
         message: userInput,
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
-        image: userImage,
       };
+
+      if (userAttachment) {
+        if (userAttachment.type.startsWith('image/')) {
+          chatInput.image = userAttachment.data;
+        } else if (userAttachment.type === 'application/pdf') {
+          chatInput.context = userAttachment.data;
+        }
+      }
 
       const result = await chat(chatInput);
 
@@ -237,16 +252,27 @@ export default function ChatPage() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-        if (!file.type.startsWith('image/')) {
-            // TODO: Show toast error
-            console.error("Unsupported file type. Please upload an image.");
-            return;
-        }
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setImage(reader.result as string);
-        };
-        reader.readAsDataURL(file);
+      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+          toast({
+            variant: 'destructive',
+            title: 'Unsupported File Type',
+            description: 'Please upload an image or a PDF file.',
+          });
+          return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+          const dataUrl = reader.result as string;
+          const previewUrl = file.type.startsWith('image/') ? URL.createObjectURL(file) : file.name;
+          setAttachment({
+              preview: previewUrl,
+              data: dataUrl,
+              type: file.type,
+              name: file.name,
+          });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -361,10 +387,17 @@ export default function ChatPage() {
 
           <div className="p-4 bg-background/95 w-full">
             <div className="max-w-4xl mx-auto">
-                {image && (
-                    <div className="relative mb-2 w-24 h-24 border rounded-md p-1 mx-auto">
-                        <Image src={image} alt="Upload preview" layout="fill" className="object-contain" />
-                        <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-muted text-muted-foreground" onClick={() => setImage(null)}>
+                {attachment && (
+                    <div className="relative mb-2 w-full border rounded-md p-2 flex items-center gap-3">
+                        {attachment.type.startsWith('image/') ? (
+                           <Image src={attachment.preview} alt={attachment.name} width={40} height={40} className="object-contain rounded-md" />
+                        ) : (
+                           <FileIcon className="h-8 w-8 text-muted-foreground" />
+                        )}
+                        <div className="flex-1 text-sm text-muted-foreground truncate">
+                           {attachment.name}
+                        </div>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => setAttachment(null)}>
                             <X className="h-4 w-4" />
                         </Button>
                     </div>
@@ -423,7 +456,7 @@ export default function ChatPage() {
                         <Paperclip />
                         <span className="sr-only">Attach file</span>
                     </Button>
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
                     <Textarea
                         ref={textareaRef}
                         value={input}
@@ -445,7 +478,7 @@ export default function ChatPage() {
                         type="submit"
                         size="icon"
                         className="h-12 w-12 shrink-0 rounded-full hover:scale-110 transition-transform"
-                        disabled={(!input.trim() && !image) || isLoading}
+                        disabled={(!input.trim() && !attachment) || isLoading}
                     >
                         <Send />
                         <span className="sr-only">Send message</span>

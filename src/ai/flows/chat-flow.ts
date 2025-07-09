@@ -46,7 +46,11 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
   const personaInstruction = personaPrompts[input.persona];
   const systemPrompt = `${personaInstruction}
 
-When you use a tool that has a 'persona' input field, you MUST pass the current persona ('${input.persona}') to it.`;
+When you use a tool that has a 'persona' input field, you MUST pass the current persona ('${input.persona}') to it.
+
+If the user provides context via the 'context' field (from a file upload), you MUST use that context as the source for any tool that requires it (e.g., summarizeNotes, createQuiz).
+If the context is a data URI starting with 'data:application/pdf', pass it to the 'sourcePdf' argument of the tool. Otherwise, pass it to the 'sourceText' argument.
+`;
 
 
   const tools = [
@@ -65,10 +69,15 @@ When you use a tool that has a 'persona' input field, you MUST pass the current 
   }));
 
   const requestMessages = [];
-  if (input.image) {
-    requestMessages.push({ text: input.message }, { media: { url: input.image } });
+  if (input.context) {
+    // Pass the context to the prompt so the LLM knows about it.
+    requestMessages.push({ text: `${input.message}\n\n[CONTEXT FROM UPLOADED FILE IS PROVIDED]` });
   } else {
     requestMessages.push({ text: input.message });
+  }
+  
+  if (input.image) {
+    requestMessages.push({ media: { url: input.image } });
   }
 
 
@@ -86,6 +95,8 @@ When you use a tool that has a 'persona' input field, you MUST pass the current 
         },
       ],
     },
+    // By passing the context here, we make it available to the tool-calling model.
+    context: input.context,
   });
 
   return {response: output?.[0]?.text || 'Sorry, I am not sure how to help with that.'};
