@@ -34,6 +34,7 @@ import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { TextSelectionToolbar } from '@/components/text-selection-toolbar';
 import { rewriteText } from '@/ai/flows/rewrite-text';
+import { addCitations } from '@/ai/flows/add-citations';
 
 type Attachment = {
   preview: string; // URL for image previews, or name for other files
@@ -352,7 +353,7 @@ export default function ChatPage() {
     }, 10);
   };
 
-  const handleToolAction = async (tool: { name: string; action: string; value: string; }) => {
+  const handleToolAction = async (tool: { name: string; action: string; value: any; }) => {
     if (!selectionData) return;
     const selectedText = selectionData.text;
 
@@ -392,6 +393,37 @@ export default function ChatPage() {
               description: 'Could not rewrite the text. Please try again.',
             });
             // remove the optimistic "user action" message on failure
+            setMessages(prev => prev.slice(0, prev.length - 1));
+        } finally {
+            setIsLoading(false);
+        }
+    } else if (tool.action === 'addCitations') {
+        const userMessage: ChatMessageProps = {
+            role: 'user',
+            text: `Add citations to: "${selectedText.substring(0, 50)}..."`,
+            userAvatar: user?.photoURL,
+            userName: user?.displayName || user?.email || 'User',
+        };
+        setMessages(prev => [...prev, userMessage]);
+        setIsLoading(true);
+
+        try {
+            const result = await addCitations({
+                textToCite: selectedText,
+                citationStyle: tool.value, // e.g., 'APA'
+                persona: selectedPersonaId as Persona,
+            });
+            setMessages(prev => [
+                ...prev,
+                { role: 'model', text: result.citedText },
+            ]);
+        } catch (error) {
+            console.error('Error in addCitations action:', error);
+            toast({
+              variant: 'destructive',
+              title: 'Citation Failed',
+              description: 'Could not add citations. Please try again.',
+            });
             setMessages(prev => prev.slice(0, prev.length - 1));
         } finally {
             setIsLoading(false);

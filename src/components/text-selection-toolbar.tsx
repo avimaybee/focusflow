@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Bot, List, MessageSquare, Sparkles } from 'lucide-react';
+import { Bot, List, MessageSquare, Sparkles, Quote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tools = [
@@ -31,6 +31,12 @@ const tools = [
     action: 'prompt',
     value: 'Elaborate on this point: "[SELECTED_TEXT]"',
     icon: <Sparkles className="h-4 w-4" />,
+  },
+  {
+    name: 'Add Citations',
+    action: 'addCitations',
+    value: 'APA',
+    icon: <Quote className="h-4 w-4" />,
   },
 ];
 
