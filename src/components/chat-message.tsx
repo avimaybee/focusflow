@@ -3,7 +3,7 @@
 
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, User } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import Image from 'next/image';
 
 export type ChatMessageProps = {
@@ -29,7 +29,7 @@ export function ChatMessage({ role, text, image, userAvatar, userName }: ChatMes
         className={cn(
           'max-w-xl rounded-xl p-3 text-sm',
           isUser
-            ? 'bg-[#333333] text-[#BB86FC]'
+            ? 'bg-input text-primary'
             : 'bg-muted'
         )}
       >

@@ -27,7 +27,7 @@ import Image from 'next/image';
 
 const LandingHeader = () => (
   <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm">
-    <div className="container mx-auto flex h-16 items-center justify-between px-4">
+    <div className="container mx-auto flex h-14 items-center justify-between px-4">
       <Link href="/" className="flex items-center gap-2">
         <Logo className="h-8 w-8" />
         <span className="font-bold text-lg">FocusFlow AI</span>
@@ -138,7 +138,7 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <LandingHeader />
-      <main className="flex-grow pt-16">
+      <main className="flex-grow pt-14">
         {/* Hero Section */}
         <section className="py-20 md:py-32 text-center">
           <div className="container mx-auto px-4">

@@ -15,7 +15,6 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
@@ -271,7 +270,7 @@ export default function ChatPage() {
             </div>
           </header>
           
-          <div className="p-2 px-4 border-b flex items-center justify-between gap-2 bg-[#1A1A1A] border-b border-[#2A2A2A] z-10">
+          <div className="p-2 px-4 border-b flex items-center justify-between gap-2 bg-[#1A1A1A] border-b border-[#2A2A2A] z-10 h-14">
               <h2 className="font-bold text-sm md:text-base">New Chat</h2>
               <Select value={selectedPersonaId} onValueChange={setSelectedPersonaId}>
                   <SelectTrigger className="w-auto h-9 gap-2">
@@ -305,12 +304,10 @@ export default function ChatPage() {
                      <p className="text-muted-foreground mt-2 max-w-md">
                         {selectedPersona.initialMessage}
                     </p>
-                    <Card className="mt-6 max-w-md w-full text-left bg-muted">
-                        <CardContent className="p-4">
-                            <p className="font-bold text-sm text-foreground">Best for:</p>
-                            <p className="text-muted-foreground text-sm mt-1">{selectedPersona.useCase}</p>
-                        </CardContent>
-                    </Card>
+                    <div className="mt-6 max-w-md w-full text-left bg-muted/50 rounded-lg p-4">
+                        <p className="font-bold text-sm text-foreground">Best for:</p>
+                        <p className="text-muted-foreground text-sm mt-1">{selectedPersona.useCase}</p>
+                    </div>
                   </div>
                 ) : (
                   messages.map((msg, index) => (
@@ -328,7 +325,7 @@ export default function ChatPage() {
                   onSubmit={handleSendMessage}
                   className="relative"
                 >
-                  <div className="flex items-end gap-2 p-2 rounded-xl bg-card shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
+                  <div className="flex items-end gap-2 p-2 rounded-2xl bg-card shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
                     <Textarea
                         ref={textareaRef}
                         value={input}
