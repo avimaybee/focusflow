@@ -45,7 +45,7 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
   }, []);
 
   const handleFavoriteToggle = async (promptId: string) => {
-    if (!user || !favoritePrompts) return;
+    if (!user || !favoritePrompts || !setFavoritePrompts) return;
     const newFavorites = favoritePrompts.includes(promptId)
       ? favoritePrompts.filter((id) => id !== promptId)
       : [...favoritePrompts, promptId];
@@ -54,7 +54,7 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
     await updateUserFavoritePrompts(user.uid, newFavorites);
   };
 
-  const categories = ['All', 'Favorites', ...Array.from(new Set(templates.map((t) => t.category)))];
+  const categories = ['All', ...(user ? ['Favorites'] : []), ...Array.from(new Set(templates.map((t) => t.category)))];
 
   const filteredTemplates = (category: string) => {
     let categoryFiltered = templates;
@@ -101,7 +101,7 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
           <Tabs defaultValue="All" className="flex-grow flex flex-col min-h-0">
             <TabsList className="m-4 mb-0">
               {categories.map((cat) => (
-                <TabsTrigger key={cat} value={cat} disabled={cat === 'Favorites' && !user}>
+                <TabsTrigger key={cat} value={cat}>
                   {cat}
                 </TabsTrigger>
               ))}
@@ -158,7 +158,7 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
                     })}
                      {filteredTemplates(cat).length === 0 && (
                         <p className="text-muted-foreground text-sm text-center col-span-full py-8">
-                            {cat === 'Favorites' ? 'No favorite prompts yet.' : 'No templates found.'}
+                            {cat === 'Favorites' ? 'No favorite prompts yet. Add some!' : 'No templates found.'}
                         </p>
                     )}
                   </div>
