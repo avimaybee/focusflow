@@ -10,12 +10,12 @@ export interface PublicSummary {
     publicSlug: string;
 }
 
-export async function getPublicSummary(slug: string): Promise<PublicSummary | null> {
+export async function getPublicSummary(slug: string): Promise<PublicSummary | undefined> {
     const docRef = doc(db, 'publicSummaries', slug);
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
-        return null;
+        return undefined;
     }
 
     const data = docSnap.data();

@@ -1,3 +1,4 @@
+
 export type BlogPost = {
     slug: string;
     title: string;
@@ -65,7 +66,8 @@ export type BlogPost = {
   ];
   
   export function getBlogPosts(): BlogPost[] {
-    return blogPosts;
+    // Returning a new array of plain objects to avoid issues with Next.js param enumeration
+    return blogPosts.map(p => ({...p}));
   }
   
   export function getBlogPostBySlug(slug: string): BlogPost | undefined {

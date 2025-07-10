@@ -3,25 +3,29 @@ import { getPublicSummaries } from '@/lib/summaries-data';
 import { MetadataRoute } from 'next';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://focusflow.ai';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://focusflow.ai';
 
   // Get all blog posts
   const blogPosts = getBlogPosts();
-  const blogPostUrls = blogPosts.map(post => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.datePublished),
-    changeFrequency: 'monthly' as const,
-    priority: 0.8,
-  }));
+  const blogPostUrls = blogPosts
+    .filter(post => post && post.slug)
+    .map(post => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: new Date(post.datePublished),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    }));
   
   // Get all public summaries
   const summaries = await getPublicSummaries();
-  const summaryUrls = summaries.map(summary => ({
-    url: `${baseUrl}/summaries/${summary.publicSlug}`,
-    lastModified: new Date(summary.publishedAt),
-    changeFrequency: 'yearly' as const,
-    priority: 0.7,
-  }));
+  const summaryUrls = summaries
+    .filter(summary => summary && summary.publicSlug)
+    .map(summary => ({
+      url: `${baseUrl}/summaries/${summary.publicSlug}`,
+      lastModified: new Date(summary.publishedAt),
+      changeFrequency: 'yearly' as const,
+      priority: 0.7,
+    }));
 
 
   // Define static routes
