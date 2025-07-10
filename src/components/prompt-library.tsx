@@ -79,7 +79,12 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0 rounded-md text-secondary hover:text-accent hover:bg-secondary/50 transition-colors" aria-label="Open prompt library">
+        <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground" 
+            aria-label="Open prompt library"
+        >
           <Bot className="h-5 w-5" />
         </Button>
       </PopoverTrigger>
@@ -170,3 +175,5 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
     </Popover>
   );
 }
+
+    
