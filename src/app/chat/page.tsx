@@ -484,47 +484,47 @@ export default function ChatPage() {
                         What can I help with?
                      </h1>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg">
-                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
+                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
                            <div className="flex flex-col items-start text-left w-full space-y-2">
                               <div className="p-2 bg-primary/10 rounded-md">
-                                <FileText className="h-5 w-5 text-primary"/>
+                                <FileText className="h-5 w-5 text-primary group-hover:text-accent-foreground"/>
                               </div>
                               <div className="w-full">
-                                <p className="font-semibold text-base">Summarize a document</p>
-                                <p className="text-sm text-muted-foreground font-normal">Condense any text or PDF into a digest.</p>
+                                <p className="font-semibold text-base group-hover:text-accent-foreground">Summarize a document</p>
+                                <p className="text-sm text-muted-foreground font-normal group-hover:text-accent-foreground">Condense any text or PDF into a digest.</p>
                               </div>
                            </div>
                         </Button>
-                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
+                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
                            <div className="flex flex-col items-start text-left w-full space-y-2">
                               <div className="p-2 bg-primary/10 rounded-md">
-                                <Book className="h-5 w-5 text-primary"/>
+                                <Book className="h-5 w-5 text-primary group-hover:text-accent-foreground"/>
                               </div>
                               <div className="w-full">
-                                <p className="font-semibold text-base">Create a study plan</p>
-                                <p className="text-sm text-muted-foreground font-normal">Generate a weekly schedule for any subject.</p>
+                                <p className="font-semibold text-base group-hover:text-accent-foreground">Create a study plan</p>
+                                <p className="text-sm text-muted-foreground font-normal group-hover:text-accent-foreground">Generate a weekly schedule for any subject.</p>
                               </div>
                            </div>
                         </Button>
-                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
+                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
                            <div className="flex flex-col items-start text-left w-full space-y-2">
                               <div className="p-2 bg-primary/10 rounded-md">
-                                <Brain className="h-5 w-5 text-primary"/>
+                                <Brain className="h-5 w-5 text-primary group-hover:text-accent-foreground"/>
                               </div>
                               <div className="w-full">
-                                <p className="font-semibold text-base">Brainstorm ideas</p>
-                                <p className="text-sm text-muted-foreground font-normal">Get creative angles for any topic or essay.</p>
+                                <p className="font-semibold text-base group-hover:text-accent-foreground">Brainstorm ideas</p>
+                                <p className="text-sm text-muted-foreground font-normal group-hover:text-accent-foreground">Get creative angles for any topic or essay.</p>
                               </div>
                            </div>
                         </Button>
-                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
+                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
                            <div className="flex flex-col items-start text-left w-full space-y-2">
                               <div className="p-2 bg-primary/10 rounded-md">
-                                <Sparkles className="h-5 w-5 text-primary"/>
+                                <Sparkles className="h-5 w-5 text-primary group-hover:text-accent-foreground"/>
                               </div>
                               <div className="w-full">
-                                <p className="font-semibold text-base">Explain a concept</p>
-                                <p className="text-sm text-muted-foreground font-normal">Break down complex topics simply.</p>
+                                <p className="font-semibold text-base group-hover:text-accent-foreground">Explain a concept</p>
+                                <p className="text-sm text-muted-foreground font-normal group-hover:text-accent-foreground">Break down complex topics simply.</p>
                               </div>
                            </div>
                         </Button>
