@@ -30,7 +30,7 @@ export default function DashboardPage() {
   return (
     <>
       <Header />
-      <div className="flex-grow container mx-auto max-w-4xl py-12 px-4 space-y-8">
+      <div className="flex-grow container mx-auto max-w-4xl py-12 px-4 space-y-12">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">
             Welcome Back, {displayName}!
@@ -48,10 +48,10 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-6">
               You can summarize notes, generate quizzes, create study plans, and more, all from the chat.
             </p>
-            <Button asChild>
+            <Button asChild size="lg">
               <Link href="/chat">
                 Go to Chat <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

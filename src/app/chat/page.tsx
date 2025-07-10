@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, ArrowRight, Search } from 'lucide-react';
+import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, ArrowRight, Search, Brain, Book } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -39,6 +39,7 @@ import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
 import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
 import type { ChatInput } from '@/ai/flows/chat-types';
 import { Separator } from '@/components/ui/separator';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 type Attachment = {
   preview: string; // URL for image previews, or name for other files
@@ -124,7 +125,6 @@ const personas = [
 export default function ChatPage() {
   const { user, preferredPersona } = useAuth();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const [selectedPersonaId, setSelectedPersonaId] = useState(personas[0].id);
   const selectedPersona = personas.find(p => p.id === selectedPersonaId)!;
 
@@ -542,13 +542,13 @@ export default function ChatPage() {
           <Separator className="my-1 bg-sidebar-border" />
            <SidebarMenu>
             <SidebarMenuItem>
-                <SidebarMenuButton>
+                <SidebarMenuButton tooltip="Upgrade to unlock more features">
                     <Sparkles className="h-4 w-4" />
                     <span>Upgrade plan</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-                <SidebarMenuButton>
+                <SidebarMenuButton tooltip={displayName}>
                    <Avatar className="h-6 w-6">
                         <AvatarImage
                           src={user?.photoURL || undefined}
@@ -620,10 +620,44 @@ export default function ChatPage() {
               <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
                 {isInitialMessage ? (
                    <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4 text-center">
-                     <Logo className="h-16 w-16 mb-4" />
-                     <h1 className="text-2xl font-bold font-heading">
+                     <Logo className="h-12 w-12 mb-4 text-muted-foreground" />
+                     <h1 className="text-2xl font-bold mb-6">
                        What can I help with?
                      </h1>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
+                        <Card className="hover:bg-muted/50 cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
+                            <CardHeader>
+                                <CardTitle className="text-base flex items-center gap-2">
+                                    <Book className="h-5 w-5 text-primary" />
+                                    <span>Summarize a document</span>
+                                </CardTitle>
+                            </CardHeader>
+                        </Card>
+                         <Card className="hover:bg-muted/50 cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
+                             <CardHeader>
+                                 <CardTitle className="text-base flex items-center gap-2">
+                                     <PenSquare className="h-5 w-5 text-primary" />
+                                     <span>Create a study plan</span>
+                                 </CardTitle>
+                             </CardHeader>
+                         </Card>
+                         <Card className="hover:bg-muted/50 cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
+                             <CardHeader>
+                                 <CardTitle className="text-base flex items-center gap-2">
+                                     <Brain className="h-5 w-5 text-primary" />
+                                     <span>Brainstorm ideas</span>
+                                 </CardTitle>
+                             </CardHeader>
+                         </Card>
+                         <Card className="hover:bg-muted/50 cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
+                             <CardHeader>
+                                 <CardTitle className="text-base flex items-center gap-2">
+                                     <Lightbulb className="h-5 w-5 text-primary" />
+                                     <span>Explain a concept</span>
+                                 </CardTitle>
+                             </CardHeader>
+                         </Card>
+                     </div>
                    </div>
                 ) : (
                   messages.map((msg, index) => (
@@ -692,7 +726,7 @@ export default function ChatPage() {
                   >
                     <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
                         <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
+                            <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full hover:bg-muted">
                                 {selectedPersona.icon}
                                 <span className="sr-only">Select Persona</span>
                             </Button>
@@ -733,7 +767,7 @@ export default function ChatPage() {
                             </div>
                         </PopoverContent>
                     </Popover>
-                    <Button type="button" variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full" onClick={() => fileInputRef.current?.click()}>
+                    <Button type="button" variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full hover:bg-muted" onClick={() => fileInputRef.current?.click()}>
                         <Paperclip />
                         <span className="sr-only">Attach file</span>
                     </Button>
@@ -781,5 +815,3 @@ export default function ChatPage() {
     </SidebarProvider>
   );
 }
-
-    
