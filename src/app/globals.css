@@ -77,9 +77,14 @@
     min-height: 100vh;
   }
   
+  .group\/sidebar:hover ::-webkit-scrollbar {
+    opacity: 1;
+  }
   ::-webkit-scrollbar { 
     width: 4px;
     height: 4px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
   }
   ::-webkit-scrollbar-thumb { 
     @apply bg-muted-foreground/30 rounded-full;

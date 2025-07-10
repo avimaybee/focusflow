@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, ArrowRight, Search, Brain, Book } from 'lucide-react';
+import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, ArrowRight, Search, Brain, Book, ChevronRight } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -32,6 +32,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { PromptLibrary } from '@/components/prompt-library';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
 
 type Attachment = {
   preview: string;
@@ -41,13 +44,16 @@ type Attachment = {
 };
 
 const personas = [
-  {
-    id: 'neutral',
-    name: 'Neutral Assistant',
-    icon: <Bot className="h-5 w-5" />,
-    initialMessage: "Hello! I'm your AI study partner. How can I help you today? You can ask me to summarize notes, create a quiz, build a study plan, and much more.",
-    useCase: "Best for general questions, straightforward tasks, and when you need a reliable, no-frills AI assistant.",
-  },
+    { id: 'neutral', name: 'Neutral Assistant', icon: <Bot className="h-5 w-5" /> },
+    { id: 'five-year-old', name: 'Patient Explainer', icon: <Baby className="h-5 w-5" /> },
+    { id: 'casual', name: 'Casual Buddy', icon: <Coffee className="h-5 w-5" /> },
+    { id: 'entertaining', name: 'Entertaining Educator', icon: <Sparkles className="h-5 w-5" /> },
+    { id: 'brutally-honest', name: 'Honest Mentor', icon: <Filter className="h-5 w-5" /> },
+    { id: 'straight-shooter', name: 'Straight Shooter', icon: <List className="h-5 w-5" /> },
+    { id: 'essay-sharpshooter', name: 'Essay Sharpshooter', icon: <PenSquare className="h-5 w-5" /> },
+    { id: 'idea-generator', name: 'Idea Generator', icon: <Lightbulb className="h-5 w-5" /> },
+    { id: 'cram-buddy', name: 'Cram Buddy', icon: <Timer className="h-5 w-5" /> },
+    { id: 'sassy', name: 'Sassy Assistant', icon: <Flame className="h-5 w-5" /> },
 ];
 
 
@@ -378,8 +384,8 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen bg-background text-foreground">
       {/* Sidebar */}
-      <aside className="w-64 flex-col bg-card p-4 hidden md:flex">
-          <Button variant="outline" className="w-full justify-start gap-2 mb-4 bg-card hover:bg-muted">
+      <aside className="w-64 flex-col bg-card p-4 hidden md:flex group/sidebar">
+          <Button variant="ghost" className="w-full justify-start gap-3 mt-6 mb-4 px-4 py-3 bg-accent/20 text-accent font-semibold hover:bg-accent/30">
               <PenSquare className="h-4 w-4"/>
               New Chat
           </Button>
@@ -395,7 +401,7 @@ export default function ChatPage() {
                   </Button>
               </div>
           </ScrollArea>
-          <div className="py-2 mt-auto">
+          <div className="py-4 mt-auto border-t border-border">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="w-full justify-start gap-2 text-sm text-muted-foreground hover:text-foreground">
@@ -413,7 +419,7 @@ export default function ChatPage() {
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>Settings</DropdownMenuItem>
-                    <DropdownMenuItem>Upgrade Plan</DropdownMenuItem>
+                     <DropdownMenuItem className="text-xs text-muted-foreground hover:text-accent">Upgrade plan</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>Logout</DropdownMenuItem>
                 </DropdownMenuContent>
@@ -473,28 +479,37 @@ export default function ChatPage() {
             <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
               {!hasMessages ? (
                  <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] px-4">
-                   <Logo className="h-10 w-10 mb-6 text-muted-foreground" />
-                   <h1 className="text-2xl font-semibold mb-4 text-center">
+                   <div className="bg-card rounded-lg p-6 mx-auto max-w-lg text-center mt-12">
+                     <h1 className="text-2xl font-semibold mb-4">
                         What can I help with?
-                   </h1>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
-                        <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
-                            <p className="font-medium text-base">Summarize a document</p>
-                            <p className="text-sm text-muted-foreground">Get the key points from a long text</p>
-                        </Card>
-                        <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
-                             <p className="font-medium text-base">Create a study plan</p>
-                             <p className="text-sm text-muted-foreground">For an upcoming exam or project</p>
-                        </Card>
-                        <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
-                            <p className="font-medium text-base">Brainstorm ideas</p>
-                             <p className="text-sm text-muted-foreground">For an essay on climate change</p>
-                        </Card>
-                        <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
-                            <p className="font-medium text-base">Explain a concept</p>
-                            <p className="text-sm text-muted-foreground">Like quantum computing</p>
-                        </Card>
-                    </div>
+                     </h1>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Card className="p-4 bg-primary/10 hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
+                              <div className="flex items-center space-x-2 text-base">
+                                <FileText className="h-5 w-5"/>
+                                <p>Summarize a document</p>
+                              </div>
+                          </Card>
+                          <Card className="p-4 bg-primary/10 hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
+                               <div className="flex items-center space-x-2 text-base">
+                                  <Book className="h-5 w-5"/>
+                                  <p>Create a study plan</p>
+                                </div>
+                          </Card>
+                          <Card className="p-4 bg-primary/10 hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
+                              <div className="flex items-center space-x-2 text-base">
+                                <Brain className="h-5 w-5"/>
+                                <p>Brainstorm ideas</p>
+                              </div>
+                          </Card>
+                          <Card className="p-4 bg-primary/10 hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
+                              <div className="flex items-center space-x-2 text-base">
+                                <Sparkles className="h-5 w-5"/>
+                                <p>Explain a concept</p>
+                              </div>
+                          </Card>
+                      </div>
+                   </div>
                  </div>
               ) : (
                 messages.map((msg, index) => (
@@ -514,27 +529,65 @@ export default function ChatPage() {
           </ScrollArea>
         </div>
 
-        <div className="p-4 w-full mx-auto max-w-3xl">
-          <div className="relative">
+        <div className="p-6 w-full mx-auto max-w-3xl">
+           <div className="relative">
               <form
                 onSubmit={handleSendMessage}
-                className="relative flex items-center gap-2 rounded-lg border bg-card p-2 shadow-lg"
+                className="relative flex items-center gap-2 rounded-lg border bg-card p-3 shadow-lg"
               >
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="h-10 w-10 shrink-0 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                          aria-label="Select Persona"
+                        >
+                            <Bot className="h-5 w-5"/>
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 mb-2">
+                        <div className="grid gap-4">
+                            <h4 className="font-medium leading-none">Select Persona</h4>
+                            <p className="text-sm text-muted-foreground">
+                                Change the AI's personality and tone.
+                            </p>
+                            <div className="space-y-2">
+                                {personas.map((p) => (
+                                    <Button key={p.id} variant={selectedPersonaId === p.id ? "secondary" : "ghost"} className="w-full justify-start" onClick={() => setSelectedPersonaId(p.id)}>
+                                        {p.icon}
+                                        <span>{p.name}</span>
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                    </PopoverContent>
+                </Popover>
                  <Button
                   type="button"
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8 shrink-0 rounded-full"
+                  className="h-10 w-10 shrink-0 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                   aria-label="Attach file"
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                    <Paperclip className="h-4 w-4"/>
+                    <Paperclip className="h-5 w-5"/>
                 </Button>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])}
+                    accept="image/*,application/pdf"
+                />
+
                 <Textarea
                     ref={textareaRef}
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     placeholder="Ask anything..."
-                    className="w-full bg-transparent border-none focus-visible:ring-0 resize-none py-2 text-sm"
+                    className="w-full bg-background border-none focus-visible:ring-0 resize-none py-3 text-base placeholder:text-muted-foreground"
                     rows={1}
                     onKeyDown={e => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -546,11 +599,11 @@ export default function ChatPage() {
                 <Button
                     type="submit"
                     size="icon"
-                    className="h-8 w-8 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/50"
+                    className="h-10 w-10 shrink-0 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/50"
                     disabled={!input.trim() || isLoading}
                     aria-label="Send message"
                 >
-                    <Send className="h-4 w-4"/>
+                    <Send className="h-5 w-5"/>
                 </Button>
               </form>
               <p className="text-center text-xs text-muted-foreground mt-2">
@@ -567,5 +620,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
