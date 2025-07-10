@@ -37,6 +37,7 @@ import { rewriteText } from '@/ai/flows/rewrite-text';
 import { addCitations } from '@/ai/flows/add-citations';
 import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
 import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
+import type { ChatInput } from '@/ai/flows/chat-types';
 
 type Attachment = {
   preview: string; // URL for image previews, or name for other files
@@ -761,7 +762,3 @@ export default function ChatPage() {
     </SidebarProvider>
   );
 }
-
-    
-
-    

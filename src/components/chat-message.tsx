@@ -40,10 +40,11 @@ export function ChatMessage({ role, text, image, userAvatar, userName, onShowToo
         <div
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'max-w-2xl rounded-xl p-3 text-sm prose-styles',
+            'max-w-2xl rounded-xl p-3 text-sm',
             isUser
               ? 'bg-primary text-primary-foreground'
-              : 'bg-muted'
+              : 'bg-muted',
+            typeof text === 'string' && 'prose-styles'
           )}
         >
           {typeof text === 'string' ? <div dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br />') }} /> : text}
