@@ -9,7 +9,7 @@
     --background: 0 0% 7%; /* #121212 */
     --foreground: 0 0% 88%; /* #E0E0E0 */
     
-    --card: 0 0% 12%; /* #1E1E1E */
+    --card: 0 0% 7%; /* #1E1E1E - Set to match background for unified look */
     --card-foreground: 0 0% 88%;
     
     --popover: 0 0% 7%;
@@ -41,7 +41,7 @@
     --background: 0 0% 7%;
     --foreground: 0 0% 88%;
     
-    --card: 0 0% 12%;
+    --card: 0 0% 7%;
     --card-foreground: 0 0% 88%;
     
     --popover: 0 0% 7%;

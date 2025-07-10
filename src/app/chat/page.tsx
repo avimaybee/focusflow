@@ -385,13 +385,13 @@ export default function ChatPage() {
     <div className="flex h-screen bg-background text-foreground">
       {/* Sidebar */}
       <aside className="w-64 flex-col bg-card p-4 hidden md:flex group/sidebar">
-          <Button variant="ghost" className="w-full justify-start gap-3 mt-6 mb-4 px-4 py-3 bg-accent/20 text-accent font-semibold hover:bg-accent/30">
+          <Button variant="ghost" className="w-full justify-start gap-3 mt-6 mb-4 px-3 py-2 bg-accent/20 text-accent font-semibold hover:bg-accent/30 rounded-lg h-auto">
               <PenSquare className="h-4 w-4"/>
               New Chat
           </Button>
           <ScrollArea className="flex-1 -mx-4">
               <div className="px-4 space-y-2">
-                  <Button variant="ghost" className="w-full justify-start gap-2 border-l-4 border-accent bg-muted font-semibold">
+                  <Button variant="ghost" className="w-full justify-start gap-2 border-l-4 border-accent bg-card font-semibold">
                        <MessageSquare className="h-4 w-4"/>
                       <span className="truncate">Summary of Biology Notes</span>
                   </Button>
@@ -445,16 +445,16 @@ export default function ChatPage() {
             </div>
         )}
         
-        <header className="h-16 px-6 flex justify-between items-center w-full border-b">
+        <header className="h-16 px-6 flex justify-between items-center w-full">
             <div className="flex items-center gap-2">
-              <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-foreground">
+              <Link href="/" className="flex items-center gap-2 text-xl font-semibold text-foreground">
                   <Logo className="h-7 w-7" />
                   FocusFlow AI
               </Link>
             </div>
             <div className="flex items-center gap-2">
                 {user ? (
-                    <Button asChild className="bg-accent rounded-md px-3 py-1 text-sm font-medium text-primary-foreground hover:bg-accent/90">
+                    <Button asChild className="bg-accent rounded-lg px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-accent/90 h-auto">
                       <Link href="/dashboard">
                         Go Premium
                       </Link>
@@ -464,7 +464,7 @@ export default function ChatPage() {
                     <Button variant="ghost" asChild>
                       <Link href="/login">Login</Link>
                     </Button>
-                    <Button asChild className="bg-accent rounded-md px-3 py-1 text-sm font-medium text-primary-foreground hover:bg-accent/90">
+                    <Button asChild className="bg-accent rounded-lg px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-accent/90 h-auto">
                       <Link href="/login">
                         Sign Up
                       </Link>
@@ -476,36 +476,34 @@ export default function ChatPage() {
 
         <div className="flex-1 relative">
           <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
-            <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
+            <div className="p-4 md:p-6 space-y-6 max-w-3xl mx-auto">
               {!hasMessages ? (
                  <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] px-4">
-                   <div className="bg-card rounded-lg p-6 mx-auto max-w-lg text-center mt-12">
-                     <h1 className="text-2xl font-bold mb-4">
+                     <h1 className="text-2xl font-bold mb-8 text-center">
                         What can I help with?
                      </h1>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Button variant="ghost" className="h-auto p-4 bg-background rounded-lg flex-col gap-2 items-start text-left hover:bg-muted transition-transform hover:-translate-y-1" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
-                            <FileText className="h-6 w-6 text-primary"/>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg">
+                        <Card className="p-4 bg-card hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
+                           <FileText className="h-6 w-6 text-primary mb-2"/>
                             <p className="font-semibold text-base">Summarize a document</p>
                             <p className="text-sm text-muted-foreground">Condense any text or PDF into a digest.</p>
-                        </Button>
-                        <Button variant="ghost" className="h-auto p-4 bg-background rounded-lg flex-col gap-2 items-start text-left hover:bg-muted transition-transform hover:-translate-y-1" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
-                              <Book className="h-6 w-6 text-primary"/>
+                        </Card>
+                         <Card className="p-4 bg-card hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
+                              <Book className="h-6 w-6 text-primary mb-2"/>
                               <p className="font-semibold text-base">Create a study plan</p>
                               <p className="text-sm text-muted-foreground">Generate a weekly schedule for any subject.</p>
-                        </Button>
-                        <Button variant="ghost" className="h-auto p-4 bg-background rounded-lg flex-col gap-2 items-start text-left hover:bg-muted transition-transform hover:-translate-y-1" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
-                            <Brain className="h-6 w-6 text-primary"/>
+                        </Card>
+                        <Card className="p-4 bg-card hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
+                            <Brain className="h-6 w-6 text-primary mb-2"/>
                             <p className="font-semibold text-base">Brainstorm ideas</p>
                             <p className="text-sm text-muted-foreground">Get creative angles for any topic or essay.</p>
-                        </Button>
-                        <Button variant="ghost" className="h-auto p-4 bg-background rounded-lg flex-col gap-2 items-start text-left hover:bg-muted transition-transform hover:-translate-y-1" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
-                            <Sparkles className="h-6 w-6 text-primary"/>
+                        </Card>
+                        <Card className="p-4 bg-card hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
+                            <Sparkles className="h-6 w-6 text-primary mb-2"/>
                             <p className="font-semibold text-base">Explain a concept</p>
                             <p className="text-sm text-muted-foreground">Break down complex topics simply.</p>
-                        </Button>
+                        </Card>
                       </div>
-                   </div>
                  </div>
               ) : (
                 messages.map((msg, index) => (
@@ -529,7 +527,7 @@ export default function ChatPage() {
            <div className="relative">
               <form
                 onSubmit={handleSendMessage}
-                className="relative flex items-center gap-2 rounded-lg border bg-card p-3 shadow-lg"
+                className="relative flex items-center gap-2 rounded-lg border bg-card p-2 shadow-lg"
               >
                 <Popover>
                     <PopoverTrigger asChild>
@@ -537,7 +535,7 @@ export default function ChatPage() {
                           type="button"
                           size="icon"
                           variant="ghost"
-                          className="h-10 w-10 shrink-0 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                          className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
                           aria-label="Select Persona"
                         >
                             <Bot className="h-5 w-5"/>
@@ -564,7 +562,7 @@ export default function ChatPage() {
                   type="button"
                   size="icon"
                   variant="ghost"
-                  className="h-10 w-10 shrink-0 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                  className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
                   aria-label="Attach file"
                   onClick={() => fileInputRef.current?.click()}
                 >
@@ -583,7 +581,7 @@ export default function ChatPage() {
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     placeholder="Ask anything..."
-                    className="w-full bg-background border-none focus-visible:ring-0 resize-none py-3 text-base placeholder:text-muted-foreground"
+                    className="w-full bg-card border-none focus-visible:ring-0 resize-none py-3 text-base placeholder:text-muted-foreground"
                     rows={1}
                     onKeyDown={e => {
                       if (e.key === 'Enter' && !e.shiftKey) {
