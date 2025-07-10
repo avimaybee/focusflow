@@ -489,7 +489,7 @@ export default function ChatPage() {
                               <div className="p-2 bg-primary/10 rounded-md">
                                 <FileText className="h-5 w-5 text-primary"/>
                               </div>
-                              <div>
+                              <div className="w-full">
                                 <p className="font-semibold text-base">Summarize a document</p>
                                 <p className="text-sm text-muted-foreground font-normal">Condense any text or PDF into a digest.</p>
                               </div>
@@ -500,7 +500,7 @@ export default function ChatPage() {
                               <div className="p-2 bg-primary/10 rounded-md">
                                 <Book className="h-5 w-5 text-primary"/>
                               </div>
-                              <div>
+                              <div className="w-full">
                                 <p className="font-semibold text-base">Create a study plan</p>
                                 <p className="text-sm text-muted-foreground font-normal">Generate a weekly schedule for any subject.</p>
                               </div>
@@ -511,7 +511,7 @@ export default function ChatPage() {
                               <div className="p-2 bg-primary/10 rounded-md">
                                 <Brain className="h-5 w-5 text-primary"/>
                               </div>
-                              <div>
+                              <div className="w-full">
                                 <p className="font-semibold text-base">Brainstorm ideas</p>
                                 <p className="text-sm text-muted-foreground font-normal">Get creative angles for any topic or essay.</p>
                               </div>
@@ -522,7 +522,7 @@ export default function ChatPage() {
                               <div className="p-2 bg-primary/10 rounded-md">
                                 <Sparkles className="h-5 w-5 text-primary"/>
                               </div>
-                              <div>
+                              <div className="w-full">
                                 <p className="font-semibold text-base">Explain a concept</p>
                                 <p className="text-sm text-muted-foreground font-normal">Break down complex topics simply.</p>
                               </div>
