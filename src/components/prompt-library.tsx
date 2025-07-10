@@ -80,7 +80,7 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
-          <ToolsIcon className="h-5 w-5" />
+          <Bot className="h-5 w-5" />
           <span className="sr-only">Open prompt library and tools</span>
         </Button>
       </PopoverTrigger>

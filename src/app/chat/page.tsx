@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, ArrowRight } from 'lucide-react';
+import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, ArrowRight, Search } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -38,6 +38,7 @@ import { addCitations } from '@/ai/flows/add-citations';
 import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
 import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
 import type { ChatInput } from '@/ai/flows/chat-types';
+import { Separator } from '@/components/ui/separator';
 
 type Attachment = {
   preview: string; // URL for image previews, or name for other files
@@ -176,8 +177,7 @@ export default function ChatPage() {
       userName: user?.displayName || user?.email || 'User',
     };
     
-    // Clear the initial message if it exists
-    const newMessages = messages.length === 1 && messages[0].role === 'model'
+    const newMessages = (messages.length === 1 && messages[0].role === 'model' && messages[0].text === selectedPersona.initialMessage)
       ? [userMessage]
       : [...messages, userMessage];
 
@@ -505,17 +505,29 @@ export default function ChatPage() {
     }
   }, [input]);
 
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
+  const initial = displayName?.charAt(0).toUpperCase() || 'U';
+
+  const isInitialMessage = messages.length === 1 && messages[0].role === 'model' && messages[0].text === selectedPersona.initialMessage;
+
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader>
-          <SidebarMenuButton className="w-full justify-start">
-            <PenSquare className="mr-2" /> New Chat
-          </SidebarMenuButton>
+        <SidebarHeader className="p-2">
+            <div className="flex items-center justify-between">
+                <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                    <Logo className="h-7 w-7" />
+                    FocusFlow AI
+                </Link>
+                <SidebarTrigger />
+            </div>
+            <div className="relative mt-2">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input placeholder="Search" className="w-full bg-input rounded-md h-8 pl-8 text-sm" />
+            </div>
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="p-2">
           <SidebarMenu>
-            {/* Placeholder for past conversations */}
             <p className="px-2 text-xs text-muted-foreground mb-2">Recent</p>
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Summary of Biology Notes" isActive>
@@ -529,19 +541,38 @@ export default function ChatPage() {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter>
-          {/* Footer content can be added here */}
+        <SidebarFooter className="p-2">
+          <Separator className="my-1 bg-sidebar-border" />
+           <SidebarMenu>
+            <SidebarMenuItem>
+                <SidebarMenuButton>
+                    <Sparkles className="h-4 w-4" />
+                    <span>Upgrade plan</span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton>
+                   <Avatar className="h-6 w-6">
+                        <AvatarImage
+                          src={user?.photoURL || undefined}
+                          data-ai-hint="person"
+                        />
+                        <AvatarFallback>{initial}</AvatarFallback>
+                    </Avatar>
+                    <span>{displayName}</span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <div
-          className="flex flex-col h-[100dvh] relative flex-grow"
+          className="flex flex-col h-[100dvh] relative flex-grow bg-background"
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
           onClick={(e) => {
-            // Close the tool menu if clicking outside of it
             if (toolMenu && !(e.target as HTMLElement).closest('[role="toolbar"]')) {
               setToolMenu(null);
             }
@@ -558,7 +589,6 @@ export default function ChatPage() {
           <header className="sticky top-0 z-10 w-full">
             <div className="container mx-auto flex h-16 max-w-none items-center justify-between px-4">
               <div className="flex items-center gap-2">
-                <SidebarTrigger className="md:hidden" />
                  <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
                         <PopoverTrigger asChild>
                             <Button variant="ghost" className="gap-2">
@@ -606,17 +636,11 @@ export default function ChatPage() {
 
               <div className="flex items-center gap-2">
                   {user ? (
-                    <Link href="/dashboard" className="w-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={user.photoURL || undefined}
-                          data-ai-hint="person"
-                        />
-                        <AvatarFallback>
-                          {user.displayName?.charAt(0).toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Link>
+                      <Button asChild>
+                        <Link href="/dashboard">
+                          <Sparkles className="mr-2 h-4 w-4" /> Go Premium
+                        </Link>
+                      </Button>
                   ) : (
                     <>
                       <Button variant="ghost" asChild>
@@ -624,7 +648,7 @@ export default function ChatPage() {
                       </Button>
                       <Button asChild>
                         <Link href="/login">
-                          Go Premium <ArrowRight className="ml-2 h-4 w-4" />
+                          Sign Up
                         </Link>
                       </Button>
                     </>
@@ -636,8 +660,9 @@ export default function ChatPage() {
           <div className="flex-grow relative">
             <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
               <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
-                {messages.length === 1 && messages[0].role === 'model' ? (
+                {isInitialMessage ? (
                    <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4 text-center">
+                     <Logo className="h-16 w-16 mb-4" />
                      <h1 className="text-2xl font-bold font-heading">
                        What can I help with?
                      </h1>
@@ -707,13 +732,13 @@ export default function ChatPage() {
                   className="relative"
                 >
                   <div className="flex items-end gap-2 p-3 rounded-2xl bg-card border shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
-                    <PromptLibrary
-                      onSelectPrompt={handleSelectPrompt}
-                    />
                     <Button type="button" variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full" onClick={() => fileInputRef.current?.click()}>
                         <Paperclip />
                         <span className="sr-only">Attach file</span>
                     </Button>
+                    <PromptLibrary
+                      onSelectPrompt={handleSelectPrompt}
+                    />
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
                     <Textarea
                         ref={textareaRef}
@@ -755,4 +780,3 @@ export default function ChatPage() {
     </SidebarProvider>
   );
 }
-
