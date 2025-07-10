@@ -2,18 +2,6 @@
 'use client';
 
 import { useState, useRef, useEffect, DragEvent } from 'react';
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarTrigger,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarInset,
-} from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -23,12 +11,9 @@ import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { chat } from '@/ai/flows/chat-flow';
 import { updateUserPersona } from '@/lib/user-actions';
 import { Persona } from '@/ai/flows/chat-types';
-import { PromptLibrary } from '@/components/prompt-library';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -38,14 +23,13 @@ import { addCitations } from '@/ai/flows/add-citations';
 import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
 import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
 import type { ChatInput } from '@/ai/flows/chat-types';
-import { Separator } from '@/components/ui/separator';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 
 type Attachment = {
-  preview: string; // URL for image previews, or name for other files
-  data: string; // data URI for sending to AI
-  type: string; // mime type
-  name: string; // file name
+  preview: string;
+  data: string;
+  type: string;
+  name: string;
 };
 
 const personas = [
@@ -56,69 +40,6 @@ const personas = [
     initialMessage: "Hello! I'm your AI study partner. How can I help you today? You can ask me to summarize notes, create a quiz, build a study plan, and much more.",
     useCase: "Best for general questions, straightforward tasks, and when you need a reliable, no-frills AI assistant.",
   },
-  { 
-    id: 'five-year-old', 
-    name: "Explain Like I'm 5", 
-    icon: <Baby className="h-5 w-5" />, 
-    initialMessage: "Hi there! I can explain big things using small, simple words. What do you want to learn about? It'll be super easy!",
-    useCase: "Use this mode to break down complex, technical, or abstract topics into simple, easy-to-grasp concepts.",
-  },
-  { 
-    id: 'casual', 
-    name: 'Casual Conversationalist', 
-    icon: <Coffee className="h-5 w-5" />, 
-    initialMessage: "Hey! Let's just chat about what you're studying. No pressure, no lectures. What's on your mind?",
-    useCase: "Ideal for low-pressure brainstorming, exploring ideas, or when you want to discuss a topic in a relaxed, friendly way.",
-  },
-  { 
-    id: 'entertaining', 
-    name: 'Entertaining Educator', 
-    icon: <Sparkles className="h-5 w-5" />, 
-    initialMessage: "Ready for a study session that's actually fun? I'll bring the jokes and pop culture refs. What topic are we making awesome today?",
-    useCase: "Perfect for making dry or dense subjects more engaging. A great way to stay motivated and have fun while learning.",
-  },
-  { 
-    id: 'brutally-honest', 
-    name: 'Brutally Honest Mentor', 
-    icon: <Filter className="h-5 w-5" />, 
-    initialMessage: "Alright, no holding back. Show me what you've got, and I'll tell you what needs work. Prepare for some tough love.",
-    useCase: "Use when you need direct, unfiltered feedback on your essays, arguments, or practice responses. No sugarcoating.",
-  },
-  { 
-    id: 'straight-shooter', 
-    name: 'Straight Shooter', 
-    icon: <List className="h-5 w-5" />, 
-    initialMessage: "Let's cut to the chase. No fluff, just facts and bullet points. What information do you need, right now?",
-    useCase: "Best for when you need key information fast. Ask for summaries, definitions, or lists for concise, to-the-point answers.",
-  },
-  { 
-    id: 'essay-sharpshooter', 
-    name: 'Essay Sharpshooter', 
-    icon: <PenSquare className="h-5 w-5" />, 
-    initialMessage: "I am ready to assist with academic writing. I can help structure your arguments, refine your thesis, and outline your essay. What is your topic?",
-    useCase: "Your go-to for any writing task. Use it for help with outlines, thesis statements, paragraph structure, and formal tone.",
-  },
-  { 
-    id: 'idea-generator', 
-    name: 'Idea Generator', 
-    icon: <Lightbulb className="h-5 w-5" />, 
-    initialMessage: "Feeling stuck? Let's brainstorm! I can help you generate creative ideas and explore new angles. What's our topic?",
-    useCase: "Perfect for the start of a project. Use it to brainstorm essay topics, research questions, or creative solutions.",
-  },
-  { 
-    id: 'cram-buddy', 
-    name: 'Cram Buddy', 
-    icon: <Timer className="h-5 w-5" />, 
-    initialMessage: "Time is short, let's go! I'll give you the high-impact facts and memory aids you need to ace this. What subject are we cramming?",
-    useCase: "For last-minute exam prep. It will deliver key facts, mnemonics, and high-yield information for rapid review.",
-  },
-  { 
-    id: 'sassy', 
-    name: 'Sassy Teaching Assistant', 
-    icon: <Flame className="h-5 w-5" />, 
-    initialMessage: "Ugh, fine, I'll help you study. Just try to keep up. What concept are we conquering today, genius?",
-    useCase: "When you need a study break with a side of humor. Adds a witty, irreverent twist to explanations and answers.",
-  },
 ];
 
 
@@ -128,38 +49,23 @@ export default function ChatPage() {
   const [selectedPersonaId, setSelectedPersonaId] = useState(personas[0].id);
   const selectedPersona = personas.find(p => p.id === selectedPersonaId)!;
 
-  const [messages, setMessages] = useState<ChatMessageProps[]>([
-    {
-      role: 'model',
-      text: selectedPersona.initialMessage,
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [input, setInput] = useState('');
   const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [personaPopoverOpen, setPersonaPopoverOpen] = useState(false);
-  const [isHighlighting, setIsHighlighting] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [toolMenu, setToolMenu] = useState<{ text: string; rect: DOMRect } | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // This effect syncs the component's state with the user's preference from the DB
   useEffect(() => {
     if (preferredPersona && personas.some(p => p.id === preferredPersona)) {
       setSelectedPersonaId(preferredPersona);
     }
   }, [preferredPersona]);
 
-  // This effect updates the initial message and the DB when the persona changes
   useEffect(() => {
-    // Only change initial message if it's the only message
-    if (messages.length === 1 && messages[0].role === 'model') {
-      const currentPersona = personas.find(p => p.id === selectedPersonaId)!;
-      setMessages([{ role: 'model', text: currentPersona.initialMessage }]);
-    }
-    // Update preference in Firestore if user is logged in
     if (user?.uid) {
       updateUserPersona(user.uid, selectedPersonaId as Persona);
     }
@@ -177,16 +83,12 @@ export default function ChatPage() {
       userName: user?.displayName || user?.email || 'User',
     };
     
-    const newMessages = (messages.length === 1 && messages[0].role === 'model' && messages[0].text === selectedPersona.initialMessage)
-      ? [userMessage]
-      : [...messages, userMessage];
-
-    setMessages(newMessages);
+    setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
     try {
-      const chatHistoryForAI = newMessages
-        .filter(m => typeof m.text === 'string') // Ensure we only send string messages
+      const chatHistoryForAI = [...messages, userMessage]
+        .filter(m => typeof m.text === 'string') 
         .map(m => ({
           role: m.role,
           text: m.text as string,
@@ -234,36 +136,12 @@ export default function ChatPage() {
   };
 
   const handleSelectPrompt = (prompt: string) => {
-    setInput(prompt);
-    setIsHighlighting(true);
-    setTimeout(() => setIsHighlighting(false), 300);
-
-    // Use a timeout to ensure the state update has been processed and the DOM is updated
-    // before we try to focus and set the selection.
-    setTimeout(() => {
-        if (textareaRef.current) {
-            textareaRef.current.focus();
-            
-            // Logic to place cursor or select placeholder text
-            const placeholderStart = prompt.indexOf('[');
-            const placeholderEnd = prompt.indexOf(']');
-
-            if (placeholderStart !== -1 && placeholderEnd !== -1) {
-                // If there's a placeholder like [YOUR TOPIC HERE], select it.
-                textareaRef.current.setSelectionRange(placeholderStart, placeholderEnd + 1);
-            } else {
-                // Otherwise, move the cursor to the end.
-                const len = prompt.length;
-                textareaRef.current.setSelectionRange(len, len);
-            }
-        }
-    }, 0);
+     submitMessage(prompt, null);
   };
   
   const handleFileSelect = (file: File) => {
     if (!file) return;
   
-    // Validate type
     if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
       toast({
         variant: 'destructive',
@@ -273,7 +151,6 @@ export default function ChatPage() {
       return;
     }
   
-    // Validate size (e.g., 10MB limit)
     const maxSizeInBytes = 10 * 1024 * 1024;
     if (file.size > maxSizeInBytes) {
       toast({
@@ -302,13 +179,6 @@ export default function ChatPage() {
     reader.readAsDataURL(file);
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      handleFileSelect(file);
-    }
-  };
-
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -318,7 +188,6 @@ export default function ChatPage() {
   const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    // Check if the leave is to a child element
     if (e.currentTarget.contains(e.relatedTarget as Node)) {
       return;
     }
@@ -352,20 +221,16 @@ export default function ChatPage() {
     if (!toolMenu) return;
     const messageText = toolMenu.text;
 
-    setToolMenu(null); // Close toolbar
+    setToolMenu(null);
 
-    // For prompt-based tools, we create a new message and submit it.
     if (tool.action === 'prompt') {
         const prompt = tool.value.replace('[SELECTED_TEXT]', messageText);
         await submitMessage(prompt, null);
     } 
-    // For dedicated backend actions, we call the specific flow.
     else if (tool.action === 'rewrite') {
         const userMessage: ChatMessageProps = {
             role: 'user',
             text: `${tool.name}: "${messageText.substring(0, 50)}..."`,
-            userAvatar: user?.photoURL,
-            userName: user?.displayName || user?.email || 'User',
         };
         setMessages(prev => [...prev, userMessage]);
         setIsLoading(true);
@@ -387,7 +252,6 @@ export default function ChatPage() {
               title: 'Rewrite Failed',
               description: 'Could not rewrite the text. Please try again.',
             });
-            // remove the optimistic "user action" message on failure
             setMessages(prev => prev.slice(0, prev.length - 1));
         } finally {
             setIsLoading(false);
@@ -396,8 +260,6 @@ export default function ChatPage() {
         const userMessage: ChatMessageProps = {
             role: 'user',
             text: `Add citations to: "${messageText.substring(0, 50)}..."`,
-            userAvatar: user?.photoURL,
-            userName: user?.displayName || user?.email || 'User',
         };
         setMessages(prev => [...prev, userMessage]);
         setIsLoading(true);
@@ -405,7 +267,7 @@ export default function ChatPage() {
         try {
             const result = await addCitations({
                 textToCite: messageText,
-                citationStyle: tool.value, // e.g., 'APA'
+                citationStyle: tool.value, 
                 persona: selectedPersonaId as Persona,
             });
             setMessages(prev => [
@@ -427,8 +289,6 @@ export default function ChatPage() {
         const userMessage: ChatMessageProps = {
             role: 'user',
             text: `Convert to bullet points: "${messageText.substring(0, 50)}..."`,
-            userAvatar: user?.photoURL,
-            userName: user?.displayName || user?.email || 'User',
         };
         setMessages(prev => [...prev, userMessage]);
         setIsLoading(true);
@@ -458,8 +318,6 @@ export default function ChatPage() {
         const userMessage: ChatMessageProps = {
             role: 'user',
             text: `Find counterarguments for: "${messageText.substring(0, 50)}..."`,
-            userAvatar: user?.photoURL,
-            userName: user?.displayName || user?.email || 'User',
         };
         setMessages(prev => [...prev, userMessage]);
         setIsLoading(true);
@@ -496,10 +354,9 @@ export default function ChatPage() {
     }
   }, [messages]);
   
-  // This effect handles auto-resizing the textarea.
   useEffect(() => {
     if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto'; // Reset height
+        textareaRef.current.style.height = 'auto';
         const scrollHeight = textareaRef.current.scrollHeight;
         textareaRef.current.style.height = `${scrollHeight}px`;
     }
@@ -508,300 +365,191 @@ export default function ChatPage() {
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
   const initial = displayName?.charAt(0).toUpperCase() || 'U';
 
-  const isInitialMessage = messages.length === 1 && messages[0].role === 'model' && messages[0].text === selectedPersona.initialMessage;
+  const hasMessages = messages.length > 0;
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader className="p-4">
-            <div className="flex items-center justify-between">
-                 <Button className="w-full justify-start gap-2 bg-accent/20 text-accent hover:bg-accent/30">
-                    <PenSquare className="h-4 w-4"/>
-                    New Chat
-                </Button>
-                <SidebarTrigger />
-            </div>
-        </SidebarHeader>
-        <SidebarContent className="py-6 px-4">
-          <SidebarMenu className="space-y-2">
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Summary of Biology Notes" isActive className="border-l-4 border-accent bg-secondary font-semibold">
-                 <MessageSquare/>
-                <span>Summary of Biology Notes</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip="History Quiz Prep" className="hover:bg-accent/10 transition-colors duration-150 ease-in-out">
-                <MessageSquare/>
-                <span>History Quiz Prep</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter className="py-4 mt-auto">
-          <Separator className="my-1 bg-sidebar-border" />
-           <SidebarMenu>
-            <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Upgrade to unlock more features" className="text-xs text-secondary hover:text-accent">
-                    <Sparkles className="h-4 w-4" />
-                    <span>Upgrade plan</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton tooltip={displayName} className="space-x-2">
-                   <Avatar className="h-6 w-6">
-                        <AvatarImage
-                          src={user?.photoURL || undefined}
-                          data-ai-hint="person"
-                        />
-                        <AvatarFallback>{initial}</AvatarFallback>
-                    </Avatar>
-                    <span>{displayName}</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-           </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <div
-          className="flex flex-col h-[100dvh] relative flex-grow bg-background"
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-          onClick={(e) => {
-            if (toolMenu && !(e.target as HTMLElement).closest('[role="toolbar"]')) {
-              setToolMenu(null);
-            }
-          }}
-        >
-           {isDraggingOver && (
+    <div className="flex h-screen bg-background text-foreground">
+      {/* Sidebar */}
+      <aside className="w-64 flex-col bg-background p-2 hidden md:flex">
+          <Button variant="outline" className="w-full justify-start gap-2 mb-4 bg-card hover:bg-muted">
+              <PenSquare className="h-4 w-4"/>
+              New Chat
+          </Button>
+          <ScrollArea className="flex-1 -mx-2">
+              <div className="px-2 space-y-2">
+                  <Button variant="ghost" className="w-full justify-start gap-2 border-l-4 border-accent bg-card font-semibold">
+                       <MessageSquare className="h-4 w-4"/>
+                      <span className="truncate">Summary of Biology Notes</span>
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start gap-2 hover:bg-muted">
+                      <MessageSquare className="h-4 w-4"/>
+                      <span className="truncate">History Quiz Prep</span>
+                  </Button>
+              </div>
+          </ScrollArea>
+          <div className="py-2">
+              <Button variant="ghost" className="w-full justify-start gap-2 text-sm text-muted-foreground hover:text-foreground">
+                 <Avatar className="h-6 w-6">
+                      <AvatarImage
+                        src={user?.photoURL || undefined}
+                        data-ai-hint="person"
+                      />
+                      <AvatarFallback>{initial}</AvatarFallback>
+                  </Avatar>
+                  <span className="truncate">{displayName}</span>
+              </Button>
+          </div>
+      </aside>
+
+      {/* Main Content */}
+      <main 
+        className="flex-1 flex flex-col h-screen"
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        {isDraggingOver && (
             <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in">
               <div className="flex flex-col items-center gap-4 text-white p-8 border-2 border-dashed border-white rounded-lg bg-black/20">
                 <UploadCloud className="h-16 w-16" />
                 <p className="text-lg font-semibold">Drop your file here</p>
               </div>
             </div>
-          )}
-           <header className="h-16 px-6 flex justify-between items-center w-full">
-              <div className="flex items-center gap-2">
-                <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                    <Logo className="h-7 w-7" />
-                    FocusFlow AI
-                </Link>
-              </div>
-
-              <div className="flex items-center gap-2">
-                  {user ? (
-                      <Button asChild className="bg-accent rounded-md px-3 py-1 text-sm font-medium">
-                        <Link href="/dashboard">
-                          Go Premium
-                        </Link>
-                      </Button>
-                  ) : (
-                    <>
-                      <Button variant="ghost" asChild>
-                        <Link href="/login">Login</Link>
-                      </Button>
-                      <Button asChild className="bg-accent rounded-md px-3 py-1 text-sm font-medium">
-                        <Link href="/login">
-                          Sign Up
-                        </Link>
-                      </Button>
-                    </>
-                  )}
-                </div>
-            </header>
-          
-          <div className="flex-grow relative">
-            <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
-              <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
-                {isInitialMessage ? (
-                   <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4">
-                     <Logo className="h-10 w-10 mb-4 text-muted-foreground" />
-                     <div className="bg-secondary rounded-lg p-6 mx-auto max-w-lg text-center">
-                        <h1 className="text-2xl font-semibold mb-4 leading-tight">
-                            What can I help with?
-                        </h1>
-                        <div className="grid grid-cols-2 gap-4 w-full">
-                            <Card className="bg-primary rounded-lg p-4 hover:bg-secondary transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
-                                <div className="flex items-center space-x-2 text-base">
-                                    <Book className="h-5 w-5 text-primary-foreground" />
-                                    <span className="text-primary-foreground">Summarize</span>
-                                </div>
-                            </Card>
-                            <Card className="bg-primary rounded-lg p-4 hover:bg-secondary transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
-                                <div className="flex items-center space-x-2 text-base">
-                                    <PenSquare className="h-5 w-5 text-primary-foreground" />
-                                    <span className="text-primary-foreground">Study Plan</span>
-                                 </div>
-                            </Card>
-                            <Card className="bg-primary rounded-lg p-4 hover:bg-secondary transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
-                                <div className="flex items-center space-x-2 text-base">
-                                    <Brain className="h-5 w-5 text-primary-foreground" />
-                                    <span className="text-primary-foreground">Brainstorm</span>
-                                </div>
-                            </Card>
-                            <Card className="bg-primary rounded-lg p-4 hover:bg-secondary transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
-                                <div className="flex items-center space-x-2 text-base">
-                                     <Lightbulb className="h-5 w-5 text-primary-foreground" />
-                                     <span className="text-primary-foreground">Explain</span>
-                                 </div>
-                            </Card>
-                        </div>
-                     </div>
-                   </div>
-                ) : (
-                  messages.map((msg, index) => (
-                    <ChatMessage
-                      key={index}
-                      {...msg}
-                      onShowTools={
-                        msg.role === 'model' && typeof msg.text === 'string'
-                          ? (target) => handleShowTools(msg.text as string, target)
-                          : undefined
-                      }
-                    />
-                  ))
-                )}
-                 {isLoading && <ChatMessage role="model" text={<div className="h-5 w-5 border-2 rounded-full border-t-transparent animate-spin"></div>} />}
-              </div>
-            </ScrollArea>
-          </div>
-
-          <div className="p-4 w-full mx-6 mb-6">
-            <div className="max-w-4xl mx-auto">
-                {attachment && (
-                  <div role="list" className="mb-2">
-                    <div
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Delete' || e.key === 'Backspace') {
-                          setAttachment(null);
-                          e.preventDefault();
-                        }
-                      }}
-                      className="group/pill inline-flex items-center gap-2 rounded-full border bg-muted/50 p-1.5 pr-1 text-sm text-muted-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
-                      role="listitem"
-                      aria-label={`Attached file: ${attachment.name}. Press Delete to remove.`}
-                    >
-                      {attachment.type.startsWith('image/') ? (
-                        <Image
-                          src={attachment.preview}
-                          alt={attachment.name}
-                          width={24}
-                          height={24}
-                          className="h-6 w-6 rounded-full object-cover"
-                        />
-                      ) : (
-                        <FileIcon className="h-6 w-6 text-muted-foreground p-0.5" />
-                      )}
-                      <span className="max-w-[20ch] truncate">
-                        {attachment.name}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 rounded-full shrink-0"
-                        onClick={() => setAttachment(null)}
-                        aria-label={`Remove file ${attachment.name}`}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                <form
-                  onSubmit={handleSendMessage}
-                  className="relative"
-                >
-                  <div className="bg-secondary rounded-lg shadow-sm p-2 flex items-center space-x-2">
-                    <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
-                        <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0 rounded-md text-secondary hover:text-accent hover:bg-secondary/50 transition-colors" aria-label="Select Persona">
-                                {selectedPersona.icon}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80 mb-2">
-                            <div className="grid gap-4">
-                                <div className="space-y-1">
-                                    <h4 className="font-medium leading-none font-heading">Select a Study Mode</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                        Change the AI's tone and response style.
-                                    </p>
-                                </div>
-                                <ScrollArea className="h-72 -mx-4">
-                                    <div className="grid gap-1 px-4">
-                                        {personas.map((persona) => (
-                                            <button
-                                                key={persona.id}
-                                                className={cn(
-                                                    'flex w-full cursor-pointer items-start gap-3 rounded-md p-2 text-left transition-colors hover:bg-muted',
-                                                    selectedPersonaId === persona.id && 'bg-muted'
-                                                )}
-                                                onClick={() => {
-                                                    setSelectedPersonaId(persona.id as Persona);
-                                                    setPersonaPopoverOpen(false);
-                                                }}
-                                            >
-                                                <div className="p-2 bg-primary/10 rounded-md mt-1 text-primary">
-                                                    {persona.icon}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="font-semibold font-heading">{persona.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{persona.useCase}</p>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                    <Button type="button" variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0 rounded-md text-secondary hover:text-accent hover:bg-secondary/50 transition-colors" onClick={() => fileInputRef.current?.click()} aria-label="Attach file">
-                        <Paperclip />
-                    </Button>
-                    <PromptLibrary
-                      onSelectPrompt={handleSelectPrompt}
-                    />
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
-                    <Textarea
-                        ref={textareaRef}
-                        value={input}
-                        onChange={e => setInput(e.target.value)}
-                        placeholder="Ask anything..."
-                        className={cn(
-                            'flex-1 bg-primary rounded-md px-4 py-2 text-base placeholder:text-secondary border-0 shadow-none focus-visible:ring-2 focus-visible:ring-accent/50',
-                            isHighlighting && 'bg-primary/10'
-                        )}
-                        rows={1}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault();
-                              handleSendMessage(e);
-                          }
-                        }}
-                    />
-                    <Button
-                        type="submit"
-                        variant="default"
-                        size="icon"
-                        className="h-10 w-10 shrink-0 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 transition-transform"
-                        disabled={!input.trim() && !attachment}
-                        aria-label="Send message"
-                    >
-                        <Send />
-                    </Button>
-                  </div>
-                </form>
+        )}
+        
+        {!hasMessages && (
+          <header className="h-16 px-6 flex justify-between items-center w-full">
+            <div className="flex items-center gap-2">
+              <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                  <Logo className="h-7 w-7" />
+                  FocusFlow AI
+              </Link>
             </div>
-          </div>
-          <TextSelectionToolbar
-            menuData={toolMenu}
-            onAction={handleToolAction}
-          />
+            <div className="flex items-center gap-2">
+                {user ? (
+                    <Button asChild className="bg-accent rounded-md px-3 py-1 text-sm font-medium text-primary-foreground hover:bg-accent/90">
+                      <Link href="/dashboard">
+                        Go Premium
+                      </Link>
+                    </Button>
+                ) : (
+                  <>
+                    <Button variant="ghost" asChild>
+                      <Link href="/login">Login</Link>
+                    </Button>
+                    <Button asChild className="bg-accent rounded-md px-3 py-1 text-sm font-medium text-primary-foreground hover:bg-accent/90">
+                      <Link href="/login">
+                        Sign Up
+                      </Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+          </header>
+        )}
+
+        <div className="flex-1 relative">
+          <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
+            <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
+              {!hasMessages ? (
+                 <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] px-4">
+                   <Logo className="h-10 w-10 mb-6 text-muted-foreground" />
+                   <div className="bg-card rounded-lg p-6 mx-auto max-w-lg text-center">
+                      <h1 className="text-2xl font-semibold mb-4 leading-tight">
+                          What can I help with?
+                      </h1>
+                      <div className="grid grid-cols-2 gap-4 w-full">
+                          <Card className="bg-primary rounded-lg p-4 hover:bg-primary/90 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
+                              <div className="flex items-center justify-center space-x-2 text-base text-primary-foreground">
+                                  <Book className="h-5 w-5" />
+                                  <span>Summarize</span>
+                              </div>
+                          </Card>
+                          <Card className="bg-primary rounded-lg p-4 hover:bg-primary/90 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
+                              <div className="flex items-center justify-center space-x-2 text-base text-primary-foreground">
+                                  <PenSquare className="h-5 w-5" />
+                                  <span>Study Plan</span>
+                               </div>
+                          </Card>
+                          <Card className="bg-primary rounded-lg p-4 hover:bg-primary/90 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
+                              <div className="flex items-center justify-center space-x-2 text-base text-primary-foreground">
+                                  <Brain className="h-5 w-5" />
+                                  <span>Brainstorm</span>
+                              </div>
+                          </Card>
+                          <Card className="bg-primary rounded-lg p-4 hover:bg-primary/90 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
+                              <div className="flex items-center justify-center space-x-2 text-base text-primary-foreground">
+                                   <Lightbulb className="h-5 w-5" />
+                                   <span>Explain</span>
+                               </div>
+                          </Card>
+                      </div>
+                   </div>
+                 </div>
+              ) : (
+                messages.map((msg, index) => (
+                  <ChatMessage
+                    key={index}
+                    {...msg}
+                    onShowTools={
+                      msg.role === 'model' && typeof msg.text === 'string'
+                        ? (target) => handleShowTools(msg.text as string, target)
+                        : undefined
+                    }
+                  />
+                ))
+              )}
+               {isLoading && <ChatMessage role="model" text={<div className="h-5 w-5 border-2 rounded-full border-t-transparent animate-spin"></div>} />}
+            </div>
+          </ScrollArea>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+
+        <div className="p-4 w-full mx-auto max-w-3xl">
+          <div className="relative">
+              <form
+                onSubmit={handleSendMessage}
+                className="relative"
+              >
+                <Textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    placeholder="Ask anything..."
+                    className={cn(
+                        'w-full bg-primary text-primary-foreground placeholder:text-primary-foreground/70 rounded-lg px-4 py-3 pr-12 text-base shadow-lg focus-visible:ring-2 focus-visible:ring-primary/80 resize-none'
+                    )}
+                    rows={1}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage(e);
+                      }
+                    }}
+                />
+                <Button
+                    type="submit"
+                    size="icon"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 h-8 w-8 shrink-0 rounded-md bg-card text-card-foreground hover:bg-card/80 disabled:bg-card/50"
+                    disabled={!input.trim() || isLoading}
+                    aria-label="Send message"
+                >
+                    <Send className="h-4 w-4"/>
+                </Button>
+              </form>
+              <p className="text-center text-xs text-muted-foreground mt-2">
+                FocusFlow AI can make mistakes. Verify important information.
+              </p>
+          </div>
+        </div>
+
+        <TextSelectionToolbar
+          menuData={toolMenu}
+          onAction={handleToolAction}
+        />
+      </main>
+    </div>
   );
 }
+
+    
