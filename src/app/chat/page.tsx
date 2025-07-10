@@ -26,7 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { chat } from '@/ai/flows/chat-flow';
 import { updateUserPersona } from '@/lib/user-actions';
-import type { ChatInput, Persona } from '@/ai/flows/chat-types';
+import { Persona } from '@/ai/flows/chat-types';
 import { PromptLibrary } from '@/components/prompt-library';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -159,7 +159,7 @@ export default function ChatPage() {
     }
     // Update preference in Firestore if user is logged in
     if (user?.uid) {
-      updateUserPersona(user.uid, selectedPersonaId);
+      updateUserPersona(user.uid, selectedPersonaId as Persona);
     }
   }, [selectedPersonaId, user?.uid]);
 
@@ -515,13 +515,13 @@ export default function ChatPage() {
             <p className="px-2 text-xs text-muted-foreground mb-2">Recent</p>
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Summary of Biology Notes" isActive>
-                <MessageSquare />
+                <MessageSquare className="h-4 w-4" />
                 <span>Summary of Biology Notes</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="History Quiz Prep">
-                <MessageSquare />
+                <MessageSquare className="h-4 w-4" />
                 <span>History Quiz Prep</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -540,7 +540,7 @@ export default function ChatPage() {
                       {user.displayName?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <span>{user.displayName || user.email}</span>
+                  <span className="truncate">{user.displayName || user.email}</span>
               </SidebarMenuButton>
             </Link>
           ) : (
@@ -761,5 +761,7 @@ export default function ChatPage() {
     </SidebarProvider>
   );
 }
+
+    
 
     
