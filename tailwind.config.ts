@@ -19,8 +19,9 @@ const config = {
     },
     extend: {
       fontFamily: {
-        heading: ['var(--font-poppins)', 'sans-serif'],
-        body: ['var(--font-pt-sans)', 'sans-serif'],
+        sans: ['var(--font-sans)', 'sans-serif'],
+        heading: ['Poppins', 'sans-serif'],
+        body: ['"PT Sans"', 'sans-serif'],
       },
       fontSize: {
         xs: '12px',
@@ -144,5 +145,3 @@ const config = {
 } satisfies Config;
 
 export default config;
-
-    

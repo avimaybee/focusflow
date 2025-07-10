@@ -12,6 +12,7 @@ import {
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -20,10 +21,53 @@ import {
   Combine,
   Lightbulb,
   Zap,
+  MoveRight,
+  Quote,
 } from 'lucide-react';
 import Image from 'next/image';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { cn } from '@/lib/utils';
+
+// Custom SVG component for the hero section background
+const HeroGradient = () => (
+  <div className="absolute inset-0 -z-10 overflow-hidden">
+    <div className="absolute left-[50%] top-0 h-[50rem] w-[50rem] -translate-x-[50%] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(60,130,246,0.2),rgba(255,255,255,0))]"></div>
+  </div>
+);
+
+// Custom SVG for the app preview
+const AppPreview = () => (
+    <div className="relative w-full max-w-5xl mx-auto mt-12">
+        <div className="aspect-[16/9] rounded-2xl bg-secondary/50 border border-border/50 shadow-2xl shadow-primary/10 flex items-center justify-center p-8">
+            <div className="w-full h-full rounded-lg bg-background/80 flex flex-col">
+                <div className="h-8 bg-secondary/80 rounded-t-lg flex items-center px-2">
+                    <div className="flex gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                        <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+                    </div>
+                </div>
+                <div className="flex-1 p-4 space-y-4">
+                    <div className="flex items-start gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex-shrink-0"></div>
+                        <div className="space-y-2 flex-1">
+                            <div className="h-4 bg-secondary/80 rounded-full w-3/4"></div>
+                            <div className="h-4 bg-secondary/80 rounded-full w-1/2"></div>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-2 justify-end">
+                         <div className="space-y-2 flex-1 text-right">
+                            <div className="h-4 bg-muted/80 rounded-full w-3/4 ml-auto"></div>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-muted/80 flex-shrink-0"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
 
 export default function LandingPage() {
   const features = [
@@ -80,20 +124,20 @@ export default function LandingPage() {
     {
       quote:
         'This app is a game-changer. I went from juggling three different apps to just one. The seamless flow from summary to flashcards is brilliant.',
-      name: 'Sarah J., University Student',
-      avatar: 'https://placehold.co/100x100.png',
+      name: 'Sarah J.',
+      role: 'University Student',
     },
     {
       quote:
         "The 'Explain This' feature alone is worth its weight in gold. I can finally get unstuck without breaking my study flow. It's like having a tutor on standby 24/7.",
-      name: 'Mike T., High School Senior',
-      avatar: 'https://placehold.co/100x100.png',
+      name: 'Mike T.',
+      role: 'High School Senior',
     },
     {
       quote:
         'I love the dashboard and the study streak. It actually makes me want to log my hours and stay consistent. Who knew studying could be fun?',
-      name: 'Emily R., College Freshman',
-      avatar: 'https://placehold.co/100x100.png',
+      name: 'Emily R.',
+      role: 'College Freshman',
     },
   ];
 
@@ -101,115 +145,112 @@ export default function LandingPage() {
     <>
       <Header />
       <div className="flex-grow">
-          {/* Hero Section */}
-          <section className="py-20 md:py-32 text-center">
-            <div className="container mx-auto px-4">
-              <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight">
-                Free AI Note Summarizer & Study Planner for Students
-              </h1>
-              <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Stop juggling apps. Summarize notes, create flashcards, build
-                study plans, and chat with an AI tutor—all in one place.
-              </p>
-              <div className="mt-8">
-                <Button size="lg" asChild>
-                  <Link href="/chat">Start Free – No Signup Needed</Link>
-                </Button>
-              </div>
-              <div className="mt-12">
-                <Image
-                  src="https://placehold.co/1200x600.png"
-                  width={1200}
-                  height={600}
-                  alt="FocusFlow AI App Preview"
-                  className="rounded-lg shadow-2xl"
-                  data-ai-hint="app interface"
-                />
-              </div>
+        {/* Hero Section */}
+        <section className="relative py-24 md:py-32 text-center">
+          <HeroGradient />
+          <div className="container mx-auto px-4 relative">
+            <h1 className="text-4xl md:text-6xl font-bold max-w-3xl mx-auto leading-tight tracking-tighter">
+              Your AI-Powered Study Co-Pilot
+            </h1>
+            <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Stop juggling apps. Summarize notes, create flashcards, build
+              study plans, and chat with an AI tutor—all in one place.
+            </p>
+            <div className="mt-8 flex gap-4 justify-center">
+              <Button size="lg" asChild>
+                <Link href="/chat">
+                  Start for Free <MoveRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
             </div>
-          </section>
+            <AppPreview />
+          </div>
+        </section>
 
-          {/* Features Section */}
-          <section id="features" className="py-20 bg-muted/50">
-            <div className="container mx-auto px-4">
-              <h2 className="text-3xl font-bold text-center">
-                Your All-in-One AI Study Toolkit
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground text-center max-w-3xl mx-auto leading-snug">
-                FocusFlow AI integrates every tool you need to study smarter, not
-                harder.
-              </p>
-              <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {features.map((feature, index) => (
-                  <Card key={index} className="text-center">
-                    <CardHeader>
-                      <div className="mx-auto bg-primary/10 rounded-full h-16 w-16 flex items-center justify-center">
-                        {feature.icon}
-                      </div>
-                      <CardTitle className="pt-4">
-                        {feature.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {feature.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+        {/* Features Section */}
+        <section id="features" className="py-20 bg-secondary/30">
+          <div className="container mx-auto px-4">
+            <div className="text-center max-w-3xl mx-auto">
+                <h2 className="text-3xl md:text-4xl font-bold">
+                    An Entire Study Toolkit in One App
+                </h2>
+                <p className="mt-4 text-lg text-muted-foreground leading-snug">
+                    FocusFlow AI integrates every tool you need to study smarter, not
+                    harder.
+                </p>
             </div>
-          </section>
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {features.map((feature, index) => (
+                <Card key={index} className="bg-background/60 border-border/60 backdrop-blur-sm">
+                  <CardHeader>
+                    <div className="mx-auto bg-primary/10 rounded-lg h-12 w-12 flex items-center justify-center border border-primary/20">
+                      {feature.icon}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <h3 className="text-lg font-semibold">{feature.title}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
 
-          {/* Testimonials Section */}
-          <section id="testimonials" className="py-20">
-            <div className="container mx-auto px-4">
-              <h2 className="text-3xl font-bold text-center">
-                Loved by Students Everywhere
-              </h2>
-              <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-                {testimonials.map((testimonial, index) => (
-                  <Card key={index}>
-                    <CardContent className="p-6">
-                      <p className="italic text-base leading-relaxed">"{testimonial.quote}"</p>
-                      <div className="mt-4 flex items-center gap-3">
-                        <Image
-                          src={testimonial.avatar}
-                          width={40}
-                          height={40}
-                          alt={testimonial.name}
-                          className="rounded-full"
-                          data-ai-hint="person"
-                        />
-                        <p className="font-semibold text-sm">{testimonial.name}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+        {/* Testimonials Section */}
+        <section id="testimonials" className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center max-w-3xl mx-auto">
+                <h2 className="text-3xl md:text-4xl font-bold">
+                    Loved by Students Everywhere
+                </h2>
+                 <p className="mt-4 text-lg text-muted-foreground leading-snug">
+                    Don't just take our word for it. Here's what students are saying.
+                </p>
             </div>
-          </section>
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <Card key={index} className="bg-secondary/30 border-border/60">
+                  <CardContent className="p-6 flex flex-col h-full">
+                    <Quote className="w-8 h-8 text-primary/50 mb-4" />
+                    <p className="italic text-base text-foreground/90 leading-relaxed flex-grow">
+                      "{testimonial.quote}"
+                    </p>
+                    <div className="mt-6">
+                      <p className="font-semibold text-sm">{testimonial.name}</p>
+                      <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
 
-          {/* FAQ Section */}
-          <section id="faq" className="py-20 bg-muted/50">
-            <div className="container mx-auto px-4 max-w-3xl">
-              <h2 className="text-3xl font-bold text-center">
-                Frequently Asked Questions
-              </h2>
-              <Accordion type="single" collapsible className="w-full mt-8">
-                {faqs.map((faq, index) => (
-                  <AccordionItem value={`item-${index}`} key={index}>
-                    <AccordionTrigger className="text-lg text-left font-medium leading-snug">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-base text-muted-foreground leading-relaxed">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+        {/* FAQ Section */}
+        <section id="faq" className="py-20 bg-secondary/30">
+          <div className="container mx-auto px-4 max-w-3xl">
+            <div className="text-center max-w-3xl mx-auto">
+                <h2 className="text-3xl md:text-4xl font-bold">
+                    Frequently Asked Questions
+                </h2>
             </div>
-          </section>
+            <Accordion type="single" collapsible className="w-full mt-8">
+              {faqs.map((faq, index) => (
+                <AccordionItem value={`item-${index}`} key={index}>
+                  <AccordionTrigger className="text-lg text-left font-medium leading-snug hover:no-underline">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-base text-muted-foreground leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
       </div>
       <Footer />
     </>
