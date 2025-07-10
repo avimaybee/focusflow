@@ -513,7 +513,7 @@ export default function ChatPage() {
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader className="p-2">
+        <SidebarHeader className="p-4">
             <div className="flex items-center justify-between">
                 <Button variant="outline" className="w-full justify-start">
                     <PenSquare className="mr-2"/>
@@ -719,11 +719,11 @@ export default function ChatPage() {
                     </div>
                   </div>
                 )}
-                <div className="relative">
-                  <form
-                    onSubmit={handleSendMessage}
-                    className="flex items-end gap-2 p-3 rounded-2xl bg-card border shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow"
-                  >
+                <form
+                  onSubmit={handleSendMessage}
+                  className="relative"
+                >
+                  <div className="flex items-end gap-2 p-3 rounded-lg bg-card border shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
                     <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
                         <PopoverTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full hover:bg-muted">
@@ -802,8 +802,8 @@ export default function ChatPage() {
                         <Send />
                         <span className="sr-only">Send message</span>
                     </Button>
-                  </form>
-                </div>
+                  </div>
+                </form>
             </div>
           </div>
           <TextSelectionToolbar
