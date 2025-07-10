@@ -515,40 +515,40 @@ export default function ChatPage() {
       <Sidebar>
         <SidebarHeader className="p-4">
             <div className="flex items-center justify-between">
-                <Button variant="outline" className="w-full justify-start">
-                    <PenSquare className="mr-2"/>
+                 <Button className="w-full justify-start gap-2 bg-accent/20 text-accent hover:bg-accent/30">
+                    <PenSquare className="h-4 w-4"/>
                     New Chat
                 </Button>
                 <SidebarTrigger />
             </div>
         </SidebarHeader>
-        <SidebarContent className="p-2">
-          <SidebarMenu>
+        <SidebarContent className="py-6 px-4">
+          <SidebarMenu className="space-y-2">
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Summary of Biology Notes" isActive>
+              <SidebarMenuButton tooltip="Summary of Biology Notes" isActive className="border-l-4 border-accent bg-secondary font-semibold">
                  <MessageSquare/>
                 <span>Summary of Biology Notes</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="History Quiz Prep">
+              <SidebarMenuButton tooltip="History Quiz Prep" className="hover:bg-accent/10 transition-colors duration-150 ease-in-out">
                 <MessageSquare/>
                 <span>History Quiz Prep</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter className="p-2">
+        <SidebarFooter className="py-4 mt-auto">
           <Separator className="my-1 bg-sidebar-border" />
            <SidebarMenu>
             <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Upgrade to unlock more features">
+                <SidebarMenuButton tooltip="Upgrade to unlock more features" className="text-xs text-secondary hover:text-accent">
                     <Sparkles className="h-4 w-4" />
                     <span>Upgrade plan</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-                <SidebarMenuButton tooltip={displayName}>
+                <SidebarMenuButton tooltip={displayName} className="space-x-2">
                    <Avatar className="h-6 w-6">
                         <AvatarImage
                           src={user?.photoURL || undefined}
@@ -583,8 +583,7 @@ export default function ChatPage() {
               </div>
             </div>
           )}
-          <header className="sticky top-0 z-10 w-full">
-            <div className="container mx-auto flex h-16 max-w-none items-center justify-between px-4">
+           <header className="h-16 px-6 flex justify-between items-center w-full">
               <div className="flex items-center gap-2">
                 <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-foreground">
                     <Logo className="h-7 w-7" />
@@ -594,9 +593,9 @@ export default function ChatPage() {
 
               <div className="flex items-center gap-2">
                   {user ? (
-                      <Button asChild>
+                      <Button asChild className="bg-accent rounded-md px-3 py-1 text-sm font-medium">
                         <Link href="/dashboard">
-                          <Sparkles className="mr-2 h-4 w-4" /> Go Premium
+                          Go Premium
                         </Link>
                       </Button>
                   ) : (
@@ -604,7 +603,7 @@ export default function ChatPage() {
                       <Button variant="ghost" asChild>
                         <Link href="/login">Login</Link>
                       </Button>
-                      <Button asChild>
+                      <Button asChild className="bg-accent rounded-md px-3 py-1 text-sm font-medium">
                         <Link href="/login">
                           Sign Up
                         </Link>
@@ -612,51 +611,44 @@ export default function ChatPage() {
                     </>
                   )}
                 </div>
-            </div>
-          </header>
+            </header>
           
           <div className="flex-grow relative">
             <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
               <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
                 {isInitialMessage ? (
-                   <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4 text-center">
-                     <Logo className="h-12 w-12 mb-4 text-muted-foreground" />
-                     <h1 className="text-2xl font-bold mb-6 leading-tight">
-                       What can I help with?
-                     </h1>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
-                        <Card className="hover:bg-muted/50 cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
-                            <CardHeader>
-                                <CardTitle className="text-base flex items-center gap-2">
-                                    <Book className="h-5 w-5 text-primary" />
-                                    <span>Summarize a document</span>
-                                </CardTitle>
-                            </CardHeader>
-                        </Card>
-                         <Card className="hover:bg-muted/50 cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
-                             <CardHeader>
-                                 <CardTitle className="text-base flex items-center gap-2">
-                                     <PenSquare className="h-5 w-5 text-primary" />
-                                     <span>Create a study plan</span>
-                                 </CardTitle>
-                             </CardHeader>
-                         </Card>
-                         <Card className="hover:bg-muted/50 cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
-                             <CardHeader>
-                                 <CardTitle className="text-base flex items-center gap-2">
-                                     <Brain className="h-5 w-5 text-primary" />
-                                     <span>Brainstorm ideas</span>
-                                 </CardTitle>
-                             </CardHeader>
-                         </Card>
-                         <Card className="hover:bg-muted/50 cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
-                             <CardHeader>
-                                 <CardTitle className="text-base flex items-center gap-2">
-                                     <Lightbulb className="h-5 w-5 text-primary" />
-                                     <span>Explain a concept</span>
-                                 </CardTitle>
-                             </CardHeader>
-                         </Card>
+                   <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4">
+                     <Logo className="h-10 w-10 mb-4 text-muted-foreground" />
+                     <div className="bg-secondary rounded-lg p-6 mx-auto max-w-lg text-center">
+                        <h1 className="text-2xl font-semibold mb-4 leading-tight">
+                            What can I help with?
+                        </h1>
+                        <div className="grid grid-cols-2 gap-4 w-full">
+                            <Card className="bg-primary rounded-lg p-4 hover:bg-secondary transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
+                                <div className="flex items-center space-x-2 text-base">
+                                    <Book className="h-5 w-5 text-primary-foreground" />
+                                    <span className="text-primary-foreground">Summarize</span>
+                                </div>
+                            </Card>
+                            <Card className="bg-primary rounded-lg p-4 hover:bg-secondary transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
+                                <div className="flex items-center space-x-2 text-base">
+                                    <PenSquare className="h-5 w-5 text-primary-foreground" />
+                                    <span className="text-primary-foreground">Study Plan</span>
+                                 </div>
+                            </Card>
+                            <Card className="bg-primary rounded-lg p-4 hover:bg-secondary transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
+                                <div className="flex items-center space-x-2 text-base">
+                                    <Brain className="h-5 w-5 text-primary-foreground" />
+                                    <span className="text-primary-foreground">Brainstorm</span>
+                                </div>
+                            </Card>
+                            <Card className="bg-primary rounded-lg p-4 hover:bg-secondary transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
+                                <div className="flex items-center space-x-2 text-base">
+                                     <Lightbulb className="h-5 w-5 text-primary-foreground" />
+                                     <span className="text-primary-foreground">Explain</span>
+                                 </div>
+                            </Card>
+                        </div>
                      </div>
                    </div>
                 ) : (
@@ -677,7 +669,7 @@ export default function ChatPage() {
             </ScrollArea>
           </div>
 
-          <div className="p-4 bg-transparent w-full">
+          <div className="p-4 w-full mx-6 mb-6">
             <div className="max-w-4xl mx-auto">
                 {attachment && (
                   <div role="list" className="mb-2">
@@ -723,12 +715,11 @@ export default function ChatPage() {
                   onSubmit={handleSendMessage}
                   className="relative"
                 >
-                  <div className="flex items-end gap-2 p-3 rounded-lg bg-card border shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
+                  <div className="bg-secondary rounded-lg shadow-sm p-2 flex items-center space-x-2">
                     <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
                         <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full hover:bg-muted">
+                            <Button variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0 rounded-md text-secondary hover:text-accent hover:bg-secondary/50 transition-colors" aria-label="Select Persona">
                                 {selectedPersona.icon}
-                                <span className="sr-only">Select Persona</span>
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-80 mb-2">
@@ -767,9 +758,8 @@ export default function ChatPage() {
                             </div>
                         </PopoverContent>
                     </Popover>
-                    <Button type="button" variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full hover:bg-muted" onClick={() => fileInputRef.current?.click()}>
+                    <Button type="button" variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0 rounded-md text-secondary hover:text-accent hover:bg-secondary/50 transition-colors" onClick={() => fileInputRef.current?.click()} aria-label="Attach file">
                         <Paperclip />
-                        <span className="sr-only">Attach file</span>
                     </Button>
                     <PromptLibrary
                       onSelectPrompt={handleSelectPrompt}
@@ -781,7 +771,7 @@ export default function ChatPage() {
                         onChange={e => setInput(e.target.value)}
                         placeholder="Ask anything..."
                         className={cn(
-                            'max-h-48 flex-1 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 transition-colors duration-300 ease-in-out text-sm leading-relaxed',
+                            'flex-1 bg-primary rounded-md px-4 py-2 text-base placeholder:text-secondary border-0 shadow-none focus-visible:ring-2 focus-visible:ring-accent/50',
                             isHighlighting && 'bg-primary/10'
                         )}
                         rows={1}
@@ -796,11 +786,11 @@ export default function ChatPage() {
                         type="submit"
                         variant="default"
                         size="icon"
-                        className="h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 transition-transform"
+                        className="h-10 w-10 shrink-0 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 transition-transform"
                         disabled={!input.trim() && !attachment}
+                        aria-label="Send message"
                     >
                         <Send />
-                        <span className="sr-only">Send message</span>
                     </Button>
                   </div>
                 </form>

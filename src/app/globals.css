@@ -6,64 +6,81 @@
 
 @layer base {
   :root {
-    --background: 240 2% 8%; /* #121214 */
-    --foreground: 0 0% 88%; /* #E0E0E0 */
-    --card: 225 11% 13%; /* #1E1E24 */
-    --card-foreground: 0 0% 88%; /* #E0E0E0 */
-    --popover: 240 2% 8%; /* #121214 */
-    --popover-foreground: 0 0% 88%; /* #E0E0E0 */
-    --primary: 279 95% 76%; /* #BB86FC */
+    --background: 224 10% 9%; /* #151619 - bg-primary */
+    --foreground: 210 40% 98%; /* text-primary */
+    
+    --card: 224 10% 12%; /* #1C1D21 - bg-secondary */
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 224 10% 9%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 212 92% 80%; /* #89B9F2 - soft blue */
     --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 225 11% 13%;
-    --secondary-foreground: 0 0% 88%;
-    --muted: 225 11% 13%; /* #1E1E24 */
-    --muted-foreground: 0 0% 70%; /* #B3B3B3 */
-    --accent: 225 11% 20%; /* Slightly lighter than card */
-    --accent-foreground: 0 0% 95%;
-    --destructive: 4 90% 58%; /* #F44336 */
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 16%; /* #2A2A2A */
-    --input: 0 0% 16%; /* #2A2A2A */
-    --ring: 279 95% 76%; /* #BB86FC */
+    
+    --secondary: 224 10% 12%; /* #1C1D21 */
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 224 10% 12%;
+    --muted-foreground: 240 5% 65%; /* #A0A0A0 - text-secondary */
+
+    --accent: 265 63% 76%; /* #B788E6 - muted purple */
+    --accent-foreground: 210 40% 98%;
+    
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 19% 27%; /* #3A404F - border-muted */
+    --input: 217 19% 27%;
+    --ring: 212 92% 80%;
+    
     --radius: 0.5rem; /* 8px */
 
     /* Custom Sidebar Variables */
-    --sidebar: 225 11% 13%;
-    --sidebar-foreground: 0 0% 88%;
-    --sidebar-border: 0 0% 16%;
-    --sidebar-accent: 225 11% 20%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-ring: 279 95% 76%;
+    --sidebar: 224 10% 9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-border: 217 19% 17%;
+    --sidebar-accent: 224 10% 12%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-ring: 212 92% 80%;
   }
 
   .dark {
-    --background: 240 2% 8%; /* #121214 */
-    --foreground: 0 0% 88%; /* #E0E0E0 */
-    --card: 225 11% 13%; /* #1E1E24 */
-    --card-foreground: 0 0% 88%; /* #E0E0E0 */
-    --popover: 240 2% 8%; /* #121214 */
-    --popover-foreground: 0 0% 88%; /* #E0E0E0 */
-    --primary: 279 95% 76%; /* #BB86FC */
+    --background: 224 10% 9%;
+    --foreground: 210 40% 98%;
+    
+    --card: 224 10% 12%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 224 10% 9%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 212 92% 80%;
     --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 225 11% 13%;
-    --secondary-foreground: 0 0% 88%;
-    --muted: 225 11% 13%; /* #1E1E24 */
-    --muted-foreground: 0 0% 70%; /* #B3B3B3 */
-    --accent: 225 11% 20%; /* Slightly lighter than card */
-    --accent-foreground: 0 0% 95%;
-    --destructive: 4 90% 58%; /* #F44336 */
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 16%; /* #2A2A2A */
-    --input: 0 0% 16%; /* #2A2A2A */
-    --ring: 279 95% 76%; /* #BB86FC */
+    
+    --secondary: 224 10% 12%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 224 10% 12%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 265 63% 76%;
+    --accent-foreground: 210 40% 98%;
+    
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 19% 27%;
+    --input: 217 19% 27%;
+    --ring: 212 92% 80%;
     
     /* Custom Sidebar Variables */
-    --sidebar: 225 11% 13%;
-    --sidebar-foreground: 0 0% 88%;
-    --sidebar-border: 0 0% 16%;
-    --sidebar-accent: 225 11% 20%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-ring: 279 95% 76%;
+    --sidebar: 224 10% 9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-border: 217 19% 17%;
+    --sidebar-accent: 224 10% 12%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-ring: 212 92% 80%;
   }
 }
 
@@ -74,6 +91,14 @@
   body {
     @apply bg-background text-foreground;
     min-height: 100vh;
+  }
+  
+  ::-webkit-scrollbar { 
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-thumb { 
+    @apply bg-muted-foreground/30 rounded-full;
   }
 }
 
@@ -90,4 +115,3 @@
 .prose-styles td {
     @apply border px-4 py-2 text-left;
 }
-
