@@ -22,7 +22,7 @@ const config = {
         heading: ['var(--font-poppins)', 'sans-serif'],
         body: ['var(--font-pt-sans)', 'sans-serif'],
       },
-       fontSize: {
+      fontSize: {
         xs: '12px',
         sm: '14px',
         base: '16px',
