@@ -384,17 +384,17 @@ export default function ChatPage() {
     <div className="flex h-screen bg-background text-foreground">
       {/* Sidebar */}
       <aside className="w-64 flex-col bg-card p-4 hidden md:flex group/sidebar">
-          <Button variant="ghost" className="w-full justify-start gap-3 mt-6 mb-4 px-3 py-2 bg-accent/20 text-accent font-semibold hover:bg-accent/30 rounded-lg h-auto">
+          <Button variant="default" className="w-full justify-start gap-3 mt-6 mb-4 px-3 py-2 text-primary-foreground font-semibold rounded-lg h-auto">
               <PenSquare className="h-4 w-4"/>
               New Chat
           </Button>
           <ScrollArea className="flex-1 -mx-4">
               <div className="px-4 space-y-2">
-                  <Button variant="ghost" className="w-full justify-start gap-2 border-l-4 border-accent bg-card font-semibold hover:bg-muted group">
+                  <Button variant="ghost" className="w-full justify-start gap-2 border-l-4 border-accent bg-accent/20 font-semibold text-accent hover:text-foreground group">
                        <MessageSquare className="h-4 w-4"/>
                       <span className="truncate group-hover:text-foreground">Summary of Biology Notes</span>
                   </Button>
-                  <Button variant="ghost" className="w-full justify-start gap-2 hover:bg-muted group">
+                  <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:bg-muted group hover:text-foreground">
                       <MessageSquare className="h-4 w-4"/>
                       <span className="truncate group-hover:text-foreground">History Quiz Prep</span>
                   </Button>
@@ -444,7 +444,7 @@ export default function ChatPage() {
             </div>
         )}
         
-        <header className="h-16 px-6 flex justify-between items-center w-full">
+        <header className="sticky top-0 z-50 h-16 px-6 flex justify-between items-center w-full border-b bg-background/95 backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <Link href="/" className="flex items-center gap-2 text-xl font-semibold text-foreground">
                   <Logo className="h-7 w-7" />
@@ -453,7 +453,7 @@ export default function ChatPage() {
             </div>
             <div className="flex items-center gap-2">
                 {user ? (
-                    <Button asChild className="bg-accent rounded-lg px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-accent/90 h-auto">
+                    <Button asChild>
                       <Link href="/dashboard">
                         Go Premium
                       </Link>
@@ -463,7 +463,7 @@ export default function ChatPage() {
                     <Button variant="ghost" asChild>
                       <Link href="/login">Login</Link>
                     </Button>
-                    <Button asChild className="bg-accent rounded-lg px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-accent/90 h-auto">
+                    <Button asChild>
                       <Link href="/login">
                         Sign Up
                       </Link>
@@ -483,7 +483,7 @@ export default function ChatPage() {
                         What can I help with?
                      </h1>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg">
-                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group hover:bg-accent" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
+                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group hover:bg-muted" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
                            <div className="flex flex-col items-start text-left w-full space-y-2">
                               <div className="p-2 bg-primary/10 rounded-md">
                                 <FileText className="h-5 w-5 text-primary group-hover:text-accent-foreground"/>
@@ -494,7 +494,7 @@ export default function ChatPage() {
                               </div>
                            </div>
                         </Button>
-                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group hover:bg-accent" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
+                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group hover:bg-muted" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
                            <div className="flex flex-col items-start text-left w-full space-y-2">
                               <div className="p-2 bg-primary/10 rounded-md">
                                 <Book className="h-5 w-5 text-primary group-hover:text-accent-foreground"/>
@@ -505,7 +505,7 @@ export default function ChatPage() {
                               </div>
                            </div>
                         </Button>
-                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group hover:bg-accent" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
+                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group hover:bg-muted" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
                            <div className="flex flex-col items-start text-left w-full space-y-2">
                               <div className="p-2 bg-primary/10 rounded-md">
                                 <Brain className="h-5 w-5 text-primary group-hover:text-accent-foreground"/>
@@ -516,7 +516,7 @@ export default function ChatPage() {
                               </div>
                            </div>
                         </Button>
-                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group hover:bg-accent" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
+                        <Button variant="outline" className="h-auto p-4 hover:-translate-y-1 transition-transform group hover:bg-muted" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
                            <div className="flex flex-col items-start text-left w-full space-y-2">
                               <div className="p-2 bg-primary/10 rounded-md">
                                 <Sparkles className="h-5 w-5 text-primary group-hover:text-accent-foreground"/>
@@ -639,5 +639,7 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
 
     

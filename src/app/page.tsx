@@ -146,7 +146,7 @@ export default function LandingPage() {
                       <div className="mx-auto bg-primary/10 rounded-full h-16 w-16 flex items-center justify-center">
                         {feature.icon}
                       </div>
-                      <CardTitle className="pt-4 text-xl">
+                      <CardTitle className="pt-4">
                         {feature.title}
                       </CardTitle>
                     </CardHeader>
@@ -170,7 +170,7 @@ export default function LandingPage() {
               <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
                 {testimonials.map((testimonial, index) => (
                   <Card key={index}>
-                    <CardContent className="pt-6">
+                    <CardContent className="p-6">
                       <p className="italic text-base leading-relaxed">"{testimonial.quote}"</p>
                       <div className="mt-4 flex items-center gap-3">
                         <Image
@@ -215,3 +215,5 @@ export default function LandingPage() {
     </>
   );
 }
+
+    
