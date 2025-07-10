@@ -515,10 +515,10 @@ export default function ChatPage() {
       <Sidebar>
         <SidebarHeader className="p-2">
             <div className="flex items-center justify-between">
-                <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                    <Logo className="h-7 w-7" />
-                    FocusFlow AI
-                </Link>
+                <Button variant="outline" className="w-full justify-start">
+                    <PenSquare className="mr-2"/>
+                    New Chat
+                </Button>
                 <SidebarTrigger />
             </div>
             <div className="relative mt-2">
@@ -528,14 +528,15 @@ export default function ChatPage() {
         </SidebarHeader>
         <SidebarContent className="p-2">
           <SidebarMenu>
-            <p className="px-2 text-xs text-muted-foreground mb-2">Recent</p>
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Summary of Biology Notes" isActive>
+                 <MessageSquare/>
                 <span>Summary of Biology Notes</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="History Quiz Prep">
+                <MessageSquare/>
                 <span>History Quiz Prep</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -589,49 +590,10 @@ export default function ChatPage() {
           <header className="sticky top-0 z-10 w-full">
             <div className="container mx-auto flex h-16 max-w-none items-center justify-between px-4">
               <div className="flex items-center gap-2">
-                 <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
-                        <PopoverTrigger asChild>
-                            <Button variant="ghost" className="gap-2">
-                                <span className="font-bold text-lg">FocusFlow AI</span>
-                                {selectedPersona.icon}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80 mb-2">
-                            <div className="grid gap-4">
-                                <div className="space-y-1">
-                                    <h4 className="font-medium leading-none font-heading">Select a Study Mode</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                        Change the AI's tone and response style.
-                                    </p>
-                                </div>
-                                <ScrollArea className="h-72 -mx-4">
-                                    <div className="grid gap-1 px-4">
-                                        {personas.map((persona) => (
-                                            <button
-                                                key={persona.id}
-                                                className={cn(
-                                                    'flex w-full cursor-pointer items-start gap-3 rounded-md p-2 text-left transition-colors hover:bg-muted',
-                                                    selectedPersonaId === persona.id && 'bg-muted'
-                                                )}
-                                                onClick={() => {
-                                                    setSelectedPersonaId(persona.id as Persona);
-                                                    setPersonaPopoverOpen(false);
-                                                }}
-                                            >
-                                                <div className="p-2 bg-primary/10 rounded-md mt-1 text-primary">
-                                                    {persona.icon}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="font-semibold font-heading">{persona.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{persona.useCase}</p>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
+                <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                    <Logo className="h-7 w-7" />
+                    FocusFlow AI
+                </Link>
               </div>
 
               <div className="flex items-center gap-2">
@@ -732,6 +694,49 @@ export default function ChatPage() {
                   className="relative"
                 >
                   <div className="flex items-end gap-2 p-3 rounded-2xl bg-card border shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
+                    <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
+                                {selectedPersona.icon}
+                                <span className="sr-only">Select Persona</span>
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 mb-2">
+                            <div className="grid gap-4">
+                                <div className="space-y-1">
+                                    <h4 className="font-medium leading-none font-heading">Select a Study Mode</h4>
+                                    <p className="text-sm text-muted-foreground">
+                                        Change the AI's tone and response style.
+                                    </p>
+                                </div>
+                                <ScrollArea className="h-72 -mx-4">
+                                    <div className="grid gap-1 px-4">
+                                        {personas.map((persona) => (
+                                            <button
+                                                key={persona.id}
+                                                className={cn(
+                                                    'flex w-full cursor-pointer items-start gap-3 rounded-md p-2 text-left transition-colors hover:bg-muted',
+                                                    selectedPersonaId === persona.id && 'bg-muted'
+                                                )}
+                                                onClick={() => {
+                                                    setSelectedPersonaId(persona.id as Persona);
+                                                    setPersonaPopoverOpen(false);
+                                                }}
+                                            >
+                                                <div className="p-2 bg-primary/10 rounded-md mt-1 text-primary">
+                                                    {persona.icon}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-semibold font-heading">{persona.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{persona.useCase}</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </ScrollArea>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                     <Button type="button" variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full" onClick={() => fileInputRef.current?.click()}>
                         <Paperclip />
                         <span className="sr-only">Attach file</span>
