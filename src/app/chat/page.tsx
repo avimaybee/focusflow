@@ -378,14 +378,14 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen bg-background text-foreground">
       {/* Sidebar */}
-      <aside className="w-64 flex-col bg-background p-2 hidden md:flex">
+      <aside className="w-64 flex-col bg-card p-4 hidden md:flex">
           <Button variant="outline" className="w-full justify-start gap-2 mb-4 bg-card hover:bg-muted">
               <PenSquare className="h-4 w-4"/>
               New Chat
           </Button>
-          <ScrollArea className="flex-1 -mx-2">
-              <div className="px-2 space-y-2">
-                  <Button variant="ghost" className="w-full justify-start gap-2 border-l-4 border-accent bg-card font-semibold">
+          <ScrollArea className="flex-1 -mx-4">
+              <div className="px-4 space-y-2">
+                  <Button variant="ghost" className="w-full justify-start gap-2 border-l-4 border-accent bg-muted font-semibold">
                        <MessageSquare className="h-4 w-4"/>
                       <span className="truncate">Summary of Biology Notes</span>
                   </Button>
@@ -477,22 +477,22 @@ export default function ChatPage() {
                    <h1 className="text-2xl font-semibold mb-4 text-center">
                         What can I help with?
                    </h1>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-md">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
                         <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
-                            <p className="text-sm font-medium">Summarize a document</p>
-                            <p className="text-xs text-muted-foreground">Get the key points from a long text</p>
+                            <p className="font-medium text-base">Summarize a document</p>
+                            <p className="text-sm text-muted-foreground">Get the key points from a long text</p>
                         </Card>
                         <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
-                             <p className="text-sm font-medium">Create a study plan</p>
-                             <p className="text-xs text-muted-foreground">For an upcoming exam or project</p>
+                             <p className="font-medium text-base">Create a study plan</p>
+                             <p className="text-sm text-muted-foreground">For an upcoming exam or project</p>
                         </Card>
                         <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
-                            <p className="text-sm font-medium">Brainstorm ideas</p>
-                             <p className="text-xs text-muted-foreground">For an essay on climate change</p>
+                            <p className="font-medium text-base">Brainstorm ideas</p>
+                             <p className="text-sm text-muted-foreground">For an essay on climate change</p>
                         </Card>
                         <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
-                            <p className="text-sm font-medium">Explain a concept</p>
-                            <p className="text-xs text-muted-foreground">Like quantum computing</p>
+                            <p className="font-medium text-base">Explain a concept</p>
+                            <p className="text-sm text-muted-foreground">Like quantum computing</p>
                         </Card>
                     </div>
                  </div>
@@ -518,7 +518,7 @@ export default function ChatPage() {
           <div className="relative">
               <form
                 onSubmit={handleSendMessage}
-                className="relative flex items-center gap-2 rounded-xl border bg-card p-2 shadow-lg"
+                className="relative flex items-center gap-2 rounded-lg border bg-card p-2 shadow-lg"
               >
                  <Button
                   type="button"
@@ -534,7 +534,7 @@ export default function ChatPage() {
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     placeholder="Ask anything..."
-                    className="w-full bg-transparent border-none focus-visible:ring-0 resize-none py-2"
+                    className="w-full bg-transparent border-none focus-visible:ring-0 resize-none py-2 text-sm"
                     rows={1}
                     onKeyDown={e => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -567,3 +567,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
