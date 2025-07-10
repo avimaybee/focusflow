@@ -32,21 +32,21 @@ export function ChatMessage({ role, text, image, userAvatar, userName, onShowToo
   return (
     <div className={cn('flex items-start gap-3 animate-in fade-in-50 slide-in-from-bottom-2 duration-500', isUser && 'justify-end')}>
       {!isUser && (
-        <Avatar className="h-8 w-8 bg-accent/50 text-accent">
-            <AvatarFallback><Bot/></AvatarFallback>
+        <Avatar className="h-8 w-8 bg-accent/50 text-accent-foreground border border-accent">
+            <AvatarFallback className="bg-transparent"><Bot className="h-5 w-5"/></AvatarFallback>
         </Avatar>
       )}
       <div className="flex flex-col items-start gap-1 group/message" ref={messageRef}>
         <div
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'max-w-xl rounded-xl p-3 text-sm',
+            'max-w-2xl rounded-xl p-3 text-sm prose-styles',
             isUser
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted'
           )}
         >
-          {typeof text === 'string' ? <p className="whitespace-pre-wrap">{text}</p> : text}
+          {typeof text === 'string' ? <div dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br />') }} /> : text}
           {image && (
               <div className="mt-2 relative h-48 w-48">
                   <Image src={image} alt="User upload" layout="fill" className="rounded-md object-contain" />

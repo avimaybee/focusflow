@@ -4,15 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'PT Sans', sans-serif;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Poppins', sans-serif;
-}
-
-
 @layer base {
   :root {
     --background: 216 11% 12%; /* #1B1F23 */
@@ -71,7 +62,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .prose-styles {
-  @apply prose prose-invert prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-foreground;
+  @apply prose prose-invert max-w-none prose-p:font-body prose-headings:font-heading prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-foreground;
 }
 
 .prose-styles table {
