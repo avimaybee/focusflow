@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Plus, Star, Search, Brain, FileText, Bot, PenLine, Pencil } from 'lucide-react';
+import { Bot as ToolsIcon, Star, Search, Brain, FileText, Bot, PenLine, Pencil } from 'lucide-react';
 import type { PromptTemplate } from '@/lib/prompts-data';
 import { getPromptTemplates } from '@/lib/prompts-data';
 import { updateUserFavoritePrompts } from '@/lib/user-actions';
@@ -79,9 +79,9 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-12 w-12 shrink-0 rounded-full">
-          <Plus className="h-6 w-6" />
-          <span className="sr-only">Open prompt library</span>
+        <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
+          <ToolsIcon className="h-5 w-5" />
+          <span className="sr-only">Open prompt library and tools</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[calc(100vw-2rem)] md:w-[500px] lg:w-[600px] p-0 mb-2">

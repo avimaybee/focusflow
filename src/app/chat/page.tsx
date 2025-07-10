@@ -119,14 +119,6 @@ const personas = [
   },
 ];
 
-const navLinks = [
-    { href: '#', label: 'Summarizer' },
-    { href: '#', label: 'Flashcards' },
-    { href: '#', label: 'Notes' },
-    { href: '#', label: 'Tools' },
-    { href: '#', label: 'Help' },
-];
-
 
 export default function ChatPage() {
   const { user, preferredPersona } = useAuth();
@@ -184,13 +176,16 @@ export default function ChatPage() {
       userName: user?.displayName || user?.email || 'User',
     };
     
-    const newMessages = [...messages, userMessage];
+    // Clear the initial message if it exists
+    const newMessages = messages.length === 1 && messages[0].role === 'model'
+      ? [userMessage]
+      : [...messages, userMessage];
+
     setMessages(newMessages);
     setIsLoading(true);
 
     try {
       const chatHistoryForAI = newMessages
-        .slice(1) // Remove initial welcome message
         .filter(m => typeof m.text === 'string') // Ensure we only send string messages
         .map(m => ({
           role: m.role,
@@ -514,8 +509,8 @@ export default function ChatPage() {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <SidebarMenuButton className="w-full justify-start" variant="outline">
-            <Plus className="mr-2" /> New Chat
+          <SidebarMenuButton className="w-full justify-start">
+            <PenSquare className="mr-2" /> New Chat
           </SidebarMenuButton>
         </SidebarHeader>
         <SidebarContent>
@@ -524,39 +519,18 @@ export default function ChatPage() {
             <p className="px-2 text-xs text-muted-foreground mb-2">Recent</p>
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Summary of Biology Notes" isActive>
-                <MessageSquare className="h-4 w-4" />
                 <span>Summary of Biology Notes</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="History Quiz Prep">
-                <MessageSquare className="h-4 w-4" />
                 <span>History Quiz Prep</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-          {user ? (
-            <Link href="/dashboard" className="w-full">
-              <SidebarMenuButton className="w-full justify-start">
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage
-                      src={user.photoURL || undefined}
-                      data-ai-hint="person"
-                    />
-                    <AvatarFallback>
-                      {user.displayName?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="truncate">{user.displayName || user.email}</span>
-              </SidebarMenuButton>
-            </Link>
-          ) : (
-            <Button asChild className="w-full">
-              <Link href="/login">Login / Sign Up</Link>
-            </Button>
-          )}
+          {/* Footer content can be added here */}
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
@@ -581,33 +555,68 @@ export default function ChatPage() {
               </div>
             </div>
           )}
-          <header className="sticky top-0 z-10 w-full border-b bg-background/95 backdrop-blur-sm">
+          <header className="sticky top-0 z-10 w-full">
             <div className="container mx-auto flex h-16 max-w-none items-center justify-between px-4">
               <div className="flex items-center gap-2">
                 <SidebarTrigger className="md:hidden" />
-                <Link href="/" className="flex items-center gap-2">
-                  <Logo className="h-8 w-8" />
-                  <span className="font-bold text-lg hidden sm:inline-block">FocusFlow AI</span>
-                </Link>
+                 <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" className="gap-2">
+                                <span className="font-bold text-lg">FocusFlow AI</span>
+                                {selectedPersona.icon}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 mb-2">
+                            <div className="grid gap-4">
+                                <div className="space-y-1">
+                                    <h4 className="font-medium leading-none font-heading">Select a Study Mode</h4>
+                                    <p className="text-sm text-muted-foreground">
+                                        Change the AI's tone and response style.
+                                    </p>
+                                </div>
+                                <ScrollArea className="h-72 -mx-4">
+                                    <div className="grid gap-1 px-4">
+                                        {personas.map((persona) => (
+                                            <button
+                                                key={persona.id}
+                                                className={cn(
+                                                    'flex w-full cursor-pointer items-start gap-3 rounded-md p-2 text-left transition-colors hover:bg-muted',
+                                                    selectedPersonaId === persona.id && 'bg-muted'
+                                                )}
+                                                onClick={() => {
+                                                    setSelectedPersonaId(persona.id as Persona);
+                                                    setPersonaPopoverOpen(false);
+                                                }}
+                                            >
+                                                <div className="p-2 bg-primary/10 rounded-md mt-1 text-primary">
+                                                    {persona.icon}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-semibold font-heading">{persona.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{persona.useCase}</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </ScrollArea>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
               </div>
-
-              <nav className="hidden md:flex items-center gap-6">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href + link.label}
-                    href={link.href}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
 
               <div className="flex items-center gap-2">
                   {user ? (
-                    <Button asChild>
-                      <Link href="/dashboard">Dashboard</Link>
-                    </Button>
+                    <Link href="/dashboard" className="w-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage
+                          src={user.photoURL || undefined}
+                          data-ai-hint="person"
+                        />
+                        <AvatarFallback>
+                          {user.displayName?.charAt(0).toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Link>
                   ) : (
                     <>
                       <Button variant="ghost" asChild>
@@ -627,22 +636,12 @@ export default function ChatPage() {
           <div className="flex-grow relative">
             <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
               <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
-                {messages.length <= 1 && !isMobile ? (
-                  <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4 text-center">
-                    <div className="p-4 rounded-full bg-primary/10 mb-4 border border-primary/20 text-primary">
-                      {selectedPersona.icon}
-                    </div>
-                    <h1 className="text-2xl font-bold font-heading">
-                      {selectedPersona.name}
-                    </h1>
-                     <p className="text-muted-foreground mt-2 max-w-md">
-                        {selectedPersona.initialMessage}
-                    </p>
-                    <div className="mt-6 max-w-md w-full text-left bg-muted/50 rounded-lg p-4">
-                        <p className="font-bold text-sm text-foreground">Best for:</p>
-                        <p className="text-muted-foreground text-sm mt-1">{selectedPersona.useCase}</p>
-                    </div>
-                  </div>
+                {messages.length === 1 && messages[0].role === 'model' ? (
+                   <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4 text-center">
+                     <h1 className="text-2xl font-bold font-heading">
+                       What can I help with?
+                     </h1>
+                   </div>
                 ) : (
                   messages.map((msg, index) => (
                     <ChatMessage
@@ -707,53 +706,11 @@ export default function ChatPage() {
                   onSubmit={handleSendMessage}
                   className="relative"
                 >
-                  <div className="flex items-end gap-2 p-2 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
-                    <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
-                        <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-12 w-12 shrink-0 rounded-full" aria-label="Select Persona">
-                                <div className="text-primary">{selectedPersona.icon}</div>
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80 mb-2">
-                            <div className="grid gap-4">
-                                <div className="space-y-1">
-                                    <h4 className="font-medium leading-none font-heading">Select a Study Mode</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                        Change the AI's tone and response style.
-                                    </p>
-                                </div>
-                                <ScrollArea className="h-72 -mx-4">
-                                    <div className="grid gap-1 px-4">
-                                        {personas.map((persona) => (
-                                            <button
-                                                key={persona.id}
-                                                className={cn(
-                                                    'flex w-full cursor-pointer items-start gap-3 rounded-md p-2 text-left transition-colors hover:bg-muted',
-                                                    selectedPersonaId === persona.id && 'bg-muted'
-                                                )}
-                                                onClick={() => {
-                                                    setSelectedPersonaId(persona.id as Persona);
-                                                    setPersonaPopoverOpen(false);
-                                                }}
-                                            >
-                                                <div className="p-2 bg-primary/10 rounded-md mt-1 text-primary">
-                                                    {persona.icon}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="font-semibold font-heading">{persona.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{persona.useCase}</p>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
+                  <div className="flex items-end gap-2 p-3 rounded-2xl bg-card border shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
                     <PromptLibrary
                       onSelectPrompt={handleSelectPrompt}
                     />
-                    <Button type="button" variant="ghost" size="icon" className="h-12 w-12 shrink-0 rounded-full" onClick={() => fileInputRef.current?.click()}>
+                    <Button type="button" variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full" onClick={() => fileInputRef.current?.click()}>
                         <Paperclip />
                         <span className="sr-only">Attach file</span>
                     </Button>
@@ -762,7 +719,7 @@ export default function ChatPage() {
                         ref={textareaRef}
                         value={input}
                         onChange={e => setInput(e.target.value)}
-                        placeholder="Ask me anything..."
+                        placeholder="Ask anything..."
                         className={cn(
                             'max-h-48 flex-1 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 transition-colors duration-300 ease-in-out',
                             isHighlighting && 'bg-primary/10'
@@ -779,8 +736,8 @@ export default function ChatPage() {
                         type="submit"
                         variant="default"
                         size="icon"
-                        className="h-12 w-12 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 transition-transform"
-                        disabled={(!input.trim() && !attachment) || isLoading}
+                        className="h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 transition-transform"
+                        disabled={!input.trim() && !attachment}
                     >
                         <Send />
                         <span className="sr-only">Send message</span>
@@ -798,3 +755,4 @@ export default function ChatPage() {
     </SidebarProvider>
   );
 }
+
