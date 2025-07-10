@@ -4,6 +4,22 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/auth-context';
+import { Poppins, PT_Sans } from 'next/font/google';
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-poppins',
+  weight: ['400', '600', '700'],
+});
+
+const pt_sans = PT_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-pt-sans',
+  weight: ['400', '700'],
+});
+
 
 export const metadata: Metadata = {
   title: 'FocusFlow AI: AI Summarizer, Flashcards, Quizzes & Study Planner',
@@ -18,12 +34,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={cn("dark", poppins.variable, pt_sans.variable)}>
       <head>
       </head>
       <body
         className={cn(
-          'min-h-screen bg-background font-sans antialiased'
+          'min-h-screen bg-background font-body antialiased'
         )}
       >
         <AuthProvider>

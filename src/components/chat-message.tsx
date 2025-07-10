@@ -14,34 +14,35 @@ export type ChatMessageProps = {
   image?: string | null;
   userAvatar?: string | null;
   userName?: string;
-  onShowTools?: (rect: DOMRect) => void;
+  onShowTools?: (target: HTMLElement) => void;
 };
 
 export function ChatMessage({ role, text, image, userAvatar, userName, onShowTools }: ChatMessageProps) {
   const isUser = role === 'user';
   const toolsButtonRef = React.useRef<HTMLButtonElement>(null);
+  const messageRef = React.useRef<HTMLDivElement>(null);
 
   const handleToolButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // prevent closing the menu if it was just opened
-    if (toolsButtonRef.current && onShowTools) {
-      onShowTools(toolsButtonRef.current.getBoundingClientRect());
+    if (messageRef.current && onShowTools) {
+        onShowTools(messageRef.current);
     }
   };
   
   return (
     <div className={cn('flex items-start gap-3 animate-in fade-in-50 slide-in-from-bottom-2 duration-500', isUser && 'justify-end')}>
       {!isUser && (
-        <Avatar className="h-8 w-8">
+        <Avatar className="h-8 w-8 bg-accent/50 text-accent">
             <AvatarFallback><Bot/></AvatarFallback>
         </Avatar>
       )}
-      <div className="flex flex-col items-start gap-1 group/message">
+      <div className="flex flex-col items-start gap-1 group/message" ref={messageRef}>
         <div
           style={{ lineHeight: 1.5 }}
           className={cn(
             'max-w-xl rounded-xl p-3 text-sm',
             isUser
-              ? 'bg-input text-primary'
+              ? 'bg-primary text-primary-foreground'
               : 'bg-muted'
           )}
         >

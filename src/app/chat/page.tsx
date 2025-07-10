@@ -336,11 +336,11 @@ export default function ChatPage() {
     }
   };
 
-  const handleShowTools = (text: string, rect: DOMRect) => {
-    if (toolMenu?.text === text) {
+  const handleShowTools = (messageText: string, targetElement: HTMLElement) => {
+    if (toolMenu?.text === messageText) {
       setToolMenu(null);
     } else {
-      setToolMenu({ text, rect });
+      setToolMenu({ text: messageText, rect: targetElement.getBoundingClientRect() });
     }
   };
 
@@ -572,16 +572,16 @@ export default function ChatPage() {
               </div>
             </div>
           )}
-          <header className="p-2 border-b flex items-center gap-2 md:hidden sticky top-0 bg-[#1A1A1A] border-b border-[#2A2A2A] z-10">
+          <header className="p-2 border-b flex items-center gap-2 md:hidden sticky top-0 bg-background/80 backdrop-blur-sm z-10">
             <SidebarTrigger />
             <div className="flex items-center gap-2">
                 <Logo className="h-6 w-6" />
-                <span className="font-bold">FocusFlow AI</span>
+                <span className="font-bold font-heading">FocusFlow AI</span>
             </div>
           </header>
           
-          <div className="p-2 px-4 border-b flex items-center justify-between gap-2 bg-[#1A1A1A] border-b border-[#2A2A2A] z-10 h-14">
-              <h2 className="font-bold text-sm md:text-base">New Chat</h2>
+          <div className="p-2 px-4 border-b flex items-center justify-between gap-2 bg-background/80 backdrop-blur-sm sticky top-0 md:top-auto z-10 h-14">
+              <h2 className="font-bold font-heading text-sm md:text-base">New Chat</h2>
           </div>
 
           <div className="flex-grow relative">
@@ -589,10 +589,10 @@ export default function ChatPage() {
               <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
                 {messages.length <= 1 && !isMobile ? (
                   <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4 text-center">
-                    <div className="p-4 rounded-full bg-primary/10 mb-4 border">
+                    <div className="p-4 rounded-full bg-primary/10 mb-4 border border-primary/20 text-primary">
                       {selectedPersona.icon}
                     </div>
-                    <h1 className="text-2xl font-bold">
+                    <h1 className="text-2xl font-bold font-heading">
                       {selectedPersona.name}
                     </h1>
                      <p className="text-muted-foreground mt-2 max-w-md">
@@ -610,7 +610,7 @@ export default function ChatPage() {
                       {...msg}
                       onShowTools={
                         msg.role === 'model' && typeof msg.text === 'string'
-                          ? (rect) => handleShowTools(msg.text as string, rect)
+                          ? (target) => handleShowTools(msg.text as string, target)
                           : undefined
                       }
                     />
@@ -621,7 +621,7 @@ export default function ChatPage() {
             </ScrollArea>
           </div>
 
-          <div className="p-4 bg-background/95 w-full">
+          <div className="p-4 bg-transparent w-full">
             <div className="max-w-4xl mx-auto">
                 {attachment && (
                   <div role="list" className="mb-2">
@@ -667,17 +667,17 @@ export default function ChatPage() {
                   onSubmit={handleSendMessage}
                   className="relative"
                 >
-                  <div className="flex items-end gap-2 p-2 rounded-2xl bg-card shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
+                  <div className="flex items-end gap-2 p-2 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
                     <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
                         <PopoverTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-12 w-12 shrink-0 rounded-full" aria-label="Select Persona">
-                                {selectedPersona.icon}
+                                <div className="text-primary">{selectedPersona.icon}</div>
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-80 mb-2">
                             <div className="grid gap-4">
                                 <div className="space-y-1">
-                                    <h4 className="font-medium leading-none">Select a Study Mode</h4>
+                                    <h4 className="font-medium leading-none font-heading">Select a Study Mode</h4>
                                     <p className="text-sm text-muted-foreground">
                                         Change the AI's tone and response style.
                                     </p>
@@ -696,11 +696,11 @@ export default function ChatPage() {
                                                     setPersonaPopoverOpen(false);
                                                 }}
                                             >
-                                                <div className="p-2 bg-primary/10 rounded-md mt-1">
+                                                <div className="p-2 bg-primary/10 rounded-md mt-1 text-primary">
                                                     {persona.icon}
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="font-semibold">{persona.name}</p>
+                                                    <p className="font-semibold font-heading">{persona.name}</p>
                                                     <p className="text-xs text-muted-foreground">{persona.useCase}</p>
                                                 </div>
                                             </button>
@@ -737,8 +737,9 @@ export default function ChatPage() {
                     />
                     <Button
                         type="submit"
+                        variant="default"
                         size="icon"
-                        className="h-12 w-12 shrink-0 rounded-full hover:scale-110 transition-transform"
+                        className="h-12 w-12 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 transition-transform"
                         disabled={(!input.trim() && !attachment) || isLoading}
                     >
                         <Send />
