@@ -567,11 +567,13 @@ export default function ChatPage() {
                     </PopoverTrigger>
                     <PopoverContent className="w-80 mb-2">
                         <div className="grid gap-4">
+                          <div className="space-y-2">
                             <h4 className="font-medium leading-none">Select Persona</h4>
                             <p className="text-sm text-muted-foreground">
                                 Change the AI's personality and tone.
                             </p>
-                            <div className="space-y-2">
+                          </div>
+                            <div className="space-y-1">
                                 {personas.map((p) => (
                                     <Button key={p.id} variant={selectedPersonaId === p.id ? "secondary" : "ghost"} className="w-full justify-start" onClick={() => setSelectedPersonaId(p.id)}>
                                         {p.icon}
