@@ -104,10 +104,10 @@ export default function LandingPage() {
           {/* Hero Section */}
           <section className="py-20 md:py-32 text-center">
             <div className="container mx-auto px-4">
-              <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto">
+              <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight">
                 Free AI Note Summarizer & Study Planner for Students
               </h1>
-              <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                 Stop juggling apps. Summarize notes, create flashcards, build
                 study plans, and chat with an AI tutor—all in one place.
               </p>
@@ -135,7 +135,7 @@ export default function LandingPage() {
               <h2 className="text-3xl font-bold text-center">
                 Your All-in-One AI Study Toolkit
               </h2>
-              <p className="mt-4 text-lg text-muted-foreground text-center max-w-3xl mx-auto">
+              <p className="mt-4 text-lg text-muted-foreground text-center max-w-3xl mx-auto leading-snug">
                 FocusFlow AI integrates every tool you need to study smarter, not
                 harder.
               </p>
@@ -151,7 +151,7 @@ export default function LandingPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-muted-foreground text-sm">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
                         {feature.description}
                       </p>
                     </CardContent>
@@ -171,7 +171,7 @@ export default function LandingPage() {
                 {testimonials.map((testimonial, index) => (
                   <Card key={index}>
                     <CardContent className="pt-6">
-                      <p className="italic">"{testimonial.quote}"</p>
+                      <p className="italic text-base leading-relaxed">"{testimonial.quote}"</p>
                       <div className="mt-4 flex items-center gap-3">
                         <Image
                           src={testimonial.avatar}
@@ -199,10 +199,10 @@ export default function LandingPage() {
               <Accordion type="single" collapsible className="w-full mt-8">
                 {faqs.map((faq, index) => (
                   <AccordionItem value={`item-${index}`} key={index}>
-                    <AccordionTrigger className="text-lg text-left">
+                    <AccordionTrigger className="text-lg text-left font-medium leading-snug">
                       {faq.question}
                     </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground">
+                    <AccordionContent className="text-base text-muted-foreground leading-relaxed">
                       {faq.answer}
                     </AccordionContent>
                   </AccordionItem>

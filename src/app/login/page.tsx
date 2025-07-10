@@ -153,7 +153,7 @@ export default function LoginPage() {
               <TabsContent value="login">
                 <Card>
                   <CardHeader className="text-center">
-                    <CardTitle className="text-2xl flex items-center justify-center gap-2">
+                    <CardTitle className="text-2xl flex items-center justify-center gap-2 font-semibold leading-tight">
                       <LogIn className="h-6 w-6" /> Welcome Back
                     </CardTitle>
                     <CardDescription>Log in to access your dashboard.</CardDescription>
@@ -201,7 +201,7 @@ export default function LoginPage() {
               <TabsContent value="signup">
                 <Card>
                   <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">Create an Account</CardTitle>
+                    <CardTitle className="text-2xl font-semibold leading-tight">Create an Account</CardTitle>
                     <CardDescription>Get started with saving your work and tracking progress.</CardDescription>
                   </CardHeader>
                   <Form {...signupForm}>

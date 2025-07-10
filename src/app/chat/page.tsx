@@ -621,7 +621,7 @@ export default function ChatPage() {
                 {isInitialMessage ? (
                    <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4 text-center">
                      <Logo className="h-12 w-12 mb-4 text-muted-foreground" />
-                     <h1 className="text-2xl font-bold mb-6">
+                     <h1 className="text-2xl font-bold mb-6 leading-tight">
                        What can I help with?
                      </h1>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
@@ -781,7 +781,7 @@ export default function ChatPage() {
                         onChange={e => setInput(e.target.value)}
                         placeholder="Ask anything..."
                         className={cn(
-                            'max-h-48 flex-1 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 transition-colors duration-300 ease-in-out',
+                            'max-h-48 flex-1 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 transition-colors duration-300 ease-in-out text-sm leading-relaxed',
                             isHighlighting && 'bg-primary/10'
                         )}
                         rows={1}

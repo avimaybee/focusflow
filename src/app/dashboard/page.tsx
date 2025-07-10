@@ -35,7 +35,7 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold">
             Welcome Back, {displayName}!
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-lg text-muted-foreground leading-snug">
             Ready to dive back in? Your AI study partner is just a message away.
           </p>
         </div>
@@ -48,7 +48,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-base text-muted-foreground mb-6 leading-relaxed">
               You can summarize notes, generate quizzes, create study plans, and more, all from the chat.
             </p>
             <Button asChild size="lg">
