@@ -24,6 +24,14 @@ import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
 import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
 import type { ChatInput } from '@/ai/flows/chat-types';
 import { Card } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 type Attachment = {
   preview: string;
@@ -387,17 +395,30 @@ export default function ChatPage() {
                   </Button>
               </div>
           </ScrollArea>
-          <div className="py-2">
-              <Button variant="ghost" className="w-full justify-start gap-2 text-sm text-muted-foreground hover:text-foreground">
-                 <Avatar className="h-6 w-6">
-                      <AvatarImage
-                        src={user?.photoURL || undefined}
-                        data-ai-hint="person"
-                      />
-                      <AvatarFallback>{initial}</AvatarFallback>
-                  </Avatar>
-                  <span className="truncate">{displayName}</span>
-              </Button>
+          <div className="py-2 mt-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start gap-2 text-sm text-muted-foreground hover:text-foreground">
+                        <Avatar className="h-6 w-6">
+                            <AvatarImage
+                                src={user?.photoURL || undefined}
+                                data-ai-hint="person"
+                            />
+                            <AvatarFallback>{initial}</AvatarFallback>
+                        </Avatar>
+                        <span className="truncate">{displayName}</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" side="top">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                    <DropdownMenuItem>Upgrade Plan</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Logout</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
           </div>
       </aside>
 
@@ -418,8 +439,7 @@ export default function ChatPage() {
             </div>
         )}
         
-        {!hasMessages && (
-          <header className="h-16 px-6 flex justify-between items-center w-full">
+        <header className="h-16 px-6 flex justify-between items-center w-full border-b">
             <div className="flex items-center gap-2">
               <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-foreground">
                   <Logo className="h-7 w-7" />
@@ -447,7 +467,6 @@ export default function ChatPage() {
                 )}
               </div>
           </header>
-        )}
 
         <div className="flex-1 relative">
           <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
@@ -455,37 +474,27 @@ export default function ChatPage() {
               {!hasMessages ? (
                  <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] px-4">
                    <Logo className="h-10 w-10 mb-6 text-muted-foreground" />
-                   <div className="bg-card rounded-lg p-6 mx-auto max-w-lg text-center">
-                      <h1 className="text-2xl font-semibold mb-4 leading-tight">
-                          What can I help with?
-                      </h1>
-                      <div className="grid grid-cols-2 gap-4 w-full">
-                          <Card className="bg-primary rounded-lg p-4 hover:bg-primary/90 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
-                              <div className="flex items-center justify-center space-x-2 text-base text-primary-foreground">
-                                  <Book className="h-5 w-5" />
-                                  <span>Summarize</span>
-                              </div>
-                          </Card>
-                          <Card className="bg-primary rounded-lg p-4 hover:bg-primary/90 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
-                              <div className="flex items-center justify-center space-x-2 text-base text-primary-foreground">
-                                  <PenSquare className="h-5 w-5" />
-                                  <span>Study Plan</span>
-                               </div>
-                          </Card>
-                          <Card className="bg-primary rounded-lg p-4 hover:bg-primary/90 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
-                              <div className="flex items-center justify-center space-x-2 text-base text-primary-foreground">
-                                  <Brain className="h-5 w-5" />
-                                  <span>Brainstorm</span>
-                              </div>
-                          </Card>
-                          <Card className="bg-primary rounded-lg p-4 hover:bg-primary/90 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
-                              <div className="flex items-center justify-center space-x-2 text-base text-primary-foreground">
-                                   <Lightbulb className="h-5 w-5" />
-                                   <span>Explain</span>
-                               </div>
-                          </Card>
-                      </div>
-                   </div>
+                   <h1 className="text-2xl font-semibold mb-4 text-center">
+                        What can I help with?
+                   </h1>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-md">
+                        <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
+                            <p className="text-sm font-medium">Summarize a document</p>
+                            <p className="text-xs text-muted-foreground">Get the key points from a long text</p>
+                        </Card>
+                        <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
+                             <p className="text-sm font-medium">Create a study plan</p>
+                             <p className="text-xs text-muted-foreground">For an upcoming exam or project</p>
+                        </Card>
+                        <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
+                            <p className="text-sm font-medium">Brainstorm ideas</p>
+                             <p className="text-xs text-muted-foreground">For an essay on climate change</p>
+                        </Card>
+                        <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
+                            <p className="text-sm font-medium">Explain a concept</p>
+                            <p className="text-xs text-muted-foreground">Like quantum computing</p>
+                        </Card>
+                    </div>
                  </div>
               ) : (
                 messages.map((msg, index) => (
@@ -509,16 +518,23 @@ export default function ChatPage() {
           <div className="relative">
               <form
                 onSubmit={handleSendMessage}
-                className="relative"
+                className="relative flex items-center gap-2 rounded-xl border bg-card p-2 shadow-lg"
               >
+                 <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 shrink-0 rounded-full"
+                  aria-label="Attach file"
+                >
+                    <Paperclip className="h-4 w-4"/>
+                </Button>
                 <Textarea
                     ref={textareaRef}
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     placeholder="Ask anything..."
-                    className={cn(
-                        'w-full bg-primary text-primary-foreground placeholder:text-primary-foreground/70 rounded-lg px-4 py-3 pr-12 text-base shadow-lg focus-visible:ring-2 focus-visible:ring-primary/80 resize-none'
-                    )}
+                    className="w-full bg-transparent border-none focus-visible:ring-0 resize-none py-2"
                     rows={1}
                     onKeyDown={e => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -530,7 +546,7 @@ export default function ChatPage() {
                 <Button
                     type="submit"
                     size="icon"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 h-8 w-8 shrink-0 rounded-md bg-card text-card-foreground hover:bg-card/80 disabled:bg-card/50"
+                    className="h-8 w-8 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/50"
                     disabled={!input.trim() || isLoading}
                     aria-label="Send message"
                 >
@@ -551,5 +567,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    

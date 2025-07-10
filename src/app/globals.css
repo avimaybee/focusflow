@@ -34,7 +34,7 @@
     --input: 217 19% 27%;
     --ring: 212 92% 80%;
     
-    --radius: 0.5rem; /* 8px */
+    --radius: 0.75rem; /* 12px */
   }
 
   .dark {
@@ -99,4 +99,3 @@
 .prose-styles td {
     @apply border px-4 py-2 text-left;
 }
-
