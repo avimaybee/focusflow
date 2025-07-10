@@ -5,15 +5,13 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { Logo } from './logo';
 import { useAuth } from '@/context/auth-context';
-import { ArrowRight, Menu, X } from 'lucide-react';
+import { ArrowRight, Menu } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 
 const navLinks = [
@@ -26,12 +24,10 @@ const navLinks = [
 
 export const Header = () => {
   const { user } = useAuth();
-  const isMobile = useIsMobile();
   const pathname = usePathname();
 
-  const isChatPage = pathname === '/chat';
-
-  if (isChatPage && isMobile) {
+  // Do not render the header on the main chat page
+  if (pathname === '/chat') {
     return null;
   }
 

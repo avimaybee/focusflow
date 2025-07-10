@@ -22,6 +22,8 @@ import {
   Zap,
 } from 'lucide-react';
 import Image from 'next/image';
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
 
 export default function LandingPage() {
   const features = [
@@ -96,116 +98,120 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="flex-grow">
-        {/* Hero Section */}
-        <section className="py-20 md:py-32 text-center">
-          <div className="container mx-auto px-4">
-            <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto">
-              Free AI Note Summarizer & Study Planner for Students
-            </h1>
-            <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Stop juggling apps. Summarize notes, create flashcards, build
-              study plans, and chat with an AI tutor—all in one place.
-            </p>
-            <div className="mt-8">
-              <Button size="lg" asChild>
-                <Link href="/chat">Start Free – No Signup Needed</Link>
-              </Button>
+    <>
+      <Header />
+      <div className="flex-grow">
+          {/* Hero Section */}
+          <section className="py-20 md:py-32 text-center">
+            <div className="container mx-auto px-4">
+              <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto">
+                Free AI Note Summarizer & Study Planner for Students
+              </h1>
+              <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+                Stop juggling apps. Summarize notes, create flashcards, build
+                study plans, and chat with an AI tutor—all in one place.
+              </p>
+              <div className="mt-8">
+                <Button size="lg" asChild>
+                  <Link href="/chat">Start Free – No Signup Needed</Link>
+                </Button>
+              </div>
+              <div className="mt-12">
+                <Image
+                  src="https://placehold.co/1200x600.png"
+                  width={1200}
+                  height={600}
+                  alt="FocusFlow AI App Preview"
+                  className="rounded-lg shadow-2xl"
+                  data-ai-hint="app interface"
+                />
+              </div>
             </div>
-            <div className="mt-12">
-              <Image
-                src="https://placehold.co/1200x600.png"
-                width={1200}
-                height={600}
-                alt="FocusFlow AI App Preview"
-                className="rounded-lg shadow-2xl"
-                data-ai-hint="app interface"
-              />
-            </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Features Section */}
-        <section id="features" className="py-20 bg-muted/50">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center">
-              Your All-in-One AI Study Toolkit
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground text-center max-w-3xl mx-auto">
-              FocusFlow AI integrates every tool you need to study smarter, not
-              harder.
-            </p>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {features.map((feature, index) => (
-                <Card key={index} className="text-center">
-                  <CardHeader>
-                    <div className="mx-auto bg-primary/10 rounded-full h-16 w-16 flex items-center justify-center">
-                      {feature.icon}
-                    </div>
-                    <CardTitle className="pt-4 text-xl">
-                      {feature.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">
-                      {feature.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+          {/* Features Section */}
+          <section id="features" className="py-20 bg-muted/50">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl font-bold text-center">
+                Your All-in-One AI Study Toolkit
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground text-center max-w-3xl mx-auto">
+                FocusFlow AI integrates every tool you need to study smarter, not
+                harder.
+              </p>
+              <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {features.map((feature, index) => (
+                  <Card key={index} className="text-center">
+                    <CardHeader>
+                      <div className="mx-auto bg-primary/10 rounded-full h-16 w-16 flex items-center justify-center">
+                        {feature.icon}
+                      </div>
+                      <CardTitle className="pt-4 text-xl">
+                        {feature.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground text-sm">
+                        {feature.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Testimonials Section */}
-        <section id="testimonials" className="py-20">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center">
-              Loved by Students Everywhere
-            </h2>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <Card key={index}>
-                  <CardContent className="pt-6">
-                    <p className="italic">"{testimonial.quote}"</p>
-                    <div className="mt-4 flex items-center gap-3">
-                      <Image
-                        src={testimonial.avatar}
-                        width={40}
-                        height={40}
-                        alt={testimonial.name}
-                        className="rounded-full"
-                        data-ai-hint="person"
-                      />
-                      <p className="font-semibold text-sm">{testimonial.name}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          {/* Testimonials Section */}
+          <section id="testimonials" className="py-20">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl font-bold text-center">
+                Loved by Students Everywhere
+              </h2>
+              <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+                {testimonials.map((testimonial, index) => (
+                  <Card key={index}>
+                    <CardContent className="pt-6">
+                      <p className="italic">"{testimonial.quote}"</p>
+                      <div className="mt-4 flex items-center gap-3">
+                        <Image
+                          src={testimonial.avatar}
+                          width={40}
+                          height={40}
+                          alt={testimonial.name}
+                          className="rounded-full"
+                          data-ai-hint="person"
+                        />
+                        <p className="font-semibold text-sm">{testimonial.name}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* FAQ Section */}
-        <section id="faq" className="py-20 bg-muted/50">
-          <div className="container mx-auto px-4 max-w-3xl">
-            <h2 className="text-3xl font-bold text-center">
-              Frequently Asked Questions
-            </h2>
-            <Accordion type="single" collapsible className="w-full mt-8">
-              {faqs.map((faq, index) => (
-                <AccordionItem value={`item-${index}`} key={index}>
-                  <AccordionTrigger className="text-lg text-left">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-        </section>
-    </div>
+          {/* FAQ Section */}
+          <section id="faq" className="py-20 bg-muted/50">
+            <div className="container mx-auto px-4 max-w-3xl">
+              <h2 className="text-3xl font-bold text-center">
+                Frequently Asked Questions
+              </h2>
+              <Accordion type="single" collapsible className="w-full mt-8">
+                {faqs.map((faq, index) => (
+                  <AccordionItem value={`item-${index}`} key={index}>
+                    <AccordionTrigger className="text-lg text-left">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          </section>
+      </div>
+      <Footer />
+    </>
   );
 }

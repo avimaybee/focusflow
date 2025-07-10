@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud } from 'lucide-react';
+import { Send, Plus, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, ArrowRight } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -119,6 +119,14 @@ const personas = [
   },
 ];
 
+const navLinks = [
+    { href: '#', label: 'Summarizer' },
+    { href: '#', label: 'Flashcards' },
+    { href: '#', label: 'Notes' },
+    { href: '#', label: 'Tools' },
+    { href: '#', label: 'Help' },
+];
+
 
 export default function ChatPage() {
   const { user, preferredPersona } = useAuth();
@@ -198,7 +206,7 @@ export default function ChatPage() {
       if (attachedFile) {
         if (attachedFile.type.startsWith('image/')) {
           chatInput.image = attachedFile.data;
-        } else if (attachedFile.type === 'application/pdf') {
+        } else {
           chatInput.context = attachedFile.data;
         }
       }
@@ -573,18 +581,49 @@ export default function ChatPage() {
               </div>
             </div>
           )}
-          <header className="p-2 border-b flex items-center gap-2 md:hidden sticky top-0 bg-background/80 backdrop-blur-sm z-10">
-            <SidebarTrigger />
-            <div className="flex items-center gap-2">
-                <Logo className="h-6 w-6" />
-                <span className="font-bold font-heading">FocusFlow AI</span>
+          <header className="sticky top-0 z-10 w-full border-b bg-background/95 backdrop-blur-sm">
+            <div className="container mx-auto flex h-16 max-w-none items-center justify-between px-4">
+              <div className="flex items-center gap-2">
+                <SidebarTrigger className="md:hidden" />
+                <Link href="/" className="flex items-center gap-2">
+                  <Logo className="h-8 w-8" />
+                  <span className="font-bold text-lg hidden sm:inline-block">FocusFlow AI</span>
+                </Link>
+              </div>
+
+              <nav className="hidden md:flex items-center gap-6">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href + link.label}
+                    href={link.href}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+
+              <div className="flex items-center gap-2">
+                  {user ? (
+                    <Button asChild>
+                      <Link href="/dashboard">Dashboard</Link>
+                    </Button>
+                  ) : (
+                    <>
+                      <Button variant="ghost" asChild>
+                        <Link href="/login">Login</Link>
+                      </Button>
+                      <Button asChild>
+                        <Link href="/login">
+                          Go Premium <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </>
+                  )}
+                </div>
             </div>
           </header>
           
-          <div className="p-2 px-4 border-b flex items-center justify-between gap-2 bg-background/80 backdrop-blur-sm sticky top-0 md:top-auto z-10 h-14">
-              <h2 className="font-bold font-heading text-sm md:text-base">New Chat</h2>
-          </div>
-
           <div className="flex-grow relative">
             <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
               <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
