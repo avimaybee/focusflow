@@ -438,7 +438,7 @@ export default function ChatPage() {
                 textToConvert: messageText,
                 persona: selectedPersonaId as Persona,
             });
-            const formattedResult = result.bulletPoints.map(pt => `- ${pt}`).join('\n');
+            const formattedResult = result.bulletPoints.map(pt => `- ${pt}`).join('\\n');
             setMessages(prev => [
                 ...prev,
                 { role: 'model', text: formattedResult },
@@ -469,7 +469,7 @@ export default function ChatPage() {
                 statementToChallenge: messageText,
                 persona: selectedPersonaId as Persona,
             });
-            const formattedResult = result.counterarguments.map((arg, i) => `${i + 1}. ${arg}`).join('\n\n');
+            const formattedResult = result.counterarguments.map((arg, i) => `${i + 1}. ${arg}`).join('\\n\\n');
             setMessages(prev => [
                 ...prev,
                 { role: 'model', text: formattedResult },
@@ -520,10 +520,6 @@ export default function ChatPage() {
                     New Chat
                 </Button>
                 <SidebarTrigger />
-            </div>
-            <div className="relative mt-2">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input placeholder="Search" className="w-full bg-input rounded-md h-8 pl-8 text-sm" />
             </div>
         </SidebarHeader>
         <SidebarContent className="p-2">
@@ -689,11 +685,11 @@ export default function ChatPage() {
                     </div>
                   </div>
                 )}
-                <form
-                  onSubmit={handleSendMessage}
-                  className="relative"
-                >
-                  <div className="flex items-end gap-2 p-3 rounded-2xl bg-card border shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow">
+                <div className="relative">
+                  <form
+                    onSubmit={handleSendMessage}
+                    className="flex items-end gap-2 p-3 rounded-2xl bg-card border shadow-lg focus-within:ring-2 focus-within:ring-ring transition-shadow"
+                  >
                     <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
                         <PopoverTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
@@ -772,8 +768,8 @@ export default function ChatPage() {
                         <Send />
                         <span className="sr-only">Send message</span>
                     </Button>
-                  </div>
-                </form>
+                  </form>
+                </div>
             </div>
           </div>
           <TextSelectionToolbar
@@ -785,3 +781,5 @@ export default function ChatPage() {
     </SidebarProvider>
   );
 }
+
+    
