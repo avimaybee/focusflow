@@ -23,7 +23,7 @@ import { addCitations } from '@/ai/flows/add-citations';
 import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
 import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
 import type { ChatInput } from '@/ai/flows/chat-types';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -480,34 +480,30 @@ export default function ChatPage() {
               {!hasMessages ? (
                  <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] px-4">
                    <div className="bg-card rounded-lg p-6 mx-auto max-w-lg text-center mt-12">
-                     <h1 className="text-2xl font-semibold mb-4">
+                     <h1 className="text-2xl font-bold mb-4">
                         What can I help with?
                      </h1>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <Card className="p-4 bg-primary/10 hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
-                              <div className="flex items-center space-x-2 text-base">
-                                <FileText className="h-5 w-5"/>
-                                <p>Summarize a document</p>
-                              </div>
-                          </Card>
-                          <Card className="p-4 bg-primary/10 hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
-                               <div className="flex items-center space-x-2 text-base">
-                                  <Book className="h-5 w-5"/>
-                                  <p>Create a study plan</p>
-                                </div>
-                          </Card>
-                          <Card className="p-4 bg-primary/10 hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
-                              <div className="flex items-center space-x-2 text-base">
-                                <Brain className="h-5 w-5"/>
-                                <p>Brainstorm ideas</p>
-                              </div>
-                          </Card>
-                          <Card className="p-4 bg-primary/10 hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
-                              <div className="flex items-center space-x-2 text-base">
-                                <Sparkles className="h-5 w-5"/>
-                                <p>Explain a concept</p>
-                              </div>
-                          </Card>
+                        <Button variant="ghost" className="h-auto p-4 bg-background rounded-lg flex-col gap-2 items-start text-left hover:bg-muted transition-transform hover:-translate-y-1" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
+                            <FileText className="h-6 w-6 text-primary"/>
+                            <p className="font-semibold text-base">Summarize a document</p>
+                            <p className="text-sm text-muted-foreground">Condense any text or PDF into a digest.</p>
+                        </Button>
+                        <Button variant="ghost" className="h-auto p-4 bg-background rounded-lg flex-col gap-2 items-start text-left hover:bg-muted transition-transform hover:-translate-y-1" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
+                              <Book className="h-6 w-6 text-primary"/>
+                              <p className="font-semibold text-base">Create a study plan</p>
+                              <p className="text-sm text-muted-foreground">Generate a weekly schedule for any subject.</p>
+                        </Button>
+                        <Button variant="ghost" className="h-auto p-4 bg-background rounded-lg flex-col gap-2 items-start text-left hover:bg-muted transition-transform hover:-translate-y-1" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
+                            <Brain className="h-6 w-6 text-primary"/>
+                            <p className="font-semibold text-base">Brainstorm ideas</p>
+                            <p className="text-sm text-muted-foreground">Get creative angles for any topic or essay.</p>
+                        </Button>
+                        <Button variant="ghost" className="h-auto p-4 bg-background rounded-lg flex-col gap-2 items-start text-left hover:bg-muted transition-transform hover:-translate-y-1" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
+                            <Sparkles className="h-6 w-6 text-primary"/>
+                            <p className="font-semibold text-base">Explain a concept</p>
+                            <p className="text-sm text-muted-foreground">Break down complex topics simply.</p>
+                        </Button>
                       </div>
                    </div>
                  </div>
@@ -620,5 +616,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
