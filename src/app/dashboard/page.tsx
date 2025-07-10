@@ -26,7 +26,7 @@ export default function DashboardPage() {
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
 
   return (
-    <div className="container mx-auto max-w-4xl py-12 px-4 space-y-8">
+    <div className="flex-grow container mx-auto max-w-4xl py-12 px-4 space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">
           Welcome Back, {displayName}!

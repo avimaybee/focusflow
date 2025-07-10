@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/auth-context';
 import { Poppins, PT_Sans } from 'next/font/google';
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -39,11 +41,13 @@ export default function RootLayout({
       </head>
       <body
         className={cn(
-          'min-h-screen bg-background font-body antialiased'
+          'min-h-screen bg-background font-body antialiased flex flex-col'
         )}
       >
         <AuthProvider>
-            {children}
+            <Header />
+            <main className="flex-grow flex flex-col">{children}</main>
+            <Footer />
             <Toaster />
         </AuthProvider>
       </body>

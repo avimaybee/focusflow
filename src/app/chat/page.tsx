@@ -553,7 +553,7 @@ export default function ChatPage() {
       </Sidebar>
       <SidebarInset>
         <div
-          className="flex flex-col h-[100dvh] relative"
+          className="flex flex-col h-[100dvh] relative flex-grow"
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -748,9 +748,6 @@ export default function ChatPage() {
                     </Button>
                   </div>
                 </form>
-                <p className="text-xs text-muted-foreground text-center mt-2 px-2">
-                    FocusFlow AI can make mistakes. Check important info.
-                </p>
             </div>
           </div>
           <TextSelectionToolbar

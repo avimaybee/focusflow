@@ -15,53 +15,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Logo } from '@/components/logo';
 import {
-  ArrowRight,
   BrainCircuit,
   Combine,
   Lightbulb,
   Zap,
 } from 'lucide-react';
 import Image from 'next/image';
-
-const LandingHeader = () => (
-  <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm">
-    <div className="container mx-auto flex h-14 items-center justify-between px-4">
-      <Link href="/" className="flex items-center gap-2">
-        <Logo className="h-8 w-8" />
-        <span className="font-bold text-lg">FocusFlow AI</span>
-      </Link>
-      <nav className="hidden md:flex items-center gap-6">
-        <Link
-          href="#features"
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Features
-        </Link>
-        <Link
-          href="#faq"
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          FAQ
-        </Link>
-      </nav>
-      <Button asChild>
-        <Link href="/chat">
-          Get Started <ArrowRight className="ml-2 h-4 w-4" />
-        </Link>
-      </Button>
-    </div>
-  </header>
-);
-
-const LandingFooter = () => (
-  <footer className="border-t">
-    <div className="container mx-auto py-8 px-4 text-center text-muted-foreground text-sm">
-      <p>&copy; {new Date().getFullYear()} FocusFlow AI. All rights reserved.</p>
-    </div>
-  </footer>
-);
 
 export default function LandingPage() {
   const features = [
@@ -136,9 +96,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <LandingHeader />
-      <main className="flex-grow pt-14">
+    <div className="flex-grow">
         {/* Hero Section */}
         <section className="py-20 md:py-32 text-center">
           <div className="container mx-auto px-4">
@@ -248,8 +206,6 @@ export default function LandingPage() {
             </Accordion>
           </div>
         </section>
-      </main>
-      <LandingFooter />
     </div>
   );
 }
