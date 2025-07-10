@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, ArrowRight, Brain, Book, FileText } from 'lucide-react';
+import { Send, MessageSquare, Bot, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, ArrowRight, Brain, Book, FileText, Bot as ToolsIcon } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -390,7 +390,7 @@ export default function ChatPage() {
           </Button>
           <ScrollArea className="flex-1 -mx-4">
               <div className="px-4 space-y-2">
-                  <Button variant="ghost" className="w-full justify-start gap-2 border-l-4 border-accent bg-accent/20 font-semibold text-accent hover:text-foreground group">
+                  <Button variant="ghost" className="w-full justify-start gap-2 border-l-4 border-accent bg-accent/20 font-semibold text-accent hover:text-foreground group hover:bg-muted">
                        <MessageSquare className="h-4 w-4"/>
                       <span className="truncate group-hover:text-foreground">Summary of Biology Notes</span>
                   </Button>
@@ -639,9 +639,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    

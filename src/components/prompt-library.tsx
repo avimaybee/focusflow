@@ -85,7 +85,7 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
             className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground" 
             aria-label="Open prompt library"
         >
-          <Bot className="h-5 w-5" />
+          <ToolsIcon className="h-5 w-5" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[calc(100vw-2rem)] md:w-[500px] lg:w-[600px] p-0 mb-2">
@@ -175,5 +175,3 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
     </Popover>
   );
 }
-
-    
