@@ -479,30 +479,47 @@ export default function ChatPage() {
             <div className="p-4 md:p-6 space-y-6 max-w-3xl mx-auto">
               {!hasMessages ? (
                  <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] px-4">
+                     <Logo className="h-10 w-10 text-muted-foreground mb-4"/>
                      <h1 className="text-2xl font-bold mb-8 text-center">
                         What can I help with?
                      </h1>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg">
-                        <Card className="p-4 bg-card hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
-                           <FileText className="h-6 w-6 text-primary mb-2"/>
-                            <p className="font-semibold text-base">Summarize a document</p>
-                            <p className="text-sm text-muted-foreground">Condense any text or PDF into a digest.</p>
-                        </Card>
-                         <Card className="p-4 bg-card hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
-                              <Book className="h-6 w-6 text-primary mb-2"/>
+                        <Button variant="outline" className="h-auto justify-start p-4 hover:-translate-y-1 transition-transform" onClick={() => handleSelectPrompt('Summarize this document for me...')}>
+                           <div className="flex flex-col items-start text-left">
+                              <div className="p-2 bg-primary/10 rounded-md mb-2">
+                                <FileText className="h-5 w-5 text-primary"/>
+                              </div>
+                              <p className="font-semibold text-base">Summarize a document</p>
+                              <p className="text-sm text-muted-foreground font-normal">Condense any text or PDF into a digest.</p>
+                           </div>
+                        </Button>
+                        <Button variant="outline" className="h-auto justify-start p-4 hover:-translate-y-1 transition-transform" onClick={() => handleSelectPrompt('Create a study plan for my history exam')}>
+                           <div className="flex flex-col items-start text-left">
+                              <div className="p-2 bg-primary/10 rounded-md mb-2">
+                                <Book className="h-5 w-5 text-primary"/>
+                              </div>
                               <p className="font-semibold text-base">Create a study plan</p>
-                              <p className="text-sm text-muted-foreground">Generate a weekly schedule for any subject.</p>
-                        </Card>
-                        <Card className="p-4 bg-card hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
-                            <Brain className="h-6 w-6 text-primary mb-2"/>
-                            <p className="font-semibold text-base">Brainstorm ideas</p>
-                            <p className="text-sm text-muted-foreground">Get creative angles for any topic or essay.</p>
-                        </Card>
-                        <Card className="p-4 bg-card hover:bg-muted transition-colors cursor-pointer" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
-                            <Sparkles className="h-6 w-6 text-primary mb-2"/>
-                            <p className="font-semibold text-base">Explain a concept</p>
-                            <p className="text-sm text-muted-foreground">Break down complex topics simply.</p>
-                        </Card>
+                              <p className="text-sm text-muted-foreground font-normal">Generate a weekly schedule for any subject.</p>
+                           </div>
+                        </Button>
+                        <Button variant="outline" className="h-auto justify-start p-4 hover:-translate-y-1 transition-transform" onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}>
+                           <div className="flex flex-col items-start text-left">
+                              <div className="p-2 bg-primary/10 rounded-md mb-2">
+                                <Brain className="h-5 w-5 text-primary"/>
+                              </div>
+                              <p className="font-semibold text-base">Brainstorm ideas</p>
+                              <p className="text-sm text-muted-foreground font-normal">Get creative angles for any topic or essay.</p>
+                           </div>
+                        </Button>
+                        <Button variant="outline" className="h-auto justify-start p-4 hover:-translate-y-1 transition-transform" onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}>
+                           <div className="flex flex-col items-start text-left">
+                              <div className="p-2 bg-primary/10 rounded-md mb-2">
+                                <Sparkles className="h-5 w-5 text-primary"/>
+                              </div>
+                              <p className="font-semibold text-base">Explain a concept</p>
+                              <p className="text-sm text-muted-foreground font-normal">Break down complex topics simply.</p>
+                           </div>
+                        </Button>
                       </div>
                  </div>
               ) : (
@@ -523,7 +540,7 @@ export default function ChatPage() {
           </ScrollArea>
         </div>
 
-        <div className="p-6 w-full mx-auto max-w-3xl">
+        <div className="px-6 pb-6 w-full mx-auto max-w-3xl">
            <div className="relative">
               <form
                 onSubmit={handleSendMessage}
@@ -558,7 +575,8 @@ export default function ChatPage() {
                         </div>
                     </PopoverContent>
                 </Popover>
-                 <Button
+                <PromptLibrary onSelectPrompt={setInput}/>
+                <Button
                   type="button"
                   size="icon"
                   variant="ghost"
@@ -593,7 +611,7 @@ export default function ChatPage() {
                 <Button
                     type="submit"
                     size="icon"
-                    className="h-10 w-10 shrink-0 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/50"
+                    className="h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/50"
                     disabled={!input.trim() || isLoading}
                     aria-label="Send message"
                 >
