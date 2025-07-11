@@ -1,4 +1,6 @@
 
+'use server';
+
 import { ai } from '@/ai/genkit';
 import { selectModel } from '../model-selection';
 import { optimizeChatHistory } from './history-optimizer';
@@ -20,45 +22,6 @@ import { marked } from 'marked';
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PersonaIDs } from '@/lib/constants';
-import { getStorage } from 'firebase-admin/storage';
-import { initializeApp, getApps, App } from 'firebase-admin/app';
-import pdf from 'pdf-parse';
-
-// Ensure Firebase Admin is initialized only once
-let adminApp: App;
-if (!getApps().length) {
-  adminApp = initializeApp();
-} else {
-  adminApp = getApps()[0];
-}
-
-async function getFileContent(gsPath: string): Promise<string | undefined> {
-  if (!gsPath || !gsPath.startsWith('gs://')) {
-    return undefined;
-  }
-  console.log(`Processing file from: ${gsPath}`);
-  const bucket = getStorage(adminApp).bucket();
-  const file = bucket.file(gsPath.replace(`gs://${bucket.name}/`, ''));
-  
-  try {
-    const [buffer] = await file.download();
-    const metadata = await file.getMetadata();
-    const contentType = metadata[0].contentType || '';
-
-    if (contentType.includes('pdf')) {
-      const data = await pdf(buffer);
-      return data.text;
-    } else if (contentType.startsWith('text/')) {
-      return buffer.toString('utf-8');
-    } else {
-      console.warn(`Unsupported content type: ${contentType}`);
-      return undefined;
-    }
-  } catch (error) {
-    console.error(`Failed to download or parse file from ${gsPath}:`, error);
-    return undefined;
-  }
-}
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
     const personaRef = doc(db, 'personas', personaId);
@@ -126,10 +89,7 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
   const personaInstruction = await getPersonaPrompt(persona);
   const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner.`;
   let result;
-
-  // Get file content if context (gsPath) is provided
-  const fileContent = await getFileContent(context || '');
-
+  
   const availableTools = [
     summarizeNotesTool,
     createStudyPlanTool,
@@ -151,15 +111,17 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
   chatHistory = await optimizeChatHistory(chatHistory);
 
   const promptParts = [];
+  
+  // The 'context' field now contains the data URI of a text-based file (PDF, TXT)
+  // The 'image' field contains the data URI of an image file
+  const fileContent = context || image;
+  
   let fullMessage = message;
   if (fileContent) {
-    fullMessage = `CONTEXT FROM UPLOADED FILE:\n${fileContent}\n\nUSER'S REQUEST:\n${message}`;
+    promptParts.push({ media: { url: fileContent } });
   }
   promptParts.push({ text: fullMessage });
 
-  if (image) {
-    promptParts.push({ media: { url: image } });
-  }
 
   result = await ai.generate({
     model,
@@ -168,8 +130,6 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
     prompt: promptParts,
     tools: availableTools,
     toolChoice: 'auto',
-    // Note: The 'context' parameter for ai.generate is different from our app's context.
-    // We are manually prepending the file content to the prompt.
     config: {
       safetySettings: [
         {

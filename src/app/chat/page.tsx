@@ -15,7 +15,7 @@ import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { Loader2, UploadCloud } from 'lucide-react';
-import { addDoc, collection, serverTimestamp, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, onSnapshot, updateDoc, deleteField } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { chat, rewriteText, generateBulletPoints, generateCounterarguments, generatePresentationOutline, highlightKeyInsights } from '@/ai/actions';
 import type { ChatInput, ChatHistoryMessage, Persona } from '@/ai/flows/chat-types';
@@ -25,7 +25,6 @@ import { SmartToolActions } from '@/lib/constants';
 type ChatContext = {
   name: string;
   type: string;
-  path: string; // GS path
 } | null;
 
 export default function ChatPage() {
@@ -71,6 +70,14 @@ export default function ChatPage() {
       setChatContext(null);
     }
   }, [activeChatId, user?.uid]);
+  
+  const clearChatContext = async () => {
+    if (user?.uid && activeChatId) {
+      const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
+      await updateDoc(chatRef, { context: deleteField() });
+    }
+    setChatContext(null);
+  }
 
   useEffect(() => {
     if (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')) {
@@ -89,12 +96,13 @@ export default function ChatPage() {
 
   const handleNewChat = () => {
     setActiveChatId(null);
+    dispatch({ type: 'SET_MESSAGES', payload: [] });
     router.push('/chat');
   };
 
   const submitMessage = async (prompt: string, attachedFiles: Attachment[]) => {
     if ((!prompt.trim() && attachedFiles.length === 0) || isLoading || !user?.uid) return;
-
+    
     // Add logic to retain context when a file is uploaded
     const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
     let finalPrompt = prompt;
@@ -117,7 +125,7 @@ export default function ChatPage() {
     const userMessage: ChatMessageProps = {
       role: 'user',
       text: prompt, // Display the user's actual input in the UI
-      images: attachedFiles.filter(f => f.type.startsWith('image/')).map(f => f.preview),
+      images: attachedFiles.filter(f => f.type.startsWith('image/')).map(f => f.path),
       userAvatar: user?.photoURL,
       userName: user?.displayName || user?.email || 'User',
     };
@@ -142,19 +150,18 @@ export default function ChatPage() {
         setActiveChatId(currentChatId);
       }
 
-      // If there are attachments, persist the first one as the chat's context
+      // If there are attachments, persist a reference to it as the chat's context
       if (attachedFiles.length > 0 && currentChatId) {
         const fileContext = {
           name: attachedFiles[0].name,
           type: attachedFiles[0].type,
-          path: attachedFiles[0].path, // Save the gs:// path
         };
         await updateDoc(doc(db, 'users', user.uid, 'chats', currentChatId), { context: fileContext });
       }
 
       await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
         role: 'user',
-        text: JSON.stringify({ role: 'user', text: prompt }),
+        text: JSON.stringify({ role: 'user', text: prompt, images: userMessage.images }),
         createdAt: serverTimestamp(),
       });
 
@@ -165,19 +172,24 @@ export default function ChatPage() {
           text: m.text as string,
         }));
 
-      // Determine the context to send to the AI, prioritizing new attachments
-      const contextPath = attachedFiles.length > 0 ? attachedFiles[0].path : chatContext?.path;
-      
+      let contextDataUri: string | undefined = undefined;
+      const fileAttachment = attachedFiles.length > 0 ? attachedFiles[0] : null;
+
+      if (fileAttachment) {
+          contextDataUri = fileAttachment.path;
+      }
+
       const chatInput: ChatInput = {
         userId: user.uid,
         message: finalPrompt.trim(),
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
         isPremium: isPremium ?? false,
-        // Pass the gs:// path to the backend
-        context: contextPath,
+        // Pass the data URI to the backend
+        context: fileAttachment?.type.startsWith('image/') ? undefined : contextDataUri,
+        image: fileAttachment?.type.startsWith('image/') ? contextDataUri : undefined,
       };
-
+      
       const result = await chat(chatInput).catch((err) => {
         console.error("AI chat error:", err);
         return { response: "I’m sorry, I couldn’t process your request. Please try rephrasing or uploading a different file." }
@@ -366,22 +378,26 @@ export default function ChatPage() {
           onSmartToolAction={handleSmartToolAction}
         />
 
-        <ChatInputArea
-          input={input}
-          setInput={setInput}
-          attachments={attachments}
-          dispatch={dispatch}
-          handleSendMessage={handleSendMessage}
-          handleFileSelect={handleFileSelect}
-          onSelectPrompt={handleSelectPrompt}
-          isLoading={isLoading}
-          isHistoryLoading={isHistoryLoading}
-          personas={personas}
-          selectedPersonaId={selectedPersonaId}
-          setSelectedPersonaId={setSelectedPersonaId}
-          textareaRef={textareaRef}
-          activeChatId={activeChatId}
-        />
+        <div className="p-4">
+          <ChatInputArea
+            input={input}
+            setInput={setInput}
+            attachments={attachments}
+            dispatch={dispatch}
+            handleSendMessage={handleSendMessage}
+            handleFileSelect={handleFileSelect}
+            onSelectPrompt={handleSelectPrompt}
+            isLoading={isLoading}
+            isHistoryLoading={isHistoryLoading}
+            personas={personas}
+            selectedPersonaId={selectedPersonaId}
+            setSelectedPersonaId={setSelectedPersonaId}
+            textareaRef={textareaRef}
+            activeChatId={activeChatId}
+            chatContext={chatContext}
+            clearChatContext={clearChatContext}
+          />
+        </div>
       </main>
     </div>
   );
