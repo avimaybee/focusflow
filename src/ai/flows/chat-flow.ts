@@ -21,6 +21,7 @@ import {
   summarizeNotesTool,
 } from './tools';
 import type { ChatInput, ChatOutput } from './chat-types';
+import type {Message} from 'genkit';
 
 const personaPrompts = {
   neutral:
@@ -73,9 +74,9 @@ A user may upload a file (image or PDF) or provide text to give you context.
     highlightKeyInsightsTool,
   ];
 
-  const history = input.history.map(msg => ({
+  const history: Message[] = input.history.map(msg => ({
     role: msg.role,
-    content: [{text: msg.text}],
+    parts: [{text: msg.text}],
   }));
 
   const requestMessages = [];
@@ -96,7 +97,10 @@ A user may upload a file (image or PDF) or provide text to give you context.
     system: systemPrompt,
     tools,
     history,
-    prompt: requestMessages,
+    prompt: {
+      role: 'user',
+      parts: requestMessages,
+    },
     config: {
       safetySettings: [
         {
