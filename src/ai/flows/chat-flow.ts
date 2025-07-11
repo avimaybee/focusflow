@@ -23,6 +23,7 @@ import {
 import type { ChatInput, ChatOutput } from './chat-types';
 import type { Message } from 'genkit';
 import { z } from 'zod';
+import { marked } from 'marked';
 
 const personaPrompts = {
   neutral:
@@ -62,10 +63,12 @@ function shouldUseTools(message: string): boolean {
 export async function chat(input: ChatInput): Promise<ChatOutput> {
   const { message, history, context, image, isPremium, persona } = input;
 
+  const model = selectModel(message, history, isPremium || false);
   const personaInstruction = personaPrompts[persona];
   const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner.`;
+  let result;
 
-  const model = selectModel(message, history, isPremium || false);
+  const toolsEnabled = shouldUseTools(message);
 
   const availableTools = [
     summarizeNotesTool,
@@ -86,10 +89,10 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
 
   const promptParts = [];
   let fullMessage = message;
-  
-  // Pass context to tools only if they are likely to be used
-  if (context && shouldUseTools(message)) {
-      fullMessage = `${message}\n\n[CONTEXT FROM UPLOADED FILE IS PROVIDED]`;
+  if (context) {
+    fullMessage = `${message}
+
+[CONTEXT FROM UPLOADED FILE IS PROVIDED]`;
   }
   promptParts.push({ text: fullMessage });
 
@@ -97,12 +100,14 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
     promptParts.push({ media: { url: image } });
   }
 
-  // Construct the generation options
-  let generateOptions: any = {
+  result = await ai.generate({
     model,
     system: systemPrompt,
     history: chatHistory,
     prompt: promptParts,
+    tools: toolsEnabled ? availableTools : [],
+    toolChoice: toolsEnabled ? 'auto' : 'none',
+    context,
     config: {
       safetySettings: [
         {
@@ -111,21 +116,16 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
         },
       ],
     },
-  };
+  });
 
-  // Conditionally add tools to the generation request
-  if (shouldUseTools(message)) {
-    generateOptions = {
-      ...generateOptions,
-      tools: availableTools,
-      context, // Pass context only when tools are active
-    };
-  }
 
-  const { output } = await ai.generate(generateOptions);
+  // Correctly extract the response text from the result object.
+  const responseText = result.message?.content?.[0]?.text;
+
+  // Convert markdown to HTML if there is a response.
+  const formattedResponse = responseText ? marked(responseText) : 'Sorry, I am not sure how to help with that.';
 
   return {
-    response:
-      output?.[0]?.text || 'Sorry, I am not sure how to help with that.',
+    response: formattedResponse,
   };
 }

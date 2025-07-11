@@ -52,7 +52,7 @@ export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, 
       return <QuizViewer quiz={quiz} />;
     }
     if (typeof text === 'string') {
-      return <div dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br />') }} />;
+      return <div dangerouslySetInnerHTML={{ __html: text }} />;
     }
     return text;
   };
