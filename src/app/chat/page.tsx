@@ -645,7 +645,7 @@ export default function ChatPage() {
           </ScrollArea>
         </div>
 
-        <div className="p-4 bg-background border-t border-border/60">
+        <div className="p-4">
           <div className="relative max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto p-2 rounded-xl bg-card border border-border/60 shadow-lg">
             {attachments.length > 0 && (
               <div className="p-2 border-b border-border/60">
