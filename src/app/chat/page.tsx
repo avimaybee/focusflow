@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Bot as BotIcon, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Plus, Settings, LogOut, User, Loader2, Users, Menu, Baby } from 'lucide-react';
+import { Send, Bot as BotIcon, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Plus, Settings, LogOut, User, Loader2, Users, Menu, Baby, Check } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -34,8 +34,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import { Check } from 'lucide-react';
+} from "@/components/ui/command";
 import { PromptLibrary } from '@/components/prompt-library';
 import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
