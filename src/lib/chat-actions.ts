@@ -19,23 +19,24 @@ export interface Chat {
   createdAt: Timestamp;
 }
 
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'model';
-  text: string;
-  createdAt: Timestamp;
+import { auth } from '@/lib/firebase-admin'; // Using Admin SDK for server-side verification
+
+// Helper function to verify user authentication on the server
+async function getAuthenticatedUserId() {
+  const user = auth.currentUser; // This will only work if the session is managed correctly
+  if (!user) {
+    throw new Error('User not authenticated.');
+  }
+  return user.uid;
 }
 
 /**
  * Creates a new chat session in Firestore.
- * @param userId The ID of the user creating the chat.
  * @param initialMessage The first message to start the chat with.
  * @returns The ID of the newly created chat.
  */
-export async function createChat(userId: string, initialMessage: string) {
-  if (!userId) {
-    throw new Error('User ID is required to create a chat.');
-  }
+export async function createChat(initialMessage: string) {
+  const userId = await getAuthenticatedUserId();
 
   // Create the main chat document to get an ID
   const chatRef = await addDoc(collection(db, 'users', userId, 'chats'), {
@@ -56,17 +57,16 @@ export async function createChat(userId: string, initialMessage: string) {
 
 /**
  * Adds a new message to an existing chat.
- * @param userId The ID of the user.
  * @param chatId The ID of the chat to add the message to.
  * @param message The message object to add.
  */
 export async function addMessageToChat(
-  userId: string,
   chatId: string,
   message: { role: 'user' | 'model'; text: string }
 ) {
-  if (!userId || !chatId) {
-    throw new Error('User ID and Chat ID are required.');
+  const userId = await getAuthenticatedUserId();
+  if (!chatId) {
+    throw new Error('Chat ID is required.');
   }
   await addDoc(
     collection(db, 'users', userId, 'chats', chatId, 'messages'),
@@ -80,11 +80,10 @@ export async function addMessageToChat(
 
 /**
  * Fetches the list of recent chats for a user.
- * @param userId The ID of the user.
  * @returns A promise that resolves to an array of chat objects.
  */
-export async function getRecentChats(userId: string): Promise<Chat[]> {
-  if (!userId) return [];
+export async function getRecentChats(): Promise<Chat[]> {
+  const userId = await getAuthenticatedUserId();
   const chatsRef = collection(db, 'users', userId, 'chats');
   const q = query(chatsRef, orderBy('createdAt', 'desc'));
   const querySnapshot = await getDocs(q);
@@ -97,15 +96,14 @@ export async function getRecentChats(userId: string): Promise<Chat[]> {
 
 /**
  * Fetches all messages for a specific chat.
- * @param userId The ID of the user.
  * @param chatId The ID of the chat.
  * @returns A promise that resolves to an array of message objects.
  */
 export async function getChatMessages(
-  userId: string,
   chatId: string
 ): Promise<ChatMessage[]> {
-  if (!userId || !chatId) return [];
+  const userId = await getAuthenticatedUserId();
+  if (!chatId) return [];
   const messagesRef = collection(
     db,
     'users',
@@ -116,10 +114,26 @@ export async function getChatMessages(
   );
   const q = query(messagesRef, orderBy('createdAt', 'asc'));
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    role: doc.data().role,
-    text: doc.data().text,
-    createdAt: doc.data().createdAt,
-  }));
+  return querySnapshot.docs.map(doc => {
+    const data = doc.data();
+    // If the message text is a JSON string, parse it.
+    // This is used to reconstruct interactive components like quizzes/flashcards.
+    try {
+      const parsedText = JSON.parse(data.text);
+      return {
+        id: doc.id,
+        role: data.role,
+        ...parsedText, // Spread the parsed content (e.g., text, quiz, flashcards)
+        createdAt: data.createdAt,
+      };
+    } catch (e) {
+      // It's not a JSON string, so treat it as plain text.
+      return {
+        id: doc.id,
+        role: data.role,
+        text: data.text,
+        createdAt: data.createdAt,
+      };
+    }
+  });
 }

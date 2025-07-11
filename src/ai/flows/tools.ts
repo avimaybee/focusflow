@@ -73,9 +73,7 @@ export const createFlashcardsTool = ai.defineTool(
     description:
       'Generates a set of question-and-answer flashcards from a piece of text or a document. Use this when a user asks for flashcards.',
     inputSchema: ContextualToolInputSchema,
-    outputSchema: z
-      .string()
-      .describe('A formatted string containing the flashcards.'),
+    outputSchema: z.string().describe('A JSON string containing the flashcards.'),
   },
   async input => {
     const isFile = input.context.startsWith('data:');
@@ -84,13 +82,7 @@ export const createFlashcardsTool = ai.defineTool(
       sourceText: !isFile ? input.context : undefined,
       persona: input.persona,
     });
-    let flashcardString = 'Here are your flashcards:\n\n';
-    result.flashcards.forEach((card, index) => {
-      flashcardString += `**${index + 1}. Question:** ${
-        card.question
-      }\n**Answer:** ${card.answer}\n\n`;
-    });
-    return flashcardString;
+    return JSON.stringify({ flashcards: result.flashcards });
   }
 );
 
@@ -100,7 +92,7 @@ export const createQuizTool = ai.defineTool(
     description:
       'Generates a multiple-choice quiz from a piece of text or a document. Use this when a user asks for a quiz or wants to test their knowledge.',
     inputSchema: ContextualToolInputSchema,
-    outputSchema: z.string().describe('A formatted string containing the quiz.'),
+    outputSchema: z.string().describe('A JSON string containing the quiz.'),
   },
   async input => {
     const isFile = input.context.startsWith('data:');
@@ -109,14 +101,7 @@ export const createQuizTool = ai.defineTool(
       sourceText: !isFile ? input.context : undefined,
       persona: input.persona,
     });
-    let quizString = `**${result.title}**\n\n`;
-    result.questions.forEach((q, index) => {
-      quizString += `**${index + 1}. ${q.questionText}**\n`;
-      q.options.forEach(opt => (quizString += `- ${opt}\n`));
-      quizString += `*Correct Answer: ${q.correctAnswer}*\n`;
-      quizString += `*Explanation: ${q.explanation}*\n\n`;
-    });
-    return quizString;
+    return JSON.stringify({ quiz: result });
   }
 );
 

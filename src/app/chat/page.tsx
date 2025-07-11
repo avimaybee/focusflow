@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, MessageSquare, Bot as BotIcon, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Plus, Settings, LogOut, User, Loader2 } from 'lucide-react';
+import { Send, MessageSquare, Bot as BotIcon, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Plus, Settings, LogOut, User, Loader2, Users } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -53,16 +53,15 @@ type Attachment = {
 };
 
 const personas = [
-    { id: 'neutral', name: 'Neutral Assistant', icon: <BotIcon className="h-5 w-5" /> },
-    { id: 'five-year-old', name: 'Patient Explainer', icon: <Baby className="h-5 w-5" /> },
-    { id: 'casual', name: 'Casual Buddy', icon: <Coffee className="h-5 w-5" /> },
-    { id: 'entertaining', name: 'Entertaining Educator', icon: <Sparkles className="h-5 w-5" /> },
-    { id: 'brutally-honest', name: 'Honest Mentor', icon: <Filter className="h-5 w-5" /> },
-    { id: 'straight-shooter', name: 'Straight Shooter', icon: <List className="h-5 w-5" /> },
-    { id: 'essay-sharpshooter', name: 'Essay Sharpshooter', icon: <PenSquare className="h-5 w-5" /> },
-    { id: 'idea-generator', name: 'Idea Generator', icon: <Lightbulb className="h-5 w-5" /> },
-    { id: 'cram-buddy', name: 'Cram Buddy', icon: <Timer className="h-5 w-5" /> },
-    { id: 'sassy', name: 'Sassy Assistant', icon: <Flame className="h-5 w-5" /> },
+    { id: 'neutral', name: 'Neutral Assistant', icon: <BotIcon className="h-5 w-5" />, description: "A straightforward, helpful AI assistant." },
+    { id: 'casual', name: 'Casual Buddy', icon: <Coffee className="h-5 w-5" />, description: "Relaxed, peer-to-peer chat." },
+    { id: 'entertaining', name: 'Entertaining Educator', icon: <Sparkles className="h-5 w-5" />, description: "Makes learning fun and engaging." },
+    { id: 'brutally-honest', name: 'Honest Mentor', icon: <Filter className="h-5 w-5" />, description: "Sharp, direct, and critical feedback." },
+    { id: 'straight-shooter', name: 'Straight Shooter', icon: <List className="h-5 w-5" />, description: "Clear, scannable, and actionable takeaways." },
+    { id: 'essay-sharpshooter', name: 'Essay Sharpshooter', icon: <PenSquare className="h-5 w-5" />, description: "Scholarly and precise writing analysis." },
+    { id: 'idea-generator', name: 'Idea Generator', icon: <Lightbulb className="h-5 w-5" />, description: "Expansive and imaginative brainstorming." },
+    { id: 'cram-buddy', name: 'Cram Buddy', icon: <Timer className="h-5 w-5" />, description: "Urgent, high-impact exam prep." },
+    { id: 'sassy', name: 'Sassy Assistant', icon: <Flame className="h-5 w-5" />, description: "Witty, irreverent, and informative." },
 ];
 
 
@@ -228,7 +227,8 @@ export default function ChatPage() {
   };
 
   const handleSelectPrompt = (prompt: string) => {
-     submitMessage(prompt, []);
+    setInput(prompt);
+    textareaRef.current?.focus();
   };
 
   const handleNewChat = () => {
@@ -660,24 +660,27 @@ export default function ChatPage() {
               <Popover>
                   <PopoverTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
-                          <BotIcon className="h-5 w-5" />
+                          <Users className="h-5 w-5" />
                       </Button>
                   </PopoverTrigger>
-                  <PopoverContent align="start" className="w-auto p-0 mb-2">
-                    <div className="p-4">
+                  <PopoverContent align="start" className="w-80 p-2 mb-2">
+                    <div className="p-2">
                       <h3 className="text-sm font-semibold">Select Persona</h3>
-                      <p className="text-sm text-muted-foreground">Change the AI's personality and tone</p>
+                      <p className="text-sm text-muted-foreground">Change the AI's personality and tone.</p>
                     </div>
-                    <div className="flex flex-col p-2 pt-0">
+                    <div className="flex flex-col gap-1">
                       {personas.map((p) => (
                         <Button
                           key={p.id}
                           variant={selectedPersonaId === p.id ? 'secondary' : 'ghost'}
-                          className="w-full justify-start"
+                          className="w-full justify-start h-auto py-2 px-3"
                           onClick={() => setSelectedPersonaId(p.id)}
                         >
                           {p.icon}
-                          <span className="ml-2">{p.name}</span>
+                          <div className="ml-3 text-left">
+                            <p className="font-semibold text-sm">{p.name}</p>
+                            <p className="text-xs text-muted-foreground">{p.description}</p>
+                          </div>
                         </Button>
                       ))}
                     </div>
