@@ -43,23 +43,10 @@ import {ChatMessageProps} from '@/components/chat-message';
 import {SmartToolActions} from '@/lib/constants';
 import {AnnouncementBanner} from '@/components/announcement-banner';
 
-// Helper to fetch and parse file content
-async function getFileTextFromUrl(url: string, type: string): Promise<string> {
-  if (type.includes('pdf')) {
-    // For PDFs, we need to call the server action
-    return extractText(url, type);
-  } else {
-    // For other text-based files, we can still fetch on the client
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return blob.text();
-  }
-}
-
 type ChatContext = {
   name: string;
   type: string;
-  url: string; // downloadURL
+  url: string; // data URI
 } | null;
 
 export default function ChatPage() {
@@ -143,9 +130,9 @@ export default function ChatPage() {
     let finalPrompt = prompt;
 
     const modelNeedsContext = lastMessage?.role === 'model' &&
-                              (lastMessage.text?.toLowerCase().includes('please provide') || 
-                               lastMessage.text?.toLowerCase().includes('what text') ||
-                               lastMessage.text?.toLowerCase().includes('upload the document'));
+                              (lastMessage.text?.toString().toLowerCase().includes('please provide') || 
+                               lastMessage.text?.toString().toLowerCase().includes('what text') ||
+                               lastMessage.text?.toString().toLowerCase().includes('upload the document'));
 
     const userIsProvidingFile = attachedFiles.length > 0;
 
@@ -193,6 +180,7 @@ export default function ChatPage() {
           url: attachedFiles[0].url, // Save the data URI
         };
         await updateDoc(doc(db, 'users', user.uid, 'chats', currentChatId), { context: fileContext });
+        setChatContext(fileContext); // Update local state immediately
       }
 
       await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
@@ -272,7 +260,7 @@ export default function ChatPage() {
     if (!user?.uid) return;
 
     let currentChatId = activeChatId;
-    const userPrompt = `${tool.name}: "${messageText.substring(0, 50)}...";
+    const userPrompt = `${tool.name}: "${messageText.substring(0, 50)}..."`;
 
     dispatch({ type: 'START_LOADING' });
     dispatch({ type: 'ADD_MESSAGE', payload: { role: 'user', text: userPrompt }});
@@ -307,7 +295,7 @@ export default function ChatPage() {
           break;
         case SmartToolActions.COUNTERARGUMENTS:
           actionFn = generateCounterarguments({ statementToChallenge: messageText, persona: selectedPersonaId as Persona });
-          formatResult = (result) => result.counterarguments.map((arg: string, i: number,) => `${i + 1}. ${arg}`).join('\n\n');
+          formatResult = (result) => result.counterarguments.map((arg: string, i: number) => `${i + 1}. ${arg}`).join('\n\n');
           break;
         case SmartToolActions.PRESENTATION:
           actionFn = generatePresentationOutline(sourceArg);
@@ -397,7 +385,7 @@ export default function ChatPage() {
         )}
 
         <ChatHeader
-          personaName={selectedPersona?.name || 'Assistant'}
+          personaName={selectedPersona?.name || 'Default'}
           onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
           isLoggedIn={!!user}
         />
