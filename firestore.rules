@@ -6,30 +6,28 @@ service cloud.firestore {
 
     // A user can only interact with their own document.
     match /users/{userId} {
-      allow read: if request.auth.uid == userId;
+      allow get: if request.auth.uid == userId;
 
-      // Allow a user to create their own document.
-      // The incoming data must match their UID.
+      // Allow creation if the user is authenticated and the document ID matches their UID.
       allow create: if request.auth.uid == userId;
 
       // Allow updates only for specific, user-configurable fields.
-      // This prevents malicious users from changing their isPremium status.
       allow update: if request.auth.uid == userId
                     && request.resource.data.diff(resource.data).affectedKeys()
-                       .hasOnly(['preferredPersona', 'favoritePrompts', 'photoURL', 'displayName']);
+                       .hasOnly(['preferredPersona', 'favoritePrompts', 'lastLogin']);
 
-      // Disallow deletion of user profiles from the client.
-      allow delete: if false;
+      // Disallow listing or deleting user profiles from the client.
+      allow list, delete: if false;
     }
 
     // Rules for the 'chats' subcollection.
     match /users/{userId}/chats/{chatId} {
       // A user can only list and read their own chats.
       allow list, get: if request.auth.uid == userId;
-
+      
       // A user can only create new chats for themselves.
       allow create: if request.auth.uid == userId;
-
+      
       // Disallow updating or deleting chat sessions from the client.
       allow update, delete: if false;
     }
@@ -38,10 +36,10 @@ service cloud.firestore {
     match /users/{userId}/chats/{chatId}/messages/{messageId} {
       // A user can only list and read messages within their own chats.
       allow list, get: if request.auth.uid == userId;
-
+      
       // A user can only create new messages in their own chats.
       allow create: if request.auth.uid == userId;
-
+      
       // Disallow updating or deleting messages to maintain chat integrity.
       allow update, delete: if false;
     }
@@ -51,11 +49,11 @@ service cloud.firestore {
       allow get: if true;
       allow list, write: if false;
     }
-    
-    // Prompt templates are public-read
+
+    // Prompt templates can be read by any authenticated user.
     match /promptTemplates/{templateId} {
-      allow get: if true;
-      allow list, write: if false;
+      allow get, list: if request.auth != null;
+      allow write: if false; // Disallow client writes
     }
   }
 }

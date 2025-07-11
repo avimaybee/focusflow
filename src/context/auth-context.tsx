@@ -4,7 +4,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, setDoc, serverTimestamp, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 
 interface AuthContextType {
@@ -31,19 +31,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(user);
         const userRef = doc(db, 'users', user.uid);
         
-        // Use set with merge to create or update the user document.
-        // This handles first-time sign-in gracefully (e.g., with Google).
-        try {
-          await setDoc(userRef, {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            lastLogin: serverTimestamp(),
-          }, { merge: true });
-        } catch (error) {
-            console.error("Error ensuring user document exists:", error);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+          // New user: create the document
+          try {
+            await setDoc(userRef, {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+              photoURL: user.photoURL,
+              createdAt: serverTimestamp(),
+              lastLogin: serverTimestamp(),
+              isPremium: false,
+              preferredPersona: 'neutral',
+              favoritePrompts: [],
+            });
+          } catch (error) {
+              console.error("Error creating user document:", error);
+          }
+        } else {
+          // Existing user: update last login time
+          try {
+            await updateDoc(userRef, {
+              lastLogin: serverTimestamp(),
+            });
+          } catch (error) {
+             console.error("Error updating last login:", error);
+          }
         }
+
 
         // Set up a realtime listener for user data
         const unsubFromUserDoc = onSnapshot(userRef, (userSnap) => {
