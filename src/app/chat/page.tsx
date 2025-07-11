@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, MessageSquare, Bot as BotIcon, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Plus, Settings, LogOut, User, Loader2, Users } from 'lucide-react';
+import { Send, MessageSquare, Bot as BotIcon, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Plus, Settings, LogOut, User, Loader2, Users } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -22,8 +22,7 @@ import {
   highlightKeyInsights,
 } from '@/ai/actions';
 import { updateUserPersona } from '@/lib/user-actions';
-import { Persona } from '@/ai/flows/chat-types';
-import { cn } from '@/lib/utils';
+import type { Persona } from '@/ai/flows/chat-types';
 import { useToast } from '@/hooks/use-toast';
 import { TextSelectionToolbar } from '@/components/text-selection-toolbar';
 import type { ChatInput } from '@/ai/flows/chat-types';
@@ -216,7 +215,7 @@ export default function ChatPage() {
         .filter(m => typeof m.text === 'string') 
         .map(m => ({
           role: m.role,
-          text: m.text as string,
+          parts: [{ text: m.text as string }],
         }));
 
       const finalAttachments = attachedFiles.map(a => a.data);
@@ -764,3 +763,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
