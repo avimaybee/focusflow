@@ -52,12 +52,12 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
 
 You are an expert AI assistant that can use tools to help students.
 
-When you use a tool that has a \'persona\' input field, you MUST pass the current persona (\'${input.persona}\') to it.
+When you use a tool that has a 'persona' input field, you MUST pass the current persona ('${input.persona}') to it.
 
 A user may upload a file (image or PDF) or provide text to give you context.
-- If a file or text is provided in the \'context\' field, you MUST pass it to the \'context\' argument of the most appropriate tool.
-- If an image is provided in the \'image\' field, you can analyze it directly in your response without needing a tool.
-- For example, if the user uploads a PDF and says "make a quiz", you must use the \'createQuiz\' tool and pass the file\'s context to it.
+- If a file or text is provided in the 'context' field, you MUST pass it to the 'context' argument of the most appropriate tool.
+- If an image is provided in the 'image' field, you can analyze it directly in your response without needing a tool.
+- For example, if the user uploads a PDF and says "make a quiz", you must use the 'createQuiz' tool and pass the file's context to it.
 `;
 
   const model = selectModel(input.message, input.history, input.isPremium || false);

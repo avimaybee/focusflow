@@ -13,14 +13,6 @@ export interface PromptTemplate {
 // In a real app, this data would live in a Firestore 'promptTemplates' collection.
 const PROMPT_TEMPLATES: PromptTemplate[] = [
   {
-    id: 'explain-like-im-5',
-    title: "Explain Like I'm 5",
-    description: 'Breaks down a complex topic into a simple analogy a child can understand.',
-    prompt: "Explain the concept of [YOUR CONCEPT HERE] as if you were explaining it to a 5-year-old.",
-    category: 'Explain',
-    icon: 'Bot',
-  },
-  {
     id: 'summarize-key-points',
     title: 'Summarize Key Points',
     description: 'Condenses a long text into the most important bullet points.',

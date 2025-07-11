@@ -19,6 +19,7 @@ const ChatMessageSchema = z.object({
   role: z.enum(['user', 'model']),
   text: z.string(),
 });
+export type ChatHistoryMessage = z.infer<typeof ChatMessageSchema>;
 
 export const ChatInputSchema = z.object({
   persona: PersonaSchema,

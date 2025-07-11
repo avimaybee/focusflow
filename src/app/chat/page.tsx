@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Bot as BotIcon, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Plus, Settings, LogOut, User, Loader2, Users, Menu } from 'lucide-react';
+import { Send, Bot as BotIcon, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Plus, Settings, LogOut, User, Loader2, Users, Menu, Baby } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -57,6 +57,7 @@ interface ChatHistoryItem {
 
 const personas = [
   { id: 'neutral', name: 'Neutral Assistant', icon: <BotIcon className="h-5 w-5" />, description: "A straightforward, helpful AI assistant." },
+  { id: 'five-year-old', name: 'Explain Like I\'m 5', icon: <Baby className="h-5 w-5" />, description: 'Explains complex topics in very simple terms.' },
   { id: 'casual', name: 'Casual Buddy', icon: <Coffee className="h-5 w-5" />, description: "Relaxed, peer-to-peer chat." },
   { id: 'entertaining', name: 'Entertaining Educator', icon: <Sparkles className="h-5 w-5" />, description: "Makes learning fun and engaging." },
   { id: 'brutally-honest', name: 'Honest Mentor', icon: <Filter className="h-5 w-5" />, description: "Sharp, direct, and critical feedback." },
