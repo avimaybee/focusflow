@@ -1,7 +1,35 @@
-
 'use server';
 
-import { ai } from '@/ai/genkit';
+import {
+  generate,
+  prompt,
+  defineFlow,
+  run,
+  configureGenkit,
+} from 'genkit/ai';
+import {
+  ChatHistoryMessage,
+  ChatInput,
+  Flashcard,
+  Quiz,
+  StudyPlan,
+  Counterarguments,
+  PresentationOutline,
+  KeyInsights,
+  RewriteTextRequest,
+  RewriteTextResponse,
+  GenerateBulletPointsRequest,
+  GenerateBulletPointsResponse,
+  GenerateCounterargumentsRequest,
+  GenerateCounterargumentsResponse,
+  GeneratePresentationOutlineRequest,
+  GeneratePresentationOutlineResponse,
+  HighlightKeyInsightsRequest,
+  HighlightKeyInsightsResponse,
+} from './chat-types';
+import {ai} from '../genkit';
+import {z} from 'zod';
+import pdf from 'pdf-parse/lib/pdf-parse';
 import { selectModel } from '../model-selection';
 import { optimizeChatHistory } from './history-optimizer';
 import {
@@ -15,9 +43,7 @@ import {
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from './tools';
-import type { ChatInput, ChatOutput } from './chat-types';
 import type { Message } from 'genkit';
-import { z } from 'zod';
 import { marked } from 'marked';
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -82,7 +108,7 @@ async function saveGeneratedContent(userId: string, toolName: string, output: an
   }
 }
 
-export async function chat(input: ChatInput): Promise<ChatOutput> {
+export async function chat(input: ChatInput) {
   const { userId, message, history, context, image, isPremium, persona } = input;
 
   const model = selectModel(message, history, isPremium || false);

@@ -16,15 +16,15 @@ import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { Loader2, UploadCloud } from 'lucide-react';
 import {
-  addDoc,
-  collection,
-  deleteField,
   doc,
-  onSnapshot,
+  collection,
+  addDoc,
   serverTimestamp,
   updateDoc,
+  onSnapshot,
+  deleteField,
 } from 'firebase/firestore';
-import {db} from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { chat } from '@/ai/flows/chat-flow';
 import { rewriteText } from '@/ai/flows/rewrite-text';
 import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
@@ -300,7 +300,7 @@ export default function ChatPage() {
             let outlineString = `## ${result.title}\n\n`;
             result.slides.forEach((slide: any, index: number,) => {
               outlineString += `### **Slide ${index + 1}: ${slide.title}**\n`;
-              slide.bulletPoints.forEach((point: string,) => outlineString += `- ${point}\n`);
+              slide.bulletPoints.forEach((point: string) => outlineString += `- ${point}\n`);
               outlineString += '\n';
             });
             return outlineString;
@@ -407,7 +407,7 @@ export default function ChatPage() {
             dispatch={dispatch}
             handleSendMessage={handleSendMessage}
             handleFileSelect={handleFileSelect}
-            onSelectPrompt={handleSelectPrompt}
+            onSelectPrompt={onSelectPrompt}
             isLoading={isLoading}
             isHistoryLoading={isHistoryLoading}
             personas={personas}
@@ -423,5 +423,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
