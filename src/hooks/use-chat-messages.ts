@@ -1,17 +1,15 @@
 
-'use client';
-
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { ChatMessageProps } from '@/components/chat-message';
+import { Dispatch } from 'react';
 
-export function useChatMessages(activeChatId: string | null) {
+export function useChatMessages(activeChatId: string | null, dispatch: Dispatch<any>) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
 
   useEffect(() => {
@@ -32,7 +30,7 @@ export function useChatMessages(activeChatId: string | null) {
             return { id: doc.id, role: data.role, text: data.text, createdAt: data.createdAt };
           }
         });
-        setMessages(chatMessages);
+        dispatch({ type: 'SET_MESSAGES', payload: chatMessages });
         setIsHistoryLoading(false);
       }, (error) => {
         console.error("Error fetching messages:", error);
@@ -41,10 +39,10 @@ export function useChatMessages(activeChatId: string | null) {
       });
       return () => unsubscribe();
     } else {
-      setMessages([]);
+      dispatch({ type: 'SET_MESSAGES', payload: [] });
       setIsHistoryLoading(false);
     }
-  }, [user?.uid, activeChatId, toast]);
+  }, [user?.uid, activeChatId, toast, dispatch]);
 
-  return { messages, setMessages, isHistoryLoading };
+  return { isHistoryLoading };
 }

@@ -1,7 +1,5 @@
 
-'use client';
-
-import { useState, DragEvent } from 'react';
+import { useState, DragEvent, Dispatch } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export type Attachment = {
@@ -11,9 +9,8 @@ export type Attachment = {
   preview: string;
 };
 
-export function useFileUpload() {
+export function useFileUpload(dispatch: Dispatch<any>) {
   const { toast } = useToast();
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const handleFileSelect = (file: File) => {
@@ -49,12 +46,13 @@ export function useFileUpload() {
     reader.onloadend = async () => {
       const dataUrl = reader.result as string;
       try {
-        setAttachments(prev => [...prev, {
+        const newAttachment = {
           preview: previewUrl,
           data: dataUrl,
           type: file.type,
           name: file.name,
-        }]);
+        };
+        dispatch({ type: 'SET_ATTACHMENTS', payload: [newAttachment] }); // This will overwrite existing attachments for simplicity, can be changed to ADD_ATTACHMENT
         toast({
           id: toastId,
           variant: 'default',
@@ -112,8 +110,6 @@ export function useFileUpload() {
   };
 
   return {
-    attachments,
-    setAttachments,
     isDraggingOver,
     handleFileSelect,
     fileUploadHandlers,

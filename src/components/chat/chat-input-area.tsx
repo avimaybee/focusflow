@@ -30,7 +30,7 @@ interface ChatInputAreaProps {
   input: string;
   setInput: (value: string) => void;
   attachments: Attachment[];
-  setAttachments: (attachments: Attachment[]) => void;
+  dispatch: React.Dispatch<any>;
   handleSendMessage: (e: FormEvent) => void;
   handleFileSelect: (file: File) => void;
   onSelectPrompt: (prompt: string) => void;
@@ -47,7 +47,7 @@ export function ChatInputArea({
   input,
   setInput,
   attachments,
-  setAttachments,
+  dispatch,
   handleSendMessage,
   handleFileSelect,
   onSelectPrompt,
@@ -75,7 +75,7 @@ export function ChatInputArea({
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 rounded-full"
-                    onClick={() => setAttachments(attachments.filter((_, i) => i !== index))}
+                    onClick={() => dispatch({ type: 'CLEAR_ATTACHMENTS' })}
                   >
                     <X className="h-3.5 w-3.5" />
                   </Button>
@@ -104,14 +104,12 @@ export function ChatInputArea({
                         onSelect={(currentValue) => setSelectedPersonaId(currentValue)}
                         className="flex items-start gap-3 cursor-pointer py-2.5"
                       >
-                        <Check
-                          className={cn(
-                            "mt-1 mr-2 h-4 w-4",
-                            selectedPersonaId === p.id ? "opacity-100" : "opacity-0"
-                          )}
-                        />
+                        <div className={cn(
+                          "mt-1 mr-2 h-4 w-4",
+                          selectedPersonaId === p.id ? "opacity-100" : "opacity-0"
+                        )} />
                         <div className="flex items-center gap-3">
-                          {p.icon}
+                          <div className="w-5 h-5" />
                           <div className="text-left">
                             <p className="font-semibold text-sm">{p.name}</p>
                             <p className="text-xs text-muted-foreground">{p.description}</p>

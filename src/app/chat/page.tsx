@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
@@ -7,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
 import { useChatMessages } from '@/hooks/use-chat-messages';
+import { useChatReducer } from '@/hooks/use-chat-reducer';
 import { useFileUpload, Attachment } from '@/hooks/use-file-upload';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatHeader } from '@/components/chat/chat-header';
@@ -28,12 +30,14 @@ export default function ChatPage() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  
+  const [state, dispatch] = useChatReducer();
+  const { messages, isLoading, attachments } = state;
 
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
   const { chatHistory } = useChatHistory();
-  const { messages, setMessages, isHistoryLoading } = useChatMessages(activeChatId);
-  const { attachments, setAttachments, isDraggingOver, handleFileSelect, fileUploadHandlers } = useFileUpload();
+  const { isHistoryLoading } = useChatMessages(activeChatId, dispatch);
+  const { isDraggingOver, handleFileSelect, fileUploadHandlers } = useFileUpload(dispatch);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -74,10 +78,10 @@ export default function ChatPage() {
       userName: user?.displayName || user?.email || 'User',
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setIsLoading(true);
+    dispatch({ type: 'ADD_MESSAGE', payload: userMessage });
+    dispatch({ type: 'START_LOADING' });
     setInput('');
-    setAttachments([]);
+    dispatch({ type: 'CLEAR_ATTACHMENTS' });
 
     let currentChatId = activeChatId;
 
@@ -143,9 +147,9 @@ export default function ChatPage() {
         title: 'Message Failed',
         description: 'Could not send message. Please try again.',
       });
-      setMessages(prev => prev.slice(0, prev.length - 1));
+      dispatch({ type: 'ROLLBACK_MESSAGE' });
     } finally {
-      setIsLoading(false);
+      dispatch({ type: 'STOP_LOADING' });
     }
   };
 
@@ -165,8 +169,8 @@ export default function ChatPage() {
     let currentChatId = activeChatId;
     const userPrompt = `${tool.name}: "${messageText.substring(0, 50)}..."`;
 
-    setIsLoading(true);
-    setMessages(prev => [...prev, { role: 'user', text: userPrompt }]);
+    dispatch({ type: 'START_LOADING' });
+    dispatch({ type: 'ADD_MESSAGE', payload: { role: 'user', text: userPrompt }});
 
     try {
       if (!currentChatId) {
@@ -182,7 +186,7 @@ export default function ChatPage() {
       await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
         role: 'user', text: JSON.stringify({role: 'user', text: userPrompt }), createdAt: serverTimestamp()
       });
-
+      
       const sourceArg = { sourceText: messageText, persona: selectedPersonaId as Persona };
       let actionFn: Promise<any>;
       let formatResult: (result: any) => string;
@@ -237,9 +241,9 @@ export default function ChatPage() {
         title: 'Action Failed',
         description: `Could not perform ${tool.name}. Please try again.`,
       });
-      setMessages(prev => prev.slice(0, prev.length - 1));
+      dispatch({ type: 'ROLLBACK_MESSAGE' });
     } finally {
-      setIsLoading(false);
+      dispatch({ type: 'STOP_LOADING' });
     }
   };
 
@@ -288,7 +292,7 @@ export default function ChatPage() {
         )}
 
         <ChatHeader
-          personaName={selectedPersona.name}
+          personaName={selectedPersona?.name || 'Default'}
           onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
           isLoggedIn={!!user}
         />
@@ -307,10 +311,10 @@ export default function ChatPage() {
           input={input}
           setInput={setInput}
           attachments={attachments}
-          setAttachments={setAttachments}
+          dispatch={dispatch}
           handleSendMessage={handleSendMessage}
           handleFileSelect={handleFileSelect}
-          onSelectPrompt={handleSelectPrompt}
+          onSelectPrompt={onSelectPrompt}
           isLoading={isLoading}
           isHistoryLoading={isHistoryLoading}
           personas={personas}
@@ -323,3 +327,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
