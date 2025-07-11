@@ -1,44 +1,29 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // A user can only read and write to their own document.
+    // Users can only read and write to their own user document.
     match /users/{userId} {
-      allow read, write: if request.auth.uid == userId;
-                       
-      // Disallow deletion of user profiles from the client.
-      allow delete: if false;
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
     }
 
-    // Rules for the 'chats' subcollection.
+    // Users can only read and write their own chat messages and history.
     match /users/{userId}/chats/{chatId} {
-      // A user can only list and read their own chats.
-      allow list, get: if request.auth.uid == userId;
-      
-      // A user can only create new chats for themselves.
-      allow create: if request.auth.uid == userId;
-      
-      // Disallow updating or deleting chat sessions from the client.
-      allow update, delete: if false;
-    }
-    
-    // Rules for the 'messages' sub-subcollection.
-    match /users/{userId}/chats/{chatId}/messages/{messageId} {
-      // A user can only list and read messages within their own chats.
-      allow list, get: if request.auth.uid == userId;
-      
-      // A user can only create new messages in their own chats.
-      allow create: if request.auth.uid == userId;
-      
-      // Disallow updating or deleting messages to maintain chat integrity.
-      allow update, delete: if false;
+      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Public summaries collection: Allow anyone to read, but disallow client writes for security.
-    match /publicSummaries/{slug} {
+    match /users/{userId}/chats/{chatId}/messages/{messageId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Public summaries can be read by anyone, but not written.
+    // This is for future use if you make summaries shareable.
+    match /publicSummaries/{summaryId} {
       allow get: if true;
-      allow list, write: if false;
+      allow list, create, update, delete: if false;
     }
   }
 }
