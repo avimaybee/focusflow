@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, Bot as BotIcon, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Plus, Settings, LogOut, User, Loader2, Users, Menu, Baby, Check } from 'lucide-react';
+import { Send, Bot as BotIcon, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Plus, Settings, LogOut, User, Loader2, Users, Menu, Baby, Check, ArrowRight } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -40,6 +40,7 @@ import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, Timest
 import { db } from '@/lib/firebase';
 import { uploadFile } from '@/lib/storage-actions';
 import { cn } from '@/lib/utils';
+import { marked } from 'marked';
 
 type Attachment = {
   name: string;
@@ -585,70 +586,46 @@ export default function ChatPage() {
                   <div className="p-4 bg-primary/10 rounded-full mb-4 border border-primary/20">
                     <Logo className="h-10 w-10 text-primary" />
                   </div>
-                  <h1 className="text-2xl font-bold mb-2 text-center text-foreground">
+                  <h1 className="text-2xl font-bold mb-1 text-center text-foreground">
                     How can I help you today?
                   </h1>
-                  <p className="text-muted-foreground mb-8">Select a prompt to get started.</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-lg">
-                    <Button
-                      variant="outline"
-                      className="h-auto p-4 justify-start hover:-translate-y-1 transition-transform group hover:bg-accent hover:text-accent-foreground border-border/60"
+                   <p className="text-muted-foreground mb-6">Select a prompt to get started or just start typing.</p>
+                  <div className="flex flex-col gap-2 w-full max-w-md">
+                     <Button
+                      variant="ghost"
+                      className="h-auto p-3 justify-start group"
                       onClick={() => handleSelectPrompt('Summarize this document for me...')}
                     >
-                      <div className="flex items-start text-left w-full gap-3">
-                        <div className="p-2 bg-primary/10 rounded-md">
-                          <FileText className="h-5 w-5 text-primary group-hover:text-accent-foreground" />
-                        </div>
-                        <div className="w-full">
-                          <p className="font-semibold text-base group-hover:text-accent-foreground">Summarize a document</p>
-                          <p className="text-sm text-muted-foreground font-normal group-hover:text-accent-foreground">Condense any text or PDF.</p>
-                        </div>
-                      </div>
+                      <FileText className="h-4 w-4 mr-3 text-muted-foreground group-hover:text-primary" />
+                      <span className="font-normal text-base text-muted-foreground group-hover:text-foreground">Summarize a document</span>
+                      <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="h-auto p-4 justify-start hover:-translate-y-1 transition-transform group hover:bg-accent hover:text-accent-foreground border-border/60"
+                     <Button
+                      variant="ghost"
+                      className="h-auto p-3 justify-start group"
                       onClick={() => handleSelectPrompt('Create a study plan for my history exam')}
                     >
-                      <div className="flex items-start text-left w-full gap-3">
-                        <div className="p-2 bg-primary/10 rounded-md">
-                          <Book className="h-5 w-5 text-primary group-hover:text-accent-foreground" />
-                        </div>
-                        <div className="w-full">
-                          <p className="font-semibold text-base group-hover:text-accent-foreground">Create a study plan</p>
-                          <p className="text-sm text-muted-foreground font-normal group-hover:text-accent-foreground">Generate a weekly schedule.</p>
-                        </div>
-                      </div>
+                      <Book className="h-4 w-4 mr-3 text-muted-foreground group-hover:text-primary" />
+                      <span className="font-normal text-base text-muted-foreground group-hover:text-foreground">Create a study plan</span>
+                       <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="h-auto p-4 justify-start hover:-translate-y-1 transition-transform group hover:bg-accent hover:text-accent-foreground border-border/60"
+                     <Button
+                      variant="ghost"
+                      className="h-auto p-3 justify-start group"
                       onClick={() => handleSelectPrompt('Help me brainstorm ideas for my essay on climate change')}
                     >
-                      <div className="flex items-start text-left w-full gap-3">
-                        <div className="p-2 bg-primary/10 rounded-md">
-                          <Brain className="h-5 w-5 text-primary group-hover:text-accent-foreground" />
-                        </div>
-                        <div className="w-full">
-                          <p className="font-semibold text-base group-hover:text-accent-foreground">Brainstorm ideas</p>
-                          <p className="text-sm text-muted-foreground font-normal group-hover:text-accent-foreground">Get creative angles for any topic.</p>
-                        </div>
-                      </div>
+                      <Brain className="h-4 w-4 mr-3 text-muted-foreground group-hover:text-primary" />
+                      <span className="font-normal text-base text-muted-foreground group-hover:text-foreground">Brainstorm ideas</span>
+                       <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="h-auto p-4 justify-start hover:-translate-y-1 transition-transform group hover:bg-accent hover:text-accent-foreground border-border/60"
+                     <Button
+                      variant="ghost"
+                      className="h-auto p-3 justify-start group"
                       onClick={() => handleSelectPrompt('Can you explain quantum computing in simple terms?')}
                     >
-                      <div className="flex items-start text-left w-full gap-3">
-                        <div className="p-2 bg-primary/10 rounded-md">
-                          <Sparkles className="h-5 w-5 text-primary group-hover:text-accent-foreground" />
-                        </div>
-                        <div className="w-full">
-                          <p className="font-semibold text-base group-hover:text-accent-foreground">Explain a concept</p>
-                          <p className="text-sm text-muted-foreground font-normal group-hover:text-accent-foreground">Break down complex topics.</p>
-                        </div>
-                      </div>
+                      <Sparkles className="h-4 w-4 mr-3 text-muted-foreground group-hover:text-primary" />
+                      <span className="font-normal text-base text-muted-foreground group-hover:text-foreground">Explain a concept</span>
+                       <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100" />
                     </Button>
                   </div>
                 </div>
@@ -783,3 +760,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
