@@ -9,6 +9,7 @@
  */
 import { ai } from '@/ai/genkit';
 import { selectModel } from '../model-selection';
+import { optimizeChatHistory } from './history-optimizer';
 import {
   createDiscussionPromptsTool,
   createFlashcardsTool,
@@ -82,10 +83,13 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
     highlightKeyInsightsTool,
   ];
 
-  const chatHistory: Message[] = history.map((msg) => ({
+  let chatHistory: Message[] = history.map((msg) => ({
     role: msg.role,
     parts: [{ text: msg.text }],
   }));
+
+  // Optimize the chat history to manage context window and cost
+  chatHistory = await optimizeChatHistory(chatHistory);
 
   const promptParts = [];
   let fullMessage = message;
