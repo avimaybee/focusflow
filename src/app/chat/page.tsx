@@ -646,7 +646,7 @@ export default function ChatPage() {
         </div>
 
         <div className="p-4">
-          <div className="relative max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto p-2 rounded-xl bg-card border border-border/60 shadow-lg">
+          <div className="relative max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto">
             {attachments.length > 0 && (
               <div className="p-2 border-b border-border/60">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -667,7 +667,7 @@ export default function ChatPage() {
                 </div>
               </div>
             )}
-            <div className="flex items-start p-2 gap-2">
+            <div className="flex items-start p-2 gap-2 bg-card border border-border/60 rounded-xl shadow-lg">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted">
@@ -760,5 +760,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
