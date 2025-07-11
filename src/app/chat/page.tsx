@@ -667,7 +667,7 @@ export default function ChatPage() {
                 </div>
               </div>
             )}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center p-2 gap-2">
+            <div className="flex items-start p-2 gap-2">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted">
@@ -728,7 +728,7 @@ export default function ChatPage() {
                 accept="image/*,application/pdf,text/*"
               />
 
-              <form onSubmit={handleSendMessage} className="flex-1 flex items-start gap-2">
+              <form onSubmit={handleSendMessage} className="flex-1 flex items-center gap-2">
                 <Textarea
                   ref={textareaRef}
                   value={input}
@@ -760,5 +760,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
