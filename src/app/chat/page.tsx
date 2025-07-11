@@ -15,24 +15,43 @@ import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { Loader2, UploadCloud } from 'lucide-react';
-import { addDoc, collection, serverTimestamp, doc, onSnapshot, updateDoc, deleteField } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { chat, rewriteText, generateBulletPoints, generateCounterarguments, generatePresentationOutline, highlightKeyInsights } from '@/ai/actions';
-import type { ChatInput, ChatHistoryMessage, Persona } from '@/ai/flows/chat-types';
-import { ChatMessageProps } from '@/components/chat-message';
-import { SmartToolActions } from '@/lib/constants';
-import pdf from 'pdf-parse/lib/pdf-parse';
-import { AnnouncementBanner } from '@/components/announcement-banner';
+import {
+  addDoc,
+  collection,
+  deleteField,
+  doc,
+  onSnapshot,
+  serverTimestamp,
+  updateDoc,
+} from 'firebase/firestore';
+import {db} from '@/lib/firebase';
+import {
+  chat,
+  rewriteText,
+  generateBulletPoints,
+  generateCounterarguments,
+  generatePresentationOutline,
+  highlightKeyInsights,
+  extractText,
+} from '@/ai/actions';
+import type {
+  ChatInput,
+  ChatHistoryMessage,
+  Persona,
+} from '@/ai/flows/chat-types';
+import {ChatMessageProps} from '@/components/chat-message';
+import {SmartToolActions} from '@/lib/constants';
+import {AnnouncementBanner} from '@/components/announcement-banner';
 
-// Helper to fetch and parse file content on the client
+// Helper to fetch and parse file content
 async function getFileTextFromUrl(url: string, type: string): Promise<string> {
-  const response = await fetch(url);
-  const blob = await response.blob();
   if (type.includes('pdf')) {
-    const buffer = await blob.arrayBuffer();
-    const data = await pdf(buffer);
-    return data.text;
+    // For PDFs, we need to call the server action
+    return extractText(url, type);
   } else {
+    // For other text-based files, we can still fetch on the client
+    const response = await fetch(url);
+    const blob = await response.blob();
     return blob.text();
   }
 }
@@ -141,7 +160,7 @@ export default function ChatPage() {
     const userMessage: ChatMessageProps = {
       role: 'user',
       text: prompt, // Display the user's actual input in the UI
-      images: attachedFiles.filter(f => f.type.startsWith('image/')).map(f => f.path),
+      images: attachedFiles.filter(f => f.type.startsWith('image/')).map(f => f.url),
       userAvatar: user?.photoURL,
       userName: user?.displayName || user?.email || 'User',
     };
@@ -171,7 +190,7 @@ export default function ChatPage() {
         const fileContext = {
           name: attachedFiles[0].name,
           type: attachedFiles[0].type,
-          url: attachedFiles[0].url, // Save the downloadURL
+          url: attachedFiles[0].url, // Save the data URI
         };
         await updateDoc(doc(db, 'users', user.uid, 'chats', currentChatId), { context: fileContext });
       }
@@ -191,16 +210,9 @@ export default function ChatPage() {
 
       // Determine the context to send to the AI, prioritizing new attachments
       const contextAttachment = attachedFiles.length > 0 ? attachedFiles[0] : chatContext;
-      let fileContent: string | undefined;
+      let fileDataUri: string | undefined;
       if (contextAttachment) {
-        try {
-          fileContent = await getFileTextFromUrl(contextAttachment.url, contextAttachment.type);
-        } catch (e) {
-          console.error("Error fetching file content:", e);
-          toast({ variant: 'destructive', title: 'Error', description: 'Could not read the attached file.' });
-          dispatch({ type: 'STOP_LOADING' });
-          return;
-        }
+          fileDataUri = contextAttachment.url; // url is the data URI now
       }
       
       const chatInput: ChatInput = {
@@ -209,7 +221,7 @@ export default function ChatPage() {
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
         isPremium: isPremium ?? false,
-        context: fileContent, // Pass the raw text content
+        context: fileDataUri, // Pass the data URI
       };
 
       const result = await chat(chatInput).catch((err) => {
@@ -260,7 +272,7 @@ export default function ChatPage() {
     if (!user?.uid) return;
 
     let currentChatId = activeChatId;
-    const userPrompt = `${tool.name}: "${messageText.substring(0, 50)}..."`;
+    const userPrompt = `${tool.name}: "${messageText.substring(0, 50)}...";
 
     dispatch({ type: 'START_LOADING' });
     dispatch({ type: 'ADD_MESSAGE', payload: { role: 'user', text: userPrompt }});
@@ -295,15 +307,15 @@ export default function ChatPage() {
           break;
         case SmartToolActions.COUNTERARGUMENTS:
           actionFn = generateCounterarguments({ statementToChallenge: messageText, persona: selectedPersonaId as Persona });
-          formatResult = (result) => result.counterarguments.map((arg: string, i: number) => `${i + 1}. ${arg}`).join('\n\n');
+          formatResult = (result) => result.counterarguments.map((arg: string, i: number,) => `${i + 1}. ${arg}`).join('\n\n');
           break;
         case SmartToolActions.PRESENTATION:
           actionFn = generatePresentationOutline(sourceArg);
           formatResult = (result) => {
             let outlineString = `## ${result.title}\n\n`;
-            result.slides.forEach((slide: any, index: number) => {
+            result.slides.forEach((slide: any, index: number,) => {
               outlineString += `### **Slide ${index + 1}: ${slide.title}**\n`;
-              slide.bulletPoints.forEach((point: string) => outlineString += `- ${point}\n`);
+              slide.bulletPoints.forEach((point: string,) => outlineString += `- ${point}\n`);
               outlineString += '\n';
             });
             return outlineString;
@@ -313,7 +325,7 @@ export default function ChatPage() {
           actionFn = highlightKeyInsights(sourceArg);
           formatResult = (result) => {
             let insightsString = '### Key Insights\n\n';
-            result.insights.forEach((insight: string) => insightsString += `- ${insight}\n`);
+            result.insights.forEach((insight: string,) => insightsString += `- ${insight}\n`);
             return insightsString;
           };
           break;
