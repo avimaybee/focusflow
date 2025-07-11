@@ -75,12 +75,7 @@ A user may upload a file (image or PDF) or provide text to give you context.
     generatePresentationOutlineTool,
     highlightKeyInsightsTool,
   ];
-
-  const history: Message[] = input.history.map(msg => ({
-    role: msg.role,
-    parts: [{text: msg.text}],
-  }));
-
+  
   const promptParts = [];
   if (input.context) {
     // Pass the context to the prompt so the LLM knows about it.
@@ -92,14 +87,18 @@ A user may upload a file (image or PDF) or provide text to give you context.
   if (input.image) {
     promptParts.push({ media: { url: input.image } });
   }
-
+  
+  // The user's latest message should be the last part of the history.
+  const fullHistory: Message[] = [
+    ...input.history,
+    { role: 'user', parts: promptParts },
+  ];
 
   const {output} = await ai.generate({
     model,
     system: systemPrompt,
     tools,
-    history,
-    prompt: promptParts,
+    history: fullHistory,
     config: {
       safetySettings: [
         {

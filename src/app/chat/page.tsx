@@ -14,10 +14,10 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { chat, rewriteText, addCitations, generateBulletPoints, generateCounterarguments, generatePresentationOutline, highlightKeyInsights } from '@/ai/actions';
 import { updateUserPersona } from '@/lib/user-actions';
-import type { Persona } from '@/ai/flows/chat-types';
+import type { Persona, ChatHistoryMessage } from '@/ai/flows/chat-types';
 import { useToast } from '@/hooks/use-toast';
 import { TextSelectionToolbar } from '@/components/text-selection-toolbar';
-import type { ChatInput, ChatHistoryMessage } from '@/ai/flows/chat-types';
+import type { ChatInput } from '@/ai/flows/chat-types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   DropdownMenu,
@@ -196,14 +196,11 @@ export default function ChatPage() {
         createdAt: serverTimestamp(),
       });
 
-      const chatHistoryForAI: ChatHistoryMessage[] = [...messages, userMessage]
+      const chatHistoryForAI: ChatHistoryMessage[] = messages
         .map(m => {
-           // Ensure we only pass valid history items to the AI
-           if (typeof m.text === 'string') {
-              return { role: m.role, parts: [{ text: m.text }] };
+           if (typeof m.text === 'string' && (m.role === 'user' || m.role === 'model')) {
+              return { role: m.role, text: m.text };
            }
-           // Handle cases where m.text is a ReactNode, e.g., the loading spinner
-           // We filter these out to avoid sending invalid data to the AI.
            return null;
         })
         .filter((m): m is ChatHistoryMessage => m !== null);
