@@ -67,7 +67,7 @@ const personas = [
 
 
 export default function ChatPage() {
-  const { user, preferredPersona, loading: authLoading } = useAuth();
+  const { user, isPremium, preferredPersona, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
@@ -179,6 +179,7 @@ export default function ChatPage() {
         message: prompt,
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
+        isPremium: isPremium,
         // Pass the first attachment's data for now. A more robust implementation
         // would handle multiple contexts.
         context: finalAttachments.find(a => a.includes('.pdf')),
@@ -186,12 +187,26 @@ export default function ChatPage() {
       };
 
       const result = await chat(chatInput);
+
+      // The 'response' from the chat flow could be a string or a JSON object.
+      // We try to parse it to see if it's a special data type like flashcards or a quiz.
+      let messageContent: ChatMessageProps = { role: 'model', text: result.response };
+      try {
+        const parsedResponse = JSON.parse(result.response);
+        if (parsedResponse.flashcards) {
+          messageContent = { role: 'model', text: 'Here are your flashcards!', flashcards: parsedResponse.flashcards };
+        } else if (parsedResponse.quiz) {
+          messageContent = { role: 'model', text: 'Here is your quiz!', quiz: parsedResponse.quiz };
+        }
+      } catch (e) {
+        // The response was not a JSON object, so we treat it as plain text.
+      }
       
-      await addMessageToChat(user.uid, currentChatId, { role: 'model', text: result.response });
+      await addMessageToChat(user.uid, currentChatId, { role: 'model', text: JSON.stringify(messageContent) });
 
       setMessages(prev => [
         ...prev,
-        { role: 'model', text: result.response },
+        messageContent,
       ]);
     } catch (error) {
       console.error('Error in submitMessage:', error);

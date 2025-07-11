@@ -11,19 +11,52 @@ import { Button } from './ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { SmartToolsMenu, smartTools } from './smart-tools-menu';
 
+import { FlashcardViewer } from './flashcard-viewer';
+import { QuizViewer } from './quiz-viewer';
+
+// Define types for flashcard and quiz data to be passed in props
+interface FlashcardData {
+  question: string;
+  answer: string;
+}
+interface QuizData {
+  title: string;
+  questions: {
+    questionText: string;
+    options: string[];
+    correctAnswer: string;
+    explanation: string;
+  }[];
+}
+
 export type ChatMessageProps = {
   role: 'user' | 'model';
   text: string | React.ReactNode;
   images?: (string | null)[];
+  flashcards?: FlashcardData[];
+  quiz?: QuizData;
   userAvatar?: string | null;
   userName?: string;
   onSmartToolAction?: (tool: typeof smartTools[0], text: string) => void;
 };
 
-export function ChatMessage({ role, text, images, userAvatar, userName, onSmartToolAction }: ChatMessageProps) {
+export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, userName, onSmartToolAction }: ChatMessageProps) {
   const isUser = role === 'user';
   const messageRef = React.useRef<HTMLDivElement>(null);
   
+  const renderContent = () => {
+    if (flashcards) {
+      return <FlashcardViewer flashcards={flashcards} />;
+    }
+    if (quiz) {
+      return <QuizViewer quiz={quiz} />;
+    }
+    if (typeof text === 'string') {
+      return <div dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br />') }} />;
+    }
+    return text;
+  };
+
   return (
     <div className={cn('flex items-start gap-3 animate-in fade-in-50 slide-in-from-bottom-2 duration-500', isUser && 'justify-end')}>
       {!isUser && (
@@ -39,10 +72,11 @@ export function ChatMessage({ role, text, images, userAvatar, userName, onSmartT
             isUser
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted',
-            typeof text === 'string' && 'prose-styles'
+            // Only apply prose styles if it's a simple string message
+            typeof text === 'string' && !flashcards && !quiz && 'prose-styles'
           )}
         >
-          {typeof text === 'string' ? <div dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br />') }} /> : text}
+          {renderContent()}
           {images && images.length > 0 && (
               <div className="mt-2 grid gap-2 grid-cols-2">
                 {images.map((img, index) => img && (

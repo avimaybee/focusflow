@@ -8,6 +8,7 @@
  * - chat - The main function for handling chat messages.
  */
 import {ai} from '@/ai/genkit';
+import { selectModel } from '../model-selection';
 import {
   createDiscussionPromptsTool,
   createFlashcardsTool,
@@ -15,6 +16,8 @@ import {
   createQuizTool,
   createStudyPlanTool,
   explainConceptTool,
+  generatePresentationOutlineTool,
+  highlightKeyInsightsTool,
   summarizeNotesTool,
 } from './tools';
 import type { ChatInput, ChatOutput } from './chat-types';
@@ -29,7 +32,7 @@ const personaPrompts = {
   entertaining:
     'You are an entertaining and humorous educator. Your style is upbeat, witty, and playful. You make learning fun by using pop-culture analogies (mentioning current shows, games, or internet trends) and light-hearted jokes. Your goal is to make the material memorable and engaging.',
   'brutally-honest':
-    "You are a brutally honest mentor whose goal is to make the student improve. Your primary role is to provide sharp, direct, and critical feedback. Do not sugarcoat your responses. Point out logical fallacies, identify weaknesses in arguments, and challenge the user's assumptions. Your feedback is tough but always fair and constructive.",
+    "You are a brutally honest mentor whose goal is to make the student improve. Your primary role is to provide sharp, direct, and critical feedback. Do not sugarcoat your responses. Point out logical fallacies, identify weaknesses in arguments, and challenge the user\'s assumptions. Your feedback is tough but always fair and constructive.",
   'straight-shooter':
     'You are a straight shooter who values efficiency. Your goal is to be focused, concise, and blunt. Your primary mode of communication is structured lists and bullet points. Avoid fluff, introductory pleasantries, or long paragraphs. Provide clear, scannable, and actionable takeaways.',
   'essay-sharpshooter':
@@ -48,25 +51,26 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
 
 You are an expert AI assistant that can use tools to help students.
 
-When you use a tool that has a 'persona' input field, you MUST pass the current persona ('${input.persona}') to it.
+When you use a tool that has a \'persona\' input field, you MUST pass the current persona (\'${input.persona}\') to it.
 
 A user may upload a file (image or PDF) or provide text to give you context.
-- If a file or text is provided in the 'context' field, you MUST pass it to the 'context' argument of the most appropriate tool.
-- If an image is provided in the 'image' field, you can analyze it directly in your response without needing a tool.
-- For example, if the user uploads a PDF and says "make a quiz", you must use the 'createQuiz' tool and pass the file's context to it.
+- If a file or text is provided in the \'context\' field, you MUST pass it to the \'context\' argument of the most appropriate tool.
+- If an image is provided in the \'image\' field, you can analyze it directly in your response without needing a tool.
+- For example, if the user uploads a PDF and says "make a quiz", you must use the \'createQuiz\' tool and pass the file\'s context to it.
 `;
 
+  const model = selectModel(input.message, input.history, input.isPremium || false);
 
   const tools = [
     summarizeNotesTool,
-  createStudyPlanTool,
-  createFlashcardsTool,
-  createQuizTool,
-  explainConceptTool,
-  createMemoryAidTool,
-  createDiscussionPromptsTool,
-  generatePresentationOutlineTool,
-  highlightKeyInsightsTool,
+    createStudyPlanTool,
+    createFlashcardsTool,
+    createQuizTool,
+    explainConceptTool,
+    createMemoryAidTool,
+    createDiscussionPromptsTool,
+    generatePresentationOutlineTool,
+    highlightKeyInsightsTool,
   ];
 
   const history = input.history.map(msg => ({
@@ -88,7 +92,7 @@ A user may upload a file (image or PDF) or provide text to give you context.
 
 
   const {output} = await ai.generate({
-    model: 'googleai/gemini-2.0-flash',
+    model,
     system: systemPrompt,
     tools,
     history,

@@ -5,15 +5,7 @@ service cloud.firestore {
 
     // A user can only read and write to their own document.
     match /users/{userId} {
-      allow read: if request.auth.uid == userId;
-      
-      // Allow creation if the user is authenticated and the document ID matches their UID.
-      allow create: if request.auth.uid == userId;
-      
-      // Allow updates only for specific, user-configurable fields.
-      allow update: if request.auth.uid == userId
-                    && request.resource.data.diff(resource.data).affectedKeys()
-                       .hasOnly(['preferredPersona', 'favoritePrompts']);
+      allow read, write: if request.auth.uid == userId;
                        
       // Disallow deletion of user profiles from the client.
       allow delete: if false;

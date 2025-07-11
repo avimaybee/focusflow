@@ -24,6 +24,7 @@ export const ChatInputSchema = z.object({
   persona: PersonaSchema,
   history: z.array(ChatMessageSchema),
   message: z.string(),
+  isPremium: z.boolean().optional().default(false),
   image: z
     .string()
     .optional()
