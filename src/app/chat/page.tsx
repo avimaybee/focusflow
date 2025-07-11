@@ -314,7 +314,7 @@ export default function ChatPage() {
           dispatch={dispatch}
           handleSendMessage={handleSendMessage}
           handleFileSelect={handleFileSelect}
-          onSelectPrompt={onSelectPrompt}
+          onSelectPrompt={handleSelectPrompt}
           isLoading={isLoading}
           isHistoryLoading={isHistoryLoading}
           personas={personas}
@@ -327,5 +327,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
