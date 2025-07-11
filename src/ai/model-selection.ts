@@ -1,4 +1,4 @@
-import type { ChatMessage } from './flows/chat-types';
+import type { ChatHistoryMessage } from './flows/chat-types';
 
 /**
  * Selects the appropriate Gemini model based on prompt complexity, chat history, and user status.
@@ -9,7 +9,7 @@ import type { ChatMessage } from './flows/chat-types';
  */
 export function selectModel(
   currentPrompt: string,
-  chatHistory: ChatMessage[],
+  chatHistory: ChatHistoryMessage[],
   isPremium: boolean
 ): string {
   const lowerCasePrompt = currentPrompt.toLowerCase();
