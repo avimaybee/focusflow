@@ -52,14 +52,14 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
 
 You are an expert AI assistant. Your primary goal is to be a helpful and conversational study partner.
 
-You also have a set of tools available to you. Based on the user's request, decide whether it's best to respond directly or to use one of your tools. Only use a tool if the user's request clearly matches the tool's description. For general conversation, just respond naturally.
+You have access to specialized tools, but you should ONLY use them when the user explicitly requests a specific study tool or action. For example:
+- Use tools when the user asks to "create a quiz", "make flashcards", "summarize this", "create a study plan", etc.
+- For general questions, explanations, discussions, or casual conversation, respond directly WITHOUT using any tools.
+- If you're unsure whether to use a tool, default to responding directly.
 
-When you use a tool that has a 'persona' input field, you MUST pass the current persona ('${input.persona}') to it.
+When you do use a tool that has a 'persona' input field, you MUST pass the current persona ('${input.persona}') to it.
 
-A user may upload a file (image or PDF) or provide text to give you context.
-- If a file or text is provided in the 'context' field, you MUST pass it to the 'context' argument of the most appropriate tool.
-- If an image is provided in the 'image' field, you can analyze it directly in your response without needing a tool.
-- For example, if the user uploads a PDF and says "make a quiz", you must use the 'createQuiz' tool and pass the file's context to it.
+If a user uploads a file or provides text context, you can reference it directly in your responses for general conversation. Only pass the context to tools when the user specifically requests a tool-based action.
 `;
 
   const model = selectModel(input.message, input.history, input.isPremium || false);
@@ -76,6 +76,11 @@ A user may upload a file (image or PDF) or provide text to give you context.
     highlightKeyInsightsTool,
   ];
   
+  const history: Message[] = input.history.map(msg => ({
+    role: msg.role,
+    parts: [{text: msg.text}],
+  }));
+  
   const promptParts = [];
   if (input.context) {
     // Pass the context to the prompt so the LLM knows about it.
@@ -87,18 +92,13 @@ A user may upload a file (image or PDF) or provide text to give you context.
   if (input.image) {
     promptParts.push({ media: { url: input.image } });
   }
-  
-  // The user's latest message should be the last part of the history.
-  const fullHistory: Message[] = [
-    ...input.history,
-    { role: 'user', parts: promptParts },
-  ];
 
   const {output} = await ai.generate({
     model,
     system: systemPrompt,
     tools,
-    history: fullHistory,
+    history: history,
+    prompt: promptParts,
     config: {
       safetySettings: [
         {
