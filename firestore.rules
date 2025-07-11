@@ -4,26 +4,58 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users can only read and write to their own user document.
+    // A user can only interact with their own document.
     match /users/{userId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null;
+      allow read: if request.auth.uid == userId;
+
+      // Allow a user to create their own document.
+      // The incoming data must match their UID.
+      allow create: if request.auth.uid == userId;
+
+      // Allow updates only for specific, user-configurable fields.
+      // This prevents malicious users from changing their isPremium status.
+      allow update: if request.auth.uid == userId
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['preferredPersona', 'favoritePrompts', 'photoURL', 'displayName']);
+
+      // Disallow deletion of user profiles from the client.
+      allow delete: if false;
     }
 
-    // Users can only read and write their own chat messages and history.
+    // Rules for the 'chats' subcollection.
     match /users/{userId}/chats/{chatId} {
-      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
-    }
+      // A user can only list and read their own chats.
+      allow list, get: if request.auth.uid == userId;
 
+      // A user can only create new chats for themselves.
+      allow create: if request.auth.uid == userId;
+
+      // Disallow updating or deleting chat sessions from the client.
+      allow update, delete: if false;
+    }
+    
+    // Rules for the 'messages' sub-subcollection.
     match /users/{userId}/chats/{chatId}/messages/{messageId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+      // A user can only list and read messages within their own chats.
+      allow list, get: if request.auth.uid == userId;
+
+      // A user can only create new messages in their own chats.
+      allow create: if request.auth.uid == userId;
+
+      // Disallow updating or deleting messages to maintain chat integrity.
+      allow update, delete: if false;
     }
 
-    // Public summaries can be read by anyone, but not written.
-    // This is for future use if you make summaries shareable.
-    match /publicSummaries/{summaryId} {
+    // Public summaries collection: Allow anyone to read, but disallow client writes for security.
+    match /publicSummaries/{slug} {
       allow get: if true;
-      allow list, create, update, delete: if false;
+      allow list, write: if false;
+    }
+    
+    // Prompt templates are public-read
+    match /promptTemplates/{templateId} {
+      allow get: if true;
+      allow list, write: if false;
     }
   }
 }
