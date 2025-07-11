@@ -185,7 +185,7 @@ export default function ChatPage() {
           createdAt: serverTimestamp(),
         });
         currentChatId = chatDoc.id;
-        setActiveChatId(chatDoc.id);
+        setActiveChatId(currentChatId);
         router.push(`/chat/${currentChatId}`, { scroll: false });
       }
 
@@ -196,13 +196,11 @@ export default function ChatPage() {
       });
 
       const chatHistoryForAI: ChatHistoryMessage[] = messages
-        .map(m => {
-           if (typeof m.text === 'string' && (m.role === 'user' || m.role === 'model')) {
-              return { role: m.role, text: m.text };
-           }
-           return null;
-        })
-        .filter((m): m is ChatHistoryMessage => m !== null);
+        .filter(m => typeof m.text === 'string' && (m.role === 'user' || m.role === 'model'))
+        .map(m => ({
+          role: m.role as 'user' | 'model',
+          text: m.text as string,
+        }));
       
       const finalAttachments = attachedFiles.map(a => a.data);
       const chatInput: ChatInput = {
@@ -785,3 +783,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
