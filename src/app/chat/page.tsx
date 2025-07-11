@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect, DragEvent, useCallback } from 'react';
+import { useState, useRef, useEffect, DragEvent } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,11 +37,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { PromptLibrary } from '@/components/prompt-library';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { createChat, addMessageToChat, getRecentChats, getChatMessages, Chat as ChatHistoryItem } from '@/lib/chat-actions';
 import { smartTools } from '@/components/smart-tools-menu';
 
 
 import { uploadFile } from '@/lib/storage-actions';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp, query, orderBy, getDocs, Timestamp, onSnapshot, doc } from 'firebase/firestore';
+
 
 type Attachment = {
   name: string;
@@ -51,6 +53,12 @@ type Attachment = {
   // `preview` is a local URL for client-side image previews
   preview: string;
 };
+
+interface ChatHistoryItem {
+  id: string;
+  title: string;
+  createdAt: Timestamp;
+}
 
 const personas = [
     { id: 'neutral', name: 'Neutral Assistant', icon: <BotIcon className="h-5 w-5" />, description: "A straightforward, helpful AI assistant." },
@@ -96,28 +104,62 @@ export default function ChatPage() {
   // Load chat history list
   useEffect(() => {
     if (user?.uid) {
-      getRecentChats(user.uid).then(setChatHistory);
+      const chatsRef = collection(db, 'users', user.uid, 'chats');
+      const q = query(chatsRef, orderBy('createdAt', 'desc'));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const history = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          title: doc.data().title,
+          createdAt: doc.data().createdAt,
+        }));
+        setChatHistory(history);
+      });
+      return () => unsubscribe();
     }
   }, [user?.uid]);
+
 
   // Load messages for the active chat
   useEffect(() => {
     if (user?.uid && activeChatId) {
       setIsHistoryLoading(true);
-      getChatMessages(user.uid, activeChatId)
-        .then(chatMessages => {
-          setMessages(chatMessages.map(msg => ({
-            role: msg.role,
-            text: msg.text,
-            // You might need to add other fields like userAvatar if stored
-          })));
-        })
-        .finally(() => setIsHistoryLoading(false));
+      const messagesRef = collection(db, 'users', user.uid, 'chats', activeChatId, 'messages');
+      const q = query(messagesRef, orderBy('createdAt', 'asc'));
+      
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const chatMessages = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            try {
+              const parsedText = JSON.parse(data.text);
+              return {
+                id: doc.id,
+                role: data.role,
+                ...parsedText,
+                createdAt: data.createdAt,
+              };
+            } catch (e) {
+              return {
+                id: doc.id,
+                role: data.role,
+                text: data.text,
+                createdAt: data.createdAt,
+              };
+            }
+        });
+        setMessages(chatMessages);
+        setIsHistoryLoading(false);
+      }, (error) => {
+        console.error("Error fetching messages:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat messages.' });
+        setIsHistoryLoading(false);
+      });
+
+      return () => unsubscribe();
     } else {
       setMessages([]);
       setIsHistoryLoading(false);
     }
-  }, [user?.uid, activeChatId]);
+  }, [user?.uid, activeChatId, toast]);
 
 
   useEffect(() => {
@@ -137,7 +179,6 @@ export default function ChatPage() {
     if ((!prompt.trim() && attachedFiles.length === 0) || isLoading || !user?.uid) return;
 
     const userMessageText = prompt;
-    // Create a temporary message with previews for optimistic UI update
     const userMessage: ChatMessageProps = {
       role: 'user',
       text: userMessageText,
@@ -154,18 +195,22 @@ export default function ChatPage() {
     let currentChatId = activeChatId;
 
     try {
-      // Get the storage URLs for the AI
-      const finalAttachments = attachedFiles.map(a => a.data);
-
-      // Create a new chat session if one isn't active
       if (!currentChatId) {
-        const newChatId = await createChat(user.uid, userMessageText);
-        setActiveChatId(newChatId);
-        currentChatId = newChatId;
-        router.push(`/chat/${newChatId}`, { scroll: false });
-      } else {
-        await addMessageToChat(user.uid, currentChatId, { role: 'user', text: userMessageText });
+        const chatDoc = await addDoc(collection(db, 'users', user.uid, 'chats'), {
+          title: userMessageText.substring(0, 40),
+          createdAt: serverTimestamp(),
+        });
+        currentChatId = chatDoc.id;
+        setActiveChatId(chatDoc.id);
+        router.push(`/chat/${chatDoc.id}`, { scroll: false });
       }
+
+      await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
+        role: 'user',
+        text: userMessageText,
+        createdAt: serverTimestamp(),
+      });
+
 
       const chatHistoryForAI = [...messages, userMessage]
         .filter(m => typeof m.text === 'string') 
@@ -174,21 +219,18 @@ export default function ChatPage() {
           text: m.text as string,
         }));
 
+      const finalAttachments = attachedFiles.map(a => a.data);
       const chatInput: ChatInput = {
         message: prompt,
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
         isPremium: isPremium,
-        // Pass the first attachment's data for now. A more robust implementation
-        // would handle multiple contexts.
         context: finalAttachments.find(a => a.includes('.pdf')),
         image: finalAttachments.find(a => a.includes('.png') || a.includes('.jpg') || a.includes('.jpeg') || a.includes('.webp')),
       };
 
       const result = await chat(chatInput);
 
-      // The 'response' from the chat flow could be a string or a JSON object.
-      // We try to parse it to see if it's a special data type like flashcards or a quiz.
       let messageContent: ChatMessageProps = { role: 'model', text: result.response };
       try {
         const parsedResponse = JSON.parse(result.response);
@@ -198,15 +240,15 @@ export default function ChatPage() {
           messageContent = { role: 'model', text: 'Here is your quiz!', quiz: parsedResponse.quiz };
         }
       } catch (e) {
-        // The response was not a JSON object, so we treat it as plain text.
+        // Not a JSON object, treat as plain text.
       }
       
-      await addMessageToChat(user.uid, currentChatId, { role: 'model', text: JSON.stringify(messageContent) });
+      await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
+        role: 'model',
+        text: JSON.stringify(messageContent),
+        createdAt: serverTimestamp(),
+      });
 
-      setMessages(prev => [
-        ...prev,
-        messageContent,
-      ]);
     } catch (error) {
       console.error('Error in submitMessage:', error);
       toast({
@@ -214,7 +256,6 @@ export default function ChatPage() {
         title: 'Message Failed',
         description: 'Could not send message. Please try again.',
       });
-      // Revert optimistic update on failure
       setMessages(prev => prev.slice(0, prev.length - 1));
     } finally {
       setIsLoading(false);
@@ -259,7 +300,6 @@ export default function ChatPage() {
       return;
     }
 
-    // Show loading toast
     const { id: toastId } = toast({
       title: 'Uploading...',
       description: `Your file "${file.name}" is being uploaded.`,
@@ -273,16 +313,15 @@ export default function ChatPage() {
         
         const previewUrl = file.type.startsWith('image/')
           ? URL.createObjectURL(file)
-          : file.name; // No preview for PDFs, just show name
+          : file.name;
 
         setAttachments(prev => [...prev, {
           preview: previewUrl,
-          data: downloadURL, // Store the public URL
+          data: downloadURL,
           type: file.type,
           name: file.name,
         }]);
 
-        // Update toast to success
         toast({
           id: toastId,
           title: 'Upload Successful',
@@ -291,7 +330,6 @@ export default function ChatPage() {
 
       } catch (error) {
         console.error("File upload error:", error);
-        // Update toast to failure
         toast({
           id: toastId,
           variant: 'destructive',
@@ -345,88 +383,88 @@ export default function ChatPage() {
     if (!user?.uid) return;
 
     let currentChatId = activeChatId;
+    const userPrompt = `${tool.name}: "${messageText.substring(0, 50)}..."`
 
-    const executeAction = async (userPrompt: string, actionFn: Promise<any>, formatResult: (result: any) => string) => {
-        const userMessage: ChatMessageProps = { role: 'user', text: userPrompt };
-        setMessages(prev => [...prev, userMessage]);
-        setIsLoading(true);
+    setIsLoading(true);
+    setMessages(prev => [...prev, { role: 'user', text: userPrompt }]);
 
-        try {
-            if (!currentChatId) {
-                const newChatId = await createChat(user.uid, userPrompt);
-                currentChatId = newChatId;
-                setActiveChatId(newChatId);
-                router.push(`/chat/${newChatId}`, { scroll: false });
-            } else {
-                await addMessageToChat(user.uid, currentChatId, { role: 'user', text: userPrompt });
-            }
-
-            const result = await actionFn;
-            const formattedResult = formatResult(result);
-            
-            await addMessageToChat(user.uid, currentChatId, { role: 'model', text: formattedResult });
-            setMessages(prev => [...prev, { role: 'model', text: formattedResult }]);
-        } catch (error) {
-            console.error(`Error in ${tool.action} action:`, error);
-            toast({
-              variant: 'destructive',
-              title: 'Action Failed',
-              description: `Could not perform ${tool.name}. Please try again.`,
+    try {
+        if (!currentChatId) {
+            const chatDoc = await addDoc(collection(db, 'users', user.uid, 'chats'), {
+              title: userPrompt,
+              createdAt: serverTimestamp(),
             });
-            setMessages(prev => prev.slice(0, prev.length - 1));
-        } finally {
-            setIsLoading(false);
+            currentChatId = chatDoc.id;
+            setActiveChatId(chatDoc.id);
+            router.push(`/chat/${chatDoc.id}`, { scroll: false });
         }
-    };
+        
+        await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
+          role: 'user', text: userPrompt, createdAt: serverTimestamp()
+        });
+        
+        const sourceArg = { sourceText: messageText, persona: selectedPersonaId as Persona };
+        let actionFn: Promise<any>;
+        let formatResult: (result: any) => string;
 
-    const sourceArg = { sourceText: messageText, persona: selectedPersonaId as Persona };
+        switch (tool.action) {
+            case 'rewrite':
+                actionFn = rewriteText({ ...sourceArg, style: tool.value });
+                formatResult = (result) => result.rewrittenText;
+                break;
+            case 'bulletPoints':
+                actionFn = generateBulletPoints(sourceArg);
+                formatResult = (result) => result.bulletPoints.map((pt: string) => `- ${pt}`).join('\n');
+                break;
+            case 'counterarguments':
+                actionFn = generateCounterarguments({ statementToChallenge: messageText, persona: selectedPersonaId as Persona });
+                formatResult = (result) => result.counterarguments.map((arg: string, i: number) => `${i + 1}. ${arg}`).join('\n\n');
+                break;
+            case 'presentation':
+                actionFn = generatePresentationOutline(sourceArg);
+                formatResult = (result) => {
+                    let outlineString = `## ${result.title}\n\n`;
+                    result.slides.forEach((slide: any, index: number) => {
+                        outlineString += `### **Slide ${index + 1}: ${slide.title}**\n`;
+                        slide.bulletPoints.forEach((point: string) => {
+                            outlineString += `- ${point}\n`;
+                        });
+                        outlineString += '\n';
+                    });
+                    return outlineString;
+                };
+                break;
+            case 'insights':
+                actionFn = highlightKeyInsights(sourceArg);
+                formatResult = (result) => {
+                    let insightsString = '### Key Insights\n\n';
+                    result.insights.forEach((insight: string) => {
+                        insightsString += `- ${insight}\n`;
+                    });
+                    return insightsString;
+                };
+                break;
+            default:
+              throw new Error("Invalid tool action");
+        }
+        
+        const result = await actionFn;
+        const formattedResult = formatResult(result);
+        
+        await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
+          role: 'model', text: formattedResult, createdAt: serverTimestamp()
+        });
 
-    if (tool.action === 'rewrite') {
-        await executeAction(
-            `${tool.name}: "${messageText.substring(0, 50)}..."`,
-            rewriteText({ ...sourceArg, style: tool.value }),
-            (result) => result.rewrittenText
-        );
-    } else if (tool.action === 'bulletPoints') {
-        await executeAction(
-            `Convert to bullet points: "${messageText.substring(0, 50)}..."`,
-            generateBulletPoints(sourceArg),
-            (result) => result.bulletPoints.map((pt: string) => `- ${pt}`).join('\n')
-        );
-    } else if (tool.action === 'counterarguments') {
-        await executeAction(
-            `Find counterarguments for: "${messageText.substring(0, 50)}..."`,
-            generateCounterarguments({ statementToChallenge: messageText, persona: selectedPersonaId as Persona }),
-            (result) => result.counterarguments.map((arg: string, i: number) => `${i + 1}. ${arg}`).join('\n\n')
-        );
-    } else if (tool.action === 'presentation') {
-        await executeAction(
-            `Create a presentation outline from: "${messageText.substring(0, 50)}..."`,
-            generatePresentationOutline(sourceArg),
-            (result) => {
-              let outlineString = `## ${result.title}\n\n`;
-              result.slides.forEach((slide: any, index: number) => {
-                outlineString += `### **Slide ${index + 1}: ${slide.title}**\n`;
-                slide.bulletPoints.forEach((point: string) => {
-                  outlineString += `- ${point}\n`;
-                });
-                outlineString += '\n';
-              });
-              return outlineString;
-            }
-        );
-    } else if (tool.action === 'insights') {
-        await executeAction(
-            `Highlight key insights from: "${messageText.substring(0, 50)}..."`,
-            highlightKeyInsights(sourceArg),
-            (result) => {
-              let insightsString = '### Key Insights\n\n';
-              result.insights.forEach((insight: string) => {
-                insightsString += `- ${insight}\n`;
-              });
-              return insightsString;
-            }
-        );
+    } catch (error) {
+        console.error(`Error in ${tool.action} action:`, error);
+        toast({
+          variant: 'destructive',
+          title: 'Action Failed',
+          description: `Could not perform ${tool.name}. Please try again.`,
+        });
+        setMessages(prev => prev.slice(0, prev.length - 1));
+    } finally {
+        setIsLoading(false);
     }
   };
 
