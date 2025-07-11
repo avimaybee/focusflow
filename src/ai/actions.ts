@@ -1,21 +1,12 @@
 'use server';
 
-import {
-  generate,
-  prompt,
-  defineFlow,
-  run,
-  configureGenkit,
-} from 'genkit/ai';
+import {generate, defineFlow, run} from 'genkit/ai';
 import {
   ChatHistoryMessage,
   ChatInput,
   Flashcard,
   Quiz,
   StudyPlan,
-  Counterarguments,
-  PresentationOutline,
-  KeyInsights,
   RewriteTextRequest,
   RewriteTextResponse,
   GenerateBulletPointsRequest,
@@ -41,8 +32,8 @@ import {
 import {ai} from './genkit';
 import {z} from 'zod';
 import pdf from 'pdf-parse/lib/pdf-parse';
-import { selectModel } from './model-selection';
-import { optimizeChatHistory } from './flows/history-optimizer';
+import {selectModel} from './model-selection';
+import {optimizeChatHistory} from './flows/history-optimizer';
 import {
   createDiscussionPromptsTool,
   createFlashcardsTool,
@@ -54,28 +45,39 @@ import {
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from './flows/tools';
-import type { Message } from 'genkit';
-import { marked } from 'marked';
-import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { PersonaIDs } from '@/lib/constants';
+import type {Message} from 'genkit';
+import {marked} from 'marked';
+import {
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
+import {db} from '@/lib/firebase';
+import {PersonaIDs} from '@/lib/constants';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
-    const personaRef = doc(db, 'personas', personaId);
-    const personaSnap = await getDoc(personaRef);
-    if (personaSnap.exists()) {
-        return personaSnap.data().prompt;
-    }
-    // Fallback to a neutral prompt if the persona is not found
-    const fallbackRef = doc(db, 'personas', PersonaIDs.NEUTRAL);
-    const fallbackSnap = await getDoc(fallbackRef);
-    if (fallbackSnap.exists()) {
-        return fallbackSnap.data().prompt;
-    }
-    return 'You are a helpful AI study assistant. Your tone is knowledgeable, encouraging, and clear. You provide direct and effective help without a strong personality. Your goal is to be a reliable and straightforward academic tool.';
+  const personaRef = doc(db, 'personas', personaId);
+  const personaSnap = await getDoc(personaRef);
+  if (personaSnap.exists()) {
+    return personaSnap.data().prompt;
+  }
+  // Fallback to a neutral prompt if the persona is not found
+  const fallbackRef = doc(db, 'personas', PersonaIDs.NEUTRAL);
+  const fallbackSnap = await getDoc(fallbackRef);
+  if (fallbackSnap.exists()) {
+    return fallbackSnap.data().prompt;
+  }
+  return 'You are a helpful AI study assistant. Your tone is knowledgeable, encouraging, and clear. You provide direct and effective help without a strong personality. Your goal is to be a reliable and straightforward academic tool.';
 }
 
-async function saveGeneratedContent(userId: string, toolName: string, output: any, source: string) {
+async function saveGeneratedContent(
+  userId: string,
+  toolName: string,
+  output: any,
+  source: string,
+) {
   if (!userId || !toolName || !output) return;
 
   let collectionName = '';
@@ -102,10 +104,10 @@ async function saveGeneratedContent(userId: string, toolName: string, output: an
       data.quiz = output.quiz;
       break;
     case 'createStudyPlanTool':
-        collectionName = 'studyPlans';
-        data.title = output.title || 'New Study Plan';
-        data.plan = output.plan;
-        break;
+      collectionName = 'studyPlans';
+      data.title = output.title || 'New Study Plan';
+      data.plan = output.plan;
+      break;
     default:
       return; // Don't save for tools that don't generate persistent content
   }
@@ -120,13 +122,13 @@ async function saveGeneratedContent(userId: string, toolName: string, output: an
 }
 
 export async function chat(input: ChatInput) {
-  const { userId, message, history, context, image, isPremium, persona } = input;
+  const {userId, message, history, context, image, isPremium, persona} = input;
 
   const model = selectModel(message, history, isPremium || false);
   const personaInstruction = await getPersonaPrompt(persona);
-  const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner.`
+  const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner.`;
   let result;
-  
+
   const availableTools = [
     summarizeNotesTool,
     createStudyPlanTool,
@@ -139,9 +141,9 @@ export async function chat(input: ChatInput) {
     highlightKeyInsightsTool,
   ];
 
-  let chatHistory: Message[] = history.map((msg) => ({
+  let chatHistory: Message[] = history.map(msg => ({
     role: msg.role,
-    parts: [{ text: msg.text }],
+    parts: [{text: msg.text}],
   }));
 
   // Optimize the chat history to manage context window and cost
@@ -153,7 +155,7 @@ export async function chat(input: ChatInput) {
   if (context) {
     fullMessage = `CONTEXT FROM UPLOADED FILE:\n${context}\n\nUSER'S REQUEST:\n${message}`;
   }
-  promptParts.push({ text: fullMessage });
+  promptParts.push({text: fullMessage});
 
   if (image) {
     // The 'image' field is currently unused in this simplified flow,
@@ -190,16 +192,18 @@ export async function chat(input: ChatInput) {
   const responseText = result.message?.content?.[0]?.text;
 
   // Convert markdown to HTML if there is a response.
-  const formattedResponse = responseText ? marked(responseText) : 'Sorry, I am not sure how to help with that.';
+  const formattedResponse = responseText
+    ? marked(responseText)
+    : 'Sorry, I am not sure how to help with that.';
 
   return {
     response: formattedResponse,
   };
 }
 
-export const createFlashcards = defineFlow(
+const createFlashcardsFlow = defineFlow(
   {
-    name: 'createFlashcards',
+    name: 'createFlashcardsFlow',
     inputSchema: z.object({sourceText: z.string()}),
     outputSchema: z.object({flashcards: z.array(Flashcard)}),
   },
@@ -217,9 +221,15 @@ export const createFlashcards = defineFlow(
   },
 );
 
-export const createQuiz = defineFlow(
+export async function createFlashcards(input: {
+  sourceText: string;
+}): Promise<{flashcards: Flashcard[]}> {
+  return run(createFlashcardsFlow, input);
+}
+
+const createQuizFlow = defineFlow(
   {
-    name: 'createQuiz',
+    name: 'createQuizFlow',
     inputSchema: z.object({
       sourceText: z.string(),
       numQuestions: z.number(),
@@ -242,9 +252,17 @@ export const createQuiz = defineFlow(
   },
 );
 
-export const createStudyPlan = defineFlow(
+export async function createQuiz(input: {
+  sourceText: string;
+  numQuestions: number;
+  questionType: string;
+}): Promise<{quiz: Quiz}> {
+  return run(createQuizFlow, input);
+}
+
+const createStudyPlanFlow = defineFlow(
   {
-    name: 'createStudyPlan',
+    name: 'createStudyPlanFlow',
     inputSchema: z.object({
       sourceText: z.string(),
       examDate: z.string(),
@@ -268,6 +286,13 @@ export const createStudyPlan = defineFlow(
     );
   },
 );
+
+export async function createStudyPlan(input: {
+  sourceText: string;
+  examDate: string;
+}): Promise<{studyPlan: StudyPlan}> {
+  return run(createStudyPlanFlow, input);
+}
 
 const rewriteTextFlow = defineFlow(
   {
