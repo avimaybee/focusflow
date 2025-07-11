@@ -14,6 +14,8 @@ import { SmartToolsMenu, smartTools } from './smart-tools-menu';
 import { FlashcardViewer } from './flashcard-viewer';
 import { QuizViewer } from './quiz-viewer';
 
+import { Badge } from './ui/badge';
+
 // Define types for flashcard and quiz data to be passed in props
 interface FlashcardData {
   question: string;
@@ -38,9 +40,10 @@ export type ChatMessageProps = {
   userAvatar?: string | null;
   userName?: string;
   onSmartToolAction?: (tool: typeof smartTools[0], text: string) => void;
+  isPremiumFeature?: boolean;
 };
 
-export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, userName, onSmartToolAction }: ChatMessageProps) {
+export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, userName, onSmartToolAction, isPremiumFeature = false }: ChatMessageProps) {
   const isUser = role === 'user';
   const messageRef = React.useRef<HTMLDivElement>(null);
   
@@ -88,7 +91,7 @@ export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, 
           )}
         </div>
         {!isUser && typeof text === 'string' && onSmartToolAction && (
-          <div className="opacity-0 group-hover/message:opacity-100 focus-within:opacity-100 transition-opacity">
+          <div className="opacity-0 group-hover/message:opacity-100 focus-within:opacity-100 transition-opacity flex items-center gap-2">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -104,6 +107,11 @@ export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, 
                 <SmartToolsMenu onAction={(tool) => onSmartToolAction(tool, text as string)} />
               </PopoverContent>
             </Popover>
+            {isPremiumFeature && (
+                <Link href="/premium">
+                    <Badge variant="premium">Premium</Badge>
+                </Link>
+            )}
           </div>
         )}
       </div>

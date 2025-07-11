@@ -44,6 +44,7 @@ export function MessageList({
                 key={index}
                 {...msg}
                 onSmartToolAction={onSmartToolAction}
+                isPremiumFeature={true} // For demonstration purposes
               />
             ))
           )}

@@ -87,7 +87,7 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
 
   const model = selectModel(message, history, isPremium || false);
   const personaInstruction = await getPersonaPrompt(persona);
-  const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner.`;
+  const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner.`
   let result;
   
   const availableTools = [
@@ -111,17 +111,17 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
   chatHistory = await optimizeChatHistory(chatHistory);
 
   const promptParts = [];
-  
-  // The 'context' field now contains the data URI of a text-based file (PDF, TXT)
-  // The 'image' field contains the data URI of an image file
-  const fileContent = context || image;
-  
   let fullMessage = message;
-  if (fileContent) {
-    promptParts.push({ media: { url: fileContent } });
+  // The 'context' is now the raw text content from the file
+  if (context) {
+    fullMessage = `CONTEXT FROM UPLOADED FILE:\n${context}\n\nUSER'S REQUEST:\n${message}`;
   }
   promptParts.push({ text: fullMessage });
 
+  if (image) {
+    // The 'image' field is currently unused in this simplified flow,
+    // but is kept for potential future image-specific features.
+  }
 
   result = await ai.generate({
     model,

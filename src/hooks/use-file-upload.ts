@@ -4,28 +4,13 @@
 import { useState, DragEvent, Dispatch } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth-context';
+import { uploadFileToStorage } from '@/lib/storage-actions';
 
 export type Attachment = {
   name: string;
   type: string;
-  // path now stores the data URI instead of a gs:// path
-  path: string; 
+  url: string; // Now stores the downloadURL
 };
-
-/**
- * Reads a file and converts it to a data URI.
- * @param file The file to read.
- * @returns A promise that resolves with the data URI.
- */
-function fileToDataUri(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
 
 export function useFileUpload(dispatch: Dispatch<any>) {
   const { toast } = useToast();
@@ -53,39 +38,34 @@ export function useFileUpload(dispatch: Dispatch<any>) {
       });
       return;
     }
-    
+
     const { id: toastId } = toast({
-      title: 'Processing...',
-      description: `Your file "${file.name}" is being prepared.`,
+      title: 'Uploading...',
+      description: `Your file "${file.name}" is being uploaded.`,
     });
 
     try {
-      // Convert file to data URI on the client
-      const dataUri = await fileToDataUri(file);
-      
-      const newAttachment: Attachment = {
-        name: file.name,
-        type: file.type,
-        path: dataUri, // The path now holds the full data URI
+      const { downloadURL, fileName, fileType } = await uploadFileToStorage(file, user.uid);
+      const newAttachment = {
+        name: fileName,
+        type: fileType,
+        url: downloadURL,
       };
-      
       // Dispatch to add the attachment to the temporary client state for display
       dispatch({ type: 'SET_ATTACHMENTS', payload: [newAttachment] });
-
       toast({
         id: toastId,
         variant: 'default',
-        title: 'File Ready',
-        description: `"${file.name}" is attached.`,
+        title: 'Upload Successful',
+        description: `"${file.name}" is ready.`,
       });
-
     } catch (error) {
-      console.error("File processing error:", error);
+      console.error("File upload error:", error);
       toast({
         id: toastId,
         variant: 'destructive',
-        title: 'File Error',
-        description: 'Could not process your file. Please try again.',
+        title: 'Upload Failed',
+        description: 'Could not upload your file. Please try again.',
       });
     }
   };

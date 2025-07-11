@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -23,11 +24,11 @@ const nextConfig: NextConfig = {
       // Exclude Node.js built-in modules from client-side bundle
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        async_hooks: false,
         fs: false,
         net: false,
         tls: false,
         child_process: false,
+        async_hooks: false,
         perf_hooks: false,
         worker_threads: false,
         inspector: false,

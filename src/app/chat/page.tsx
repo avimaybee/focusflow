@@ -21,10 +21,26 @@ import { chat, rewriteText, generateBulletPoints, generateCounterarguments, gene
 import type { ChatInput, ChatHistoryMessage, Persona } from '@/ai/flows/chat-types';
 import { ChatMessageProps } from '@/components/chat-message';
 import { SmartToolActions } from '@/lib/constants';
+import pdf from 'pdf-parse/lib/pdf-parse';
+import { AnnouncementBanner } from '@/components/announcement-banner';
+
+// Helper to fetch and parse file content on the client
+async function getFileTextFromUrl(url: string, type: string): Promise<string> {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  if (type.includes('pdf')) {
+    const buffer = await blob.arrayBuffer();
+    const data = await pdf(buffer);
+    return data.text;
+  } else {
+    return blob.text();
+  }
+}
 
 type ChatContext = {
   name: string;
   type: string;
+  url: string; // downloadURL
 } | null;
 
 export default function ChatPage() {
@@ -150,18 +166,19 @@ export default function ChatPage() {
         setActiveChatId(currentChatId);
       }
 
-      // If there are attachments, persist a reference to it as the chat's context
+      // If there are attachments, persist the first one as the chat's context
       if (attachedFiles.length > 0 && currentChatId) {
         const fileContext = {
           name: attachedFiles[0].name,
           type: attachedFiles[0].type,
+          url: attachedFiles[0].url, // Save the downloadURL
         };
         await updateDoc(doc(db, 'users', user.uid, 'chats', currentChatId), { context: fileContext });
       }
 
       await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
         role: 'user',
-        text: JSON.stringify({ role: 'user', text: prompt, images: userMessage.images }),
+        text: JSON.stringify({ role: 'user', text: prompt }),
         createdAt: serverTimestamp(),
       });
 
@@ -172,24 +189,29 @@ export default function ChatPage() {
           text: m.text as string,
         }));
 
-      let contextDataUri: string | undefined = undefined;
-      const fileAttachment = attachedFiles.length > 0 ? attachedFiles[0] : null;
-
-      if (fileAttachment) {
-          contextDataUri = fileAttachment.path;
+      // Determine the context to send to the AI, prioritizing new attachments
+      const contextAttachment = attachedFiles.length > 0 ? attachedFiles[0] : chatContext;
+      let fileContent: string | undefined;
+      if (contextAttachment) {
+        try {
+          fileContent = await getFileTextFromUrl(contextAttachment.url, contextAttachment.type);
+        } catch (e) {
+          console.error("Error fetching file content:", e);
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not read the attached file.' });
+          dispatch({ type: 'STOP_LOADING' });
+          return;
+        }
       }
-
+      
       const chatInput: ChatInput = {
         userId: user.uid,
         message: finalPrompt.trim(),
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
         isPremium: isPremium ?? false,
-        // Pass the data URI to the backend
-        context: fileAttachment?.type.startsWith('image/') ? undefined : contextDataUri,
-        image: fileAttachment?.type.startsWith('image/') ? contextDataUri : undefined,
+        context: fileContent, // Pass the raw text content
       };
-      
+
       const result = await chat(chatInput).catch((err) => {
         console.error("AI chat error:", err);
         return { response: "I’m sorry, I couldn’t process your request. Please try rephrasing or uploading a different file." }
@@ -363,10 +385,12 @@ export default function ChatPage() {
         )}
 
         <ChatHeader
-          personaName={selectedPersona?.name || 'Default'}
+          personaName={selectedPersona?.name || 'Assistant'}
           onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
           isLoggedIn={!!user}
         />
+        
+        <AnnouncementBanner />
 
         <MessageList
           messages={messages}

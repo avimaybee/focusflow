@@ -60,5 +60,13 @@ service cloud.firestore {
     match /users/{userId}/studyPlans/{planId} {
       allow read, write, delete: if request.auth.uid == userId;
     }
+
+    // Rules for tracker data
+    match /users/{userId}/studySessions/{sessionId} {
+      allow read, write, delete: if request.auth.uid == userId;
+    }
+    match /users/{userId}/goals/{goalId} {
+      allow read, write, delete: if request.auth.uid == userId;
+    }
   }
 }
