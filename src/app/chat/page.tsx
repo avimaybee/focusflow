@@ -574,8 +574,8 @@ export default function ChatPage() {
           </div>
         </header>
 
-        <div className="flex-1 relative">
-          <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
+        <div className="flex-1 overflow-y-auto">
+          <ScrollArea className="h-full" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
             <div className="p-6 md:p-8 space-y-8 max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto">
               {isHistoryLoading ? (
                 <div className="flex justify-center items-center h-[calc(100vh-280px)]">
