@@ -12,19 +12,32 @@ import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { chat } from '@/ai/flows/chat-flow';
+import {
+  chat,
+  rewriteText,
+  addCitations,
+  generateBulletPoints,
+  generateCounterarguments,
+  generatePresentationOutline,
+  highlightKeyInsights,
+} from '@/ai/actions';
 import { updateUserPersona } from '@/lib/user-actions';
 import { Persona } from '@/ai/flows/chat-types';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { TextSelectionToolbar } from '@/components/text-selection-toolbar';
-import { rewriteText } from '@/ai/flows/rewrite-text';
-import { addCitations } from '@/ai/flows/add-citations';
-import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
-import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
 import type { ChatInput } from '@/ai/flows/chat-types';
-import { generatePresentationOutline } from '@/ai/flows/generate-presentation-outline';
-import { highlightKeyInsights } from '@/ai/flows/highlight-key-insights';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { PromptLibrary } from '@/components/prompt-library';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { createChat, addMessageToChat, getRecentChats, getChatMessages, Chat as ChatHistoryItem } from '@/lib/chat-actions';
 import { smartTools } from '@/components/smart-tools-menu';
 
 
