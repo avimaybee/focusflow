@@ -24,15 +24,6 @@ import type { ChatInput, ChatOutput } from './chat-types';
 import type { Message } from 'genkit';
 import { z } from 'zod';
 
-// Define the intent schema
-const intentSchema = z.object({
-  intent: z
-    .enum(['GREETING', 'CONVERSATION', 'TOOL_REQUEST'])
-    .describe(
-      'The user intent. GREETING for simple greetings, CONVERSATION for general chat, TOOL_REQUEST for specific tool actions.'
-    ),
-});
-
 const personaPrompts = {
   neutral:
     'You are a helpful AI study assistant. Your tone is knowledgeable, encouraging, and clear. You provide direct and effective help without a strong personality. Your goal is to be a reliable and straightforward academic tool.',
@@ -56,39 +47,27 @@ const personaPrompts = {
     'You are a sassy, witty, and irreverent teaching assistant. You use playful sarcasm, rhetorical questions, and modern pop references. You might "digitally roll your eyes" at a simple question but will always provide the correct answer. Your goal is to be both informative and highly entertaining, with a sharp, witty edge.',
 };
 
-async function detectIntent(
-  message: string
-): Promise<'GREETING' | 'CONVERSATION' | 'TOOL_REQUEST'> {
-  try {
-    const llmResponse = await ai.generate({
-      model: 'googleai/gemini-1.5-flash',
-      prompt: `Assess the user\'s intent based on their message: "${message}". Categorize it as a "GREETING" (e.g., "hi", "hello"), "TOOL_REQUEST" (e.g., "create a quiz," "summarize this"), or "CONVERSATION" (for general questions or chat).`,
-      output: { schema: intentSchema },
-      config: { temperature: 0.1 },
-    });
-
-    const intentData = llmResponse.output?.intent;
-    if (intentData) {
-      return intentData;
-    }
-  } catch (error) {
-    console.error('Intent detection failed:', error);
-  }
-  // Default to conversation if detection fails
-  return 'CONVERSATION';
+function shouldUseTools(message: string): boolean {
+  const lowerCaseMessage = message.toLowerCase();
+  const toolKeywords = [
+    'summarize', 'summary', 'create', 'generate', 'make', 'quiz', 'flashcards',
+    'plan', 'schedule', 'explain', 'aid', 'mnemonic', 'discussion', 'prompts',
+    'outline', 'presentation', 'insights', 'highlight', 'rewrite', 'cite', 'citations',
+    'bullet points', 'counterarguments'
+  ];
+  return toolKeywords.some(keyword => lowerCaseMessage.includes(keyword));
 }
+
 
 export async function chat(input: ChatInput): Promise<ChatOutput> {
   const { message, history, context, image, isPremium, persona } = input;
-
-  const intent = await detectIntent(message);
 
   const personaInstruction = personaPrompts[persona];
   const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner.`;
 
   const model = selectModel(message, history, isPremium || false);
 
-  const tools = [
+  const availableTools = [
     summarizeNotesTool,
     createStudyPlanTool,
     createFlashcardsTool,
@@ -106,18 +85,19 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
   }));
 
   const promptParts = [];
-  if (context) {
-    promptParts.push({
-      text: `${message}\n\n[CONTEXT FROM UPLOADED FILE IS PROVIDED]`,
-    });
-  } else {
-    promptParts.push({ text: message });
+  let fullMessage = message;
+  
+  // Pass context to tools only if they are likely to be used
+  if (context && shouldUseTools(message)) {
+      fullMessage = `${message}\n\n[CONTEXT FROM UPLOADED FILE IS PROVIDED]`;
   }
+  promptParts.push({ text: fullMessage });
 
   if (image) {
     promptParts.push({ media: { url: image } });
   }
 
+  // Construct the generation options
   let generateOptions: any = {
     model,
     system: systemPrompt,
@@ -133,12 +113,12 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
     },
   };
 
-  // Only add tools if the intent is a tool request
-  if (intent === 'TOOL_REQUEST') {
+  // Conditionally add tools to the generation request
+  if (shouldUseTools(message)) {
     generateOptions = {
       ...generateOptions,
-      tools,
-      context, // Pass context only for tool-related actions
+      tools: availableTools,
+      context, // Pass context only when tools are active
     };
   }
 
