@@ -208,7 +208,7 @@ export default function ChatPage() {
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
         isPremium: isPremium ?? false,
-        context: finalAttachments.find(a => a.includes('application/pdf')) || undefined,
+        context: finalAttachments.find(a => a.includes('application/pdf')) || finalAttachments.find(a => a.includes('text/plain')) || undefined,
         image: finalAttachments.find(a => a.includes('image/')) || undefined,
       };
 
@@ -269,11 +269,11 @@ export default function ChatPage() {
   const handleFileSelect = (file: File) => {
     if (!file || !user?.uid) return;
 
-    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+    if (!file.type.startsWith('image/') && file.type !== 'application/pdf' && !file.type.startsWith('text/')) {
       toast({
         variant: 'destructive',
         title: 'Unsupported File Type',
-        description: 'Please upload an image or a PDF file.',
+        description: 'Please upload an image, PDF, or text file.',
       });
       return;
     }
@@ -748,7 +748,7 @@ export default function ChatPage() {
                 ref={fileInputRef}
                 onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])}
                 className="hidden"
-                accept="image/*,application/pdf"
+                accept="image/*,application/pdf,text/*"
               />
 
               <form onSubmit={handleSendMessage} className="flex-1 flex items-start gap-2">
@@ -783,5 +783,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    

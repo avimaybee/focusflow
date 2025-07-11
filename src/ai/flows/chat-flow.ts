@@ -24,7 +24,7 @@ import type { ChatInput, ChatOutput } from './chat-types';
 import type { Message } from 'genkit';
 import { z } from 'zod';
 
-// Defina o esquema de intenção
+// Define the intent schema
 const intentSchema = z.object({
   intent: z
     .enum(['GREETING', 'CONVERSATION', 'TOOL_REQUEST'])
