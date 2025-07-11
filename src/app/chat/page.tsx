@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, DragEvent } from 'react';
@@ -16,8 +17,16 @@ import { updateUserPersona } from '@/lib/user-actions';
 import type { Persona } from '@/ai/flows/chat-types';
 import { useToast } from '@/hooks/use-toast';
 import { TextSelectionToolbar } from '@/components/text-selection-toolbar';
-import type { ChatInput } from '@/ai/flows/chat-types';
+import type { ChatInput, ChatHistoryMessage } from '@/ai/flows/chat-types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Command,
   CommandEmpty,
@@ -27,6 +36,11 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { Check } from 'lucide-react';
+import { PromptLibrary } from '@/components/prompt-library';
+import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { uploadFile } from '@/lib/storage-actions';
+import { cn } from '@/lib/utils';
 
 type Attachment = {
   name: string;
@@ -105,9 +119,16 @@ export default function ChatPage() {
         const chatMessages = querySnapshot.docs.map(doc => {
           const data = doc.data();
           try {
+            // Check if text is a JSON string.
             const parsedText = JSON.parse(data.text);
-            return { id: doc.id, role: data.role, ...parsedText, createdAt: data.createdAt };
+            // If it has role and text/flashcards/quiz, it's a valid message object.
+            if (parsedText.role) {
+                return { id: doc.id, ...parsedText, createdAt: data.createdAt };
+            }
+            // Fallback for other JSON that isn't a message object
+            return { id: doc.id, role: data.role, text: data.text, createdAt: data.createdAt };
           } catch (e) {
+            // If parsing fails, it's just a plain text string.
             return { id: doc.id, role: data.role, text: data.text, createdAt: data.createdAt };
           }
         });
@@ -148,7 +169,8 @@ export default function ChatPage() {
       userAvatar: user?.photoURL,
       userName: user?.displayName || user?.email || 'User',
     };
-
+    
+    // Optimistically update UI
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
     setInput('');
@@ -169,27 +191,36 @@ export default function ChatPage() {
 
       await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
         role: 'user',
-        text: userMessageText,
+        text: JSON.stringify({ role: 'user', text: userMessageText }),
         createdAt: serverTimestamp(),
       });
 
-      const chatHistoryForAI = [...messages, userMessage]
-        .filter(m => typeof m.text === 'string')
-        .map(m => ({ role: m.role, text: m.text as string }));
-
+      const chatHistoryForAI: ChatHistoryMessage[] = [...messages, userMessage]
+        .map(m => {
+           // Ensure we only pass valid history items to the AI
+           if (typeof m.text === 'string') {
+              return { role: m.role, parts: [{ text: m.text }] };
+           }
+           // Handle cases where m.text is a ReactNode, e.g., the loading spinner
+           // We filter these out to avoid sending invalid data to the AI.
+           return null;
+        })
+        .filter((m): m is ChatHistoryMessage => m !== null);
+      
       const finalAttachments = attachedFiles.map(a => a.data);
       const chatInput: ChatInput = {
         message: prompt.trim(),
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
         isPremium: isPremium ?? false,
-        context: finalAttachments.find(a => a.includes('.pdf')) || undefined,
-        image: finalAttachments.find(a => a.includes('.png') || a.includes('.jpg') || a.includes('.jpeg') || a.includes('.webp')) || undefined,
+        context: finalAttachments.find(a => a.includes('application/pdf')) || undefined,
+        image: finalAttachments.find(a => a.includes('image/')) || undefined,
       };
 
-      const result = await chat(chatInput).catch(() => ({
-        response: "I’m sorry, I couldn’t process your request. Please try rephrasing or uploading a different file."
-      }));
+      const result = await chat(chatInput).catch((err) => {
+        console.error("AI chat error:", err);
+        return { response: "I’m sorry, I couldn’t process your request. Please try rephrasing or uploading a different file." }
+      });
       const responseText = result.response || "I’m sorry, I couldn’t process your request. Please try again.";
 
       let messageContent: ChatMessageProps = { role: 'model', text: responseText };
@@ -216,11 +247,13 @@ export default function ChatPage() {
         title: 'Message Failed',
         description: 'Could not send message. Please try again.',
       });
+       // Roll back optimistic UI update
       setMessages(prev => prev.slice(0, prev.length - 1));
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,35 +304,35 @@ export default function ChatPage() {
     reader.onloadend = async () => {
       const dataUrl = reader.result as string;
       try {
-        const downloadURL = await uploadFile(user.uid!, dataUrl, file.name);
+        // We use the dataUrl directly, as it contains the required Base64 data for the AI
         setAttachments(prev => [...prev, {
           preview: previewUrl,
-          data: downloadURL,
+          data: dataUrl,
           type: file.type,
           name: file.name,
         }]);
         toast({
           id: toastId,
+          variant: 'default',
           title: 'Upload Successful',
           description: `"${file.name}" is ready.`,
         });
       } catch (error) {
-        console.error("File upload error:", error);
+        console.error("File processing error:", error);
         toast({
           id: toastId,
           variant: 'destructive',
           title: 'Upload Failed',
-          description: 'Could not upload your file. Please try again.',
+          description: 'Could not process your file. Please try again.',
         });
       }
     };
     reader.readAsDataURL(file);
 
-    return () => {
-      if (previewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
+    // Clean up the object URL to prevent memory leaks
+    if (previewUrl.startsWith('blob:')) {
+      return () => URL.revokeObjectURL(previewUrl);
+    }
   };
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
@@ -352,12 +385,12 @@ export default function ChatPage() {
           createdAt: serverTimestamp(),
         });
         currentChatId = chatDoc.id;
-        setActiveChatId(chatDoc.id);
-        router.push(`/chat/${chatDoc.id}`, { scroll: false });
+        setActiveChatId(currentChatId);
+        router.push(`/chat/${currentChatId}`, { scroll: false });
       }
 
       await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
-        role: 'user', text: userPrompt, createdAt: serverTimestamp()
+        role: 'user', text: JSON.stringify({role: 'user', text: userPrompt }), createdAt: serverTimestamp()
       });
 
       const sourceArg = { sourceText: messageText, persona: selectedPersonaId as Persona };
@@ -366,11 +399,11 @@ export default function ChatPage() {
 
       switch (tool.action) {
         case 'rewrite':
-          actionFn = rewriteText({ ...sourceArg, style: tool.value });
+          actionFn = rewriteText({ textToRewrite: messageText, style: tool.value, persona: selectedPersonaId as Persona });
           formatResult = (result) => result.rewrittenText;
           break;
         case 'bulletPoints':
-          actionFn = generateBulletPoints(sourceArg);
+          actionFn = generateBulletPoints({textToConvert: messageText, persona: selectedPersonaId as Persona });
           formatResult = (result) => result.bulletPoints.map((pt: string) => `- ${pt}`).join('\n');
           break;
         case 'counterarguments':
@@ -405,7 +438,7 @@ export default function ChatPage() {
       const formattedResult = formatResult(result);
 
       await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
-        role: 'model', text: formattedResult, createdAt: serverTimestamp()
+        role: 'model', text: JSON.stringify({role: 'model', text: formattedResult}), createdAt: serverTimestamp()
       });
     } catch (error) {
       console.error(`Error in ${tool.action} action:`, error);
@@ -421,8 +454,10 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    const scrollableView = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement | null;
-    if (scrollableView) scrollableView.scrollTo({ top: scrollableView.scrollHeight, behavior: 'smooth' });
+    const scrollableView = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (scrollableView) {
+      scrollableView.scrollTo({ top: scrollableView.scrollHeight, behavior: 'smooth' });
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -751,3 +786,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
