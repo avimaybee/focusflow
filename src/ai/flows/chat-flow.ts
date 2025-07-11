@@ -50,7 +50,9 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
   const personaInstruction = personaPrompts[input.persona];
   const systemPrompt = `${personaInstruction}
 
-You are an expert AI assistant that can use tools to help students.
+You are an expert AI assistant. Your primary goal is to be a helpful and conversational study partner.
+
+You also have a set of tools available to you. Based on the user's request, decide whether it's best to respond directly or to use one of your tools. Only use a tool if the user's request clearly matches the tool's description. For general conversation, just respond naturally.
 
 When you use a tool that has a 'persona' input field, you MUST pass the current persona ('${input.persona}') to it.
 
