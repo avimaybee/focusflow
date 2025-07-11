@@ -186,7 +186,7 @@ export default function ChatPage() {
         });
         currentChatId = chatDoc.id;
         setActiveChatId(chatDoc.id);
-        router.push(`/chat/${chatDoc.id}`, { scroll: false });
+        router.push(`/chat/${currentChatId}`, { scroll: false });
       }
 
       await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {

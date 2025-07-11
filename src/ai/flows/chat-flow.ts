@@ -83,7 +83,6 @@ If a user uploads a file or provides text context, you can reference it directly
   
   const promptParts = [];
   if (input.context) {
-    // Pass the context to the prompt so the LLM knows about it.
     promptParts.push({ text: `${input.message}\n\n[CONTEXT FROM UPLOADED FILE IS PROVIDED]` });
   } else {
     promptParts.push({ text: input.message });
@@ -93,12 +92,19 @@ If a user uploads a file or provides text context, you can reference it directly
     promptParts.push({ media: { url: input.image } });
   }
 
+  // Append the current user message to the history for the model
+  const fullHistory: Message[] = [
+    ...history,
+    { role: 'user', parts: promptParts }
+  ];
+
   const {output} = await ai.generate({
     model,
     system: systemPrompt,
     tools,
-    history: history,
-    prompt: promptParts,
+    history: fullHistory,
+    // The prompt is now part of the history, so this is not needed.
+    // prompt: promptParts,
     config: {
       safetySettings: [
         {
