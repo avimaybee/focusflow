@@ -8,26 +8,21 @@ import { Bot, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from './ui/button';
 
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { SmartToolsMenu, smartTools } from './smart-tools-menu';
+
 export type ChatMessageProps = {
   role: 'user' | 'model';
   text: string | React.ReactNode;
-  image?: string | null;
+  images?: (string | null)[];
   userAvatar?: string | null;
   userName?: string;
-  onShowTools?: (target: HTMLElement) => void;
+  onSmartToolAction?: (tool: typeof smartTools[0], text: string) => void;
 };
 
-export function ChatMessage({ role, text, image, userAvatar, userName, onShowTools }: ChatMessageProps) {
+export function ChatMessage({ role, text, images, userAvatar, userName, onSmartToolAction }: ChatMessageProps) {
   const isUser = role === 'user';
-  const toolsButtonRef = React.useRef<HTMLButtonElement>(null);
   const messageRef = React.useRef<HTMLDivElement>(null);
-
-  const handleToolButtonClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // prevent closing the menu if it was just opened
-    if (messageRef.current && onShowTools) {
-        onShowTools(messageRef.current);
-    }
-  };
   
   return (
     <div className={cn('flex items-start gap-3 animate-in fade-in-50 slide-in-from-bottom-2 duration-500', isUser && 'justify-end')}>
@@ -48,23 +43,34 @@ export function ChatMessage({ role, text, image, userAvatar, userName, onShowToo
           )}
         >
           {typeof text === 'string' ? <div dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br />') }} /> : text}
-          {image && (
-              <div className="mt-2 relative h-48 w-48">
-                  <Image src={image} alt="User upload" layout="fill" className="rounded-md object-contain" />
+          {images && images.length > 0 && (
+              <div className="mt-2 grid gap-2 grid-cols-2">
+                {images.map((img, index) => img && (
+                  <div key={index} className="relative h-48 w-48">
+                    <Image src={img} alt="User upload" layout="fill" className="rounded-md object-contain" />
+                  </div>
+                ))}
               </div>
           )}
         </div>
-        {!isUser && typeof text === 'string' && onShowTools && (
-            <Button
-                ref={toolsButtonRef}
-                variant="ghost"
-                size="sm"
-                className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground opacity-0 group-hover/message:opacity-100 focus-within:opacity-100 transition-opacity"
-                onClick={handleToolButtonClick}
-            >
-                <Sparkles className="h-3 w-3 mr-1" />
-                Tools
-            </Button>
+        {!isUser && typeof text === 'string' && onSmartToolAction && (
+          <div className="opacity-0 group-hover/message:opacity-100 focus-within:opacity-100 transition-opacity">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground"
+                >
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  Tools
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent side="right" align="start" className="w-auto p-0">
+                <SmartToolsMenu onAction={(tool) => onSmartToolAction(tool, text as string)} />
+              </PopoverContent>
+            </Popover>
+          </div>
         )}
       </div>
       {isUser && (

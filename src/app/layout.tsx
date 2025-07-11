@@ -1,12 +1,24 @@
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Poppins, PT_Sans } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/auth-context';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const fontHeading = Poppins({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-heading',
+  weight: ['400', '700']
+});
+
+const fontBody = PT_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-body',
+  weight: ['400', '700']
+});
 
 export const metadata: Metadata = {
   title: 'FocusFlow AI: AI Summarizer, Flashcards, Quizzes & Study Planner',
@@ -32,8 +44,9 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body
         className={cn(
-          'min-h-screen bg-background font-sans antialiased flex flex-col',
-          inter.variable
+          'min-h-screen bg-background font-body antialiased flex flex-col',
+          fontHeading.variable,
+          fontBody.variable
         )}
       >
         <AuthProvider>

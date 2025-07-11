@@ -10,6 +10,8 @@ import {createQuiz} from './create-quiz';
 import {explainConcept, ExplainConceptInputSchema} from './explain-concept';
 import {createMemoryAid, CreateMemoryAidInputSchema} from './create-memory-aid';
 import {createDiscussionPrompts} from './create-discussion-prompts';
+import {generatePresentationOutline} from './generate-presentation-outline';
+import {highlightKeyInsights} from './highlight-key-insights';
 import {z} from 'genkit';
 import {PersonaSchema} from './chat-types';
 
@@ -49,14 +51,18 @@ export const createStudyPlanTool = ai.defineTool(
     inputSchema: CreateStudyPlanInputSchema,
     outputSchema: z
       .string()
-      .describe('A formatted string containing the full study plan.'),
+      .describe('An HTML table string containing the full study plan.'),
   },
   async input => {
     const result = await createStudyPlan(input);
-    let planString = `**${result.title}**\n\n`;
+    let planString = `<h3>${result.title}</h3>`;
+    planString += '<table>';
+    planString += '<thead><tr><th>Day</th><th>Tasks</th></tr></thead>';
+    planString += '<tbody>';
     result.plan.forEach(day => {
-      planString += `**${day.day}:** ${day.tasks}\n`;
+      planString += `<tr><td><strong>${day.day}</strong></td><td>${day.tasks}</td></tr>`;
     });
+    planString += '</tbody></table>';
     return planString;
   }
 );
@@ -174,5 +180,53 @@ export const createDiscussionPromptsTool = ai.defineTool(
       promptString += `**[${p.type}]** ${p.text}\n\n`;
     });
     return promptString;
+  }
+);
+
+export const generatePresentationOutlineTool = ai.defineTool(
+  {
+    name: 'generatePresentationOutline',
+    description: 'Generates a structured presentation outline from a piece of text or a document.',
+    inputSchema: ContextualToolInputSchema,
+    outputSchema: z.string().describe('A formatted string containing the presentation outline.'),
+  },
+  async input => {
+    const isFile = input.context.startsWith('data:');
+    const result = await generatePresentationOutline({
+      sourcePdf: isFile ? input.context : undefined,
+      sourceText: !isFile ? input.context : undefined,
+      persona: input.persona,
+    });
+    let outlineString = `## ${result.title}\n\n`;
+    result.slides.forEach((slide, index) => {
+      outlineString += `### **Slide ${index + 1}: ${slide.title}**\n`;
+      slide.bulletPoints.forEach(point => {
+        outlineString += `- ${point}\n`;
+      });
+      outlineString += '\n';
+    });
+    return outlineString;
+  }
+);
+
+export const highlightKeyInsightsTool = ai.defineTool(
+  {
+    name: 'highlightKeyInsights',
+    description: 'Identifies and highlights the key insights or takeaways from a piece of text or a document.',
+    inputSchema: ContextualToolInputSchema,
+    outputSchema: z.string().describe('A formatted string containing the key insights.'),
+  },
+  async input => {
+    const isFile = input.context.startsWith('data:');
+    const result = await highlightKeyInsights({
+      sourcePdf: isFile ? input.context : undefined,
+      sourceText: !isFile ? input.context : undefined,
+      persona: input.persona,
+    });
+    let insightsString = '### Key Insights\n\n';
+    result.insights.forEach(insight => {
+      insightsString += `- ${insight}\n`;
+    });
+    return insightsString;
   }
 );

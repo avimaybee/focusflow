@@ -1,12 +1,13 @@
 
 'use client';
 
-import { useState, useRef, useEffect, DragEvent } from 'react';
+import { useState, useRef, useEffect, DragEvent, useCallback } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
-import { Send, MessageSquare, Bot as BotIcon, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Bot as ToolsIcon, Plus, Settings, LogOut, User } from 'lucide-react';
+import { Send, MessageSquare, Bot as BotIcon, Baby, Coffee, Sparkles, Filter, List, PenSquare, Lightbulb, Timer, Flame, Paperclip, X, File as FileIcon, UploadCloud, Brain, Book, FileText, Plus, Settings, LogOut, User, Loader2 } from 'lucide-react';
 import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -15,7 +16,6 @@ import { chat } from '@/ai/flows/chat-flow';
 import { updateUserPersona } from '@/lib/user-actions';
 import { Persona } from '@/ai/flows/chat-types';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { TextSelectionToolbar } from '@/components/text-selection-toolbar';
 import { rewriteText } from '@/ai/flows/rewrite-text';
@@ -23,23 +23,20 @@ import { addCitations } from '@/ai/flows/add-citations';
 import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
 import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
 import type { ChatInput } from '@/ai/flows/chat-types';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { PromptLibrary } from '@/components/prompt-library';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { generatePresentationOutline } from '@/ai/flows/generate-presentation-outline';
+import { highlightKeyInsights } from '@/ai/flows/highlight-key-insights';
+import { smartTools } from '@/components/smart-tools-menu';
 
+
+import { uploadFile } from '@/lib/storage-actions';
 
 type Attachment = {
-  preview: string;
-  data: string;
-  type: string;
   name: string;
+  type: string;
+  // `data` will now hold the Firebase Storage URL, not a data URI
+  data: string; 
+  // `preview` is a local URL for client-side image previews
+  preview: string;
 };
 
 const personas = [
@@ -57,21 +54,60 @@ const personas = [
 
 
 export default function ChatPage() {
-  const { user, preferredPersona } = useAuth();
+  const { user, preferredPersona, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
+  const params = useParams();
+  
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [selectedPersonaId, setSelectedPersonaId] = useState(personas[0].id);
   const selectedPersona = personas.find(p => p.id === selectedPersonaId)!;
 
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [input, setInput] = useState('');
-  const [attachment, setAttachment] = useState<Attachment | null>(null);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [toolMenu, setToolMenu] = useState<{ text: string; rect: DOMRect } | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  // Set active chat from URL
+  useEffect(() => {
+    const chatIdFromParams = params.chatId as string | undefined;
+    setActiveChatId(chatIdFromParams || null);
+  }, [params]);
+
+  // Load chat history list
+  useEffect(() => {
+    if (user?.uid) {
+      getRecentChats(user.uid).then(setChatHistory);
+    }
+  }, [user?.uid]);
+
+  // Load messages for the active chat
+  useEffect(() => {
+    if (user?.uid && activeChatId) {
+      setIsHistoryLoading(true);
+      getChatMessages(user.uid, activeChatId)
+        .then(chatMessages => {
+          setMessages(chatMessages.map(msg => ({
+            role: msg.role,
+            text: msg.text,
+            // You might need to add other fields like userAvatar if stored
+          })));
+        })
+        .finally(() => setIsHistoryLoading(false));
+    } else {
+      setMessages([]);
+      setIsHistoryLoading(false);
+    }
+  }, [user?.uid, activeChatId]);
+
+
   useEffect(() => {
     if (preferredPersona && personas.some(p => p.id === preferredPersona)) {
       setSelectedPersonaId(preferredPersona);
@@ -85,21 +121,40 @@ export default function ChatPage() {
   }, [selectedPersonaId, user?.uid]);
 
 
-  const submitMessage = async (prompt: string, attachedFile: Attachment | null) => {
-    if ((!prompt.trim() && !attachedFile) || isLoading) return;
+  const submitMessage = async (prompt: string, attachedFiles: Attachment[]) => {
+    if ((!prompt.trim() && attachedFiles.length === 0) || isLoading || !user?.uid) return;
 
+    const userMessageText = prompt;
+    // Create a temporary message with previews for optimistic UI update
     const userMessage: ChatMessageProps = {
       role: 'user',
-      text: prompt,
-      image: attachedFile?.type.startsWith('image/') ? attachedFile.preview : null,
+      text: userMessageText,
+      images: attachedFiles.filter(f => f.type.startsWith('image/')).map(f => f.preview),
       userAvatar: user?.photoURL,
       userName: user?.displayName || user?.email || 'User',
     };
     
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
+    setInput('');
+    setAttachments([]);
+
+    let currentChatId = activeChatId;
 
     try {
+      // Get the storage URLs for the AI
+      const finalAttachments = attachedFiles.map(a => a.data);
+
+      // Create a new chat session if one isn't active
+      if (!currentChatId) {
+        const newChatId = await createChat(user.uid, userMessageText);
+        setActiveChatId(newChatId);
+        currentChatId = newChatId;
+        router.push(`/chat/${newChatId}`, { scroll: false });
+      } else {
+        await addMessageToChat(user.uid, currentChatId, { role: 'user', text: userMessageText });
+      }
+
       const chatHistoryForAI = [...messages, userMessage]
         .filter(m => typeof m.text === 'string') 
         .map(m => ({
@@ -111,31 +166,29 @@ export default function ChatPage() {
         message: prompt,
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
+        // Pass the first attachment's data for now. A more robust implementation
+        // would handle multiple contexts.
+        context: finalAttachments.find(a => a.includes('.pdf')),
+        image: finalAttachments.find(a => a.includes('.png') || a.includes('.jpg') || a.includes('.jpeg') || a.includes('.webp')),
       };
 
-      if (attachedFile) {
-        if (attachedFile.type.startsWith('image/')) {
-          chatInput.image = attachedFile.data;
-        } else {
-          chatInput.context = attachedFile.data;
-        }
-      }
-
       const result = await chat(chatInput);
+      
+      await addMessageToChat(user.uid, currentChatId, { role: 'model', text: result.response });
 
       setMessages(prev => [
         ...prev,
         { role: 'model', text: result.response },
       ]);
     } catch (error) {
-      console.error('Error calling chat AI:', error);
-      setMessages(prev => [
-        ...prev,
-        {
-          role: 'model',
-          text: 'Sorry, something went wrong. Please try again.',
-        },
-      ]);
+      console.error('Error in submitMessage:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Message Failed',
+        description: 'Could not send message. Please try again.',
+      });
+      // Revert optimistic update on failure
+      setMessages(prev => prev.slice(0, prev.length - 1));
     } finally {
       setIsLoading(false);
     }
@@ -143,18 +196,22 @@ export default function ChatPage() {
   
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    await submitMessage(input, attachment);
-    setInput('');
-    setAttachment(null);
+    await submitMessage(input, attachments);
   };
 
   const handleSelectPrompt = (prompt: string) => {
-     submitMessage(prompt, null);
+     submitMessage(prompt, []);
+  };
+
+  const handleNewChat = () => {
+    setActiveChatId(null);
+    setMessages([]);
+    router.push('/chat');
   };
   
   const handleFileSelect = (file: File) => {
-    if (!file) return;
-  
+    if (!file || !user?.uid) return;
+
     if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
       toast({
         variant: 'destructive',
@@ -164,30 +221,56 @@ export default function ChatPage() {
       return;
     }
   
-    const maxSizeInBytes = 10 * 1024 * 1024;
+    const maxSizeInBytes = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSizeInBytes) {
       toast({
         variant: 'destructive',
         title: 'File Too Large',
-        description: `Please upload a file smaller than ${
-          maxSizeInBytes / 1024 / 1024
-        }MB.`,
+        description: `Please upload a file smaller than 10MB.`,
       });
       return;
     }
-  
+
+    // Show loading toast
+    const { id: toastId } = toast({
+      title: 'Uploading...',
+      description: `Your file "${file.name}" is being uploaded.`,
+    });
+
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       const dataUrl = reader.result as string;
-      const previewUrl = file.type.startsWith('image/')
-        ? URL.createObjectURL(file)
-        : file.name;
-      setAttachment({
-        preview: previewUrl,
-        data: dataUrl,
-        type: file.type,
-        name: file.name,
-      });
+      try {
+        const downloadURL = await uploadFile(user.uid!, dataUrl, file.name);
+        
+        const previewUrl = file.type.startsWith('image/')
+          ? URL.createObjectURL(file)
+          : file.name; // No preview for PDFs, just show name
+
+        setAttachments(prev => [...prev, {
+          preview: previewUrl,
+          data: downloadURL, // Store the public URL
+          type: file.type,
+          name: file.name,
+        }]);
+
+        // Update toast to success
+        toast({
+          id: toastId,
+          title: 'Upload Successful',
+          description: `"${file.name}" is ready.`,
+        });
+
+      } catch (error) {
+        console.error("File upload error:", error);
+        // Update toast to failure
+        toast({
+          id: toastId,
+          variant: 'destructive',
+          title: 'Upload Failed',
+          description: 'Could not upload your file. Please try again.',
+        });
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -230,132 +313,92 @@ export default function ChatPage() {
     }
   };
 
-  const handleToolAction = async (tool: { name: string; action: string; value: any; }) => {
-    if (!toolMenu) return;
-    const messageText = toolMenu.text;
+  const handleSmartToolAction = async (tool: typeof smartTools[0], messageText: string) => {
+    if (!user?.uid) return;
 
-    setToolMenu(null);
+    let currentChatId = activeChatId;
 
-    if (tool.action === 'prompt') {
-        const prompt = tool.value.replace('[SELECTED_TEXT]', messageText);
-        await submitMessage(prompt, null);
-    } 
-    else if (tool.action === 'rewrite') {
-        const userMessage: ChatMessageProps = {
-            role: 'user',
-            text: `${tool.name}: "${messageText.substring(0, 50)}..."`,
-        };
+    const executeAction = async (userPrompt: string, actionFn: Promise<any>, formatResult: (result: any) => string) => {
+        const userMessage: ChatMessageProps = { role: 'user', text: userPrompt };
         setMessages(prev => [...prev, userMessage]);
         setIsLoading(true);
 
         try {
-            const result = await rewriteText({
-                textToRewrite: messageText,
-                style: tool.value,
-                persona: selectedPersonaId as Persona,
-            });
-            setMessages(prev => [
-                ...prev,
-                { role: 'model', text: result.rewrittenText },
-            ]);
+            if (!currentChatId) {
+                const newChatId = await createChat(user.uid, userPrompt);
+                currentChatId = newChatId;
+                setActiveChatId(newChatId);
+                router.push(`/chat/${newChatId}`, { scroll: false });
+            } else {
+                await addMessageToChat(user.uid, currentChatId, { role: 'user', text: userPrompt });
+            }
+
+            const result = await actionFn;
+            const formattedResult = formatResult(result);
+            
+            await addMessageToChat(user.uid, currentChatId, { role: 'model', text: formattedResult });
+            setMessages(prev => [...prev, { role: 'model', text: formattedResult }]);
         } catch (error) {
-            console.error('Error in rewrite action:', error);
+            console.error(`Error in ${tool.action} action:`, error);
             toast({
               variant: 'destructive',
-              title: 'Rewrite Failed',
-              description: 'Could not rewrite the text. Please try again.',
+              title: 'Action Failed',
+              description: `Could not perform ${tool.name}. Please try again.`,
             });
             setMessages(prev => prev.slice(0, prev.length - 1));
         } finally {
             setIsLoading(false);
         }
-    } else if (tool.action === 'addCitations') {
-        const userMessage: ChatMessageProps = {
-            role: 'user',
-            text: `Add citations to: "${messageText.substring(0, 50)}..."`,
-        };
-        setMessages(prev => [...prev, userMessage]);
-        setIsLoading(true);
+    };
 
-        try {
-            const result = await addCitations({
-                textToCite: messageText,
-                citationStyle: tool.value, 
-                persona: selectedPersonaId as Persona,
-            });
-            setMessages(prev => [
-                ...prev,
-                { role: 'model', text: result.citedText },
-            ]);
-        } catch (error) {
-            console.error('Error in addCitations action:', error);
-            toast({
-              variant: 'destructive',
-              title: 'Citation Failed',
-              description: 'Could not add citations. Please try again.',
-            });
-            setMessages(prev => prev.slice(0, prev.length - 1));
-        } finally {
-            setIsLoading(false);
-        }
+    const sourceArg = { sourceText: messageText, persona: selectedPersonaId as Persona };
+
+    if (tool.action === 'rewrite') {
+        await executeAction(
+            `${tool.name}: "${messageText.substring(0, 50)}..."`,
+            rewriteText({ ...sourceArg, style: tool.value }),
+            (result) => result.rewrittenText
+        );
     } else if (tool.action === 'bulletPoints') {
-        const userMessage: ChatMessageProps = {
-            role: 'user',
-            text: `Convert to bullet points: "${messageText.substring(0, 50)}..."`,
-        };
-        setMessages(prev => [...prev, userMessage]);
-        setIsLoading(true);
-
-        try {
-            const result = await generateBulletPoints({
-                textToConvert: messageText,
-                persona: selectedPersonaId as Persona,
-            });
-            const formattedResult = result.bulletPoints.map(pt => `- ${pt}`).join('\n');
-            setMessages(prev => [
-                ...prev,
-                { role: 'model', text: formattedResult },
-            ]);
-        } catch (error) {
-            console.error('Error generating bullet points:', error);
-            toast({
-              variant: 'destructive',
-              title: 'Transformation Failed',
-              description: 'Could not convert to bullet points. Please try again.',
-            });
-            setMessages(prev => prev.slice(0, prev.length - 1));
-        } finally {
-            setIsLoading(false);
-        }
+        await executeAction(
+            `Convert to bullet points: "${messageText.substring(0, 50)}..."`,
+            generateBulletPoints(sourceArg),
+            (result) => result.bulletPoints.map((pt: string) => `- ${pt}`).join('\n')
+        );
     } else if (tool.action === 'counterarguments') {
-        const userMessage: ChatMessageProps = {
-            role: 'user',
-            text: `Find counterarguments for: "${messageText.substring(0, 50)}..."`,
-        };
-        setMessages(prev => [...prev, userMessage]);
-        setIsLoading(true);
-
-        try {
-            const result = await generateCounterarguments({
-                statementToChallenge: messageText,
-                persona: selectedPersonaId as Persona,
-            });
-            const formattedResult = result.counterarguments.map((arg, i) => `${i + 1}. ${arg}`).join('\n\n');
-            setMessages(prev => [
-                ...prev,
-                { role: 'model', text: formattedResult },
-            ]);
-        } catch (error) {
-            console.error('Error generating counterarguments:', error);
-            toast({
-              variant: 'destructive',
-              title: 'Transformation Failed',
-              description: 'Could not generate counterarguments. Please try again.',
-            });
-            setMessages(prev => prev.slice(0, prev.length - 1));
-        } finally {
-            setIsLoading(false);
-        }
+        await executeAction(
+            `Find counterarguments for: "${messageText.substring(0, 50)}..."`,
+            generateCounterarguments({ statementToChallenge: messageText, persona: selectedPersonaId as Persona }),
+            (result) => result.counterarguments.map((arg: string, i: number) => `${i + 1}. ${arg}`).join('\n\n')
+        );
+    } else if (tool.action === 'presentation') {
+        await executeAction(
+            `Create a presentation outline from: "${messageText.substring(0, 50)}..."`,
+            generatePresentationOutline(sourceArg),
+            (result) => {
+              let outlineString = `## ${result.title}\n\n`;
+              result.slides.forEach((slide: any, index: number) => {
+                outlineString += `### **Slide ${index + 1}: ${slide.title}**\n`;
+                slide.bulletPoints.forEach((point: string) => {
+                  outlineString += `- ${point}\n`;
+                });
+                outlineString += '\n';
+              });
+              return outlineString;
+            }
+        );
+    } else if (tool.action === 'insights') {
+        await executeAction(
+            `Highlight key insights from: "${messageText.substring(0, 50)}..."`,
+            highlightKeyInsights(sourceArg),
+            (result) => {
+              let insightsString = '### Key Insights\n\n';
+              result.insights.forEach((insight: string) => {
+                insightsString += `- ${insight}\n`;
+              });
+              return insightsString;
+            }
+        );
     }
   };
 
@@ -380,6 +423,14 @@ export default function ChatPage() {
 
   const hasMessages = messages.length > 0;
 
+  if (authLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-background text-foreground">
       {/* Sidebar */}
@@ -389,20 +440,23 @@ export default function ChatPage() {
                 <Logo className="h-7 w-7" />
                 FocusFlow AI
             </Link>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNewChat}>
                 <Plus className="h-4 w-4"/>
             </Button>
           </div>
           <ScrollArea className="flex-1 -mx-4">
               <div className="px-4 py-2 space-y-1">
-                  <Button variant="secondary" className="w-full justify-start gap-2 font-semibold text-primary-foreground">
-                       <MessageSquare className="h-4 w-4"/>
-                      <span className="truncate">Summary of Biology Notes</span>
+                  {chatHistory.map(chat => (
+                    <Button 
+                      key={chat.id}
+                      variant={activeChatId === chat.id ? "secondary" : "ghost"} 
+                      className="w-full justify-start gap-2 font-normal hover:bg-muted/50 hover:text-foreground"
+                      onClick={() => router.push(`/chat/${chat.id}`)}
+                    >
+                       <MessageSquare className="h-4 w-4 flex-shrink-0"/>
+                      <span className="truncate">{chat.title}</span>
                   </Button>
-                  <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:bg-muted/50 hover:text-foreground">
-                      <MessageSquare className="h-4 w-4"/>
-                      <span className="truncate">History Quiz Prep</span>
-                  </Button>
+                  ))}
               </div>
           </ScrollArea>
           <div className="py-2 mt-auto">
@@ -482,7 +536,11 @@ export default function ChatPage() {
         <div className="flex-1 relative">
           <ScrollArea className="absolute inset-0" ref={scrollAreaRef} onScroll={() => setToolMenu(null)}>
             <div className="p-4 md:p-6 space-y-8 max-w-3xl mx-auto">
-              {!hasMessages ? (
+              {isHistoryLoading ? (
+                <div className="flex justify-center items-center h-[calc(100vh-280px)]">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : !activeChatId && !hasMessages ? (
                  <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] px-4">
                      <div className="p-4 bg-primary/10 rounded-full mb-4 border border-primary/20">
                         <Logo className="h-10 w-10 text-primary"/>
@@ -543,31 +601,30 @@ export default function ChatPage() {
                   <ChatMessage
                     key={index}
                     {...msg}
-                    onShowTools={
-                      msg.role === 'model' && typeof msg.text === 'string'
-                        ? (target) => handleShowTools(msg.text as string, target)
-                        : undefined
-                    }
+                    onSmartToolAction={handleSmartToolAction}
                   />
                 ))
               )}
                {isLoading && <ChatMessage role="model" text={<div className="h-5 w-5 border-2 rounded-full border-t-transparent animate-spin"></div>} />}
             </div>
           </ScrollArea>
-           <TextSelectionToolbar menuData={toolMenu} onAction={handleToolAction} />
         </div>
 
         {/* Input Area */}
         <div className="p-4 bg-background">
           <div className="relative max-w-3xl mx-auto p-2 rounded-xl bg-card border border-border/60 shadow-lg">
-             {attachment && (
-              <div className="p-2">
-                <div className="flex items-center gap-3 bg-muted p-2 rounded-md">
-                   <FileIcon className="h-6 w-6 text-muted-foreground"/>
-                   <span className="text-sm text-foreground truncate flex-1">{attachment.name}</span>
-                   <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => setAttachment(null)}>
-                      <X className="h-4 w-4"/>
-                   </Button>
+             {attachments.length > 0 && (
+              <div className="p-2 border-b border-border/60">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {attachments.map((att, index) => (
+                    <div key={index} className="flex items-center gap-2 bg-muted p-1.5 rounded-md text-sm">
+                       <FileIcon className="h-4 w-4 text-muted-foreground"/>
+                       <span className="text-foreground truncate max-w-[120px]">{att.name}</span>
+                       <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => setAttachments(prev => prev.filter((_, i) => i !== index))}>
+                          <X className="h-3.5 w-3.5"/>
+                       </Button>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -622,12 +679,13 @@ export default function ChatPage() {
                       handleSendMessage(e);
                     }
                   }}
-                  placeholder="Ask a follow-up..."
+                  placeholder={activeChatId ? "Ask a follow-up..." : "Start a new conversation..."}
                   className="w-full resize-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 max-h-48"
                   rows={1}
+                  disabled={isHistoryLoading}
                 />
-                <Button type="submit" disabled={isLoading || (!input.trim() && !attachment)} size="icon" className="h-8 w-8 shrink-0 rounded-full">
-                  <Send className="h-4 w-4" />
+                <Button type="submit" disabled={isLoading || (!input.trim() && attachments.length === 0) || isHistoryLoading} size="icon" className="h-8 w-8 shrink-0 rounded-full">
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </form>
             </div>
