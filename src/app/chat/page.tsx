@@ -702,7 +702,7 @@ export default function ChatPage() {
                     <Users className="h-5 w-5" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent align="start" className="w-[320px] p-0 mb-2">
+                <PopoverContent align="start" className="w-[340px] p-0 mb-2">
                   <Command>
                     <CommandInput placeholder="Select a persona..." />
                     <CommandList>
@@ -715,10 +715,11 @@ export default function ChatPage() {
                             onSelect={(currentValue) => {
                               setSelectedPersonaId(currentValue);
                             }}
+                            className="flex items-start gap-3 cursor-pointer py-2.5"
                           >
                             <Check
                               className={cn(
-                                "mr-2 h-4 w-4",
+                                "mt-1 mr-2 h-4 w-4",
                                 selectedPersonaId === p.id ? "opacity-100" : "opacity-0"
                               )}
                             />
@@ -726,6 +727,7 @@ export default function ChatPage() {
                               {p.icon}
                               <div className="text-left">
                                 <p className="font-semibold text-sm">{p.name}</p>
+                                <p className="text-xs text-muted-foreground">{p.description}</p>
                               </div>
                             </div>
                           </CommandItem>
@@ -786,5 +788,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
