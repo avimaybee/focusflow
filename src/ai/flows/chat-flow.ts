@@ -7,7 +7,7 @@
  *
  * - chat - The main function for handling chat messages.
  */
-import {ai} from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 import { selectModel } from '../model-selection';
 import {
   createDiscussionPromptsTool,
@@ -21,7 +21,17 @@ import {
   summarizeNotesTool,
 } from './tools';
 import type { ChatInput, ChatOutput } from './chat-types';
-import type {Message} from 'genkit';
+import type { Message } from 'genkit';
+import { z } from 'zod';
+
+// Defina o esquema de intenção
+const intentSchema = z.object({
+  intent: z
+    .enum(['GREETING', 'CONVERSATION', 'TOOL_REQUEST'])
+    .describe(
+      'The user intent. GREETING for simple greetings, CONVERSATION for general chat, TOOL_REQUEST for specific tool actions.'
+    ),
+});
 
 const personaPrompts = {
   neutral:
@@ -31,7 +41,7 @@ const personaPrompts = {
   casual:
     'You are a friendly, down-to-earth classmate. Your tone is relaxed, and conversational. Use contractions (like "don\'t" or "it\'s") and everyday examples. You explain things as if you were studying together, making the interaction feel like a peer-to-peer chat.',
   entertaining:
-    'You are an entertaining and humorous educator. Your style is upbeat, witty, and playful. You make learning fun by using pop-culture analogies (mentioning current shows, games, or internet trends) and light-hearted jokes. Your goal is to make the material memorable and engaging.',
+    'You are an entertaining and humorous educator. Your style is upbeat, witty, and playful. You make learning fun byusing pop-culture analogies (mentioning current shows, games, or internet trends) and light-hearted jokes. Your goal is to make the material memorable and engaging.',
   'brutally-honest':
     "You are a brutally honest mentor whose goal is to make the student improve. Your primary role is to provide sharp, direct, and critical feedback. Do not sugarcoat your responses. Point out logical fallacies, identify weaknesses in arguments, and challenge the user\'s assumptions. Your feedback is tough but always fair and constructive.",
   'straight-shooter':
@@ -46,23 +56,37 @@ const personaPrompts = {
     'You are a sassy, witty, and irreverent teaching assistant. You use playful sarcasm, rhetorical questions, and modern pop references. You might "digitally roll your eyes" at a simple question but will always provide the correct answer. Your goal is to be both informative and highly entertaining, with a sharp, witty edge.',
 };
 
+async function detectIntent(
+  message: string
+): Promise<'GREETING' | 'CONVERSATION' | 'TOOL_REQUEST'> {
+  try {
+    const llmResponse = await ai.generate({
+      model: 'googleai/gemini-1.5-flash',
+      prompt: `Assess the user\'s intent based on their message: "${message}". Categorize it as a "GREETING" (e.g., "hi", "hello"), "TOOL_REQUEST" (e.g., "create a quiz," "summarize this"), or "CONVERSATION" (for general questions or chat).`,
+      output: { schema: intentSchema },
+      config: { temperature: 0.1 },
+    });
+
+    const intentData = llmResponse.output?.intent;
+    if (intentData) {
+      return intentData;
+    }
+  } catch (error) {
+    console.error('Intent detection failed:', error);
+  }
+  // Default to conversation if detection fails
+  return 'CONVERSATION';
+}
+
 export async function chat(input: ChatInput): Promise<ChatOutput> {
-  const personaInstruction = personaPrompts[input.persona];
-  const systemPrompt = `${personaInstruction}
+  const { message, history, context, image, isPremium, persona } = input;
 
-You are an expert AI assistant. Your primary goal is to be a helpful and conversational study partner.
+  const intent = await detectIntent(message);
 
-You have access to specialized tools, but you should ONLY use them when the user explicitly requests a specific study tool or action. For example:
-- Use tools when the user asks to "create a quiz", "make flashcards", "summarize this", "create a study plan", etc.
-- For general questions, explanations, discussions, or casual conversation, respond directly WITHOUT using any tools.
-- If you're unsure whether to use a tool, default to responding directly.
+  const personaInstruction = personaPrompts[persona];
+  const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner.`;
 
-When you do use a tool that has a 'persona' input field, you MUST pass the current persona ('${input.persona}') to it.
-
-If a user uploads a file or provides text context, you can reference it directly in your responses for general conversation. Only pass the context to tools when the user specifically requests a tool-based action.
-`;
-
-  const model = selectModel(input.message, input.history, input.isPremium || false);
+  const model = selectModel(message, history, isPremium || false);
 
   const tools = [
     summarizeNotesTool,
@@ -75,36 +99,30 @@ If a user uploads a file or provides text context, you can reference it directly
     generatePresentationOutlineTool,
     highlightKeyInsightsTool,
   ];
-  
-  const history: Message[] = input.history.map(msg => ({
+
+  const chatHistory: Message[] = history.map((msg) => ({
     role: msg.role,
-    parts: [{text: msg.text}],
+    parts: [{ text: msg.text }],
   }));
-  
+
   const promptParts = [];
-  if (input.context) {
-    promptParts.push({ text: `${input.message}\n\n[CONTEXT FROM UPLOADED FILE IS PROVIDED]` });
+  if (context) {
+    promptParts.push({
+      text: `${message}\n\n[CONTEXT FROM UPLOADED FILE IS PROVIDED]`,
+    });
   } else {
-    promptParts.push({ text: input.message });
-  }
-  
-  if (input.image) {
-    promptParts.push({ media: { url: input.image } });
+    promptParts.push({ text: message });
   }
 
-  // Append the current user message to the history for the model
-  const fullHistory: Message[] = [
-    ...history,
-    { role: 'user', parts: promptParts }
-  ];
+  if (image) {
+    promptParts.push({ media: { url: image } });
+  }
 
-  const {output} = await ai.generate({
+  let generateOptions: any = {
     model,
     system: systemPrompt,
-    tools,
-    history: fullHistory,
-    // The prompt is now part of the history, so this is not needed.
-    // prompt: promptParts,
+    history: chatHistory,
+    prompt: promptParts,
     config: {
       safetySettings: [
         {
@@ -113,9 +131,21 @@ If a user uploads a file or provides text context, you can reference it directly
         },
       ],
     },
-    // By passing the context here, we make it available to the tool-calling model.
-    context: input.context,
-  });
+  };
 
-  return {response: output?.[0]?.text || 'Sorry, I am not sure how to help with that.'};
+  // Only add tools if the intent is a tool request
+  if (intent === 'TOOL_REQUEST') {
+    generateOptions = {
+      ...generateOptions,
+      tools,
+      context, // Pass context only for tool-related actions
+    };
+  }
+
+  const { output } = await ai.generate(generateOptions);
+
+  return {
+    response:
+      output?.[0]?.text || 'Sorry, I am not sure how to help with that.',
+  };
 }
