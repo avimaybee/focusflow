@@ -41,6 +41,8 @@ interface ChatInputAreaProps {
   setSelectedPersonaId: (id: string) => void;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   activeChatId: string | null;
+  chatContext: { name: string; type: string; data: string } | null;
+  clearChatContext: () => void;
 }
 
 export function ChatInputArea({
@@ -58,32 +60,48 @@ export function ChatInputArea({
   setSelectedPersonaId,
   textareaRef,
   activeChatId,
+  chatContext,
+  clearChatContext,
 }: ChatInputAreaProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const contextName = chatContext?.name || null;
 
   return (
     <div className="p-4">
       <div className="relative max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto">
-        {attachments.length > 0 && (
-          <div className="p-2 border-b border-border/60">
-            <div className="flex items-center gap-2 flex-wrap">
-              {attachments.map((att, index) => (
-                <div key={index} className="flex items-center gap-2 bg-muted p-1.5 rounded-md text-sm">
-                  <FileIcon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-foreground truncate max-w-[120px]">{att.name}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 rounded-full"
-                    onClick={() => dispatch({ type: 'CLEAR_ATTACHMENTS' })}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="p-2 border-b border-border/60 flex items-center gap-2 flex-wrap">
+            {/* Display new, temporary attachments */}
+            {attachments.map((att, index) => (
+              <div key={`new-${index}`} className="flex items-center gap-2 bg-blue-500/10 p-1.5 rounded-md text-sm border border-blue-500/20">
+                <FileIcon className="h-4 w-4 text-blue-500" />
+                <span className="text-foreground truncate max-w-[120px]">{att.name}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 rounded-full"
+                  onClick={() => dispatch({ type: 'CLEAR_ATTACHMENTS' })}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ))}
+            {/* Display persistent context if no new attachments are being uploaded */}
+            {(attachments.length === 0 && contextName) && (
+              <div className="flex items-center gap-2 bg-muted p-1.5 rounded-md text-sm">
+                <FileIcon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-foreground truncate max-w-[120px]">Context: {contextName}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 rounded-full"
+                  onClick={clearChatContext}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
+        </div>
         <div className="flex items-start p-2 gap-2 bg-card border border-border/60 rounded-xl shadow-lg">
           <Popover>
             <PopoverTrigger asChild>
@@ -159,7 +177,7 @@ export function ChatInputArea({
             />
             <Button
               type="submit"
-              disabled={isLoading || (!input.trim() && attachments.length === 0) || isHistoryLoading}
+              disabled={isLoading || (!input.trim() && attachments.length === 0 && !chatContext) || isHistoryLoading}
               size="icon"
               className="h-8 w-8 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
             >

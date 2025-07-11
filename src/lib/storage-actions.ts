@@ -1,34 +1,33 @@
 
 'use server';
 
-import { storage } from '@/lib/firebase';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
-import { v4 as uuidv4 } from 'uuid';
+import { getStorage, ref, uploadBytes } from 'firebase/storage';
+import { app } from '@/lib/firebase';
+
+const storage = getStorage(app);
 
 /**
- * Uploads a file to Firebase Storage.
+ * Uploads a file to a user-specific folder in Firebase Storage.
+ * @param file The file to upload.
  * @param userId The ID of the user uploading the file.
- * @param fileDataUrl The file represented as a data URL.
- * @param fileName The name of the file.
- * @returns The public download URL of the uploaded file.
+ * @returns The gs:// path of the uploaded file.
  */
-export async function uploadFile(
-  userId: string,
-  fileDataUrl: string,
-  fileName: string
-): Promise<string> {
-  if (!userId) {
-    throw new Error('User ID is required for file upload.');
+export async function uploadFileToStorage(file: File, userId: string): Promise<{ gsPath: string, fileName: string, fileType: string }> {
+  if (!file || !userId) {
+    throw new Error('File and userId are required for upload.');
   }
+  
+  const filePath = `users/${userId}/${Date.now()}-${file.name}`;
+  const storageRef = ref(storage, filePath);
 
-  const fileId = uuidv4();
-  const storageRef = ref(storage, `user-uploads/${userId}/${fileId}-${fileName}`);
+  await uploadBytes(storageRef, file);
   
-  // Upload the file from the data URL
-  const snapshot = await uploadString(storageRef, fileDataUrl, 'data_url');
+  const gsPath = `gs://${storageRef.bucket}/${storageRef.fullPath}`;
   
-  // Get the public URL
-  const downloadURL = await getDownloadURL(snapshot.ref);
-  
-  return downloadURL;
+  return {
+    gsPath,
+    fileName: file.name,
+    fileType: file.type,
+  };
 }
+

@@ -15,11 +15,18 @@ import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { Loader2, UploadCloud } from 'lucide-react';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { chat, rewriteText, generateBulletPoints, generateCounterarguments, generatePresentationOutline, highlightKeyInsights } from '@/ai/actions';
 import type { ChatInput, ChatHistoryMessage, Persona } from '@/ai/flows/chat-types';
 import { ChatMessageProps } from '@/components/chat-message';
+import { SmartToolActions } from '@/lib/constants';
+
+type ChatContext = {
+  name: string;
+  type: string;
+  path: string; // GS path
+} | null;
 
 export default function ChatPage() {
   const { user, isPremium, loading: authLoading } = useAuth();
@@ -30,6 +37,7 @@ export default function ChatPage() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [input, setInput] = useState('');
+  const [chatContext, setChatContext] = useState<ChatContext>(null);
   
   const [state, dispatch] = useChatReducer();
   const { messages, isLoading, attachments } = state;
@@ -46,6 +54,23 @@ export default function ChatPage() {
     const chatIdFromParams = params.chatId as string | undefined;
     setActiveChatId(chatIdFromParams || null);
   }, [params]);
+
+  // Effect to load and listen for persistent context on the active chat
+  useEffect(() => {
+    if (user?.uid && activeChatId) {
+      const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
+      const unsubscribe = onSnapshot(chatRef, (doc) => {
+        if (doc.exists() && doc.data().context) {
+          setChatContext(doc.data().context as ChatContext);
+        } else {
+          setChatContext(null);
+        }
+      });
+      return () => unsubscribe();
+    } else {
+      setChatContext(null);
+    }
+  }, [activeChatId, user?.uid]);
 
   useEffect(() => {
     if (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')) {
@@ -70,9 +95,28 @@ export default function ChatPage() {
   const submitMessage = async (prompt: string, attachedFiles: Attachment[]) => {
     if ((!prompt.trim() && attachedFiles.length === 0) || isLoading || !user?.uid) return;
 
+    // Add logic to retain context when a file is uploaded
+    const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+    let finalPrompt = prompt;
+
+    const modelNeedsContext = lastMessage?.role === 'model' &&
+                              (lastMessage.text?.toLowerCase().includes('please provide') || 
+                               lastMessage.text?.toLowerCase().includes('what text') ||
+                               lastMessage.text?.toLowerCase().includes('upload the document'));
+
+    const userIsProvidingFile = attachedFiles.length > 0;
+
+    if (modelNeedsContext && userIsProvidingFile) {
+      const lastUserRequest = [...messages].reverse().find(m => m.role === 'user');
+      if (lastUserRequest?.text) {
+        // Create a more explicit prompt for the AI to ensure context is not lost.
+        finalPrompt = `The user's original request was: "${lastUserRequest.text}". They have now uploaded a file to provide the necessary context. Please proceed with the original request using the provided file content. The user's latest message was: "${prompt}".`;
+      }
+    }
+
     const userMessage: ChatMessageProps = {
       role: 'user',
-      text: prompt,
+      text: prompt, // Display the user's actual input in the UI
       images: attachedFiles.filter(f => f.type.startsWith('image/')).map(f => f.preview),
       userAvatar: user?.photoURL,
       userName: user?.displayName || user?.email || 'User',
@@ -86,14 +130,26 @@ export default function ChatPage() {
     let currentChatId = activeChatId;
 
     try {
+      // If this is the first message, create the chat document first
       if (!currentChatId) {
         const chatDoc = await addDoc(collection(db, 'users', user.uid, 'chats'), {
           title: prompt.split(' ').slice(0, 5).join(' ').substring(0, 40) || 'New Chat',
           createdAt: serverTimestamp(),
+          context: null, // Initialize context as null
         });
         currentChatId = chatDoc.id;
         router.push(`/chat/${currentChatId}`, { scroll: false });
         setActiveChatId(currentChatId);
+      }
+
+      // If there are attachments, persist the first one as the chat's context
+      if (attachedFiles.length > 0 && currentChatId) {
+        const fileContext = {
+          name: attachedFiles[0].name,
+          type: attachedFiles[0].type,
+          path: attachedFiles[0].path, // Save the gs:// path
+        };
+        await updateDoc(doc(db, 'users', user.uid, 'chats', currentChatId), { context: fileContext });
       }
 
       await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
@@ -109,14 +165,17 @@ export default function ChatPage() {
           text: m.text as string,
         }));
 
-      const finalAttachments = attachedFiles.map(a => a.data);
+      // Determine the context to send to the AI, prioritizing new attachments
+      const contextPath = attachedFiles.length > 0 ? attachedFiles[0].path : chatContext?.path;
+      
       const chatInput: ChatInput = {
-        message: prompt.trim(),
+        userId: user.uid,
+        message: finalPrompt.trim(),
         persona: selectedPersonaId as Persona,
         history: chatHistoryForAI,
         isPremium: isPremium ?? false,
-        context: finalAttachments.find(a => a.includes('application/pdf')) || finalAttachments.find(a => a.includes('text/plain')) || undefined,
-        image: finalAttachments.find(a => a.includes('image/')) || undefined,
+        // Pass the gs:// path to the backend
+        context: contextPath,
       };
 
       const result = await chat(chatInput).catch((err) => {
@@ -192,19 +251,19 @@ export default function ChatPage() {
       let formatResult: (result: any) => string;
 
       switch (tool.action) {
-        case 'rewrite':
+        case SmartToolActions.REWRITE:
           actionFn = rewriteText({ textToRewrite: messageText, style: tool.value, persona: selectedPersonaId as Persona });
           formatResult = (result) => result.rewrittenText;
           break;
-        case 'bulletPoints':
+        case SmartToolActions.BULLET_POINTS:
           actionFn = generateBulletPoints({textToConvert: messageText, persona: selectedPersonaId as Persona });
           formatResult = (result) => result.bulletPoints.map((pt: string) => `- ${pt}`).join('\n');
           break;
-        case 'counterarguments':
+        case SmartToolActions.COUNTERARGUMENTS:
           actionFn = generateCounterarguments({ statementToChallenge: messageText, persona: selectedPersonaId as Persona });
           formatResult = (result) => result.counterarguments.map((arg: string, i: number) => `${i + 1}. ${arg}`).join('\n\n');
           break;
-        case 'presentation':
+        case SmartToolActions.PRESENTATION:
           actionFn = generatePresentationOutline(sourceArg);
           formatResult = (result) => {
             let outlineString = `## ${result.title}\n\n`;
@@ -216,7 +275,7 @@ export default function ChatPage() {
             return outlineString;
           };
           break;
-        case 'insights':
+        case SmartToolActions.INSIGHTS:
           actionFn = highlightKeyInsights(sourceArg);
           formatResult = (result) => {
             let insightsString = '### Key Insights\n\n';

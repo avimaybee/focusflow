@@ -1,20 +1,22 @@
 
 import { useState, DragEvent, Dispatch } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/auth-context';
+import { uploadFileToStorage } from '@/lib/storage-actions';
 
 export type Attachment = {
   name: string;
   type: string;
-  data: string;
-  preview: string;
+  path: string; // Now stores the gs:// path
 };
 
 export function useFileUpload(dispatch: Dispatch<any>) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
-  const handleFileSelect = (file: File) => {
-    if (!file) return;
+  const handleFileSelect = async (file: File) => {
+    if (!file || !user?.uid) return;
 
     if (!file.type.startsWith('image/') && file.type !== 'application/pdf' && !file.type.startsWith('text/')) {
       toast({
@@ -40,39 +42,29 @@ export function useFileUpload(dispatch: Dispatch<any>) {
       description: `Your file "${file.name}" is being uploaded.`,
     });
 
-    const previewUrl = file.type.startsWith('image/') ? URL.createObjectURL(file) : file.name;
-
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const dataUrl = reader.result as string;
-      try {
-        const newAttachment = {
-          preview: previewUrl,
-          data: dataUrl,
-          type: file.type,
-          name: file.name,
-        };
-        dispatch({ type: 'SET_ATTACHMENTS', payload: [newAttachment] }); // This will overwrite existing attachments for simplicity, can be changed to ADD_ATTACHMENT
-        toast({
-          id: toastId,
-          variant: 'default',
-          title: 'Upload Successful',
-          description: `"${file.name}" is ready.`,
-        });
-      } catch (error) {
-        console.error("File processing error:", error);
-        toast({
-          id: toastId,
-          variant: 'destructive',
-          title: 'Upload Failed',
-          description: 'Could not process your file. Please try again.',
-        });
-      }
-    };
-    reader.readAsDataURL(file);
-
-    if (previewUrl.startsWith('blob:')) {
-      return () => URL.revokeObjectURL(previewUrl);
+    try {
+      const { gsPath, fileName, fileType } = await uploadFileToStorage(file, user.uid);
+      const newAttachment = {
+        name: fileName,
+        type: fileType,
+        path: gsPath,
+      };
+      // Dispatch to add the attachment to the temporary client state for display
+      dispatch({ type: 'SET_ATTACHMENTS', payload: [newAttachment] });
+      toast({
+        id: toastId,
+        variant: 'default',
+        title: 'Upload Successful',
+        description: `"${file.name}" is ready.`,
+      });
+    } catch (error) {
+      console.error("File upload error:", error);
+      toast({
+        id: toastId,
+        variant: 'destructive',
+        title: 'Upload Failed',
+        description: 'Could not upload your file. Please try again.',
+      });
     }
   };
 

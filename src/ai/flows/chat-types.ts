@@ -39,7 +39,15 @@ export const ChatInputSchema = z.object({
       'Optional context, like text from a document, to be used by a tool.'
     ),
 });
-export type ChatInput = z.infer<typeof ChatInputSchema>;
+export type ChatInput = {
+  userId: string;
+  message: string;
+  history: ChatHistoryMessage[];
+  persona: Persona;
+  isPremium: boolean;
+  context?: string;
+  image?: string;
+};
 
 export const ChatOutputSchema = z.object({
   response: z.string().describe("The AI tutor's helpful response."),
