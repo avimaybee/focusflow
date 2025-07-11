@@ -25,15 +25,12 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import {db} from '@/lib/firebase';
-import {
-  chat,
-  rewriteText,
-  generateBulletPoints,
-  generateCounterarguments,
-  generatePresentationOutline,
-  highlightKeyInsights,
-  extractText,
-} from '@/ai/actions';
+import { chat } from '@/ai/flows/chat-flow';
+import { rewriteText } from '@/ai/flows/rewrite-text';
+import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
+import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
+import { generatePresentationOutline } from '@/ai/flows/generate-presentation-outline';
+import { highlightKeyInsights } from '@/ai/flows/highlight-key-insights';
 import type {
   ChatInput,
   ChatHistoryMessage,
@@ -295,7 +292,7 @@ export default function ChatPage() {
           break;
         case SmartToolActions.COUNTERARGUMENTS:
           actionFn = generateCounterarguments({ statementToChallenge: messageText, persona: selectedPersonaId as Persona });
-          formatResult = (result) => result.counterarguments.map((arg: string, i: number) => `${i + 1}. ${arg}`).join('\n\n');
+          formatResult = (result) => result.counterarguments.map((arg: string, i: number,) => `${i + 1}. ${arg}`).join('\n\n');
           break;
         case SmartToolActions.PRESENTATION:
           actionFn = generatePresentationOutline(sourceArg);
@@ -426,3 +423,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
