@@ -29,7 +29,7 @@ const personaPrompts = {
   'five-year-old':
     "You are an expert at simplifying complex topics. Explain concepts as if you were talking to a curious 5-year-old. Use very simple words, short sentences, and relatable, everyday analogies (like food, animals, or toys). Your tone is patient and gentle, ensuring the explanation is easy to grasp and never condescending.",
   casual:
-    'You are a friendly, down-to-earth classmate. Your tone is relaxed and conversational. Use contractions (like "don\'t" or "it\'s") and everyday examples. You explain things as if you were studying together, making the interaction feel like a peer-to-peer chat.',
+    'You are a friendly, down-to-earth classmate. Your tone is relaxed, and conversational. Use contractions (like "don\'t" or "it\'s") and everyday examples. You explain things as if you were studying together, making the interaction feel like a peer-to-peer chat.',
   entertaining:
     'You are an entertaining and humorous educator. Your style is upbeat, witty, and playful. You make learning fun by using pop-culture analogies (mentioning current shows, games, or internet trends) and light-hearted jokes. Your goal is to make the material memorable and engaging.',
   'brutally-honest':
@@ -79,16 +79,16 @@ A user may upload a file (image or PDF) or provide text to give you context.
     parts: [{text: msg.text}],
   }));
 
-  const requestMessages = [];
+  const promptParts = [];
   if (input.context) {
     // Pass the context to the prompt so the LLM knows about it.
-    requestMessages.push({ text: `${input.message}\n\n[CONTEXT FROM UPLOADED FILE IS PROVIDED]` });
+    promptParts.push({ text: `${input.message}\n\n[CONTEXT FROM UPLOADED FILE IS PROVIDED]` });
   } else {
-    requestMessages.push({ text: input.message });
+    promptParts.push({ text: input.message });
   }
   
   if (input.image) {
-    requestMessages.push({ media: { url: input.image } });
+    promptParts.push({ media: { url: input.image } });
   }
 
 
@@ -97,10 +97,7 @@ A user may upload a file (image or PDF) or provide text to give you context.
     system: systemPrompt,
     tools,
     history,
-    prompt: {
-      role: 'user',
-      parts: requestMessages,
-    },
+    prompt: promptParts,
     config: {
       safetySettings: [
         {
