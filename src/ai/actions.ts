@@ -1,7 +1,6 @@
 
 'use server';
 
-import {run} from 'genkit';
 import {z} from 'zod';
 import {
   RewriteTextRequest,
@@ -24,27 +23,27 @@ import {ChatInput} from './flows/chat-types';
 export async function rewriteText(
   input: z.infer<typeof RewriteTextRequest>,
 ): Promise<z.infer<typeof RewriteTextResponse>> {
-  return run(rewriteTextFlow, input);
+  return await rewriteTextFlow(input);
 }
 
 export async function generateBulletPoints(
   input: z.infer<typeof GenerateBulletPointsRequest>,
 ): Promise<z.infer<typeof GenerateBulletPointsResponse>> {
-  return run(generateBulletPointsFlow, input);
+  return await generateBulletPointsFlow(input);
 }
 
 export async function generateCounterarguments(
   input: z.infer<typeof GenerateCounterargumentsRequest>,
 ): Promise<z.infer<typeof GenerateCounterargumentsResponse>> {
-  return run(generateCounterargumentsFlow, input);
+  return await generateCounterargumentsFlow(input);
 }
 
 export async function highlightKeyInsights(
   input: z.infer<typeof HighlightKeyInsightsRequest>,
 ): Promise<z.infer<typeof HighlightKeyInsightsResponse>> {
-  return run(highlightKeyInsightsFlow, input);
+  return await highlightKeyInsightsFlow(input);
 }
 
 export async function chat(input: ChatInput) {
-  return run(chatFlow, input);
+  return await chatFlow(input);
 }
