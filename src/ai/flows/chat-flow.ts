@@ -91,12 +91,14 @@ export const chatFlow = ai.defineFlow(
     outputSchema: z.any(),
   },
   async (input: ChatInput) => {
-    const { userId, message, history, context, image, isPremium, persona } = input;
+    const { userId, message, history, context, isPremium, persona } = input;
 
     const model = selectModel(message, history, isPremium || false);
     const personaInstruction = await getPersonaPrompt(persona);
-    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting (e.g., headings, bold text, lists) to improve readability. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it (like pasting text or uploading a file). Do not try to use a tool without the required information.`
     
+    // The system prompt provides overarching instructions for the AI's behavior and persona.
+    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting (e.g., headings, bold text, lists) to improve readability. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it (like pasting text or uploading a file). Do not try to use a tool without the required information.`;
+
     const availableTools = [
       summarizeNotesTool,
       createStudyPlanTool,
@@ -108,48 +110,40 @@ export const chatFlow = ai.defineFlow(
       highlightKeyInsightsTool,
     ];
 
-    const llmHistory: Message[] = history
-        .slice(0, -1) // Exclude the last message, as it's the current prompt
-        .map(m => ({
-            role: m.role as 'user' | 'model',
-            content: [{text: m.text}],
-        }));
-    const optimizedHistory = await optimizeChatHistory(llmHistory);
+    // Convert the chat history from our app's format to Genkit's `Message` format.
+    const llmHistory: Message[] = history.map(m => ({
+      role: m.role as 'user' | 'model',
+      content: [{text: m.text}],
+    }));
 
-    let currentPrompt: string | Part[] = message;
-
-    // Handle file context (PDF, Image, Text)
-    if (context) {
-      const isDataUri = context.startsWith('data:');
-      if (isDataUri) {
-        const [header, base64Data] = context.split(',');
-        const mimeType = header.split(':')[1].split(';')[0];
-
-        if (mimeType.startsWith('image/')) {
-          currentPrompt = [
-            { text: `CONTEXT FROM UPLOADED IMAGE:\nUse the content of the following image to answer the user's request.\n\nUSER'S REQUEST:\n${message}` },
-            { media: { url: context } }
-          ];
-        } else if (mimeType === 'application/pdf') {
-          const { parsePdfToText } = await import('@/ai/pdf-parser');
-          const pdfBuffer = Buffer.from(base64Data, 'base64');
-          const pdfText = await parsePdfToText(pdfBuffer);
-          currentPrompt = `CONTEXT FROM UPLOADED PDF:\n${pdfText}\n\nUSER'S REQUEST:\n${message}`;
+    // If there's context from a file upload, add it to the latest user message.
+    const lastMessage = llmHistory[llmHistory.length - 1];
+    if (context && lastMessage?.role === 'user') {
+        const isDataUri = context.startsWith('data:');
+        if (isDataUri) {
+             const [header, base64Data] = context.split(',');
+             const mimeType = header.split(':')[1].split(';')[0];
+             if (mimeType.startsWith('image/')) {
+                 lastMessage.content.push({ media: { url: context } });
+             } else {
+                // For PDF/text, we prepend text context.
+                const { parsePdfToText } = await import('@/ai/pdf-parser');
+                const buffer = Buffer.from(base64Data, 'base64');
+                const textContent = mimeType === 'application/pdf' ? await parsePdfToText(buffer) : buffer.toString('utf-8');
+                lastMessage.content[0].text = `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\nUSER'S REQUEST:\n${lastMessage.content[0].text}`;
+             }
         } else {
-           const textContent = Buffer.from(base64Data, 'base64').toString('utf-8');
-           currentPrompt = `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\nUSER'S REQUEST:\n${message}`;
+             lastMessage.content[0].text = `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${lastMessage.content[0].text}`;
         }
-      } else {
-         // This case handles text passed directly, not as a data URI
-         currentPrompt = `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${message}`;
-      }
     }
+    
+    const optimizedHistory = await optimizeChatHistory(llmHistory);
 
     const result = await ai.generate({
       model,
       system: systemPrompt,
-      history: optimizedHistory,
-      prompt: currentPrompt,
+      // The entire conversation, including the latest user message, is passed as history.
+      history: optimizedHistory, 
       tools: availableTools,
       toolChoice: 'auto',
       config: {
@@ -172,7 +166,6 @@ export const chatFlow = ai.defineFlow(
       };
     }
 
-    // This check is now safe because we've confirmed choices exists and has items.
     if (choices[0].finishReason !== 'stop' && choices[0].finishReason !== 'other') {
         // Handle cases where generation was blocked or stopped for other reasons
     }
