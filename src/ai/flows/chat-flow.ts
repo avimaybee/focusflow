@@ -5,7 +5,7 @@ import {
   ChatHistoryMessage,
   ChatInput,
 } from './chat-types';
-import {ai, generate} from '@/ai/genkit';
+import {ai} from '@/ai/genkit';
 import { selectModel } from '../model-selection';
 import { optimizeChatHistory } from './history-optimizer';
 import {
@@ -159,7 +159,7 @@ export const chat = ai.defineFlow(
       promptParts.push({ media: { url: image } });
     }
 
-    const result = await generate({
+    const result = await ai.generate({
       model,
       system: systemPrompt,
       history: optimizedHistory,
