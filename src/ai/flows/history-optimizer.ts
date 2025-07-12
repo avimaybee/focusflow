@@ -1,3 +1,4 @@
+
 import { Message } from 'genkit';
 import { ai } from '@/ai/genkit';
 
@@ -38,35 +39,44 @@ export async function optimizeChatHistory(
   history: Message[],
   maxTokens: number = 8000
 ): Promise<Message[]> {
+  // Add validation at the start
+  const validatedHistory = history.filter(msg => {
+    if (!msg || !msg.content || !Array.isArray(msg.content) || msg.content.length === 0) {
+      console.warn('Filtering out invalid message in optimizer:', msg);
+      return false;
+    }
+    return true;
+  });
+
   // If there's no history to optimize, return an empty array.
-  if (!history || history.length === 0) {
+  if (!validatedHistory || validatedHistory.length === 0) {
     return [];
   }
 
   const messagesToKeep = {
     first: 2, // Keep the first 2 messages for initial context
-    last: 8  // Keep the last 8 messages for recent context (but we don't include the absolute last message)
+    last: 8  // Keep the last 8 messages for recent context
   };
 
   // Calculate total tokens for the whole history
-  const totalTokens = history.reduce(
+  const totalTokens = validatedHistory.reduce(
     (acc, msg) => acc + estimateTokens(msg.content[0]?.text || ''),
     0
   );
 
   // If we're within the token limit, no optimization is needed
   if (totalTokens <= maxTokens) {
-    return history;
+    return validatedHistory;
   }
 
   // If there aren't enough messages to perform a summary, return as is
-  if (history.length <= messagesToKeep.first + messagesToKeep.last) {
-    return history;
+  if (validatedHistory.length <= messagesToKeep.first + messagesToKeep.last) {
+    return validatedHistory;
   }
 
-  const firstMessages = history.slice(0, messagesToKeep.first);
-  const lastMessages = history.slice(-messagesToKeep.last);
-  const middleMessages = history.slice(
+  const firstMessages = validatedHistory.slice(0, messagesToKeep.first);
+  const lastMessages = validatedHistory.slice(-messagesToKeep.last);
+  const middleMessages = validatedHistory.slice(
     messagesToKeep.first,
     -messagesToKeep.last
   );
@@ -82,3 +92,5 @@ export async function optimizeChatHistory(
 
   return optimizedHistory;
 }
+
+    
