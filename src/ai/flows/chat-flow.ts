@@ -110,11 +110,17 @@ export const chatFlow = ai.defineFlow(
       highlightKeyInsightsTool,
     ];
 
-    // Convert the chat history from our app's format to Genkit's `Message` format.
-    const llmHistory: Message[] = history.map(m => ({
-      role: m.role as 'user' | 'model',
-      content: [{text: m.text}],
-    }));
+    // Safely convert the chat history, ensuring no message has undefined content.
+    const llmHistory: Message[] = history.reduce((acc: Message[], m) => {
+      // Only include messages that have some text content.
+      if (m.text && typeof m.text === 'string' && m.text.trim()) {
+        acc.push({
+          role: m.role as 'user' | 'model',
+          content: [{ text: m.text }],
+        });
+      }
+      return acc;
+    }, []);
 
     // If there's context from a file upload, add it to the latest user message.
     const lastMessage = llmHistory[llmHistory.length - 1];
@@ -175,6 +181,7 @@ export const chatFlow = ai.defineFlow(
       const toolName = toolCall.name;
       const toolOutput = toolCall.output;
       if (userId) {
+        // This saveGeneratedContent call may need adjustment based on how `output` is structured
         await saveGeneratedContent(userId, toolName, message, toolOutput);
       }
     }
