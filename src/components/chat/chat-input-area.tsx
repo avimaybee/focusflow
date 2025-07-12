@@ -68,8 +68,8 @@ export function ChatInputArea({
   const contextName = chatContext?.name || null;
 
   return (
-    <div className="relative max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto">
-      <div className="p-2 border-b border-border/60 flex items-center gap-2 flex-wrap">
+    <div className="relative max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto bg-background">
+      <div className="p-2 border-y border-border/60 flex items-center gap-2 flex-wrap">
           {/* Display new, temporary attachments */}
           {attachments.map((att, index) => (
             <div key={`new-${index}`} className="flex items-center gap-2 bg-blue-500/10 p-1.5 rounded-md text-sm border border-blue-500/20">
@@ -101,7 +101,7 @@ export function ChatInputArea({
             </div>
           )}
       </div>
-      <div className="flex items-start p-2 bg-transparent rounded-xl">
+      <div className="flex items-start p-2 bg-transparent">
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted">

@@ -388,7 +388,7 @@ export default function ChatPage() {
           onSmartToolAction={handleSmartToolAction}
         />
 
-        <div className="p-4 pt-0">
+        <div className="w-full">
           <ChatInputArea
             input={input}
             setInput={setInput}
