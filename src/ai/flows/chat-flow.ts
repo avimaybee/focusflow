@@ -84,7 +84,7 @@ async function saveGeneratedContent(userId: string, toolName: string, output: an
   }
 }
 
-export const chat = ai.defineFlow(
+export const chatFlow = ai.defineFlow(
   {
     name: 'chatFlow',
     inputSchema: z.any(),
@@ -177,6 +177,15 @@ export const chat = ai.defineFlow(
     });
 
     const choices = result.candidates;
+    
+    if (!choices || choices.length === 0) {
+      const errorMessage = 'Sorry, the AI model did not return a response. This could be due to a safety filter or a temporary issue. Please try rephrasing your request.';
+      return {
+        response: errorMessage,
+        rawResponse: errorMessage,
+      };
+    }
+
     if (choices[0].finishReason !== 'stop' && choices[0].finishReason !== 'other') {
         // Handle cases where generation was blocked or stopped for other reasons
     }
