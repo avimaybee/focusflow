@@ -18,7 +18,7 @@ import {
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from './tools';
-import type { Message } from 'genkit';
+import type { Message, Part } from 'genkit';
 import { marked } from 'marked';
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -108,19 +108,14 @@ export const chatFlow = ai.defineFlow(
       highlightKeyInsightsTool,
     ];
 
-    const lastMessage = history[history.length - 1];
-    const prompt = lastMessage?.text || message; // Fallback to original message if history is empty
-    const otherHistory = history.slice(0, -1);
-
-
-    const llmHistory: Message[] = otherHistory.map(m => ({
+    const llmHistory: Message[] = history.map(m => ({
         role: m.role,
         content: [{text: m.text}],
     }));
     const optimizedHistory = await optimizeChatHistory(llmHistory);
 
-    const promptParts = [];
-    
+    let promptForLlm: string | Part[] = message;
+
     if (context) {
       const isDataUri = context.startsWith('data:');
       if (isDataUri) {
@@ -129,41 +124,41 @@ export const chatFlow = ai.defineFlow(
 
         if (mimeType === 'application/pdf') {
           const { parsePdfToText } = await import('@/ai/pdf-parser');
-          const { summarizeTextMapReduce } = await import('@/ai/summarizer');
-
           const pdfBuffer = Buffer.from(base64Data, 'base64');
           const pdfText = await parsePdfToText(pdfBuffer);
-          
-          if (prompt.toLowerCase().includes('summarize')) {
-            const summary = await summarizeTextMapReduce(pdfText);
-            promptParts.push({ text: `The user uploaded a PDF and asked for a summary. Here is the summary you generated:\n\n${summary}` });
-          } else {
-            promptParts.push({ text: `CONTEXT FROM UPLOADED PDF:\n${pdfText}\n\nUSER'S REQUEST:\n${prompt}` });
-          }
+          promptForLlm = `CONTEXT FROM UPLOADED PDF:\n${pdfText}\n\nUSER'S REQUEST:\n${message}`;
         } else if (mimeType.startsWith('image/')) {
-          promptParts.push({ text: `CONTEXT FROM UPLOADED IMAGE:\nUse the content of the following image to answer the request.` });
-          promptParts.push({ media: { url: context } });
-          promptParts.push({ text: `\n\nUSER'S REQUEST:\n${prompt}` });
+          promptForLlm = [
+            { text: `CONTEXT FROM UPLOADED IMAGE:\nUse the content of the following image to answer the user's request.\n\nUSER'S REQUEST:\n${message}` },
+            { media: { url: context } }
+          ];
         } else {
            const textContent = Buffer.from(base64Data, 'base64').toString('utf-8');
-           promptParts.push({ text: `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\nUSER'S REQUEST:\n${prompt}` });
+           promptForLlm = `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\nUSER'S REQUEST:\n${message}`;
         }
       } else {
-        promptParts.push({ text: `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${prompt}` });
+        promptForLlm = `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${message}`;
       }
-    } else {
-       promptParts.push({ text: prompt });
     }
 
+    // If an image is part of the direct message (not context)
     if (image) {
-      promptParts.push({ media: { url: image } });
+      if (Array.isArray(promptForLlm)) {
+         // Should not happen, as context and image upload are separate UI actions
+      } else {
+        promptForLlm = [
+            { text: promptForLlm },
+            { media: { url: image } }
+        ];
+      }
     }
+
 
     const result = await ai.generate({
       model,
       system: systemPrompt,
       history: optimizedHistory,
-      prompt: promptParts,
+      prompt: promptForLlm,
       tools: availableTools,
       toolChoice: 'auto',
       config: {
@@ -194,7 +189,7 @@ export const chatFlow = ai.defineFlow(
       const toolCall = choices[0].toolCalls[0];
       const toolName = toolCall.name;
       const toolOutput = toolCall.output;
-      await saveGeneratedContent(userId, toolName, toolOutput, prompt);
+      await saveGeneratedContent(userId, toolName, message, toolOutput);
     }
 
     const responseText = result.text() || 'Sorry, I am not sure how to help with that.';
