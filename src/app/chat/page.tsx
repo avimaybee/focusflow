@@ -80,6 +80,8 @@ export default function ChatPage() {
       const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
       const unsubscribe = onSnapshot(chatRef, (doc) => {
         if (doc.exists() && doc.data().context) {
+          // The context stored in Firestore only has metadata.
+          // The `url` will be missing, which is expected for subsequent loads.
           setChatContext(doc.data().context as ChatContext);
         } else {
           setChatContext(null);
@@ -172,14 +174,22 @@ export default function ChatPage() {
 
       // If there are attachments, persist the first one as the chat's context
       if (attachedFiles.length > 0 && currentChatId) {
-        const fileContext = {
-          name: attachedFiles[0].name,
-          type: attachedFiles[0].type,
-          url: attachedFiles[0].url, // Save the data URI
+        const fileForContext = attachedFiles[0];
+        // The full context, including the data URI, for client-side state.
+        const fullFileContext = {
+          name: fileForContext.name,
+          type: fileForContext.type,
+          url: fileForContext.url,
         };
-        await updateDoc(doc(db, 'users', user.uid, 'chats', currentChatId), { context: fileContext });
-        setChatContext(fileContext); // Update local state immediately
+         // The metadata-only context for storing in Firestore.
+        const firestoreContext = {
+          name: fileForContext.name,
+          type: fileForContext.type,
+        };
+        await updateDoc(doc(db, 'users', user.uid, 'chats', currentChatId), { context: firestoreContext });
+        setChatContext(fullFileContext); // Update local state immediately with the full context.
       }
+
 
       await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
         role: 'user',
@@ -388,7 +398,7 @@ export default function ChatPage() {
           onSmartToolAction={handleSmartToolAction}
         />
 
-        <div className="w-full">
+        <div className="w-full bg-background">
           <ChatInputArea
             input={input}
             setInput={setInput}
@@ -412,3 +422,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    

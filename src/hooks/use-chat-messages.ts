@@ -20,13 +20,19 @@ export function useChatMessages(activeChatId: string | null, dispatch: Dispatch<
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const chatMessages = querySnapshot.docs.map(doc => {
           const data = doc.data();
+          // The 'text' field in Firestore for model messages is a JSON string.
+          // For user messages, it's a JSON string like `{"role":"user","text":"Hi"}`.
+          // We need to robustly parse this.
           try {
-            const parsedText = JSON.parse(data.text);
-            if (parsedText.role) {
-                return { id: doc.id, ...parsedText, createdAt: data.createdAt };
+            const parsedContent = JSON.parse(data.text);
+            // If parsed content is an object with a 'role' it's a full message object.
+            if (typeof parsedContent === 'object' && parsedContent !== null && parsedContent.role) {
+                return { id: doc.id, ...parsedContent, createdAt: data.createdAt };
             }
+            // If it's not an object with a role, it's probably an old format. Fallback.
             return { id: doc.id, role: data.role, text: data.text, createdAt: data.createdAt };
           } catch (e) {
+            // If parsing fails, it's a plain string.
             return { id: doc.id, role: data.role, text: data.text, createdAt: data.createdAt };
           }
         });
@@ -46,3 +52,5 @@ export function useChatMessages(activeChatId: string | null, dispatch: Dispatch<
 
   return { isHistoryLoading };
 }
+
+    
