@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/auth-context';
@@ -17,7 +17,7 @@ export function useChatHistory() {
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchHistory = useCallback(() => {
     if (user?.uid) {
       setIsLoading(true);
       const chatsRef = collection(db, 'users', user.uid, 'chats');
@@ -33,12 +33,21 @@ export function useChatHistory() {
       }, () => {
         setIsLoading(false);
       });
-      return () => unsubscribe();
+      return unsubscribe;
     } else {
         setChatHistory([]);
         setIsLoading(false);
     }
   }, [user?.uid]);
 
-  return { chatHistory, isLoading };
+  useEffect(() => {
+    const unsubscribe = fetchHistory();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [fetchHistory]);
+
+  return { chatHistory, isLoading, forceRefresh: fetchHistory };
 }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
@@ -7,22 +8,19 @@ import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
-import { useChatMessages } from '@/hooks/use-chat-messages';
 import { useFileUpload, Attachment } from '@/hooks/use-file-upload';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { Loader2, UploadCloud } from 'lucide-react';
-import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, getDocs, orderBy, query, onSnapshot, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { chat, rewriteText, generateBulletPoints, generateCounterarguments, highlightKeyInsights } from '@/ai/actions';
-import type { ChatInput, ChatHistoryMessage, Persona } from '@/ai/flows/chat-types';
+import { chat } from '@/ai/actions';
+import { ChatInput, ChatHistoryMessage } from '@/ai/flows/chat-types';
 import { ChatMessageProps } from '@/components/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
 import { SmartToolActions } from '@/lib/constants';
-
-type ChatContext = Attachment | null;
 
 const SkeletonLoader = () => (
     <div className="p-4 space-y-4">
@@ -38,43 +36,69 @@ export default function ChatPage() {
   const router = useRouter();
   const params = useParams();
 
+  const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [isMessagesLoading, setIsMessagesLoading] = useState(true);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [chatContext, setChatContext] = useState<ChatContext>(null);
+  const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
-  const { chatHistory, isLoading: isHistoryLoading } = useChatHistory();
-  const { messages, isMessagesLoading } = useChatMessages(activeChatId);
-  const { isDraggingOver, handleFileSelect, fileUploadHandlers } = useFileUpload(setChatContext);
+  const { chatHistory, isLoading: isHistoryLoading, forceRefresh } = useChatHistory();
+  const { isDraggingOver, handleFileSelect, fileUploadHandlers } = useFileUpload(setAttachment);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const prevMessagesCount = useRef(messages.length);
 
-  // The "Reactor" Effect: This runs when the messages state changes.
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    // Only trigger if a *new* message has been added and it's from the user.
-    if (messages.length > prevMessagesCount.current && lastMessage && lastMessage.role === 'user' && !isLoading) {
-      callAI(activeChatId!, messages);
-    }
-    prevMessagesCount.current = messages.length;
-  }, [messages, isLoading, activeChatId]);
-
+  // Effect to load messages when activeChatId changes
   useEffect(() => {
     const chatIdFromParams = params.chatId as string | undefined;
-    setActiveChatId(chatIdFromParams || null);
-  }, [params]);
 
-  useEffect(() => {
-    setChatContext(null);
-  }, [activeChatId]);
-  
-  const clearChatContext = () => {
-    setChatContext(null);
-  }
+    if (!user) {
+        if (!chatIdFromParams) {
+             // New guest chat
+            setActiveChatId(null);
+            setMessages([{
+                role: 'model',
+                text: 'Hello! Ask me to summarize notes, create a quiz, or build a study plan.',
+            }]);
+            setIsMessagesLoading(false);
+        }
+        return;
+    };
+
+    if (chatIdFromParams && chatIdFromParams !== activeChatId) {
+        setActiveChatId(chatIdFromParams);
+    } else if (!chatIdFromParams) {
+        setActiveChatId(null);
+        setMessages([{
+            role: 'model',
+            text: 'Hello! Ask me to summarize notes, create a quiz, or build a study plan.',
+        }]);
+        setIsMessagesLoading(false);
+    }
+    
+    if (chatIdFromParams) {
+      setIsMessagesLoading(true);
+      const messagesRef = collection(db, 'users', user.uid, 'chats', chatIdFromParams, 'messages');
+      const q = query(messagesRef, orderBy('createdAt', 'asc'));
+      
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const chatMessages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ChatMessageProps[];
+        setMessages(chatMessages);
+        setIsMessagesLoading(false);
+      }, (error) => {
+        console.error("Error fetching messages:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat messages.' });
+        setIsMessagesLoading(false);
+      });
+      
+      return () => unsubscribe();
+    }
+  }, [params.chatId, user, toast]);
+
 
   useEffect(() => {
     if (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')) {
@@ -93,170 +117,104 @@ export default function ChatPage() {
 
   const handleNewChat = () => {
     setActiveChatId(null);
+    setMessages([{
+        role: 'model',
+        text: 'Hello! Ask me to summarize notes, create a quiz, or build a study plan.',
+    }]);
     router.push('/chat');
-  };
-  
-  const submitMessage = async (prompt: string) => {
-    if ((!prompt && !chatContext) || isLoading || !user?.uid) return;
-
-    const userMessageText = prompt || `File Attached: ${chatContext?.name}`;
-
-    const userMessage: Partial<ChatMessageProps> = {
-      role: 'user',
-      text: userMessageText,
-      rawText: userMessageText,
-      userAvatar: user?.photoURL,
-      userName: user?.displayName || user?.email || 'User',
-    };
-
-    if (chatContext) {
-      userMessage.context = { name: chatContext.name, type: chatContext.type };
-    }
-
-    setInput('');
-    let currentChatId = activeChatId;
-
-    try {
-      if (!currentChatId) {
-        const chatDoc = await addDoc(collection(db, 'users', user.uid, 'chats'), {
-          title: userMessageText.substring(0, 40) || 'New Chat',
-          createdAt: serverTimestamp(),
-          userId: user.uid,
-        });
-        currentChatId = chatDoc.id;
-        setActiveChatId(currentChatId);
-        router.push(`/chat/${currentChatId}`, { scroll: false });
-      }
-      
-      await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
-        ...userMessage,
-        createdAt: serverTimestamp(),
-      });
-
-    } catch (error) {
-      console.error('Error submitting message:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Message Failed',
-        description: 'Could not send message. Please try again.',
-      });
-    }
-  };
-
-  const callAI = async (currentChatId: string, currentMessages: ChatMessageProps[]) => {
-    if (!user?.uid) return;
-
-    setIsLoading(true);
-
-    try {
-      const historyForAI: ChatHistoryMessage[] = currentMessages
-        .map(m => ({
-          role: m.role as 'user' | 'model',
-          text: (m.rawText || (typeof m.text === 'string' ? m.text : '')) as string
-        }));
-
-      const lastMessage = historyForAI[historyForAI.length - 1];
-      
-      const chatInput: ChatInput = {
-        userId: user.uid,
-        message: lastMessage?.text || '',
-        persona: selectedPersonaId as Persona,
-        history: historyForAI,
-        isPremium: isPremium ?? false,
-        context: chatContext?.url,
-      };
-      
-      setChatContext(null);
-
-      const result = await chat(chatInput);
-      const responseText = result.response || "I’m sorry, I couldn’t process your request.";
-      const rawResponseText = result.rawResponse || responseText;
-
-      let messageContent: Partial<ChatMessageProps> = { role: 'model', text: responseText, rawText: rawResponseText };
-      try {
-        const parsedResponse = JSON.parse(rawResponseText);
-        if (parsedResponse.flashcards) {
-          messageContent = { role: 'model', text: 'Here are your flashcards!', flashcards: parsedResponse.flashcards, rawText: 'Generated flashcards.' };
-        } else if (parsedResponse.quiz) {
-          messageContent = { role: 'model', text: 'Here is your quiz!', quiz: parsedResponse.quiz, rawText: 'Generated a quiz.' };
-        } else if (parsedResponse.summary) {
-          const summaryText = `### ${parsedResponse.title || 'Summary'}\n\n${parsedResponse.summary}\n\n**Keywords:** ${parsedResponse.keywords.join(', ')}`;
-          messageContent = { role: 'model', text: summaryText, rawText: summaryText };
-        } else if (parsedResponse.plan) {
-            let planText = `### ${parsedResponse.title || 'Study Plan'}\n\n`;
-            Object.entries(parsedResponse.plan).forEach(([day, tasks]) => {
-                planText += `**${day}**\n`;
-                (tasks as string[]).forEach(task => planText += `- ${task}\n`);
-                planText += '\n';
-            });
-          messageContent = { role: 'model', text: planText, rawText: planText };
-        }
-      } catch (e) { /* Not JSON */ }
-
-      await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
-        ...messageContent,
-        createdAt: serverTimestamp(),
-      });
-    } catch (error) {
-      console.error('Error calling AI:', error);
-      toast({
-        variant: 'destructive',
-        title: 'AI Error',
-        description: 'The AI failed to respond. Please try again.',
-      });
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    await submitMessage(input);
-  };
+    if ((!input.trim() && !attachment) || isLoading) return;
+    if (!user) {
+        toast({
+            variant: 'destructive',
+            title: 'Please log in',
+            description: 'You need to be logged in to save and continue conversations.',
+        });
+        return;
+    }
 
-  const handleSmartToolAction = async (tool: any, messageText: string) => {
-    if (!user || !activeChatId) return;
     setIsLoading(true);
+    const userMessageText = input.trim() || `File Attached: ${attachment?.name}`;
+    const userMessage: Omit<ChatMessageProps, 'id'> = {
+        role: 'user',
+        text: userMessageText,
+        rawText: userMessageText,
+        createdAt: serverTimestamp(),
+    };
+
+    setMessages(prev => [...prev, { ...userMessage, id: 'temp-user' } as ChatMessageProps]);
+    setInput('');
+    const tempAttachment = attachment;
+    setAttachment(null);
+    
+    let currentChatId = activeChatId;
 
     try {
-      let resultText = '';
-      const persona = selectedPersonaId as Persona;
+        // Create new chat session in Firestore if it doesn't exist
+        if (!currentChatId) {
+            const chatDocRef = await addDoc(collection(db, 'users', user.uid, 'chats'), {
+                title: userMessageText.substring(0, 40) || 'New Chat',
+                createdAt: serverTimestamp(),
+                userId: user.uid,
+            });
+            currentChatId = chatDocRef.id;
+            setActiveChatId(currentChatId);
+            forceRefresh(); // Refresh sidebar
+            router.push(`/chat/${currentChatId}`, { scroll: false });
+        }
+        
+        // Add user message to Firestore
+        await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), userMessage);
 
-      switch (tool.action) {
-        case SmartToolActions.REWRITE:
-          const rewriteResult = await rewriteText({ textToRewrite: messageText, style: tool.value, persona });
-          resultText = rewriteResult.rewrittenText;
-          break;
-        case SmartToolActions.BULLET_POINTS:
-          const bulletsResult = await generateBulletPoints({ textToConvert: messageText, persona });
-          resultText = bulletsResult.bulletPoints.map(pt => `- ${pt}`).join('\n');
-          break;
-        case SmartToolActions.COUNTERARGUMENTS:
-          const countersResult = await generateCounterarguments({ statementToChallenge: messageText, persona });
-          resultText = '### Counterarguments\n\n' + countersResult.counterarguments.map((arg, i) => `${i + 1}. ${arg}`).join('\n\n');
-          break;
-        case SmartToolActions.INSIGHTS:
-          const insightsResult = await highlightKeyInsights({ sourceText: messageText, persona });
-          resultText = `### Key Insights\n\n` + insightsResult.insights.map(i => `- ${i}`).join('\n');
-          break;
-      }
-      
-      const userMessage = { role: 'user', text: `Used tool: "${tool.name}" on a previous message.` };
-      const modelMessage = { role: 'model', text: resultText, rawText: resultText };
+        const historyForAI: ChatHistoryMessage[] = messages
+            .filter(m => !m.isError) // Exclude previous errors from history
+            .map(m => ({
+                role: m.role,
+                text: m.rawText || (typeof m.text === 'string' ? m.text : ''),
+            }));
+        historyForAI.push({ role: 'user', text: userMessageText });
 
-      const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
-      const messagesRef = collection(chatRef, 'messages');
+        const chatInput: ChatInput = {
+            userId: user.uid,
+            message: userMessageText,
+            history: historyForAI,
+            persona: selectedPersonaId,
+            isPremium: isPremium ?? false,
+            context: tempAttachment?.url, // Pass the data URI
+        };
 
-      await addDoc(messagesRef, { ...userMessage, createdAt: serverTimestamp() });
-      await addDoc(messagesRef, { ...modelMessage, createdAt: serverTimestamp() });
+        const result = await chat(chatInput);
+        
+        const aiResponse: Omit<ChatMessageProps, 'id'> = {
+            role: 'model',
+            text: result.response || "I’m sorry, I couldn’t process your request.",
+            rawText: result.rawResponse || result.response,
+            createdAt: serverTimestamp(),
+        };
 
+        await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), aiResponse);
     } catch (error) {
-      console.error('Error using smart tool:', error);
-      toast({ variant: 'destructive', title: 'Tool Failed', description: 'Could not perform the requested action.' });
+        console.error('Error in chat flow:', error);
+        toast({
+            variant: 'destructive',
+            title: 'AI Error',
+            description: 'The AI failed to respond. Please try again.',
+        });
+        // Add an error message to the UI
+        const errorResponse: ChatMessageProps = {
+            id: 'temp-error',
+            role: 'model',
+            text: 'Sorry, an error occurred. Please try again.',
+            isError: true,
+        };
+        setMessages(prev => [...prev, errorResponse]);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  }
+  };
 
   const handleSelectPrompt = (prompt: string) => {
     setInput(prompt);
@@ -288,7 +246,7 @@ export default function ChatPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-10 bg-black/50 md:hidden"
+              className="fixed inset-0 z-30 bg-black/50 md:hidden"
               onClick={() => setSidebarOpen(false)}
             />
             <motion.div
@@ -296,7 +254,7 @@ export default function ChatPage() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="absolute z-20 h-full w-80 bg-background md:hidden"
+              className="fixed z-40 h-full w-80 bg-background md:hidden"
             >
               <ChatSidebar
                 user={user}
@@ -350,7 +308,7 @@ export default function ChatPage() {
           activeChatId={activeChatId}
           scrollAreaRef={scrollAreaRef}
           onSelectPrompt={handleSelectPrompt}
-          onSmartToolAction={handleSmartToolAction}
+          onSmartToolAction={() => {}} // Placeholder for now
         />
 
         <div className="w-full bg-background">
@@ -368,8 +326,8 @@ export default function ChatPage() {
                 setSelectedPersonaId={setSelectedPersonaId}
                 textareaRef={textareaRef}
                 activeChatId={activeChatId}
-                chatContext={chatContext}
-                clearChatContext={clearChatContext}
+                chatContext={attachment}
+                clearChatContext={() => setAttachment(null)}
               />
             </div>
         </div>

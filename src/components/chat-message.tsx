@@ -14,6 +14,7 @@ import { QuizViewer } from './quiz-viewer';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Badge } from './ui/badge';
+import type { Timestamp } from 'firebase/firestore';
 
 
 // Define types for flashcard and quiz data to be passed in props
@@ -32,6 +33,7 @@ interface QuizData {
 }
 
 export type ChatMessageProps = {
+  id?: string;
   role: 'user' | 'model';
   text: string | React.ReactNode;
   rawText?: string;
@@ -42,9 +44,11 @@ export type ChatMessageProps = {
   userName?: string;
   onSmartToolAction?: (tool: typeof smartTools[0], text: string) => void;
   isPremiumFeature?: boolean;
+  createdAt?: Timestamp;
+  isError?: boolean;
 };
 
-export function ChatMessage({ role, text, rawText, images, flashcards, quiz, userAvatar, userName, onSmartToolAction, isPremiumFeature = false }: ChatMessageProps) {
+export function ChatMessage({ role, text, rawText, images, flashcards, quiz, userAvatar, userName, onSmartToolAction, isPremiumFeature = false, isError = false }: ChatMessageProps) {
   const isUser = role === 'user';
   const messageRef = React.useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -75,7 +79,7 @@ export function ChatMessage({ role, text, rawText, images, flashcards, quiz, use
       return <QuizViewer quiz={quiz} />;
     }
     if (typeof text === 'string') {
-      return <div dangerouslySetInnerHTML={{ __html: text }} />;
+      return <div className={cn(isError && 'text-destructive')} dangerouslySetInnerHTML={{ __html: text }} />;
     }
     return text;
   };
@@ -91,12 +95,13 @@ export function ChatMessage({ role, text, rawText, images, flashcards, quiz, use
         <div
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'max-w-2xl rounded-xl p-2 text-sm',
+            'max-w-2xl rounded-xl p-3 text-sm',
             isUser
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted',
             // Only apply prose styles if it's a simple string message
-            typeof text === 'string' && !flashcards && !quiz && 'prose-styles'
+            typeof text === 'string' && !flashcards && !quiz && 'prose-styles',
+            isError && 'bg-destructive/10 border border-destructive/20'
           )}
         >
           {renderContent()}
@@ -110,17 +115,14 @@ export function ChatMessage({ role, text, rawText, images, flashcards, quiz, use
               </div>
           )}
         </div>
-        {!isUser && typeof text === 'string' && onSmartToolAction && (
-          <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-lg border">
+        {!isUser && typeof text === 'string' && onSmartToolAction && !isError && (
+          <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={cn(
-                    "h-7 w-7 rounded-full",
-                    isPremiumFeature && "premium-gradient hover:opacity-90"
-                  )}
+                  className="h-7 w-7 rounded-full"
                 >
                   <Sparkles className="h-4 w-4" />
                 </Button>
