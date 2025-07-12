@@ -52,7 +52,7 @@ export default function ChatPage() {
   
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
   const { chatHistory, isLoading: isHistoryLoading } = useChatHistory();
-  const { messages, isMessagesLoading } = useChatMessages(activeChatId);
+  const { messages, setMessages, isMessagesLoading } = useChatMessages(activeChatId);
   const { isDraggingOver, handleFileSelect, fileUploadHandlers } = useFileUpload(setChatContext);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -89,6 +89,7 @@ export default function ChatPage() {
 
   const handleNewChat = () => {
     setActiveChatId(null);
+    setMessages([]);
     router.push('/chat');
   };
   
@@ -103,7 +104,7 @@ export default function ChatPage() {
         .map(m => ({
           role: m.role as 'user' | 'model',
           // Use rawText for model responses if available, otherwise use the display text.
-          text: (m.role === 'model' ? m.rawText || m.text : m.text) as string,
+          text: (m.role === 'model' ? m.rawText || (typeof m.text === 'string' ? m.text : '') : (typeof m.text === 'string' ? m.text : '')) as string,
         }))
         .filter(m => typeof m.text === 'string' && m.text.trim().length > 0);
       
@@ -166,20 +167,22 @@ export default function ChatPage() {
     const prompt = input.trim();
     if ((!prompt && !chatContext) || isLoading || !user?.uid) return;
 
-    // A file can be attached with or without a text prompt
     const userMessageText = prompt || `Attached file: ${chatContext?.name}`;
 
     const userMessage: Partial<ChatMessageProps> = {
       role: 'user',
       text: userMessageText,
-      // Pass file metadata to be stored in Firestore
-      context: chatContext ? { name: chatContext.name, type: chatContext.type } : undefined,
       userAvatar: user?.photoURL,
       userName: user?.displayName || user?.email || 'User',
     };
 
+    if (chatContext) {
+      userMessage.context = { name: chatContext.name, type: chatContext.type };
+    }
+
     setInput('');
     let currentChatId = activeChatId;
+    let newMessages: ChatMessageProps[] = [];
 
     try {
         if (!currentChatId) {
@@ -189,20 +192,23 @@ export default function ChatPage() {
               userId: user.uid,
             });
             currentChatId = chatDoc.id;
-            setActiveChatId(currentChatId); // This will trigger useChatMessages hook
+            setActiveChatId(currentChatId); 
             router.push(`/chat/${currentChatId}`, { scroll: false });
-          }
+        }
 
+        // Add the new user message to Firestore
         await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
             ...userMessage,
             createdAt: serverTimestamp(),
         });
         
-        // Optimistically update the local messages state to include the new user message
-        const updatedMessages = [...messages, userMessage as ChatMessageProps];
-        
+        // Optimistically update local state for immediate UI feedback.
+        // We can't know the ID or timestamp yet, but it's okay for the AI call.
+        newMessages = [...messages, userMessage as ChatMessageProps];
+        setMessages(newMessages);
+
         // Pass the updated message list to the AI
-        callAI(currentChatId, updatedMessages);
+        callAI(currentChatId, newMessages);
 
     } catch (error) {
         console.error('Error submitting message:', error);
@@ -233,7 +239,7 @@ export default function ChatPage() {
           break;
         case SmartToolActions.COUNTERARGUMENTS:
           const countersResult = await generateCounterarguments({ statementToChallenge: messageText, persona });
-          resultText = countersResult.counterarguments.map((arg, i) => `${i + 1}. ${arg}`).join('\n\n');
+          resultText = '### Counterarguments\n\n' + countersResult.counterarguments.map((arg, i) => `${i + 1}. ${arg}`).join('\n\n');
           break;
         case SmartToolActions.INSIGHTS:
           const insightsResult = await highlightKeyInsights({ sourceText: messageText, persona });
@@ -354,7 +360,7 @@ export default function ChatPage() {
         />
 
         <div className="w-full bg-background">
-            <div className="max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto">
+            <div className="w-full sm:max-w-3xl lg:max-w-4xl mx-auto">
               <ChatInputArea
                 input={input}
                 setInput={setInput}
