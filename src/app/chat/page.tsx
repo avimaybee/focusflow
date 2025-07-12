@@ -293,7 +293,7 @@ export default function ChatPage() {
           break;
         case SmartToolActions.COUNTERARGUMENTS:
           actionFn = generateCounterarguments({ statementToChallenge: messageText, persona: selectedPersonaId as Persona });
-          formatResult = (result) => result.counterarguments.map((arg: string, i: number,) => `${i + 1}. ${arg}`).join('\n\n');
+          formatResult = (result) => result.counterarguments.map((arg: string, i: number) => `${i + 1}. ${arg}`).join('\n');
           break;
         case SmartToolActions.INSIGHTS:
           actionFn = highlightKeyInsights(sourceArg);
