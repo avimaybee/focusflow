@@ -185,12 +185,18 @@ export default function ChatPage() {
             setActiveChatId(currentChatId); 
             router.push(`/chat/${currentChatId}`, { scroll: false });
         }
-
-        // Add the new user message to Firestore
-        await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
+        
+        const messagePayload: any = {
             ...userMessage,
             createdAt: serverTimestamp(),
-        });
+        };
+
+        if (chatContext) {
+           messagePayload.context = { name: chatContext.name, type: chatContext.type };
+        }
+
+        // Add the new user message to Firestore
+        await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), messagePayload);
         
         // Prepare the history for the AI call.
         // It includes all existing messages plus the new one we just constructed.
@@ -355,13 +361,13 @@ export default function ChatPage() {
         />
 
         <div className="w-full bg-background">
-            <div className="w-full sm:max-w-3xl lg:max-w-4xl mx-auto">
+            <div className="w-full sm:max-w-3xl lg:max-w-4xl mx-auto p-2">
               <ChatInputArea
                 input={input}
                 setInput={setInput}
                 handleSendMessage={handleSendMessage}
                 handleFileSelect={handleFileSelect}
-                onSelectPrompt={onSelectPrompt}
+                onSelectPrompt={handleSelectPrompt}
                 isLoading={isLoading}
                 isHistoryLoading={isMessagesLoading}
                 personas={personas}
@@ -378,3 +384,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
