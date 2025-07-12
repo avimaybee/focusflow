@@ -3,25 +3,31 @@
 
 import { useState, DragEvent, Dispatch } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/auth-context';
-import { uploadFileToStorage } from '@/lib/storage-actions';
 
 export type Attachment = {
   name: string;
   type: string;
-  url: string; // Now stores the downloadURL
+  url: string; // This will store the data URI
 };
 
 export function useFileUpload(dispatch: Dispatch<any>) {
   const { toast } = useToast();
-  const { user } = useAuth();
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
-  const handleFileSelect = async (file: File) => {
-    if (!file || !user?.uid) return;
+  const readFileAsDataURI = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  };
 
-    if (!file.type.startsWith('image/') && file.type !== 'application/pdf' && !file.type.startsWith('text/')) {
-      toast({
+  const handleFileSelect = async (file: File) => {
+    if (!file) return;
+
+    if (!file.type.startsWith('image/') && !file.type.startsWith('text/') && file.type !== 'application/pdf') {
+       toast({
         variant: 'destructive',
         title: 'Unsupported File Type',
         description: 'Please upload an image, PDF, or text file.',
@@ -34,38 +40,26 @@ export function useFileUpload(dispatch: Dispatch<any>) {
       toast({
         variant: 'destructive',
         title: 'File Too Large',
-        description: `Please upload a file smaller than 10MB.`,
+        description: 'Please upload a file smaller than 10MB.',
       });
       return;
     }
 
-    const { id: toastId } = toast({
-      title: 'Uploading...',
-      description: `Your file "${file.name}" is being uploaded.`,
-    });
-
     try {
-      const { downloadURL, fileName, fileType } = await uploadFileToStorage(file, user.uid);
+      const dataUri = await readFileAsDataURI(file);
       const newAttachment = {
-        name: fileName,
-        type: fileType,
-        url: downloadURL,
+        name: file.name,
+        type: file.type,
+        url: dataUri,
       };
-      // Dispatch to add the attachment to the temporary client state for display
+      // Dispatch to add the attachment to the temporary client state
       dispatch({ type: 'SET_ATTACHMENTS', payload: [newAttachment] });
-      toast({
-        id: toastId,
-        variant: 'default',
-        title: 'Upload Successful',
-        description: `"${file.name}" is ready.`,
-      });
     } catch (error) {
-      console.error("File upload error:", error);
+      console.error("File reading error:", error);
       toast({
-        id: toastId,
         variant: 'destructive',
-        title: 'Upload Failed',
-        description: 'Could not upload your file. Please try again.',
+        title: 'File Read Failed',
+        description: 'Could not read your file. Please try again.',
       });
     }
   };

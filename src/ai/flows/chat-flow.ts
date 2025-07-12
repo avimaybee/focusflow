@@ -94,82 +94,101 @@ async function saveGeneratedContent(userId: string, toolName: string, output: an
   }
 }
 
-export async function chat(input: ChatInput) {
-  const { userId, message, history, context, image, isPremium, persona } = input;
+export const chat = ai.defineFlow(
+  {
+    name: 'chatFlow',
+    inputSchema: z.any(),
+    outputSchema: z.any(),
+  },
+  async (input: ChatInput) => {
+    const { userId, message, history, context, image, isPremium, persona } = input;
 
-  const model = selectModel(message, history, isPremium || false);
-  const personaInstruction = await getPersonaPrompt(persona);
-  const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner.`
-  let result;
-  
-  const availableTools = [
-    summarizeNotesTool,
-    createStudyPlanTool,
-    createFlashcardsTool,
-    createQuizTool,
-    explainConceptTool,
-    createMemoryAidTool,
-    createDiscussionPromptsTool,
-    highlightKeyInsightsTool,
-  ];
+    const model = selectModel(message, history, isPremium || false);
+    const personaInstruction = await getPersonaPrompt(persona);
+    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner.`
+    let result;
+    
+    const availableTools = [
+      summarizeNotesTool,
+      createStudyPlanTool,
+      createFlashcardsTool,
+      createQuizTool,
+      explainConceptTool,
+      createMemoryAidTool,
+      createDiscussionPromptsTool,
+      highlightKeyInsightsTool,
+    ];
 
-  let chatHistory: Message[] = history.map((msg) => ({
-    role: msg.role,
-    parts: [{ text: msg.text }],
-  }));
+    let chatHistory: Message[] = history.map((msg) => ({
+      role: msg.role,
+      parts: [{ text: msg.text }],
+    }));
 
-  // Optimize the chat history to manage context window and cost
-  chatHistory = await optimizeChatHistory(chatHistory);
+    // Optimize the chat history to manage context window and cost
+    chatHistory = await optimizeChatHistory(chatHistory);
 
-  const promptParts = [];
-  let fullMessage = message;
-  // The 'context' is now the raw text content from the file
-  if (context) {
-    fullMessage = `CONTEXT FROM UPLOADED FILE:\n${context}\n\nUSER'S REQUEST:\n${message}`;
+    const promptParts = [];
+    let fullMessage = message;
+    // The 'context' is now the raw text content from the file (as a data URI)
+    if (context) {
+      const isDataUri = context.startsWith('data:');
+      if (isDataUri) {
+          // If it's a data URI, the model can handle it directly.
+          // We can combine the user's message with a reference to the media.
+          promptParts.push({ text: `CONTEXT FROM UPLOADED FILE:\nUse the content of the following file to answer the request.` });
+          promptParts.push({ media: { url: context } });
+          promptParts.push({ text: `\n\nUSER'S REQUEST:\n${message}` });
+      } else {
+        // Fallback for non-data URI context, although our flow is now standardized to data URIs.
+        fullMessage = `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${message}`;
+        promptParts.push({ text: fullMessage });
+      }
+    } else {
+       promptParts.push({ text: message });
+    }
+
+    if (image) {
+      promptParts.push({ media: { url: image } });
+    }
+
+    result = await ai.generate({
+      model,
+      system: systemPrompt,
+      history: chatHistory,
+      prompt: promptParts,
+      tools: availableTools,
+      toolChoice: 'auto',
+      config: {
+        safetySettings: [
+          {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_NONE',
+          },
+        ],
+      },
+    });
+
+    // After generation, check if a tool was called and save the content
+    if (result.toolCalls.length > 0) {
+      const toolCall = result.toolCalls[0];
+      const toolName = toolCall.name;
+      const toolOutput = toolCall.output;
+      // Use the original message as the source text for context
+      await saveGeneratedContent(userId, toolName, toolOutput, message);
+    }
+
+    // Correctly extract the response text from the result object.
+    const responseText = result.message?.content?.[0]?.text;
+
+    // Convert markdown to HTML if there is a response.
+    const formattedResponse = responseText ? marked(responseText) : 'Sorry, I am not sure how to help with that.';
+
+    return {
+      response: formattedResponse,
+    };
   }
-  promptParts.push({ text: fullMessage });
+);
 
-  if (image) {
-    // The 'image' field is currently unused in this simplified flow,
-    // but is kept for potential future image-specific features.
-  }
-
-  result = await ai.generate({
-    model,
-    system: systemPrompt,
-    history: chatHistory,
-    prompt: promptParts,
-    tools: availableTools,
-    toolChoice: 'auto',
-    config: {
-      safetySettings: [
-        {
-          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-          threshold: 'BLOCK_NONE',
-        },
-      ],
-    },
-  });
-
-  // After generation, check if a tool was called and save the content
-  if (result.toolCalls.length > 0) {
-    const toolCall = result.toolCalls[0];
-    const toolName = toolCall.name;
-    const toolOutput = toolCall.output;
-    // Use the original message as the source text for context
-    await saveGeneratedContent(userId, toolName, toolOutput, message);
-  }
-
-  // Correctly extract the response text from the result object.
-  const responseText = result.message?.content?.[0]?.text;
-
-  // Convert markdown to HTML if there is a response.
-  const formattedResponse = responseText ? marked(responseText) : 'Sorry, I am not sure how to help with that.';
-
-  return {
-    response: formattedResponse,
-  };
-}
 
 // Re-exposing individual flows for direct use by smart tools
 export async function rewriteText(input: z.infer<typeof RewriteTextRequest>) {

@@ -1,6 +1,7 @@
+
 'use server';
 
-import {run} from 'genkit/ai';
+import {run} from 'genkit';
 import {z} from 'zod';
 import {
   RewriteTextRequest,
@@ -18,7 +19,7 @@ import {generateCounterargumentsFlow} from './flows/generate-counterarguments';
 import {highlightKeyInsightsFlow} from './flows/highlight-key-insights';
 import {chat as chatFlow} from './flows/chat-flow';
 import {ChatInput} from './flows/chat-types';
-import pdf from 'pdf-parse/lib/pdf-parse';
+
 
 export async function rewriteText(
   input: z.infer<typeof RewriteTextRequest>,
@@ -46,19 +47,4 @@ export async function highlightKeyInsights(
 
 export async function chat(input: ChatInput) {
   return run(chatFlow, input);
-}
-
-export async function extractText(
-  url: string,
-  type: string,
-): Promise<string> {
-  const response = await fetch(url);
-  const blob = await response.blob();
-  if (type.includes('pdf')) {
-    const buffer = await blob.arrayBuffer();
-    const data = await pdf(buffer);
-    return data.text;
-  } else {
-    return blob.text();
-  }
 }
