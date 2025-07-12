@@ -75,6 +75,13 @@
   }
 }
 
+@layer components {
+  .premium-gradient {
+    @apply bg-gradient-to-r from-purple-500 to-blue-500 text-primary-foreground;
+  }
+}
+
+
 .prose-styles {
   @apply prose prose-invert max-w-none prose-p:font-body prose-headings:font-heading prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-foreground;
 }
@@ -88,4 +95,3 @@
 .prose-styles td {
     @apply border px-4 py-2 text-left;
 }
-

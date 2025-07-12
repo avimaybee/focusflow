@@ -95,7 +95,7 @@ export default function PremiumPage() {
               </ul>
             </CardContent>
             <CardFooter>
-                <Button className="w-full">
+                <Button className="w-full premium-gradient hover:opacity-90">
                     Upgrade to Premium
                 </Button>
             </CardFooter>

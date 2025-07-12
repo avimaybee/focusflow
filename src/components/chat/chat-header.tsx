@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { Menu, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ChatHeaderProps {
   personaName: string;
@@ -23,8 +24,8 @@ export function ChatHeader({ personaName, onSidebarToggle, isLoggedIn }: ChatHea
       </div>
       <div className="flex items-center gap-2">
         {isLoggedIn ? (
-          <Button asChild size="sm" className="bg-primary text-primary-foreground">
-            <Link href="/dashboard">
+          <Button asChild size="sm" className="premium-gradient hover:opacity-90">
+            <Link href="/premium">
               <Sparkles className="h-4 w-4 mr-2" />
               Go Premium
             </Link>

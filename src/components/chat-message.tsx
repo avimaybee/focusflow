@@ -4,18 +4,15 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, Sparkles } from 'lucide-react';
+import { Bot, Sparkles, Copy, RefreshCw } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from './ui/button';
-import Link from 'next/link';
-
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { SmartToolsMenu, smartTools } from './smart-tools-menu';
-
 import { FlashcardViewer } from './flashcard-viewer';
 import { QuizViewer } from './quiz-viewer';
+import { useToast } from '@/hooks/use-toast';
 
-import { Badge } from './ui/badge';
 
 // Define types for flashcard and quiz data to be passed in props
 interface FlashcardData {
@@ -47,6 +44,25 @@ export type ChatMessageProps = {
 export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, userName, onSmartToolAction, isPremiumFeature = false }: ChatMessageProps) {
   const isUser = role === 'user';
   const messageRef = React.useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  const handleCopy = () => {
+    if (typeof text === 'string') {
+        const plainText = text.replace(/<[^>]*>/g, ''); // Strip HTML for copying
+        navigator.clipboard.writeText(plainText);
+        toast({
+            title: 'Copied to clipboard!',
+            description: 'The message content has been copied.',
+        });
+    }
+  };
+
+  const handleRetry = () => {
+    // This would need to be wired up to the chat submission logic
+    toast({
+        title: 'Retry functionality coming soon!',
+    })
+  }
   
   const renderContent = () => {
     if (flashcards) {
@@ -92,27 +108,30 @@ export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, 
           )}
         </div>
         {!isUser && typeof text === 'string' && onSmartToolAction && (
-          <div className="opacity-0 group-hover/message:opacity-100 focus-within:opacity-100 transition-opacity flex items-center gap-2">
+          <div className="opacity-0 group-hover/message:opacity-100 focus-within:opacity-100 transition-opacity flex items-center gap-1 rounded-full bg-card p-1 shadow-lg border">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground"
+                  size="icon"
+                  className={cn(
+                    "h-7 w-7 rounded-full",
+                    isPremiumFeature && "premium-gradient hover:opacity-90"
+                  )}
                 >
-                  <Sparkles className="h-3 w-3 mr-1" />
-                  Tools
+                  <Sparkles className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent side="right" align="start" className="w-auto p-0">
+              <PopoverContent side="top" align="start" className="w-auto p-0">
                 <SmartToolsMenu onAction={(tool) => onSmartToolAction(tool, text as string)} />
               </PopoverContent>
             </Popover>
-            {isPremiumFeature && (
-                <Link href="/premium">
-                    <Badge variant="premium">Premium</Badge>
-                </Link>
-            )}
+            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleCopy}>
+                <Copy className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleRetry}>
+                <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
         )}
       </div>
