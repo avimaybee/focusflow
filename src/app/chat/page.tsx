@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
@@ -14,13 +13,14 @@ import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { Loader2, UploadCloud } from 'lucide-react';
-import { doc, collection, addDoc, serverTimestamp, getDocs, orderBy, query, onSnapshot, updateDoc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { chat } from '@/ai/actions';
-import { ChatInput, ChatHistoryMessage } from '@/ai/flows/chat-types';
+import { doc, collection, onSnapshot, query, orderBy, Timestamp, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db, functions } from '@/lib/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { ChatInput, validPersonas } from '@/ai/flows/chat-types';
 import { ChatMessageProps } from '@/components/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
-import { SmartToolActions } from '@/lib/constants';
+
+const chat = httpsCallable(functions, 'chat');
 
 const SkeletonLoader = () => (
     <div className="p-4 space-y-4">
@@ -38,6 +38,7 @@ export default function ChatPage() {
 
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [isMessagesLoading, setIsMessagesLoading] = useState(true);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -52,53 +53,38 @@ export default function ChatPage() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Effect to load messages when activeChatId changes
   useEffect(() => {
-    const chatIdFromParams = params.chatId as string | undefined;
-
-    if (!user) {
-        if (!chatIdFromParams) {
-             // New guest chat
-            setActiveChatId(null);
-            setMessages([{
-                role: 'model',
-                text: 'Hello! Ask me to summarize notes, create a quiz, or build a study plan.',
-            }]);
-            setIsMessagesLoading(false);
-        }
-        return;
-    };
-
-    if (chatIdFromParams && chatIdFromParams !== activeChatId) {
-        setActiveChatId(chatIdFromParams);
-    } else if (!chatIdFromParams) {
-        setActiveChatId(null);
-        setMessages([{
-            role: 'model',
-            text: 'Hello! Ask me to summarize notes, create a quiz, or build a study plan.',
-        }]);
-        setIsMessagesLoading(false);
+    const chatId = params.chatId as string | undefined;
+    if (chatId) {
+      setActiveChatId(chatId);
+      setSessionId(chatId); // Use the chat ID as the session ID
+    } else {
+      handleNewChat();
     }
+  }, [params.chatId]);
+
+  useEffect(() => {
+    if (!user || !activeChatId) {
+      setIsMessagesLoading(false);
+      return;
+    }
+
+    setIsMessagesLoading(true);
+    const messagesRef = collection(db, 'users', user.uid, 'chats', activeChatId, 'messages');
+    const q = query(messagesRef, orderBy('createdAt', 'asc'));
     
-    if (chatIdFromParams) {
-      setIsMessagesLoading(true);
-      const messagesRef = collection(db, 'users', user.uid, 'chats', chatIdFromParams, 'messages');
-      const q = query(messagesRef, orderBy('createdAt', 'asc'));
-      
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const chatMessages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ChatMessageProps[];
-        setMessages(chatMessages);
-        setIsMessagesLoading(false);
-      }, (error) => {
-        console.error("Error fetching messages:", error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat messages.' });
-        setIsMessagesLoading(false);
-      });
-      
-      return () => unsubscribe();
-    }
-  }, [params.chatId, user, toast]);
-
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const chatMessages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ChatMessageProps[];
+      setMessages(chatMessages);
+      setIsMessagesLoading(false);
+    }, (error) => {
+      console.error("Error fetching messages:", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat messages.' });
+      setIsMessagesLoading(false);
+    });
+    
+    return () => unsubscribe();
+  }, [activeChatId, user, toast]);
 
   useEffect(() => {
     if (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')) {
@@ -107,134 +93,88 @@ export default function ChatPage() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      const scrollHeight = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${scrollHeight}px`;
-    }
-  }, [input]);
-
   const handleNewChat = () => {
     setActiveChatId(null);
-    setMessages([{
-        role: 'model',
-        text: 'Hello! Ask me to summarize notes, create a quiz, or build a study plan.',
-    }]);
+    setSessionId(undefined);
+    setMessages([]);
     router.push('/chat');
   };
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    if ((!input.trim() && !attachment) || isLoading) return;
-    if (!user) {
-        toast({
-            variant: 'destructive',
-            title: 'Please log in',
-            description: 'You need to be logged in to save and continue conversations.',
-        });
-        return;
-    }
+    if ((!input.trim() && !attachment) || isLoading || !user) return;
 
     setIsLoading(true);
     const userMessageText = input.trim() || `File Attached: ${attachment?.name}`;
-    const userMessage: Omit<ChatMessageProps, 'id'> = {
-        role: 'user',
-        text: userMessageText,
-        rawText: userMessageText,
-        createdAt: serverTimestamp(),
+    const tempUserMessage: ChatMessageProps = {
+      id: `temp-user-${Date.now()}`,
+      role: 'user',
+      text: userMessageText,
+      createdAt: Timestamp.now(),
     };
-
-    setMessages(prev => [...prev, { ...userMessage, id: 'temp-user' } as ChatMessageProps]);
+    setMessages(prev => [...prev, tempUserMessage]);
     setInput('');
     const tempAttachment = attachment;
     setAttachment(null);
     
-    let currentChatId = activeChatId;
-
     try {
-        // Create new chat session in Firestore if it doesn't exist
-        if (!currentChatId) {
-            const chatDocRef = await addDoc(collection(db, 'users', user.uid, 'chats'), {
-                title: userMessageText.substring(0, 40) || 'New Chat',
-                createdAt: serverTimestamp(),
-                userId: user.uid,
-            });
-            currentChatId = chatDocRef.id;
-            setActiveChatId(currentChatId);
-            forceRefresh(); // Refresh sidebar
-            router.push(`/chat/${currentChatId}`, { scroll: false });
-        }
-        
-        // Add user message to Firestore
-        await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), userMessage);
-
-        const historyForAI: ChatHistoryMessage[] = messages
-            .filter(m => !m.isError) // Exclude previous errors from history
-            .map(m => ({
-                role: m.role,
-                text: m.rawText || (typeof m.text === 'string' ? m.text : ''),
-            }));
-        historyForAI.push({ role: 'user', text: userMessageText });
-
-        const chatInput: ChatInput = {
-            userId: user.uid,
-            message: userMessageText,
-            history: historyForAI,
-            persona: selectedPersonaId,
-            isPremium: isPremium ?? false,
-            context: tempAttachment?.url, // Pass the data URI
-        };
-
-        const result = await chat(chatInput);
-        
-        const aiResponse: Omit<ChatMessageProps, 'id'> = {
-            role: 'model',
-            text: result.response || "I’m sorry, I couldn’t process your request.",
-            rawText: result.rawResponse || result.response,
-            createdAt: serverTimestamp(),
-        };
-
-        await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), aiResponse);
-    } catch (error) {
-        console.error('Error in chat flow:', error);
-        toast({
-            variant: 'destructive',
-            title: 'AI Error',
-            description: 'The AI failed to respond. Please try again.',
+      let currentChatId = activeChatId;
+      if (!currentChatId) {
+        const newChatRef = doc(collection(db, 'users', user.uid, 'chats'));
+        currentChatId = newChatRef.id;
+        setActiveChatId(currentChatId);
+        setSessionId(currentChatId);
+        await setDoc(newChatRef, {
+          title: userMessageText.substring(0, 40) || 'New Chat',
+          createdAt: serverTimestamp(),
+          userId: user.uid,
         });
-        // Add an error message to the UI
-        const errorResponse: ChatMessageProps = {
-            id: 'temp-error',
-            role: 'model',
-            text: 'Sorry, an error occurred. Please try again.',
-            isError: true,
-        };
-        setMessages(prev => [...prev, errorResponse]);
+        forceRefresh();
+        router.push(`/chat/${currentChatId}`, { scroll: false });
+      }
+
+      const personaId: typeof validPersonas[number] = validPersonas.includes(selectedPersonaId as any)
+          ? (selectedPersonaId as typeof validPersonas[number])
+          : 'neutral';
+
+      const chatInput: ChatInput = {
+          userId: user.uid,
+          message: userMessageText,
+          sessionId: sessionId,
+          persona: personaId,
+          isPremium: isPremium ?? false,
+          context: tempAttachment?.url,
+      };
+
+      const result: any = await chat(chatInput);
+      
+      const aiResponse: ChatMessageProps = {
+          id: `temp-ai-${Date.now()}`,
+          role: 'model',
+          text: result.data.response,
+          rawText: result.data.rawResponse,
+          createdAt: Timestamp.now(),
+      };
+      setMessages(prev => [...prev, aiResponse]);
+
+    } catch (error) {
+      console.error('Error in chat flow:', error);
+      toast({
+          variant: 'destructive',
+          title: 'AI Error',
+          description: 'The AI failed to respond. Please try again.',
+      });
+      const errorResponse: ChatMessageProps = {
+          id: `temp-error-${Date.now()}`,
+          role: 'model',
+          text: 'Sorry, an error occurred. Please try again.',
+          isError: true,
+      };
+      setMessages(prev => [...prev, errorResponse]);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
-
-  const handleSelectPrompt = (prompt: string) => {
-    setInput(prompt);
-    textareaRef.current?.focus();
-  };
-
-  if (authLoading) {
-    return (
-      <div className="flex h-screen bg-background text-foreground">
-        <div className="hidden md:flex w-80 flex-col bg-secondary/30 p-4 border-r border-border/60">
-            <SkeletonLoader />
-        </div>
-        <div className="flex-1 flex flex-col h-screen overflow-hidden">
-            <div className="flex justify-center items-center h-full">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex h-screen bg-background text-foreground">
@@ -261,10 +201,7 @@ export default function ChatPage() {
                 chatHistory={chatHistory}
                 activeChatId={activeChatId}
                 onNewChat={handleNewChat}
-                onChatSelect={(id) => {
-                  router.push(`/chat/${id}`);
-                  setSidebarOpen(false);
-                }}
+                onChatSelect={(id) => router.push(`/chat/${id}`)}
                 isLoading={isHistoryLoading}
               />
             </motion.div>
@@ -307,8 +244,8 @@ export default function ChatPage() {
           isHistoryLoading={isMessagesLoading}
           activeChatId={activeChatId}
           scrollAreaRef={scrollAreaRef}
-          onSelectPrompt={handleSelectPrompt}
-          onSmartToolAction={() => {}} // Placeholder for now
+          onSelectPrompt={setInput}
+          onSmartToolAction={() => {}}
         />
 
         <div className="w-full bg-background">
@@ -318,7 +255,7 @@ export default function ChatPage() {
                 setInput={setInput}
                 handleSendMessage={handleSendMessage}
                 handleFileSelect={handleFileSelect}
-                onSelectPrompt={handleSelectPrompt}
+                onSelectPrompt={setInput}
                 isLoading={isLoading}
                 isHistoryLoading={isMessagesLoading}
                 personas={personas}

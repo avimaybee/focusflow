@@ -1,7 +1,5 @@
 import type { ChatHistoryMessage } from './flows/chat-types';
 
-import type { ChatHistoryMessage } from './flows/chat-types';
-
 /**
  * Selects the appropriate Gemini model based on the complexity of the user's request.
  * @param currentPrompt The user's current text prompt.
@@ -60,4 +58,3 @@ export function selectModel(
   // 4. Default to the ultra-light, low-latency model for all other tasks.
   return 'googleai/gemini-2.5-flash-lite-preview-06-17';
 }
-

@@ -28,8 +28,12 @@ export async function summarizeTextMapReduce(textToSummarize: string): Promise<s
       const prompt = `Summarize the following text concisely:\n\n---\n${chunk}\n---\n\nSummary:`;
       const result = await ai.generate({
         model,
-        prompt,
-        temperature: 0.3,
+        prompt: {
+          text: prompt,
+        },
+        config: {
+          temperature: 0.3,
+        },
       });
       return result.text();
     })
@@ -41,8 +45,12 @@ export async function summarizeTextMapReduce(textToSummarize: string): Promise<s
   
   const finalResult = await ai.generate({
     model,
-    prompt: finalPrompt,
-    temperature: 0.5,
+    prompt: {
+      text: finalPrompt,
+    },
+    config: {
+      temperature: 0.5,
+    },
   });
 
   return finalResult.text();

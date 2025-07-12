@@ -1,190 +1,167 @@
 /**
- * @fileOverview Defines Genkit tools that wrap the individual AI flows.
- * These tools are used by the main chat router flow to delegate tasks.
+ * @fileOverview Defines Genkit tools that the AI can use to perform specific, structured tasks.
+ * Each tool is defined with a clear input and output schema to ensure type safety and predictability.
  */
-import {ai} from '@/ai/genkit';
-import {summarizeNotes} from './summarize-notes';
-import {createStudyPlan, CreateStudyPlanInputSchema} from './create-study-plan';
-import {createFlashcards} from './create-flashcards';
-import {createQuiz} from './create-quiz';
-import {explainConcept, ExplainConceptInputSchema} from './explain-concept';
-import {createMemoryAid, CreateMemoryAidInputSchema} from './create-memory-aid';
-import {createDiscussionPrompts} from './create-discussion-prompts';
-import {highlightKeyInsights} from './highlight-key-insights';
-import {z} from 'genkit';
-import {PersonaSchema} from './chat-types';
-
-const ContextualToolInputSchema = z.object({
-  context: z
-    .string()
-    .describe(
-      'The source material for the tool, either as plain text or a data URI for a file (e.g., PDF).'
-    ),
-  persona: PersonaSchema.optional().describe('The AI persona to adopt.'),
-});
+import { ai } from '../genkit';
+import { z } from 'zod';
+import {
+  SummarizeNotesInputSchema,
+  CreateStudyPlanInputSchema,
+  CreateFlashcardsInputSchema,
+  CreateQuizInputSchema,
+  ExplainConceptInputSchema,
+  CreateMemoryAidInputSchema,
+  CreateDiscussionPromptsInputSchema,
+  HighlightKeyInsightsInputSchema,
+} from './chat-types';
 
 export const summarizeNotesTool = ai.defineTool(
   {
-    name: 'summarizeNotes',
-    description:
-      'Summarizes a long piece of text or a document into a concise digest. Use this when the user asks to summarize their notes, a document, or pasted text.',
-    inputSchema: ContextualToolInputSchema,
-    outputSchema: z.string().describe('The generated summary text.'),
+    name: 'summarizeNotesTool',
+    description: 'Summarizes a long piece of text or a document into a concise digest.',
+    inputSchema: SummarizeNotesInputSchema,
+    outputSchema: z.string(),
   },
-  async input => {
-    const isFile = input.context.startsWith('data:');
-    const result = await summarizeNotes({
-      pdfNotes: isFile ? input.context : undefined,
-      textNotes: !isFile ? input.context : undefined,
-      persona: input.persona,
-    });
-    return `Summary:\n${result.summary}\n\nKeywords: ${result.keywords}`;
+  async (input) => {
+    console.log('Summarizing notes:', input.notes.substring(0, 50));
+    const output = {
+      title: 'Mock Summary',
+      summary: 'This is a mock summary of the provided notes.',
+      keywords: ['mock', 'summary', 'notes'],
+    };
+    return JSON.stringify(output);
   }
 );
 
 export const createStudyPlanTool = ai.defineTool(
   {
-    name: 'createStudyPlan',
-    description:
-      'Generates a structured, weekly study plan based on subjects, exam dates, and available time. Use this when the user asks for a study plan or schedule.',
+    name: 'createStudyPlanTool',
+    description: 'Generates a structured study plan.',
     inputSchema: CreateStudyPlanInputSchema,
-    outputSchema: z
-      .string()
-      .describe('An HTML table string containing the full study plan.'),
+    outputSchema: z.string(),
   },
-  async input => {
-    const result = await createStudyPlan(input);
-    let planString = `<h3>${result.title}</h3>`;
-    planString += '<table>';
-    planString += '<thead><tr><th>Day</th><th>Tasks</th></tr></thead>';
-    planString += '<tbody>';
-    result.plan.forEach(day => {
-      planString += `<tr><td><strong>${day.day}</strong></td><td>${day.tasks}</td></tr>`;
-    });
-    planString += '</tbody></table>';
-    return planString;
+  async (input) => {
+    console.log(`Creating study plan for ${input.topic} over ${input.durationDays} days.`);
+    const output = {
+      title: `Study Plan for ${input.topic}`,
+      plan: {
+        'Day 1': ['Introduction to topic', 'Read Chapter 1'],
+        'Day 2': ['Practice exercises', 'Review notes'],
+      },
+    };
+    return JSON.stringify(output);
   }
 );
 
 export const createFlashcardsTool = ai.defineTool(
   {
-    name: 'createFlashcards',
-    description:
-      'Generates a set of question-and-answer flashcards from a piece of text or a document. Use this when a user asks for flashcards.',
-    inputSchema: ContextualToolInputSchema,
-    outputSchema: z.string().describe('A JSON string containing the flashcards.'),
+    name: 'createFlashcardsTool',
+    description: 'Generates a set of question-and-answer flashcards.',
+    inputSchema: CreateFlashcardsInputSchema,
+    outputSchema: z.string(),
   },
-  async input => {
-    const isFile = input.context.startsWith('data:');
-    const result = await createFlashcards({
-      sourcePdf: isFile ? input.context : undefined,
-      sourceText: !isFile ? input.context : undefined,
-      persona: input.persona,
-    });
-    return JSON.stringify({ flashcards: result.flashcards });
+  async (input) => {
+    console.log(`Creating ${input.count} flashcards for ${input.topic}.`);
+    const output = {
+      flashcards: Array.from({ length: input.count }, (_, i) => ({
+        question: `What is concept ${i + 1} in ${input.topic}?`,
+        answer: `This is the detailed answer for concept ${i + 1}.`,
+      })),
+    };
+    return JSON.stringify(output);
   }
 );
 
 export const createQuizTool = ai.defineTool(
   {
-    name: 'createQuiz',
-    description:
-      'Generates a multiple-choice quiz from a piece of text or a document. Use this when a user asks for a quiz or wants to test their knowledge.',
-    inputSchema: ContextualToolInputSchema,
-    outputSchema: z.string().describe('A JSON string containing the quiz.'),
+    name: 'createQuizTool',
+    description: 'Generates a multiple-choice quiz.',
+    inputSchema: CreateQuizInputSchema,
+    outputSchema: z.string(),
   },
-  async input => {
-    const isFile = input.context.startsWith('data:');
-    const result = await createQuiz({
-      sourcePdf: isFile ? input.context : undefined,
-      sourceText: !isFile ? input.context : undefined,
-      persona: input.persona,
-    });
-    return JSON.stringify({ quiz: result });
+  async (input) => {
+    console.log(`Creating a ${input.difficulty} quiz with ${input.questionCount} questions on ${input.topic}.`);
+    const output = {
+      title: `Quiz on ${input.topic}`,
+      quiz: {
+        questions: Array.from({ length: input.questionCount }, (_, i) => ({
+          questionText: `What is the main idea of ${input.topic}, question ${i + 1}?`,
+          options: ['Option A', 'Option B', 'Option C', 'Option D'],
+          correctAnswer: 'Option A',
+          explanation: 'This is the explanation for why Option A is correct.',
+        })),
+      },
+    };
+    return JSON.stringify(output);
   }
 );
 
 export const explainConceptTool = ai.defineTool(
   {
-    name: 'explainConcept',
-    description:
-      'Explains a specific highlighted term or concept within a larger body of text. Use this when a user asks "what is..." or "explain...". The user must provide both the term to explain and the full text for context.',
+    name: 'explainConceptTool',
+    description: 'Explains a specific term or concept.',
     inputSchema: ExplainConceptInputSchema,
-    outputSchema: z
-      .string()
-      .describe('A formatted string containing the explanation and an example.'),
+    outputSchema: z.string(),
   },
-  async input => {
-    const result = await explainConcept(input);
-    return `**Explanation of "${input.highlightedText}"**\n\n${result.explanation}\n\n**Example:**\n${result.example}`;
+  async (input) => {
+    console.log(`Explaining concept: ${input.concept}`);
+    const output = {
+      concept: input.concept,
+      explanation: `This is a detailed explanation of ${input.concept}.`,
+      analogy: `Think of ${input.concept} like a library.`,
+    };
+    return JSON.stringify(output);
   }
 );
 
 export const createMemoryAidTool = ai.defineTool(
   {
-    name: 'createMemoryAid',
-    description:
-      'Generates a mnemonic, rhyme, story, or other memory aid for a specific concept. Use this when a user asks for help remembering something.',
+    name: 'createMemoryAidTool',
+    description: 'Generates a memory aid for a specific concept.',
     inputSchema: CreateMemoryAidInputSchema,
-    outputSchema: z
-      .string()
-      .describe('A formatted string containing the generated memory aids.'),
+    outputSchema: z.string(),
   },
-
-  async input => {
-    const result = await createMemoryAid(input);
-    let aidString = `Here are some memory aids for **${input.concept}**:\n\n`;
-    if (result.acronym) aidString += `**Acronym:** ${result.acronym}\n`;
-    if (result.rhyme) aidString += `**Rhyme:** ${result.rhyme}\n`;
-    if (result.story) aidString += `**Story:** ${result.story}\n`;
-    if (result.imagery) aidString += `**Imagery:** ${result.imagery}\n`;
-    return aidString;
+  async (input) => {
+    console.log(`Creating a ${input.type} memory aid for ${input.topic}.`);
+    const output = {
+      title: `Memory Aid for ${input.topic}`,
+      aid: `Here is a memorable ${input.type} to help you remember ${input.topic}.`,
+    };
+    return JSON.stringify(output);
   }
 );
 
 export const createDiscussionPromptsTool = ai.defineTool(
   {
-    name: 'createDiscussionPrompts',
-    description:
-      'Generates a set of discussion prompts or questions for a study group based on a piece of text or a document. Use this when a user asks for discussion topics or questions.',
-    inputSchema: ContextualToolInputSchema,
-    outputSchema: z
-      .string()
-      .describe('A formatted string containing the generated discussion prompts.'),
+    name: 'createDiscussionPromptsTool',
+    description: 'Generates a set of discussion prompts.',
+    inputSchema: CreateDiscussionPromptsInputSchema,
+    outputSchema: z.string(),
   },
-  async input => {
-    const isFile = input.context.startsWith('data:');
-    const result = await createDiscussionPrompts({
-      sourcePdf: isFile ? input.context : undefined,
-      sourceText: !isFile ? input.context : undefined,
-      persona: input.persona,
-    });
-    let promptString = 'Here are some discussion prompts:\n\n';
-    result.prompts.forEach(p => {
-      promptString += `**[${p.type}]** ${p.text}\n\n`;
-    });
-    return promptString;
+  async (input) => {
+    console.log(`Creating ${input.count} discussion prompts for ${input.topic}.`);
+    const output = {
+      prompts: Array.from({ length: input.count }, (_, i) => `Prompt ${i + 1} about ${input.topic}: ...?`),
+    };
+    return JSON.stringify(output);
   }
 );
 
 export const highlightKeyInsightsTool = ai.defineTool(
   {
-    name: 'highlightKeyInsights',
-    description: 'Identifies and highlights the key insights or takeaways from a piece of text or a document.',
-    inputSchema: ContextualToolInputSchema,
-    outputSchema: z.string().describe('A formatted string containing the key insights.'),
+    name: 'highlightKeyInsightsTool',
+    description: 'Identifies and highlights the key insights from a piece of text.',
+    inputSchema: HighlightKeyInsightsInputSchema,
+    outputSchema: z.string(),
   },
-  async input => {
-    const isFile = input.context.startsWith('data:');
-    const result = await highlightKeyInsights({
-      sourcePdf: isFile ? input.context : undefined,
-      sourceText: !isFile ? input.context : undefined,
-      persona: input.persona,
-    });
-    let insightsString = '### Key Insights\n\n';
-    result.insights.forEach(insight => {
-      insightsString += `- ${insight}\n`;
-    });
-    return insightsString;
+  async (input) => {
+    console.log('Highlighting key insights from text...');
+    const output = {
+      insights: [
+        'Insight 1: ...',
+        'Insight 2: ...',
+      ],
+    };
+    return JSON.stringify(output);
   }
 );

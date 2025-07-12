@@ -1,88 +1,118 @@
+import { z } from 'zod';
 
-import {z} from 'genkit';
+export const validPersonas = [
+  'neutral',
+  'five-year-old',
+  'casual',
+  'entertaining',
+  'brutally-honest',
+  'straight-shooter',
+  'essay-sharpshooter',
+  'idea-generator',
+  'cram-buddy',
+  'sassy',
+] as const;
 
-export const PersonaSchema = z.enum([
-    'neutral',
-    'five-year-old',
-    'casual',
-    'entertaining',
-    'brutally-honest',
-    'straight-shooter',
-    'essay-sharpshooter',
-    'idea-generator',
-    'cram-buddy',
-    'sassy'
-]);
-export type Persona = z.infer<typeof PersonaSchema>;
+export const PersonaSchema = z.enum(validPersonas);
 
-const ChatMessageSchema = z.object({
+export const ChatHistoryMessageSchema = z.object({
   role: z.enum(['user', 'model']),
   text: z.string(),
 });
-export type ChatHistoryMessage = z.infer<typeof ChatMessageSchema>;
 
 export const ChatInputSchema = z.object({
-  persona: PersonaSchema,
-  history: z.array(ChatMessageSchema),
+  userId: z.string(),
   message: z.string(),
-  isPremium: z.boolean().optional().default(false),
-  image: z
-    .string()
-    .optional()
-    .describe(
-      "An optional image provided by the student (e.g., a photo of a math problem), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
-  context: z
-    .string()
-    .optional()
-    .describe(
-      'Optional context, like text from a document, to be used by a tool.'
-    ),
+  sessionId: z.string().optional(),
+  persona: PersonaSchema.optional().default('neutral'),
+  isPremium: z.boolean().optional(),
+  context: z.string().optional(),
+  image: z.string().optional(),
 });
-export type ChatInput = {
-  userId: string;
-  message: string;
-  history: ChatHistoryMessage[];
-  persona: Persona;
-  isPremium: boolean;
-  context?: string;
-  image?: string;
-};
 
 export const ChatOutputSchema = z.object({
-  response: z.string().describe("The AI tutor's helpful response."),
-});
-export type ChatOutput = z.infer<typeof ChatOutputSchema>;
-
-export const RewriteTextRequest = z.object({
-  textToRewrite: z.string(),
-  style: z.string(),
-  persona: PersonaSchema.optional(),
-});
-export const RewriteTextResponse = z.object({
-  rewrittenText: z.string(),
+  response: z.string(),
+  rawResponse: z.string(),
 });
 
-export const GenerateBulletPointsRequest = z.object({
-  textToConvert: z.string(),
-  persona: PersonaSchema.optional(),
+export type ChatInput = z.infer<typeof ChatInputSchema>;
+export type ChatHistoryMessage = z.infer<typeof ChatHistoryMessageSchema>;
+
+// Schemas for individual tools
+export const SummarizeNotesInputSchema = z.object({
+  notes: z.string().min(20, { message: 'Please provide at least 20 characters of notes to summarize.' }),
 });
-export const GenerateBulletPointsResponse = z.object({
-  bulletPoints: z.array(z.string()),
+export const SummarizeNotesOutputSchema = z.object({
+  title: z.string(),
+  summary: z.string(),
+  keywords: z.array(z.string()),
 });
 
-export const GenerateCounterargumentsRequest = z.object({
-  statementToChallenge: z.string(),
-  persona: PersonaSchema.optional(),
+export const CreateStudyPlanInputSchema = z.object({
+  topic: z.string(),
+  durationDays: z.number().positive(),
 });
-export const GenerateCounterargumentsResponse = z.object({
-  counterarguments: z.array(z.string()),
+export const CreateStudyPlanOutputSchema = z.object({
+  title: z.string(),
+  plan: z.record(z.array(z.string())), // e.g., { "Day 1": ["Topic A", "Topic B"] }
 });
 
-export const HighlightKeyInsightsRequest = z.object({
-  sourceText: z.string(),
-  persona: PersonaSchema.optional(),
+export const CreateFlashcardsInputSchema = z.object({
+  topic: z.string(),
+  count: z.number().min(1).max(20),
 });
-export const HighlightKeyInsightsResponse = z.object({
+export const CreateFlashcardsOutputSchema = z.object({
+  flashcards: z.array(z.object({ question: z.string(), answer: z.string() })),
+});
+
+export const CreateQuizInputSchema = z.object({
+  topic: z.string(),
+  questionCount: z.number().min(1).max(10),
+  difficulty: z.enum(['easy', 'medium', 'hard']),
+});
+export const CreateQuizOutputSchema = z.object({
+  title: z.string(),
+  quiz: z.object({
+    questions: z.array(
+      z.object({
+        questionText: z.string(),
+        options: z.array(z.string()),
+        correctAnswer: z.string(),
+        explanation: z.string(),
+      })
+    ),
+  }),
+});
+
+export const ExplainConceptInputSchema = z.object({
+  concept: z.string(),
+});
+export const ExplainConceptOutputSchema = z.object({
+  concept: z.string(),
+  explanation: z.string(),
+  analogy: z.string(),
+});
+
+export const CreateMemoryAidInputSchema = z.object({
+  topic: z.string(),
+  type: z.enum(['acronym', 'visualization', 'story']),
+});
+export const CreateMemoryAidOutputSchema = z.object({
+  title: z.string(),
+  aid: z.string(),
+});
+
+export const CreateDiscussionPromptsInputSchema = z.object({
+  topic: z.string(),
+  count: z.number().min(1).max(10),
+});
+export const CreateDiscussionPromptsOutputSchema = z.object({
+  prompts: z.array(z.string()),
+});
+
+export const HighlightKeyInsightsInputSchema = z.object({
+  text: z.string(),
+});
+export const HighlightKeyInsightsOutputSchema = z.object({
   insights: z.array(z.string()),
 });

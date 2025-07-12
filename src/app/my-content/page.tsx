@@ -1,10 +1,9 @@
-
 'use client';
 
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { BrainCircuit, FileText, HelpCircle, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
