@@ -52,7 +52,7 @@ export default function ChatPage() {
   
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
   const { chatHistory, isLoading: isHistoryLoading } = useChatHistory();
-  const { messages, setMessages, isMessagesLoading } = useChatMessages(activeChatId);
+  const { messages, isMessagesLoading } = useChatMessages(activeChatId);
   const { isDraggingOver, handleFileSelect, fileUploadHandlers } = useFileUpload(setChatContext);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -89,32 +89,22 @@ export default function ChatPage() {
 
   const handleNewChat = () => {
     setActiveChatId(null);
-    setMessages([]);
     router.push('/chat');
   };
   
-  const callAI = async (currentChatId: string, currentMessages: ChatMessageProps[]) => {
+  const callAI = async (currentChatId: string, currentMessages: ChatHistoryMessage[]) => {
     if (!user?.uid) return;
 
     setIsLoading(true);
 
     try {
-      // Convert the full message history into the format the AI expects.
-      const chatHistoryForAI: ChatHistoryMessage[] = currentMessages
-        .map(m => ({
-          role: m.role as 'user' | 'model',
-          // Use rawText for model responses if available, otherwise use the display text.
-          text: (m.role === 'model' ? m.rawText || (typeof m.text === 'string' ? m.text : '') : (typeof m.text === 'string' ? m.text : '')) as string,
-        }))
-        .filter(m => typeof m.text === 'string' && m.text.trim().length > 0);
-      
-      const lastMessage = chatHistoryForAI[chatHistoryForAI.length - 1];
+      const lastMessage = currentMessages[currentMessages.length - 1];
       
       const chatInput: ChatInput = {
         userId: user.uid,
         message: lastMessage?.text || '',
         persona: selectedPersonaId as Persona,
-        history: chatHistoryForAI, // Send the full history
+        history: currentMessages, // Send the full history
         isPremium: isPremium ?? false,
         context: chatContext?.url,
       };
@@ -177,12 +167,12 @@ export default function ChatPage() {
     };
 
     if (chatContext) {
+      // Only store metadata in Firestore, not the large data URI
       userMessage.context = { name: chatContext.name, type: chatContext.type };
     }
 
     setInput('');
     let currentChatId = activeChatId;
-    let newMessages: ChatMessageProps[] = [];
 
     try {
         if (!currentChatId) {
@@ -202,13 +192,18 @@ export default function ChatPage() {
             createdAt: serverTimestamp(),
         });
         
-        // Optimistically update local state for immediate UI feedback.
-        // We can't know the ID or timestamp yet, but it's okay for the AI call.
-        newMessages = [...messages, userMessage as ChatMessageProps];
-        setMessages(newMessages);
+        // Prepare the history for the AI call.
+        // It includes all existing messages plus the new one we just constructed.
+        const historyForAI: ChatHistoryMessage[] = [
+          ...messages.map(m => ({
+            role: m.role as 'user' | 'model',
+            text: (m.rawText || (typeof m.text === 'string' ? m.text : '')) as string
+          })),
+          { role: 'user', text: userMessageText }
+        ];
 
         // Pass the updated message list to the AI
-        callAI(currentChatId, newMessages);
+        callAI(currentChatId, historyForAI);
 
     } catch (error) {
         console.error('Error submitting message:', error);
@@ -366,7 +361,7 @@ export default function ChatPage() {
                 setInput={setInput}
                 handleSendMessage={handleSendMessage}
                 handleFileSelect={handleFileSelect}
-                onSelectPrompt={handleSelectPrompt}
+                onSelectPrompt={onSelectPrompt}
                 isLoading={isLoading}
                 isHistoryLoading={isMessagesLoading}
                 personas={personas}
