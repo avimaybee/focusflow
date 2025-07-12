@@ -101,7 +101,7 @@ export function ChatInputArea({
             </div>
           )}
       </div>
-      <div className="flex items-start p-2 bg-card border border-border/60 rounded-xl shadow-lg">
+      <div className="flex items-start p-2 bg-transparent rounded-xl">
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted">
