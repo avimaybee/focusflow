@@ -23,7 +23,30 @@ export function useChatMessages(activeChatId: string | null) {
           const data = doc.data();
           const id = doc.id;
           
-          return { id, ...data } as ChatMessageProps;
+          // This is the new, clean format. Trust it.
+          if (data.rawText) {
+            return { id, ...data } as ChatMessageProps;
+          }
+
+          // This handles old messages that do not have a rawText field.
+          if (typeof data.text === 'string') {
+            try {
+              // Check if it's an old AI message stored as a JSON string.
+              const parsedText = JSON.parse(data.text);
+              if (typeof parsedText === 'object' && parsedText !== null && parsedText.role === 'model') {
+                const displayText = parsedText.text || '';
+                // Sanitize the old data by creating a rawText field from stripped HTML.
+                const rawText = displayText.replace(/<[^>]*>/g, '');
+                return { id, ...parsedText, text: displayText, rawText: rawText, createdAt: data.createdAt };
+              }
+            } catch (e) {
+              // If JSON.parse fails, it's a plain text user message. It's already clean.
+              return { id, ...data, rawText: data.text } as ChatMessageProps;
+            }
+          }
+          
+          // Fallback for any other case.
+          return { id, ...data, rawText: data.text } as ChatMessageProps;
         });
 
         setMessages(chatMessages);

@@ -5,7 +5,7 @@ import {
   ChatHistoryMessage,
   ChatInput,
 } from './chat-types';
-import {ai} from '../genkit';
+import {ai, generate} from '@/ai/genkit';
 import { selectModel } from '../model-selection';
 import { optimizeChatHistory } from './history-optimizer';
 import {
@@ -23,16 +23,6 @@ import { marked } from 'marked';
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PersonaIDs } from '@/lib/constants';
-import { rewriteTextFlow } from './rewrite-text';
-import { generateBulletPointsFlow } from './generate-bullet-points';
-import { generateCounterargumentsFlow } from './generate-counterarguments';
-import { highlightKeyInsightsFlow as highlightKeyInsightsFlowFn } from './highlight-key-insights'; // Renamed to avoid conflict
-import {
-  RewriteTextRequest,
-  GenerateBulletPointsRequest,
-  GenerateCounterargumentsRequest,
-  HighlightKeyInsightsRequest,
-} from './chat-types';
 import { z } from 'zod';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
@@ -118,22 +108,19 @@ export const chat = ai.defineFlow(
       highlightKeyInsightsTool,
     ];
 
-    // The `history` from input already contains the full conversation.
-    // The `message` is the text of the most recent message.
-    const prompt = message;
+    const lastMessage = history[history.length - 1];
+    const prompt = lastMessage?.text || message; // Fallback to original message if history is empty
+    const otherHistory = history.slice(0, -1);
 
-    // Convert our ChatHistoryMessage format to Genkit's Message format.
-    let chatHistory: Message[] = history.map((msg) => ({
-      role: msg.role,
-      parts: [{ text: msg.text }],
+
+    const llmHistory: Message[] = otherHistory.map(m => ({
+        role: m.role,
+        content: [{text: m.text}],
     }));
-
-    // Optimize history if it's too long, but exclude the most recent message which is the prompt
-    const optimizedHistory = await optimizeChatHistory(chatHistory.slice(0, -1));
+    const optimizedHistory = await optimizeChatHistory(llmHistory);
 
     const promptParts = [];
-
-    // The `context` is a Data URI for a file upload.
+    
     if (context) {
       const isDataUri = context.startsWith('data:');
       if (isDataUri) {
@@ -141,9 +128,18 @@ export const chat = ai.defineFlow(
         const mimeType = header.split(':')[1].split(';')[0];
 
         if (mimeType === 'application/pdf') {
-          promptParts.push({ text: `CONTEXT FROM UPLOADED PDF:\nUse the content of this PDF to answer the request.` });
-          promptParts.push({ media: { url: context } });
-          promptParts.push({ text: `\n\nUSER'S REQUEST:\n${prompt}` });
+          const { parsePdfToText } = await import('@/ai/pdf-parser');
+          const { summarizeTextMapReduce } = await import('@/ai/summarizer');
+
+          const pdfBuffer = Buffer.from(base64Data, 'base64');
+          const pdfText = await parsePdfToText(pdfBuffer);
+          
+          if (prompt.toLowerCase().includes('summarize')) {
+            const summary = await summarizeTextMapReduce(pdfText);
+            promptParts.push({ text: `The user uploaded a PDF and asked for a summary. Here is the summary you generated:\n\n${summary}` });
+          } else {
+            promptParts.push({ text: `CONTEXT FROM UPLOADED PDF:\n${pdfText}\n\nUSER'S REQUEST:\n${prompt}` });
+          }
         } else if (mimeType.startsWith('image/')) {
           promptParts.push({ text: `CONTEXT FROM UPLOADED IMAGE:\nUse the content of the following image to answer the request.` });
           promptParts.push({ media: { url: context } });
@@ -153,7 +149,6 @@ export const chat = ai.defineFlow(
            promptParts.push({ text: `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\nUSER'S REQUEST:\n${prompt}` });
         }
       } else {
-        // This case handles plain text context if ever used.
         promptParts.push({ text: `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${prompt}` });
       }
     } else {
@@ -164,10 +159,10 @@ export const chat = ai.defineFlow(
       promptParts.push({ media: { url: image } });
     }
 
-    const result = await ai.generate({
+    const result = await generate({
       model,
       system: systemPrompt,
-      history: optimizedHistory, // Use the optimized history
+      history: optimizedHistory,
       prompt: promptParts,
       tools: availableTools,
       toolChoice: 'auto',
@@ -181,14 +176,19 @@ export const chat = ai.defineFlow(
       },
     });
 
-    if (result.toolCalls && result.toolCalls.length > 0) {
-      const toolCall = result.toolCalls[0];
+    const choices = result.candidates;
+    if (choices[0].finishReason !== 'stop' && choices[0].finishReason !== 'other') {
+        // Handle cases where generation was blocked or stopped for other reasons
+    }
+
+    if (choices[0].toolCalls && choices[0].toolCalls.length > 0) {
+      const toolCall = choices[0].toolCalls[0];
       const toolName = toolCall.name;
       const toolOutput = toolCall.output;
       await saveGeneratedContent(userId, toolName, toolOutput, prompt);
     }
 
-    const responseText = result.message?.content?.[0]?.text || 'Sorry, I am not sure how to help with that.';
+    const responseText = result.text() || 'Sorry, I am not sure how to help with that.';
     const formattedResponse = marked(responseText);
 
     return {
@@ -197,18 +197,3 @@ export const chat = ai.defineFlow(
     };
   }
 );
-
-
-// Re-exposing individual flows for direct use by smart tools
-export async function rewriteText(input: z.infer<typeof RewriteTextRequest>) {
-  return await rewriteTextFlow(input);
-}
-export async function generateBulletPoints(input: z.infer<typeof GenerateBulletPointsRequest>) {
-  return await generateBulletPointsFlow(input);
-}
-export async function generateCounterarguments(input: z.infer<typeof GenerateCounterargumentsRequest>) {
-  return await generateCounterargumentsFlow(input);
-}
-export async function highlightKeyInsights(input: z.infer<typeof HighlightKeyInsightsRequest>) {
-  return await highlightKeyInsightsFlowFn(input);
-}

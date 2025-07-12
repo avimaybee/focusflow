@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
@@ -9,13 +8,13 @@ import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
 import { useChatMessages } from '@/hooks/use-chat-messages';
-import { useFileUpload } from '@/hooks/use-file-upload';
+import { useFileUpload, Attachment } from '@/hooks/use-file-upload';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { Loader2, UploadCloud } from 'lucide-react';
-import { doc, collection, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { chat, rewriteText, generateBulletPoints, generateCounterarguments, highlightKeyInsights } from '@/ai/actions';
 import type { ChatInput, ChatHistoryMessage, Persona } from '@/ai/flows/chat-types';
@@ -23,12 +22,7 @@ import { ChatMessageProps } from '@/components/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
 import { SmartToolActions } from '@/lib/constants';
 
-type ChatContext = {
-  name: string;
-  type: string;
-  url: string; // This will store the data URI
-} | null;
-
+type ChatContext = Attachment | null;
 
 const SkeletonLoader = () => (
     <div className="p-4 space-y-4">
@@ -57,6 +51,17 @@ export default function ChatPage() {
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const prevMessagesCount = useRef(messages.length);
+
+  // The "Reactor" Effect: This runs when the messages state changes.
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    // Only trigger if a *new* message has been added and it's from the user.
+    if (messages.length > prevMessagesCount.current && lastMessage && lastMessage.role === 'user' && !isLoading) {
+      callAI(activeChatId!, messages);
+    }
+    prevMessagesCount.current = messages.length;
+  }, [messages, isLoading, activeChatId]);
 
   useEffect(() => {
     const chatIdFromParams = params.chatId as string | undefined;
@@ -64,7 +69,6 @@ export default function ChatPage() {
   }, [params]);
 
   useEffect(() => {
-    // Clear any file context when switching to a new or different chat
     setChatContext(null);
   }, [activeChatId]);
   
@@ -92,24 +96,77 @@ export default function ChatPage() {
     router.push('/chat');
   };
   
-  const callAI = async (currentChatId: string, currentMessages: ChatHistoryMessage[]) => {
+  const submitMessage = async (prompt: string) => {
+    if ((!prompt && !chatContext) || isLoading || !user?.uid) return;
+
+    const userMessageText = prompt || `File Attached: ${chatContext?.name}`;
+
+    const userMessage: Partial<ChatMessageProps> = {
+      role: 'user',
+      text: userMessageText,
+      rawText: userMessageText,
+      userAvatar: user?.photoURL,
+      userName: user?.displayName || user?.email || 'User',
+    };
+
+    if (chatContext) {
+      userMessage.context = { name: chatContext.name, type: chatContext.type };
+    }
+
+    setInput('');
+    let currentChatId = activeChatId;
+
+    try {
+      if (!currentChatId) {
+        const chatDoc = await addDoc(collection(db, 'users', user.uid, 'chats'), {
+          title: userMessageText.substring(0, 40) || 'New Chat',
+          createdAt: serverTimestamp(),
+          userId: user.uid,
+        });
+        currentChatId = chatDoc.id;
+        setActiveChatId(currentChatId);
+        router.push(`/chat/${currentChatId}`, { scroll: false });
+      }
+      
+      await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), {
+        ...userMessage,
+        createdAt: serverTimestamp(),
+      });
+
+    } catch (error) {
+      console.error('Error submitting message:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Message Failed',
+        description: 'Could not send message. Please try again.',
+      });
+    }
+  };
+
+  const callAI = async (currentChatId: string, currentMessages: ChatMessageProps[]) => {
     if (!user?.uid) return;
 
     setIsLoading(true);
 
     try {
-      const lastMessage = currentMessages[currentMessages.length - 1];
+      const historyForAI: ChatHistoryMessage[] = currentMessages
+        .map(m => ({
+          role: m.role as 'user' | 'model',
+          text: (m.rawText || (typeof m.text === 'string' ? m.text : '')) as string
+        }));
+
+      const lastMessage = historyForAI[historyForAI.length - 1];
       
       const chatInput: ChatInput = {
         userId: user.uid,
         message: lastMessage?.text || '',
         persona: selectedPersonaId as Persona,
-        history: currentMessages, // Send the full history
+        history: historyForAI,
         isPremium: isPremium ?? false,
         context: chatContext?.url,
       };
       
-      setChatContext(null); // Consume the context after sending it
+      setChatContext(null);
 
       const result = await chat(chatInput);
       const responseText = result.response || "I’m sorry, I couldn’t process your request.";
@@ -154,71 +211,7 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    const prompt = input.trim();
-    if ((!prompt && !chatContext) || isLoading || !user?.uid) return;
-
-    const userMessageText = prompt || `File Attached: ${chatContext?.name}`;
-
-    const userMessage: Partial<ChatMessageProps> = {
-      role: 'user',
-      text: userMessageText,
-      rawText: userMessageText,
-      userAvatar: user?.photoURL,
-      userName: user?.displayName || user?.email || 'User',
-    };
-
-    if (chatContext) {
-      userMessage.context = { name: chatContext.name, type: chatContext.type };
-    }
-
-    setInput('');
-    let currentChatId = activeChatId;
-
-    try {
-      if (!currentChatId) {
-        const chatDoc = await addDoc(collection(db, 'users', user.uid, 'chats'), {
-          title: userMessageText.substring(0, 40) || 'New Chat',
-          createdAt: serverTimestamp(),
-          userId: user.uid,
-        });
-        currentChatId = chatDoc.id;
-        setActiveChatId(currentChatId);
-        router.push(`/chat/${currentChatId}`, { scroll: false });
-      }
-
-      const messagePayload: any = {
-        ...userMessage,
-        createdAt: serverTimestamp(),
-      };
-      
-      // Conditionally add context to prevent Firestore error with 'undefined'
-      if (chatContext) {
-        messagePayload.context = { name: chatContext.name, type: chatContext.type };
-      }
-
-      await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), messagePayload);
-
-      // Prepare the history for the AI call.
-      // It includes all existing messages plus the new one we just constructed.
-      const historyForAI: ChatHistoryMessage[] = [
-        ...messages.map(m => ({
-          role: m.role as 'user' | 'model',
-          text: (m.rawText || (typeof m.text === 'string' ? m.text : '')) as string
-        })),
-        { role: 'user', text: userMessageText }
-      ];
-
-      // Pass the updated message list to the AI
-      callAI(currentChatId, historyForAI);
-
-    } catch (error) {
-      console.error('Error submitting message:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Message Failed',
-        description: 'Could not send message. Please try again.',
-      });
-    }
+    await submitMessage(input);
   };
 
   const handleSmartToolAction = async (tool: any, messageText: string) => {

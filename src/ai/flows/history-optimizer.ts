@@ -10,7 +10,7 @@ function estimateTokens(text: string): number {
 
 async function summarizeHistory(messages: Message[]): Promise<string> {
   const historyText = messages
-    .map(m => `${m.role}: ${m.parts[0].text}`)
+    .map(m => `${m.role}: ${m.content[0]?.text || ''}`)
     .join('\n');
 
   const summarizationPrompt = `You are a history summarizer. Briefly summarize the key points of the following conversation excerpt. Focus on user requests, important facts, and decisions made. The summary will be used as context for an ongoing chat, so it must be concise and informative.
@@ -50,7 +50,7 @@ export async function optimizeChatHistory(
 
   // Calculate total tokens for the whole history
   const totalTokens = history.reduce(
-    (acc, msg) => acc + estimateTokens(msg.parts[0]?.text || ''),
+    (acc, msg) => acc + estimateTokens(msg.content[0]?.text || ''),
     0
   );
 
@@ -75,7 +75,7 @@ export async function optimizeChatHistory(
 
   const summaryMessage: Message = {
     role: 'system', // Use 'system' role for context that is not from user or model
-    parts: [{ text: `[A summary of the conversation so far: ${summaryText}]` }]
+    content: [{ text: `[A summary of the conversation so far: ${summaryText}]` }]
   };
 
   const optimizedHistory = [...firstMessages, summaryMessage, ...lastMessages];
