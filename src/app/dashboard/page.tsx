@@ -47,7 +47,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { Loader2, Target, BookOpen, Plus, FileText, HelpCircle, BrainCircuit, Calendar } from 'lucide-react';
+import { Loader2, Target, BookOpen, Plus, FileText, HelpCircle, BrainCircuit, Calendar, Flame } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getWeek, startOfWeek, endOfWeek, format } from 'date-fns';
 import { getDashboardStats } from '@/lib/dashboard-actions';
@@ -80,6 +80,17 @@ interface KpiStats {
 
 const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+const badges = [
+    { id: 'summarizer_1', title: 'First Summary', description: 'Create your first summary', icon: FileText, check: (stats: KpiStats) => stats.summariesCount > 0 },
+    { id: 'summarizer_5', title: 'Super Summarizer', description: 'Create 5 summaries', icon: FileText, check: (stats: KpiStats) => stats.summariesCount >= 5 },
+    { id: 'quizzer_1', title: 'Quiz Whiz', description: 'Take your first quiz', icon: HelpCircle, check: (stats: KpiStats) => stats.quizzesCount > 0 },
+    { id: 'quizzer_5', title: 'Quiz Master', description: 'Take 5 quizzes', icon: HelpCircle, check: (stats: KpiStats) => stats.quizzesCount >= 5 },
+    { id: 'flashcard_1', title: 'Flashcard Fan', description: 'Create a flashcard set', icon: BrainCircuit, check: (stats: KpiStats) => stats.flashcardSetsCount > 0 },
+    { id: 'planner_1', title: 'Planner Pro', description: 'Create a study plan', icon: Calendar, check: (stats: KpiStats) => stats.studyPlansCount > 0 },
+    { id: 'streak_3', title: 'On Fire!', description: 'Achieve a 3-day streak', icon: Flame, check: (_: KpiStats, streak: number) => streak >= 3 },
+    { id: 'streak_7', title: 'Week-Long Warrior', description: 'Achieve a 7-day streak', icon: Flame, check: (_: KpiStats, streak: number) => streak >= 7 },
+];
+
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -87,6 +98,8 @@ export default function DashboardPage() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [kpiStats, setKpiStats] = useState<KpiStats | null>(null);
+  const [studyStreak, setStudyStreak] = useState(0);
+  const [earnedBadges, setEarnedBadges] = useState<typeof badges>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Form state
@@ -162,6 +175,67 @@ export default function DashboardPage() {
     setChartData(newChartData);
   }, [sessions, goal]);
 
+  // Calculate Study Streak
+  useEffect(() => {
+    if (sessions.length === 0) {
+      setStudyStreak(0);
+      return;
+    }
+
+    const sortedSessionDates = sessions
+      .map(s => s.createdAt.toDate())
+      .sort((a, b) => b.getTime() - a.getTime());
+    
+    const uniqueDays = new Set(sortedSessionDates.map(d => d.toISOString().split('T')[0]));
+    
+    let streak = 0;
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Check if there's a session today or yesterday to start the streak count
+    const todayStr = today.toISOString().split('T')[0];
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    if (uniqueDays.has(todayStr) || uniqueDays.has(yesterdayStr)) {
+        streak = uniqueDays.has(todayStr) ? 1 : 0;
+        let currentDay = new Date(today);
+
+        if (uniqueDays.has(yesterdayStr)) {
+            if (!uniqueDays.has(todayStr)) {
+                streak = 1;
+                currentDay.setDate(currentDay.getDate() - 1);
+            } else {
+                streak = 1;
+            }
+        }
+
+        while (true) {
+            const prevDay = new Date(currentDay);
+            prevDay.setDate(currentDay.getDate() - 1);
+            const prevDayStr = prevDay.toISOString().split('T')[0];
+
+            if (uniqueDays.has(prevDayStr)) {
+                streak++;
+                currentDay = prevDay;
+            } else {
+                break;
+            }
+        }
+    }
+    
+    setStudyStreak(streak);
+  }, [sessions]);
+
+  // Check for earned badges
+  useEffect(() => {
+    if (kpiStats) {
+        const newEarnedBadges = badges.filter(badge => badge.check(kpiStats, studyStreak));
+        setEarnedBadges(newEarnedBadges);
+    }
+  }, [kpiStats, studyStreak]);
+
   const handleLogSession = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !subject || !duration) {
@@ -233,7 +307,16 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold mb-6">My Dashboard</h1>
           
           {/* KPI Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-6">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
+                    <Flame className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">🔥 {studyStreak} Days</div>
+                </CardContent>
+            </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Summaries Made</CardTitle>
@@ -406,6 +489,32 @@ export default function DashboardPage() {
               </Card>
             </div>
           </div>
+
+          {/* Badges Section */}
+          <Card className="mt-6">
+            <CardHeader>
+                <CardTitle>My Badges</CardTitle>
+                <CardDescription>Achievements you've unlocked on your study journey.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {earnedBadges.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        {earnedBadges.map(badge => (
+                            <div key={badge.id} className="flex flex-col items-center text-center gap-2 p-4 rounded-lg bg-secondary/50">
+                                <badge.icon className="h-10 w-10 text-primary" />
+                                <p className="font-semibold text-sm">{badge.title}</p>
+                                <p className="text-xs text-muted-foreground">{badge.description}</p>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-muted-foreground text-center py-8">
+                        You haven't earned any badges yet. Keep studying to unlock them!
+                    </p>
+                )}
+            </CardContent>
+          </Card>
+
         </div>
       </main>
       <Footer />

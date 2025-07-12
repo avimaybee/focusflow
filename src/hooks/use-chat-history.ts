@@ -15,9 +15,11 @@ export interface ChatHistoryItem {
 export function useChatHistory() {
   const { user } = useAuth();
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (user?.uid) {
+      setIsLoading(true);
       const chatsRef = collection(db, 'users', user.uid, 'chats');
       const q = query(chatsRef, orderBy('createdAt', 'desc'));
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -27,10 +29,16 @@ export function useChatHistory() {
           createdAt: doc.data().createdAt,
         }));
         setChatHistory(history);
+        setIsLoading(false);
+      }, () => {
+        setIsLoading(false);
       });
       return () => unsubscribe();
+    } else {
+        setChatHistory([]);
+        setIsLoading(false);
     }
   }, [user?.uid]);
 
-  return { chatHistory };
+  return { chatHistory, isLoading };
 }

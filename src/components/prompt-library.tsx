@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Sparkles, Star, Search, Brain, FileText, Bot, PenLine, Pencil } from 'lucide-react';
+import { Sparkles, Star, Search, Brain, FileText, Bot, PenLine, Pencil, Plus } from 'lucide-react';
 import type { PromptTemplate } from '@/lib/prompts-data';
 import { getPromptTemplates } from '@/lib/prompts-data';
 import { updateUserFavoritePrompts } from '@/lib/user-actions';
@@ -82,7 +82,7 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
             className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground" 
             aria-label="Open prompt library"
         >
-          <Sparkles className="h-5 w-5" />
+          <Plus className="h-5 w-5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl h-[70vh] flex flex-col p-0">

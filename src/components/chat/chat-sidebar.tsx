@@ -30,7 +30,17 @@ interface ChatSidebarProps {
   activeChatId: string | null;
   onNewChat: () => void;
   onChatSelect: (id: string) => void;
+  isLoading: boolean;
 }
+
+const SidebarSkeleton = () => (
+    <div className="p-4 space-y-4">
+        <div className="h-8 bg-muted/50 rounded-md animate-pulse"></div>
+        <div className="h-8 bg-muted/50 rounded-md animate-pulse w-2/3"></div>
+        <div className="h-8 bg-muted/50 rounded-md animate-pulse w-5/6"></div>
+        <div className="h-8 bg-muted/50 rounded-md animate-pulse w-4/5"></div>
+    </div>
+);
 
 export function ChatSidebar({
   user,
@@ -38,6 +48,7 @@ export function ChatSidebar({
   activeChatId,
   onNewChat,
   onChatSelect,
+  isLoading,
 }: ChatSidebarProps) {
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
   const initial = displayName.charAt(0).toUpperCase();
@@ -54,18 +65,20 @@ export function ChatSidebar({
         </Button>
       </div>
       <ScrollArea className="flex-1 -mx-4">
-        <div className="px-4 py-2 space-y-1">
-          {chatHistory.map((chat) => (
-            <Button
-              key={chat.id}
-              variant={activeChatId === chat.id ? 'secondary' : 'ghost'}
-              className="w-full justify-start gap-3 font-normal py-3 px-4 hover:bg-muted/50 text-foreground"
-              onClick={() => onChatSelect(chat.id)}
-            >
-              <span className="truncate">{chat.title}</span>
-            </Button>
-          ))}
-        </div>
+        {isLoading ? <SidebarSkeleton /> : (
+            <div className="px-4 py-2 space-y-1">
+            {chatHistory.map((chat) => (
+                <Button
+                key={chat.id}
+                variant={activeChatId === chat.id ? 'secondary' : 'ghost'}
+                className="w-full justify-start gap-3 font-normal py-3 px-4 hover:bg-muted/50 text-foreground"
+                onClick={() => onChatSelect(chat.id)}
+                >
+                <span className="truncate">{chat.title}</span>
+                </Button>
+            ))}
+            </div>
+        )}
       </ScrollArea>
       <div className="py-2 mt-auto">
         <DropdownMenu>

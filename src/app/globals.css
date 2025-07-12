@@ -4,48 +4,48 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --background: 224 10% 10%; /* #1B1F23 - Deep Charcoal */
+    --foreground: 210 40% 98%; /* Off-white for text */
+    --card: 224 10% 12%; /* Slightly lighter charcoal for cards */
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 224 10% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
+    --primary: 215 50% 70%; /* #89B9F2 - Soft Blue */
+    --primary-foreground: 224 10% 10%;
+    --secondary: 224 10% 15%; /* Darker shade for secondary elements */
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 224 10% 15%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 265 60% 75%; /* #B788E6 - Muted Purple */
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217.2 91.2% 59.8%;
+    --border: 224 10% 20%; /* Border color */
+    --input: 224 10% 15%;
+    --ring: 215 50% 70%; /* Ring color to match primary */
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --background: 224 10% 10%; /* #1B1F23 - Deep Charcoal */
+    --foreground: 210 40% 98%; /* Off-white for text */
+    --card: 224 10% 12%; /* Slightly lighter charcoal for cards */
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 224 10% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
+    --primary: 215 50% 70%; /* #89B9F2 - Soft Blue */
+    --primary-foreground: 224 10% 10%;
+    --secondary: 224 10% 15%; /* Darker shade for secondary elements */
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 224 10% 15%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 265 60% 75%; /* #B788E6 - Muted Purple */
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217.2 91.2% 59.8%;
+    --border: 224 10% 20%; /* Border color */
+    --input: 224 10% 15%;
+    --ring: 215 50% 70%; /* Ring color to match primary */
   }
 }
 
@@ -84,6 +84,14 @@
 
 .prose-styles {
   @apply prose prose-invert max-w-none prose-p:font-body prose-headings:font-heading prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-foreground;
+}
+
+/* Remove top/bottom margin from first/last elements in AI message bubbles */
+.prose-styles > :first-child {
+    @apply mt-0;
+}
+.prose-styles > :last-child {
+    @apply mb-0;
 }
 
 .prose-styles table {

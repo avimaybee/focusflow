@@ -105,7 +105,7 @@ export const chat = ai.defineFlow(
 
     const model = selectModel(message, history, isPremium || false);
     const personaInstruction = await getPersonaPrompt(persona);
-    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting (e.g., headings, bold text, lists) to improve readability.`
+    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting (e.g., headings, bold text, lists) to improve readability. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it (like pasting text or uploading a file). Do not try to use a tool without the required information.`
     let result;
     
     const availableTools = [
@@ -119,32 +119,54 @@ export const chat = ai.defineFlow(
       highlightKeyInsightsTool,
     ];
 
+    const lastMessage = history.pop(); // Remove the last message to use as the prompt
+    const prompt = lastMessage?.text || message; // Fallback to original message if history is empty
+
     let chatHistory: Message[] = history.map((msg) => ({
       role: msg.role,
       parts: [{ text: msg.text }],
     }));
 
-    // Optimize the chat history to manage context window and cost
     chatHistory = await optimizeChatHistory(chatHistory);
 
     const promptParts = [];
-    let fullMessage = message;
-    // The 'context' is now the raw text content from the file (as a data URI)
+    let fullMessage = prompt;
+
     if (context) {
       const isDataUri = context.startsWith('data:');
       if (isDataUri) {
-          // If it's a data URI, the model can handle it directly.
-          // We can combine the user's message with a reference to the media.
-          promptParts.push({ text: `CONTEXT FROM UPLOADED FILE:\nUse the content of the following file to answer the request.` });
+        const [header, base64Data] = context.split(',');
+        const mimeType = header.split(':')[1].split(';')[0];
+
+        if (mimeType === 'application/pdf') {
+          const { parsePdfToText } = await import('@/ai/pdf-parser');
+          const { summarizeTextMapReduce } = await import('@/ai/summarizer');
+
+          const pdfBuffer = Buffer.from(base64Data, 'base64');
+          const pdfText = await parsePdfToText(pdfBuffer);
+          
+          if (prompt.toLowerCase().includes('summarize')) {
+            const summary = await summarizeTextMapReduce(pdfText);
+            fullMessage = `The user uploaded a PDF and asked for a summary. Here is the summary you generated:\n\n${summary}`;
+          } else {
+            fullMessage = `CONTEXT FROM UPLOADED PDF:\n${pdfText}\n\nUSER'S REQUEST:\n${prompt}`;
+          }
+          promptParts.push({ text: fullMessage });
+        } else if (mimeType.startsWith('image/')) {
+          promptParts.push({ text: `CONTEXT FROM UPLOADED IMAGE:\nUse the content of the following image to answer the request.` });
           promptParts.push({ media: { url: context } });
-          promptParts.push({ text: `\n\nUSER'S REQUEST:\n${message}` });
+          promptParts.push({ text: `\n\nUSER'S REQUEST:\n${prompt}` });
+        } else {
+           const textContent = Buffer.from(base64Data, 'base64').toString('utf-8');
+           fullMessage = `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\nUSER'S REQUEST:\n${prompt}`;
+           promptParts.push({ text: fullMessage });
+        }
       } else {
-        // Fallback for non-data URI context, although our flow is now standardized to data URIs.
-        fullMessage = `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${message}`;
+        fullMessage = `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${prompt}`;
         promptParts.push({ text: fullMessage });
       }
     } else {
-       promptParts.push({ text: message });
+       promptParts.push({ text: prompt });
     }
 
     if (image) {
@@ -168,23 +190,19 @@ export const chat = ai.defineFlow(
       },
     });
 
-    // After generation, check if a tool was called and save the content
-    if (result.toolCalls.length > 0) {
+    if (result.toolCalls && result.toolCalls.length > 0) {
       const toolCall = result.toolCalls[0];
       const toolName = toolCall.name;
       const toolOutput = toolCall.output;
-      // Use the original message as the source text for context
-      await saveGeneratedContent(userId, toolName, toolOutput, message);
+      await saveGeneratedContent(userId, toolName, toolOutput, prompt);
     }
 
-    // Correctly extract the response text from the result object.
-    const responseText = result.message?.content?.[0]?.text;
-
-    // Convert markdown to HTML if there is a response.
-    const formattedResponse = responseText ? marked(responseText) : 'Sorry, I am not sure how to help with that.';
+    const responseText = result.message?.content?.[0]?.text || 'Sorry, I am not sure how to help with that.';
+    const formattedResponse = marked(responseText);
 
     return {
       response: formattedResponse,
+      rawResponse: responseText,
     };
   }
 );

@@ -34,6 +34,7 @@ interface QuizData {
 export type ChatMessageProps = {
   role: 'user' | 'model';
   text: string | React.ReactNode;
+  rawText?: string;
   images?: (string | null)[];
   flashcards?: FlashcardData[];
   quiz?: QuizData;
@@ -43,15 +44,15 @@ export type ChatMessageProps = {
   isPremiumFeature?: boolean;
 };
 
-export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, userName, onSmartToolAction, isPremiumFeature = false }: ChatMessageProps) {
+export function ChatMessage({ role, text, rawText, images, flashcards, quiz, userAvatar, userName, onSmartToolAction, isPremiumFeature = false }: ChatMessageProps) {
   const isUser = role === 'user';
   const messageRef = React.useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const handleCopy = () => {
-    if (typeof text === 'string') {
-        const plainText = text.replace(/<[^>]*>/g, ''); // Strip HTML for copying
-        navigator.clipboard.writeText(plainText);
+    const textToCopy = rawText || (typeof text === 'string' ? text.replace(/<[^>]*>/g, '') : '');
+    if (textToCopy) {
+        navigator.clipboard.writeText(textToCopy);
         toast({
             title: 'Copied to clipboard!',
             description: 'The message content has been copied.',
@@ -90,7 +91,7 @@ export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, 
         <div
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'max-w-2xl rounded-xl p-3 text-sm',
+            'max-w-2xl rounded-xl p-2 text-sm',
             isUser
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted',

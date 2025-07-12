@@ -5,52 +5,62 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { ChatMessageProps } from '@/components/chat-message';
-import { Dispatch } from 'react';
 
-export function useChatMessages(activeChatId: string | null, dispatch: Dispatch<any>) {
+export function useChatMessages(activeChatId: string | null) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+  const [messages, setMessages] = useState<ChatMessageProps[]>([]);
+  const [isMessagesLoading, setIsMessagesLoading] = useState(true);
 
   useEffect(() => {
     if (user?.uid && activeChatId) {
-      setIsHistoryLoading(true);
+      setIsMessagesLoading(true);
       const messagesRef = collection(db, 'users', user.uid, 'chats', activeChatId, 'messages');
       const q = query(messagesRef, orderBy('createdAt', 'asc'));
+      
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const chatMessages = querySnapshot.docs.map(doc => {
           const data = doc.data();
-          // The 'text' field in Firestore for model messages is a JSON string.
-          // For user messages, it's a JSON string like `{"role":"user","text":"Hi"}`.
-          // We need to robustly parse this.
-          try {
-            const parsedContent = JSON.parse(data.text);
-            // If parsed content is an object with a 'role' it's a full message object.
-            if (typeof parsedContent === 'object' && parsedContent !== null && parsedContent.role) {
-                return { id: doc.id, ...parsedContent, createdAt: data.createdAt };
+          const id = doc.id;
+
+          // This handles old messages that do not have a rawText field.
+          if (typeof data.text === 'string' && data.role === 'model' && !data.rawText) {
+            try {
+              // Check if it's an old AI message stored as a JSON string.
+              const parsedText = JSON.parse(data.text);
+              if (typeof parsedText === 'object' && parsedText !== null && parsedText.role) {
+                const displayText = parsedText.text || '';
+                // Sanitize the old data by creating a rawText field from stripped HTML.
+                const rawText = displayText.replace(/<[^>]*>/g, '');
+                return { id, ...parsedText, text: displayText, rawText: rawText, createdAt: data.createdAt };
+              }
+            } catch (e) {
+              // If JSON.parse fails, it's an old model message that wasn't JSON.
+              // Sanitize it by creating a rawText field.
+              return { id, ...data, rawText: data.text.replace(/<[^>]*>/g, '') } as ChatMessageProps;
             }
-            // If it's not an object with a role, it's probably an old format. Fallback.
-            return { id: doc.id, role: data.role, text: data.text, createdAt: data.createdAt };
-          } catch (e) {
-            // If parsing fails, it's a plain string.
-            return { id: doc.id, role: data.role, text: data.text, createdAt: data.createdAt };
           }
+          
+          // New format messages (and user messages) should pass through correctly.
+          return { id, ...data } as ChatMessageProps;
         });
-        dispatch({ type: 'SET_MESSAGES', payload: chatMessages });
-        setIsHistoryLoading(false);
+
+        setMessages(chatMessages);
+        setIsMessagesLoading(false);
       }, (error) => {
         console.error("Error fetching messages:", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat messages.' });
-        setIsHistoryLoading(false);
+        setIsMessagesLoading(false);
       });
+      
       return () => unsubscribe();
     } else {
-      dispatch({ type: 'SET_MESSAGES', payload: [] });
-      setIsHistoryLoading(false);
+      setMessages([]);
+      setIsMessagesLoading(false);
     }
-  }, [user?.uid, activeChatId, toast, dispatch]);
+  }, [user?.uid, activeChatId, toast]);
 
-  return { isHistoryLoading };
+  return { messages, isMessagesLoading };
 }
 
     
