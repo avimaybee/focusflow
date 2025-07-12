@@ -25,8 +25,11 @@ import {
   deleteField,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { chat, rewriteText, generateBulletPoints, generateCounterarguments, highlightKeyInsights } from '@/ai/flows/chat-flow';
-
+import { chat } from '@/ai/flows/chat-flow';
+import { rewriteText } from '@/ai/flows/rewrite-text';
+import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
+import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
+import { highlightKeyInsights } from '@/ai/flows/highlight-key-insights';
 import type {
   ChatInput,
   ChatHistoryMessage,
@@ -391,7 +394,7 @@ export default function ChatPage() {
             dispatch={dispatch}
             handleSendMessage={handleSendMessage}
             handleFileSelect={handleFileSelect}
-            onSelectPrompt={onSelectPrompt}
+            onSelectPrompt={handleSelectPrompt}
             isLoading={isLoading}
             isHistoryLoading={isHistoryLoading}
             personas={personas}
