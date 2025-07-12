@@ -18,12 +18,14 @@ import {
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from './tools';
-import type { Message, Part } from 'genkit';
+import type { Message } from 'genkit';
 import { marked } from 'marked';
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PersonaIDs } from '@/lib/constants';
 import { z } from 'zod';
+import { parsePdfToText } from '@/ai/pdf-parser';
+
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
     const personaRef = doc(db, 'personas', personaId);
@@ -110,36 +112,31 @@ export const chatFlow = ai.defineFlow(
       highlightKeyInsightsTool,
     ];
 
-    // Safely convert the chat history, ensuring no message has undefined content.
-    const llmHistory: Message[] = history.reduce((acc: Message[], m) => {
-      // Only include messages that have some text content.
-      if (m.text && typeof m.text === 'string' && m.text.trim()) {
-        acc.push({
+    // Build the history for the AI, converting our app's message format to Genkit's Message format.
+    const llmHistory: Message[] = history
+      .filter(m => m.text && typeof m.text === 'string' && m.text.trim()) // Filter out any empty messages
+      .map(m => ({
           role: m.role as 'user' | 'model',
           content: [{ text: m.text }],
-        });
-      }
-      return acc;
-    }, []);
+      }));
 
-    // If there's context from a file upload, add it to the latest user message.
-    const lastMessage = llmHistory[llmHistory.length - 1];
-    if (context && lastMessage?.role === 'user') {
+    // If there's context from a file upload, add it as a new user message at the end of the history.
+    if (context) {
         const isDataUri = context.startsWith('data:');
         if (isDataUri) {
              const [header, base64Data] = context.split(',');
              const mimeType = header.split(':')[1].split(';')[0];
              if (mimeType.startsWith('image/')) {
-                 lastMessage.content.push({ media: { url: context } });
+                 llmHistory[llmHistory.length - 1].content.push({ media: { url: context } });
              } else {
-                // For PDF/text, we prepend text context.
-                const { parsePdfToText } = await import('@/ai/pdf-parser');
                 const buffer = Buffer.from(base64Data, 'base64');
                 const textContent = mimeType === 'application/pdf' ? await parsePdfToText(buffer) : buffer.toString('utf-8');
-                lastMessage.content[0].text = `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\nUSER'S REQUEST:\n${lastMessage.content[0].text}`;
+                const lastMessageText = llmHistory[llmHistory.length -1]?.content[0].text || message;
+                llmHistory[llmHistory.length - 1].content[0].text = `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\nUSER'S REQUEST:\n${lastMessageText}`;
              }
         } else {
-             lastMessage.content[0].text = `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${lastMessage.content[0].text}`;
+             const lastMessageText = llmHistory[llmHistory.length -1]?.content[0].text || message;
+             llmHistory[llmHistory.length - 1].content[0].text = `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${lastMessageText}`;
         }
     }
     
