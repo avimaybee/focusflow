@@ -16,7 +16,7 @@ import {rewriteTextFlow} from './flows/rewrite-text';
 import {generateBulletPointsFlow} from './flows/generate-bullet-points';
 import {generateCounterargumentsFlow} from './flows/generate-counterarguments';
 import {highlightKeyInsightsFlow} from './flows/highlight-key-insights';
-import {chat as chatFlow} from './flows/chat-flow';
+import {chatFlow} from './flows/chat-flow';
 import {ChatInput} from './flows/chat-types';
 
 
