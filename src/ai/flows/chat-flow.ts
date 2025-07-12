@@ -105,7 +105,7 @@ export const chat = ai.defineFlow(
 
     const model = selectModel(message, history, isPremium || false);
     const personaInstruction = await getPersonaPrompt(persona);
-    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner.`
+    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting (e.g., headings, bold text, lists) to improve readability.`
     let result;
     
     const availableTools = [
