@@ -157,17 +157,17 @@ export default function ChatPage() {
     const prompt = input.trim();
     if ((!prompt && !chatContext) || isLoading || !user?.uid) return;
 
-    const userMessageText = prompt || `Attached file: ${chatContext?.name}`;
+    const userMessageText = prompt || `File Attached: ${chatContext?.name}`;
 
     const userMessage: Partial<ChatMessageProps> = {
       role: 'user',
       text: userMessageText,
+      rawText: userMessageText,
       userAvatar: user?.photoURL,
       userName: user?.displayName || user?.email || 'User',
     };
 
     if (chatContext) {
-      // Only store metadata in Firestore, not the large data URI
       userMessage.context = { name: chatContext.name, type: chatContext.type };
     }
 
@@ -175,49 +175,49 @@ export default function ChatPage() {
     let currentChatId = activeChatId;
 
     try {
-        if (!currentChatId) {
-            const chatDoc = await addDoc(collection(db, 'users', user.uid, 'chats'), {
-              title: userMessageText.split(' ').slice(0, 5).join(' ').substring(0, 40) || 'New Chat',
-              createdAt: serverTimestamp(),
-              userId: user.uid,
-            });
-            currentChatId = chatDoc.id;
-            setActiveChatId(currentChatId); 
-            router.push(`/chat/${currentChatId}`, { scroll: false });
-        }
-        
-        const messagePayload: any = {
-            ...userMessage,
-            createdAt: serverTimestamp(),
-        };
+      if (!currentChatId) {
+        const chatDoc = await addDoc(collection(db, 'users', user.uid, 'chats'), {
+          title: userMessageText.substring(0, 40) || 'New Chat',
+          createdAt: serverTimestamp(),
+          userId: user.uid,
+        });
+        currentChatId = chatDoc.id;
+        setActiveChatId(currentChatId);
+        router.push(`/chat/${currentChatId}`, { scroll: false });
+      }
 
-        if (chatContext) {
-           messagePayload.context = { name: chatContext.name, type: chatContext.type };
-        }
+      const messagePayload: any = {
+        ...userMessage,
+        createdAt: serverTimestamp(),
+      };
+      
+      // Conditionally add context to prevent Firestore error with 'undefined'
+      if (chatContext) {
+        messagePayload.context = { name: chatContext.name, type: chatContext.type };
+      }
 
-        // Add the new user message to Firestore
-        await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), messagePayload);
-        
-        // Prepare the history for the AI call.
-        // It includes all existing messages plus the new one we just constructed.
-        const historyForAI: ChatHistoryMessage[] = [
-          ...messages.map(m => ({
-            role: m.role as 'user' | 'model',
-            text: (m.rawText || (typeof m.text === 'string' ? m.text : '')) as string
-          })),
-          { role: 'user', text: userMessageText }
-        ];
+      await addDoc(collection(db, 'users', user.uid, 'chats', currentChatId, 'messages'), messagePayload);
 
-        // Pass the updated message list to the AI
-        callAI(currentChatId, historyForAI);
+      // Prepare the history for the AI call.
+      // It includes all existing messages plus the new one we just constructed.
+      const historyForAI: ChatHistoryMessage[] = [
+        ...messages.map(m => ({
+          role: m.role as 'user' | 'model',
+          text: (m.rawText || (typeof m.text === 'string' ? m.text : '')) as string
+        })),
+        { role: 'user', text: userMessageText }
+      ];
+
+      // Pass the updated message list to the AI
+      callAI(currentChatId, historyForAI);
 
     } catch (error) {
-        console.error('Error submitting message:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Message Failed',
-            description: 'Could not send message. Please try again.',
-        });
+      console.error('Error submitting message:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Message Failed',
+        description: 'Could not send message. Please try again.',
+      });
     }
   };
 
@@ -384,5 +384,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
