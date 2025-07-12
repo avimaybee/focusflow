@@ -25,12 +25,8 @@ import {
   deleteField,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { chat } from '@/ai/flows/chat-flow';
-import { rewriteText } from '@/ai/flows/rewrite-text';
-import { generateBulletPoints } from '@/ai/flows/generate-bullet-points';
-import { generateCounterarguments } from '@/ai/flows/generate-counterarguments';
-import { generatePresentationOutline } from '@/ai/flows/generate-presentation-outline';
-import { highlightKeyInsights } from '@/ai/flows/highlight-key-insights';
+import { chat, rewriteText, generateBulletPoints, generateCounterarguments, highlightKeyInsights } from '@/ai/flows/chat-flow';
+
 import type {
   ChatInput,
   ChatHistoryMessage,
@@ -293,18 +289,6 @@ export default function ChatPage() {
         case SmartToolActions.COUNTERARGUMENTS:
           actionFn = generateCounterarguments({ statementToChallenge: messageText, persona: selectedPersonaId as Persona });
           formatResult = (result) => result.counterarguments.map((arg: string, i: number,) => `${i + 1}. ${arg}`).join('\n\n');
-          break;
-        case SmartToolActions.PRESENTATION:
-          actionFn = generatePresentationOutline(sourceArg);
-          formatResult = (result) => {
-            let outlineString = `## ${result.title}\n\n`;
-            result.slides.forEach((slide: any, index: number,) => {
-              outlineString += `### **Slide ${index + 1}: ${slide.title}**\n`;
-              slide.bulletPoints.forEach((point: string) => outlineString += `- ${point}\n`);
-              outlineString += '\n';
-            });
-            return outlineString;
-          };
           break;
         case SmartToolActions.INSIGHTS:
           actionFn = highlightKeyInsights(sourceArg);

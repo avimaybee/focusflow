@@ -20,6 +20,5 @@ export const SmartToolActions = {
   REWRITE: 'rewrite',
   BULLET_POINTS: 'bulletPoints',
   COUNTERARGUMENTS: 'counterarguments',
-  PRESENTATION: 'presentation',
   INSIGHTS: 'insights',
 } as const;

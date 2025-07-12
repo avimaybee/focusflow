@@ -1,11 +1,6 @@
-
 'use server';
 /**
  * @fileOverview AI flow for rewriting text with a specified style.
- *
- * - rewriteText - A function that rewrites text.
- * - RewriteTextInput - The input type for the function.
- * - RewriteTextOutput - The return type for the function.
  */
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
@@ -22,12 +17,6 @@ const RewriteTextOutputSchema = z.object({
   rewrittenText: z.string().describe('The rewritten text.'),
 });
 export type RewriteTextOutput = z.infer<typeof RewriteTextOutputSchema>;
-
-export async function rewriteText(
-  input: RewriteTextInput
-): Promise<RewriteTextOutput> {
-  return rewriteTextFlow(input);
-}
 
 const prompt = ai.definePrompt({
   name: 'rewriteTextPrompt',
@@ -48,7 +37,7 @@ Please provide only the rewritten text in your response.
 `,
 });
 
-const rewriteTextFlow = ai.defineFlow(
+export const rewriteTextFlow = ai.defineFlow(
   {
     name: 'rewriteTextFlow',
     inputSchema: RewriteTextInputSchema,

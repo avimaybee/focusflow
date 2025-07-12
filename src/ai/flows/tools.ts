@@ -10,7 +10,6 @@ import {createQuiz} from './create-quiz';
 import {explainConcept, ExplainConceptInputSchema} from './explain-concept';
 import {createMemoryAid, CreateMemoryAidInputSchema} from './create-memory-aid';
 import {createDiscussionPrompts} from './create-discussion-prompts';
-import {generatePresentationOutline} from './generate-presentation-outline';
 import {highlightKeyInsights} from './highlight-key-insights';
 import {z} from 'genkit';
 import {PersonaSchema} from './chat-types';
@@ -165,32 +164,6 @@ export const createDiscussionPromptsTool = ai.defineTool(
       promptString += `**[${p.type}]** ${p.text}\n\n`;
     });
     return promptString;
-  }
-);
-
-export const generatePresentationOutlineTool = ai.defineTool(
-  {
-    name: 'generatePresentationOutline',
-    description: 'Generates a structured presentation outline from a piece of text or a document.',
-    inputSchema: ContextualToolInputSchema,
-    outputSchema: z.string().describe('A formatted string containing the presentation outline.'),
-  },
-  async input => {
-    const isFile = input.context.startsWith('data:');
-    const result = await generatePresentationOutline({
-      sourcePdf: isFile ? input.context : undefined,
-      sourceText: !isFile ? input.context : undefined,
-      persona: input.persona,
-    });
-    let outlineString = `## ${result.title}\n\n`;
-    result.slides.forEach((slide, index) => {
-      outlineString += `### **Slide ${index + 1}: ${slide.title}**\n`;
-      slide.bulletPoints.forEach(point => {
-        outlineString += `- ${point}\n`;
-      });
-      outlineString += '\n';
-    });
-    return outlineString;
   }
 );
 

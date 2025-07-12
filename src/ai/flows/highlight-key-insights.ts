@@ -1,10 +1,5 @@
-
 /**
  * @fileOverview AI flow for highlighting key insights from text.
- *
- * - highlightKeyInsights - A function that extracts insights from text or a PDF.
- * - HighlightKeyInsightsInput - The input type for the function.
- * - HighlightKeyInsightsOutput - The return type for the function.
  */
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
@@ -31,12 +26,6 @@ export const HighlightKeyInsightsOutputSchema = z.object({
 });
 export type HighlightKeyInsightsOutput = z.infer<typeof HighlightKeyInsightsOutputSchema>;
 
-export async function highlightKeyInsights(
-  input: HighlightKeyInsightsInput
-): Promise<HighlightKeyInsightsOutput> {
-  return highlightKeyInsightsFlow(input);
-}
-
 const prompt = ai.definePrompt({
   name: 'highlightKeyInsightsPrompt',
   input: {schema: HighlightKeyInsightsInputSchema},
@@ -62,7 +51,7 @@ Source Document: {{media url=sourcePdf}}
 `,
 });
 
-const highlightKeyInsightsFlow = ai.defineFlow(
+export const highlightKeyInsightsFlow = ai.defineFlow(
   {
     name: 'highlightKeyInsightsFlow',
     inputSchema: HighlightKeyInsightsInputSchema,

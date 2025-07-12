@@ -1,35 +1,11 @@
+
 'use server';
 
 import {
-  generate,
-  prompt,
-  defineFlow,
-  run,
-  configureGenkit,
-} from 'genkit/ai';
-import {
   ChatHistoryMessage,
   ChatInput,
-  Flashcard,
-  Quiz,
-  StudyPlan,
-  Counterarguments,
-  PresentationOutline,
-  KeyInsights,
-  RewriteTextRequest,
-  RewriteTextResponse,
-  GenerateBulletPointsRequest,
-  GenerateBulletPointsResponse,
-  GenerateCounterargumentsRequest,
-  GenerateCounterargumentsResponse,
-  GeneratePresentationOutlineRequest,
-  GeneratePresentationOutlineResponse,
-  HighlightKeyInsightsRequest,
-  HighlightKeyInsightsResponse,
 } from './chat-types';
 import {ai} from '../genkit';
-import {z} from 'zod';
-import pdf from 'pdf-parse/lib/pdf-parse';
 import { selectModel } from '../model-selection';
 import { optimizeChatHistory } from './history-optimizer';
 import {
@@ -39,7 +15,6 @@ import {
   createQuizTool,
   createStudyPlanTool,
   explainConceptTool,
-  generatePresentationOutlineTool,
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from './tools';
@@ -48,6 +23,17 @@ import { marked } from 'marked';
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PersonaIDs } from '@/lib/constants';
+import { rewriteTextFlow } from './rewrite-text';
+import { generateBulletPointsFlow } from './generate-bullet-points';
+import { generateCounterargumentsFlow } from './generate-counterarguments';
+import { highlightKeyInsightsFlow as highlightKeyInsightsFlowFn } from './highlight-key-insights'; // Renamed to avoid conflict
+import {
+  RewriteTextRequest,
+  GenerateBulletPointsRequest,
+  GenerateCounterargumentsRequest,
+  HighlightKeyInsightsRequest,
+} from './chat-types';
+import { z } from 'zod';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
     const personaRef = doc(db, 'personas', personaId);
@@ -124,7 +110,6 @@ export async function chat(input: ChatInput) {
     explainConceptTool,
     createMemoryAidTool,
     createDiscussionPromptsTool,
-    generatePresentationOutlineTool,
     highlightKeyInsightsTool,
   ];
 
@@ -184,4 +169,18 @@ export async function chat(input: ChatInput) {
   return {
     response: formattedResponse,
   };
+}
+
+// Re-exposing individual flows for direct use by smart tools
+export async function rewriteText(input: z.infer<typeof RewriteTextRequest>) {
+  return await rewriteTextFlow(input);
+}
+export async function generateBulletPoints(input: z.infer<typeof GenerateBulletPointsRequest>) {
+  return await generateBulletPointsFlow(input);
+}
+export async function generateCounterarguments(input: z.infer<typeof GenerateCounterargumentsRequest>) {
+  return await generateCounterargumentsFlow(input);
+}
+export async function highlightKeyInsights(input: z.infer<typeof HighlightKeyInsightsRequest>) {
+  return await highlightKeyInsightsFlowFn(input);
 }

@@ -1,11 +1,6 @@
-
 'use server';
 /**
  * @fileOverview AI flow for generating counterarguments to a statement.
- *
- * - generateCounterarguments - A function that generates counterarguments.
- * - GenerateCounterargumentsInput - The input type for the function.
- * - GenerateCounterargumentsOutput - The return type for the function.
  */
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
@@ -21,12 +16,6 @@ const GenerateCounterargumentsOutputSchema = z.object({
   counterarguments: z.array(z.string()).describe('An array of 3-5 well-reasoned counterarguments.'),
 });
 export type GenerateCounterargumentsOutput = z.infer<typeof GenerateCounterargumentsOutputSchema>;
-
-export async function generateCounterarguments(
-  input: GenerateCounterargumentsInput
-): Promise<GenerateCounterargumentsOutput> {
-  return generateCounterargumentsFlow(input);
-}
 
 const prompt = ai.definePrompt({
   name: 'generateCounterargumentsPrompt',
@@ -47,7 +36,7 @@ Please provide only the counterarguments in your response.
 `,
 });
 
-const generateCounterargumentsFlow = ai.defineFlow(
+export const generateCounterargumentsFlow = ai.defineFlow(
   {
     name: 'generateCounterargumentsFlow',
     inputSchema: GenerateCounterargumentsInputSchema,

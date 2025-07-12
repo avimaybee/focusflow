@@ -53,3 +53,36 @@ export const ChatOutputSchema = z.object({
   response: z.string().describe("The AI tutor's helpful response."),
 });
 export type ChatOutput = z.infer<typeof ChatOutputSchema>;
+
+export const RewriteTextRequest = z.object({
+  textToRewrite: z.string(),
+  style: z.string(),
+  persona: PersonaSchema.optional(),
+});
+export const RewriteTextResponse = z.object({
+  rewrittenText: z.string(),
+});
+
+export const GenerateBulletPointsRequest = z.object({
+  textToConvert: z.string(),
+  persona: PersonaSchema.optional(),
+});
+export const GenerateBulletPointsResponse = z.object({
+  bulletPoints: z.array(z.string()),
+});
+
+export const GenerateCounterargumentsRequest = z.object({
+  statementToChallenge: z.string(),
+  persona: PersonaSchema.optional(),
+});
+export const GenerateCounterargumentsResponse = z.object({
+  counterarguments: z.array(z.string()),
+});
+
+export const HighlightKeyInsightsRequest = z.object({
+  sourceText: z.string(),
+  persona: PersonaSchema.optional(),
+});
+export const HighlightKeyInsightsResponse = z.object({
+  insights: z.array(z.string()),
+});

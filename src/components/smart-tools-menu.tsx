@@ -4,37 +4,32 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Sparkles, Presentation, ListTodo, Scale, MessageSquare } from 'lucide-react';
+import { Sparkles, ListTodo, Scale, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SmartToolActions } from '@/lib/constants';
 
 export const smartTools = [
   {
     name: 'Rewrite for Clarity',
-    action: 'rewrite',
+    action: SmartToolActions.REWRITE,
     value: 'clearer and more concise',
     icon: <MessageSquare className="h-4 w-4" />,
   },
   {
     name: 'Make it Bullets',
-    action: 'bulletPoints',
+    action: SmartToolActions.BULLET_POINTS,
     value: '',
     icon: <ListTodo className="h-4 w-4" />,
   },
   {
     name: 'Find Counterarguments',
-    action: 'counterarguments',
+    action: SmartToolActions.COUNTERARGUMENTS,
     value: '',
     icon: <Scale className="h-4 w-4" />,
   },
   {
-    name: 'Create Presentation',
-    action: 'presentation',
-    value: '',
-    icon: <Presentation className="h-4 w-4" />,
-  },
-  {
     name: 'Highlight Insights',
-    action: 'insights',
+    action: SmartToolActions.INSIGHTS,
     value: '',
     icon: <Sparkles className="h-4 w-4" />,
   },
