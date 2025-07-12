@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bot, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from './ui/button';
+import Link from 'next/link';
 
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { SmartToolsMenu, smartTools } from './smart-tools-menu';
