@@ -12,6 +12,8 @@ import { SmartToolsMenu, smartTools } from './smart-tools-menu';
 import { FlashcardViewer } from './flashcard-viewer';
 import { QuizViewer } from './quiz-viewer';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
+import { Badge } from './ui/badge';
 
 
 // Define types for flashcard and quiz data to be passed in props
@@ -84,7 +86,7 @@ export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, 
             <AvatarFallback className="bg-transparent"><Bot className="h-5 w-5"/></AvatarFallback>
         </Avatar>
       )}
-      <div className="flex flex-col items-start gap-1 group/message" ref={messageRef}>
+      <div className="flex flex-col items-start gap-1" ref={messageRef}>
         <div
           style={{ lineHeight: 1.5 }}
           className={cn(
@@ -108,7 +110,7 @@ export function ChatMessage({ role, text, images, flashcards, quiz, userAvatar, 
           )}
         </div>
         {!isUser && typeof text === 'string' && onSmartToolAction && (
-          <div className="opacity-0 group-hover/message:opacity-100 focus-within:opacity-100 transition-opacity flex items-center gap-1 rounded-full bg-card p-1 shadow-lg border">
+          <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-lg border">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
