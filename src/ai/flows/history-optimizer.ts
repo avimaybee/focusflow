@@ -38,9 +38,14 @@ export async function optimizeChatHistory(
   history: Message[],
   maxTokens: number = 8000
 ): Promise<Message[]> {
+  // If there's no history to optimize, return an empty array.
+  if (!history || history.length === 0) {
+    return [];
+  }
+
   const messagesToKeep = {
     first: 2, // Keep the first 2 messages for initial context
-    last: 8  // Keep the last 8 messages for recent context
+    last: 8  // Keep the last 8 messages for recent context (but we don't include the absolute last message)
   };
 
   // Calculate total tokens for the whole history

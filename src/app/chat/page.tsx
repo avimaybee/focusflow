@@ -9,20 +9,26 @@ import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
 import { useChatMessages } from '@/hooks/use-chat-messages';
-import { useFileUpload, Attachment } from '@/hooks/use-file-upload';
+import { useFileUpload } from '@/hooks/use-file-upload';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { Loader2, UploadCloud } from 'lucide-react';
-import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { chat } from '@/ai/actions';
+import { chat, rewriteText, generateBulletPoints, generateCounterarguments, highlightKeyInsights } from '@/ai/actions';
 import type { ChatInput, ChatHistoryMessage, Persona } from '@/ai/flows/chat-types';
 import { ChatMessageProps } from '@/components/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
+import { SmartToolActions } from '@/lib/constants';
 
-type ChatContext = Attachment | null;
+type ChatContext = {
+  name: string;
+  type: string;
+  url: string; // This will store the data URI
+} | null;
+
 
 const SkeletonLoader = () => (
     <div className="p-4 space-y-4">
@@ -58,6 +64,7 @@ export default function ChatPage() {
   }, [params]);
 
   useEffect(() => {
+    // Clear any file context when switching to a new or different chat
     setChatContext(null);
   }, [activeChatId]);
   
@@ -91,28 +98,27 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
+      // Convert the full message history into the format the AI expects.
       const chatHistoryForAI: ChatHistoryMessage[] = currentMessages
-        .map(m => {
-          const text = m.role === 'model' ? m.rawText || m.text : m.text;
-          return {
-            role: m.role as 'user' | 'model',
-            text: text as string,
-          };
-        })
+        .map(m => ({
+          role: m.role as 'user' | 'model',
+          // Use rawText for model responses if available, otherwise use the display text.
+          text: (m.role === 'model' ? m.rawText || m.text : m.text) as string,
+        }))
         .filter(m => typeof m.text === 'string' && m.text.trim().length > 0);
-
+      
       const lastMessage = chatHistoryForAI[chatHistoryForAI.length - 1];
       
       const chatInput: ChatInput = {
         userId: user.uid,
-        message: lastMessage.text,
+        message: lastMessage?.text || '',
         persona: selectedPersonaId as Persona,
-        history: chatHistoryForAI.slice(0, -1),
+        history: chatHistoryForAI, // Send the full history
         isPremium: isPremium ?? false,
         context: chatContext?.url,
       };
       
-      setChatContext(null); // Consume the context
+      setChatContext(null); // Consume the context after sending it
 
       const result = await chat(chatInput);
       const responseText = result.response || "I’m sorry, I couldn’t process your request.";
@@ -157,13 +163,17 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    const prompt = input;
-    if ((!prompt.trim() && !chatContext) || isLoading || !user?.uid) return;
+    const prompt = input.trim();
+    if ((!prompt && !chatContext) || isLoading || !user?.uid) return;
+
+    // A file can be attached with or without a text prompt
+    const userMessageText = prompt || `Attached file: ${chatContext?.name}`;
 
     const userMessage: Partial<ChatMessageProps> = {
       role: 'user',
-      text: prompt,
-      images: chatContext && chatContext.type.startsWith('image/') ? [chatContext.url] : [],
+      text: userMessageText,
+      // Pass file metadata to be stored in Firestore
+      context: chatContext ? { name: chatContext.name, type: chatContext.type } : undefined,
       userAvatar: user?.photoURL,
       userName: user?.displayName || user?.email || 'User',
     };
@@ -174,11 +184,12 @@ export default function ChatPage() {
     try {
         if (!currentChatId) {
             const chatDoc = await addDoc(collection(db, 'users', user.uid, 'chats'), {
-              title: prompt.split(' ').slice(0, 5).join(' ').substring(0, 40) || 'New Chat',
+              title: userMessageText.split(' ').slice(0, 5).join(' ').substring(0, 40) || 'New Chat',
               createdAt: serverTimestamp(),
+              userId: user.uid,
             });
             currentChatId = chatDoc.id;
-            setActiveChatId(currentChatId);
+            setActiveChatId(currentChatId); // This will trigger useChatMessages hook
             router.push(`/chat/${currentChatId}`, { scroll: false });
           }
 
@@ -187,9 +198,10 @@ export default function ChatPage() {
             createdAt: serverTimestamp(),
         });
         
-        // Directly call the AI after the user message has been successfully added.
-        // The `messages` state from the hook will update automatically, so we can pass it here.
+        // Optimistically update the local messages state to include the new user message
         const updatedMessages = [...messages, userMessage as ChatMessageProps];
+        
+        // Pass the updated message list to the AI
         callAI(currentChatId, updatedMessages);
 
     } catch (error) {
@@ -201,6 +213,50 @@ export default function ChatPage() {
         });
     }
   };
+
+  const handleSmartToolAction = async (tool: any, messageText: string) => {
+    if (!user || !activeChatId) return;
+    setIsLoading(true);
+
+    try {
+      let resultText = '';
+      const persona = selectedPersonaId as Persona;
+
+      switch (tool.action) {
+        case SmartToolActions.REWRITE:
+          const rewriteResult = await rewriteText({ textToRewrite: messageText, style: tool.value, persona });
+          resultText = rewriteResult.rewrittenText;
+          break;
+        case SmartToolActions.BULLET_POINTS:
+          const bulletsResult = await generateBulletPoints({ textToConvert: messageText, persona });
+          resultText = bulletsResult.bulletPoints.map(pt => `- ${pt}`).join('\n');
+          break;
+        case SmartToolActions.COUNTERARGUMENTS:
+          const countersResult = await generateCounterarguments({ statementToChallenge: messageText, persona });
+          resultText = countersResult.counterarguments.map((arg, i) => `${i + 1}. ${arg}`).join('\n\n');
+          break;
+        case SmartToolActions.INSIGHTS:
+          const insightsResult = await highlightKeyInsights({ sourceText: messageText, persona });
+          resultText = `### Key Insights\n\n` + insightsResult.insights.map(i => `- ${i}`).join('\n');
+          break;
+      }
+      
+      const userMessage = { role: 'user', text: `Used tool: "${tool.name}" on a previous message.` };
+      const modelMessage = { role: 'model', text: resultText, rawText: resultText };
+
+      const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
+      const messagesRef = collection(chatRef, 'messages');
+
+      await addDoc(messagesRef, { ...userMessage, createdAt: serverTimestamp() });
+      await addDoc(messagesRef, { ...modelMessage, createdAt: serverTimestamp() });
+
+    } catch (error) {
+      console.error('Error using smart tool:', error);
+      toast({ variant: 'destructive', title: 'Tool Failed', description: 'Could not perform the requested action.' });
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const handleSelectPrompt = (prompt: string) => {
     setInput(prompt);
@@ -294,30 +350,30 @@ export default function ChatPage() {
           activeChatId={activeChatId}
           scrollAreaRef={scrollAreaRef}
           onSelectPrompt={handleSelectPrompt}
-          onSmartToolAction={() => {}}
+          onSmartToolAction={handleSmartToolAction}
         />
 
         <div className="w-full bg-background">
-          <ChatInputArea
-            input={input}
-            setInput={setInput}
-            handleSendMessage={handleSendMessage}
-            handleFileSelect={handleFileSelect}
-            onSelectPrompt={handleSelectPrompt}
-            isLoading={isLoading}
-            isHistoryLoading={isMessagesLoading}
-            personas={personas}
-            selectedPersonaId={selectedPersonaId}
-            setSelectedPersonaId={setSelectedPersonaId}
-            textareaRef={textareaRef}
-            activeChatId={activeChatId}
-            chatContext={chatContext}
-            clearChatContext={clearChatContext}
-          />
+            <div className="max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto">
+              <ChatInputArea
+                input={input}
+                setInput={setInput}
+                handleSendMessage={handleSendMessage}
+                handleFileSelect={handleFileSelect}
+                onSelectPrompt={handleSelectPrompt}
+                isLoading={isLoading}
+                isHistoryLoading={isMessagesLoading}
+                personas={personas}
+                selectedPersonaId={selectedPersonaId}
+                setSelectedPersonaId={setSelectedPersonaId}
+                textareaRef={textareaRef}
+                activeChatId={activeChatId}
+                chatContext={chatContext}
+                clearChatContext={clearChatContext}
+              />
+            </div>
         </div>
       </main>
     </div>
   );
 }
-
-    

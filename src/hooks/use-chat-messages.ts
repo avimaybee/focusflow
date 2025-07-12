@@ -22,26 +22,7 @@ export function useChatMessages(activeChatId: string | null) {
         const chatMessages = querySnapshot.docs.map(doc => {
           const data = doc.data();
           const id = doc.id;
-
-          // This handles old messages that do not have a rawText field.
-          if (typeof data.text === 'string' && data.role === 'model' && !data.rawText) {
-            try {
-              // Check if it's an old AI message stored as a JSON string.
-              const parsedText = JSON.parse(data.text);
-              if (typeof parsedText === 'object' && parsedText !== null && parsedText.role) {
-                const displayText = parsedText.text || '';
-                // Sanitize the old data by creating a rawText field from stripped HTML.
-                const rawText = displayText.replace(/<[^>]*>/g, '');
-                return { id, ...parsedText, text: displayText, rawText: rawText, createdAt: data.createdAt };
-              }
-            } catch (e) {
-              // If JSON.parse fails, it's an old model message that wasn't JSON.
-              // Sanitize it by creating a rawText field.
-              return { id, ...data, rawText: data.text.replace(/<[^>]*>/g, '') } as ChatMessageProps;
-            }
-          }
           
-          // New format messages (and user messages) should pass through correctly.
           return { id, ...data } as ChatMessageProps;
         });
 
@@ -62,5 +43,3 @@ export function useChatMessages(activeChatId: string | null) {
 
   return { messages, isMessagesLoading };
 }
-
-    

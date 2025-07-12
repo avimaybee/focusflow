@@ -106,7 +106,6 @@ export const chat = ai.defineFlow(
     const model = selectModel(message, history, isPremium || false);
     const personaInstruction = await getPersonaPrompt(persona);
     const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting (e.g., headings, bold text, lists) to improve readability. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it (like pasting text or uploading a file). Do not try to use a tool without the required information.`
-    let result;
     
     const availableTools = [
       summarizeNotesTool,
@@ -119,19 +118,22 @@ export const chat = ai.defineFlow(
       highlightKeyInsightsTool,
     ];
 
-    const lastMessage = history.pop(); // Remove the last message to use as the prompt
-    const prompt = lastMessage?.text || message; // Fallback to original message if history is empty
+    // The `history` from input already contains the full conversation.
+    // The `message` is the text of the most recent message.
+    const prompt = message;
 
+    // Convert our ChatHistoryMessage format to Genkit's Message format.
     let chatHistory: Message[] = history.map((msg) => ({
       role: msg.role,
       parts: [{ text: msg.text }],
     }));
 
-    chatHistory = await optimizeChatHistory(chatHistory);
+    // Optimize history if it's too long, but exclude the most recent message which is the prompt
+    const optimizedHistory = await optimizeChatHistory(chatHistory.slice(0, -1));
 
     const promptParts = [];
-    let fullMessage = prompt;
 
+    // The `context` is a Data URI for a file upload.
     if (context) {
       const isDataUri = context.startsWith('data:');
       if (isDataUri) {
@@ -139,31 +141,20 @@ export const chat = ai.defineFlow(
         const mimeType = header.split(':')[1].split(';')[0];
 
         if (mimeType === 'application/pdf') {
-          const { parsePdfToText } = await import('@/ai/pdf-parser');
-          const { summarizeTextMapReduce } = await import('@/ai/summarizer');
-
-          const pdfBuffer = Buffer.from(base64Data, 'base64');
-          const pdfText = await parsePdfToText(pdfBuffer);
-          
-          if (prompt.toLowerCase().includes('summarize')) {
-            const summary = await summarizeTextMapReduce(pdfText);
-            fullMessage = `The user uploaded a PDF and asked for a summary. Here is the summary you generated:\n\n${summary}`;
-          } else {
-            fullMessage = `CONTEXT FROM UPLOADED PDF:\n${pdfText}\n\nUSER'S REQUEST:\n${prompt}`;
-          }
-          promptParts.push({ text: fullMessage });
+          promptParts.push({ text: `CONTEXT FROM UPLOADED PDF:\nUse the content of this PDF to answer the request.` });
+          promptParts.push({ media: { url: context } });
+          promptParts.push({ text: `\n\nUSER'S REQUEST:\n${prompt}` });
         } else if (mimeType.startsWith('image/')) {
           promptParts.push({ text: `CONTEXT FROM UPLOADED IMAGE:\nUse the content of the following image to answer the request.` });
           promptParts.push({ media: { url: context } });
           promptParts.push({ text: `\n\nUSER'S REQUEST:\n${prompt}` });
         } else {
            const textContent = Buffer.from(base64Data, 'base64').toString('utf-8');
-           fullMessage = `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\nUSER'S REQUEST:\n${prompt}`;
-           promptParts.push({ text: fullMessage });
+           promptParts.push({ text: `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\nUSER'S REQUEST:\n${prompt}` });
         }
       } else {
-        fullMessage = `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${prompt}`;
-        promptParts.push({ text: fullMessage });
+        // This case handles plain text context if ever used.
+        promptParts.push({ text: `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${prompt}` });
       }
     } else {
        promptParts.push({ text: prompt });
@@ -173,10 +164,10 @@ export const chat = ai.defineFlow(
       promptParts.push({ media: { url: image } });
     }
 
-    result = await ai.generate({
+    const result = await ai.generate({
       model,
       system: systemPrompt,
-      history: chatHistory,
+      history: optimizedHistory, // Use the optimized history
       prompt: promptParts,
       tools: availableTools,
       toolChoice: 'auto',
