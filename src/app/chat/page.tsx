@@ -152,29 +152,34 @@ export default function ChatPage() {
     let currentChatId = activeChatId;
     // Create a new chat document in Firestore if one doesn't exist
     if (!currentChatId) {
-        const newChatRef = doc(collection(db, 'users', user.uid, 'chats'));
-        currentChatId = newChatRef.id;
-        await setDoc(newChatRef, {
-          title: userMessageText.substring(0, 40) || 'New Chat',
-          createdAt: serverTimestamp(),
-          userId: user.uid,
-        });
-        setActiveChatId(currentChatId);
-        forceRefresh();
-        router.push(`/chat/${currentChatId}`, { scroll: false });
+        try {
+            const newChatRef = doc(collection(db, 'users', user.uid, 'chats'));
+            currentChatId = newChatRef.id;
+            await setDoc(newChatRef, {
+              title: userMessageText.substring(0, 40) || 'New Chat',
+              createdAt: serverTimestamp(),
+              userId: user.uid,
+            });
+            setActiveChatId(currentChatId);
+            forceRefresh();
+            router.push(`/chat/${currentChatId}`, { scroll: false });
+        } catch (error) {
+            console.error("Error creating new chat:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not start a new chat.' });
+            setIsLoading(false);
+            return;
+        }
     }
+
+    const messagesRef = collection(db, 'users', user.uid, 'chats', currentChatId, 'messages');
 
     const userMessage: Omit<ChatMessageProps, 'id'> = {
       role: 'user',
       text: userMessageText,
       createdAt: Timestamp.now(),
     };
-
-    // Add user message to Firestore
-    const messagesRef = collection(db, 'users', user.uid, 'chats', currentChatId, 'messages');
     await addDoc(messagesRef, userMessage);
     
-    // Convert current messages state to the format Genkit expects
     const historyForAI: ChatHistoryMessage[] = messages.map(m => ({
         role: m.role,
         text: m.rawText || (typeof m.text === 'string' ? m.text.replace(/<[^>]*>/g, '') : ''),
@@ -193,21 +198,36 @@ export default function ChatPage() {
         context: tempAttachment?.url,
     };
 
-    const result = await chat(chatInput);
+    try {
+      const result = await chat(chatInput);
 
-    if (result && !result.isError) {
-        const aiResponse: Omit<ChatMessageProps, 'id'> = {
-            role: 'model',
-            text: result.response,
-            rawText: result.rawResponse,
-            createdAt: Timestamp.now(),
-        };
-        // Add AI response to Firestore
-        await addDoc(messagesRef, aiResponse);
-    } else if (result.isError) {
+      if (result && !result.isError) {
+          const aiResponse: Omit<ChatMessageProps, 'id'> = {
+              role: 'model',
+              text: result.response,
+              rawText: result.rawResponse,
+              createdAt: Timestamp.now(),
+          };
+          await addDoc(messagesRef, aiResponse);
+      } else if (result?.isError) {
+          const errorResponse: Omit<ChatMessageProps, 'id'> = {
+              role: 'model',
+              text: result.response,
+              isError: true,
+              createdAt: Timestamp.now()
+          };
+          await addDoc(messagesRef, errorResponse);
+      }
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Connection Error',
+            description: error.message || 'Could not connect to the AI service. Please try again.',
+        });
         const errorResponse: Omit<ChatMessageProps, 'id'> = {
             role: 'model',
-            text: result.response,
+            text: '<p>Sorry, there was a connection error. Please try again.</p>',
+            rawText: 'Sorry, there was a connection error. Please try again.',
             isError: true,
             createdAt: Timestamp.now()
         };

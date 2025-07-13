@@ -10,7 +10,6 @@ import {
   GenerateCounterargumentsInput,
   HighlightKeyInsightsInput
 } from '@/types/chat-types';
-import { useToast } from '@/hooks/use-toast';
 
 // Get a reference to the deployed chat function
 const chatFunction = httpsCallable(functions, 'chat');
@@ -21,18 +20,8 @@ export async function chat(input: ChatInput) {
     return result.data as any; // Cast to 'any' to avoid type conflicts with server-side types
   } catch (error) {
     console.error("Firebase Functions call failed:", error);
-    const { toast } = useToast();
-    toast({
-      variant: 'destructive',
-      title: 'Connection Error',
-      description: 'Could not connect to the AI service. Please check your connection and try again.'
-    });
-    // Return an error object that the UI can handle
-    return { 
-      response: '<p>Sorry, there was a connection error. Please try again.</p>',
-      rawResponse: 'Sorry, there was a connection error. Please try again.',
-      isError: true 
-    };
+    // Re-throw the error to be handled by the calling component
+    throw new Error('Could not connect to the AI service. Please check your connection and try again.');
   }
 }
 
