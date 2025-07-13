@@ -140,14 +140,15 @@ export const chatFlow = ai.defineFlow(
     if (!sessionId) {
       sessionId = crypto.randomUUID();
     }
-    const fullSessionId = `${userId}_${sessionId}`;
-
+    
     const personaInstruction = await getPersonaPrompt(persona || 'neutral');
     const systemPrompt = `${personaInstruction} You are an expert AI assistant. Your responses should be well-structured and use markdown for formatting (e.g., headings, bold text, lists). If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. Do not try to use a tool without the required information.`;
 
     const model = ai.model('googleai/gemini-1.5-flash');
-    const store = new FirestoreSessionStore();
-    const chat = await ai.chat({ store, sessionId: fullSessionId });
+    
+    // Pass the userId to the store
+    const store = new FirestoreSessionStore(userId);
+    const chat = await ai.chat({ store, sessionId });
     
     const userMessageContent: any[] = [];
 

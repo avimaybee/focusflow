@@ -1,12 +1,22 @@
 
 // src/lib/firestore-session-store.ts
-import { Message, Session, SessionStore } from 'genkit';
+import { Session, SessionStore } from 'genkit';
 import { doc, getDoc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from './firebase';
 
 export class FirestoreSessionStore implements SessionStore {
+  private userId: string;
+
+  constructor(userId: string) {
+    if (!userId) {
+      throw new Error('FirestoreSessionStore requires a userId.');
+    }
+    this.userId = userId;
+  }
+
   private getSessionRef(sessionId: string) {
-    return doc(db, 'sessions', sessionId);
+    // Correctly point to the nested chats subcollection
+    return doc(db, 'users', this.userId, 'chats', sessionId);
   }
 
   async get(sessionId: string): Promise<Session | undefined> {
@@ -27,11 +37,13 @@ export class FirestoreSessionStore implements SessionStore {
   async save(sessionId: string, sessionData: Session): Promise<void> {
     const sessionRef = this.getSessionRef(sessionId);
     
-    const plainSessionData = JSON.parse(JSON.stringify(sessionData));
-
-    await setDoc(sessionRef, {
-      ...plainSessionData,
+    // Ensure the userId is part of the data being saved for security rules
+    const dataToSave = {
+      ...JSON.parse(JSON.stringify(sessionData)),
+      userId: this.userId, 
       updatedAt: serverTimestamp() // Use Firestore server timestamp
-    }, { merge: true });
+    };
+
+    await setDoc(sessionRef, dataToSave, { merge: true });
   }
 }

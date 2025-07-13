@@ -7,7 +7,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/auth-context';
 
 export interface ChatHistoryItem {
-  id: string; // This will now be the session ID
+  id: string;
   title: string;
   createdAt: Timestamp;
 }
@@ -19,49 +19,53 @@ export function useChatHistory() {
 
   const forceRefresh = useCallback(() => {
     if (!user?.uid) {
-        setIsLoading(false);
-        setChatHistory([]);
-        return () => {}; // Return a no-op function for consistency
-    };
-    
-    setIsLoading(true);
-    const sessionsRef = collection(db, 'sessions');
-    // We only care about sessions for the current user.
-    // Firestore queries can't do "startsWith" so we have to filter client-side.
-    const q = query(sessionsRef, orderBy('updatedAt', 'desc'));
-    
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const history = querySnapshot.docs
-        .filter(doc => doc.id.startsWith(user.uid))
-        .map(doc => {
-            const data = doc.data();
-            const firstUserMessage = data.history?.find((m: any) => m.role === 'user');
-            
-            let title = 'New Chat';
-            if (firstUserMessage?.content) {
-                const textPart = firstUserMessage.content.find((p:any) => p.text);
-                const mediaPart = firstUserMessage.content.find((p:any) => p.media);
-                if (textPart?.text) {
-                    title = textPart.text;
-                } else if (mediaPart) {
-                    title = 'Media context';
-                }
-            }
-            
-            return {
-                id: doc.id.split('_')[1], // Return only the chat-specific part of the ID
-                title: title.substring(0, 50),
-                createdAt: data.updatedAt || Timestamp.now(),
-            } as ChatHistoryItem;
-        });
-      setChatHistory(history);
       setIsLoading(false);
-    }, (error) => {
-      console.error("Error fetching chat history:", error);
-      setIsLoading(false);
-    });
-    return unsubscribe;
+      setChatHistory([]);
+      return;
+    }
 
+    setIsLoading(true);
+    // Point to the correct subcollection for the logged-in user
+    const chatsRef = collection(db, 'users', user.uid, 'chats');
+    const q = query(chatsRef, orderBy('updatedAt', 'desc'));
+
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const history = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          // Find the first user message to use as a title
+          const firstUserMessage = data.history?.find((m: any) => m.role === 'user');
+          
+          let title = 'New Chat';
+          if (firstUserMessage?.content) {
+            const textPart = firstUserMessage.content.find((p: any) => p.text);
+            if (textPart?.text) {
+              title = textPart.text;
+            } else {
+              const mediaPart = firstUserMessage.content.find((p: any) => p.media);
+              if (mediaPart) {
+                title = 'Chat with media';
+              }
+            }
+          }
+
+          return {
+            id: doc.id,
+            title: title.substring(0, 50),
+            createdAt: data.updatedAt || Timestamp.now(),
+          } as ChatHistoryItem;
+        });
+        setChatHistory(history);
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error('Error fetching chat history:', error);
+        setIsLoading(false);
+      }
+    );
+
+    return unsubscribe;
   }, [user?.uid]);
 
   useEffect(() => {

@@ -61,14 +61,13 @@ export default function ChatPage() {
         return;
     }
   
-    const fullSessionId = `${user.uid}_${activeChatId}`;
-    const sessionRef = doc(db, 'sessions', fullSessionId);
+    const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
     
-    const unsubscribe = onSnapshot(sessionRef, (docSnapshot) => {
+    const unsubscribe = onSnapshot(chatRef, async (docSnapshot) => {
       if (docSnapshot.exists()) {
         const sessionData = docSnapshot.data();
         const history = sessionData.history || [];
-        const chatMessages = history.map(async (msg: any, index: number) => {
+        const chatMessagesPromises = history.map(async (msg: any, index: number) => {
           // Find the part of the content that is text
           const textPart = msg.content?.find((p: any) => p.text);
           const content = textPart?.text || '';
@@ -81,12 +80,13 @@ export default function ChatPage() {
             createdAt: sessionData.updatedAt || Timestamp.now()
           }
         });
-        Promise.all(chatMessages).then(setMessages);
+        const resolvedMessages = await Promise.all(chatMessagesPromises);
+        setMessages(resolvedMessages);
       } else {
         setMessages([]);
       }
     }, (error) => {
-      console.error("Error fetching session document:", error);
+      console.error("Error fetching chat document:", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat session.' });
     });
     
@@ -164,6 +164,8 @@ export default function ChatPage() {
         const { value, done: streamDone } = await reader.read();
         done = streamDone;
       }
+      
+      // Force a refresh of the chat history list after the stream is complete
       if (isNewChat || activeChatId) {
         forceRefresh();
       }
