@@ -10,7 +10,7 @@ export type Attachment = {
   url: string; // This will store the data URI
 };
 
-export function useFileUpload(dispatch: Dispatch<any>) {
+export function useFileUpload(setAttachment: (attachment: Attachment | null) => void) {
   const { toast } = useToast();
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
@@ -26,11 +26,11 @@ export function useFileUpload(dispatch: Dispatch<any>) {
   const handleFileSelect = async (file: File) => {
     if (!file) return;
 
-    if (!file.type.startsWith('image/') && !file.type.startsWith('text/')) {
+    if (!file.type.startsWith('image/') && !file.type.startsWith('text/') && file.type !== 'application/pdf') {
        toast({
         variant: 'destructive',
         title: 'Unsupported File Type',
-        description: 'Please upload an image or text file.',
+        description: 'Please upload an image, PDF, or text file.',
       });
       return;
     }
@@ -52,8 +52,7 @@ export function useFileUpload(dispatch: Dispatch<any>) {
         type: file.type,
         url: dataUri,
       };
-      // Dispatch to add the attachment to the temporary client state
-      dispatch({ type: 'SET_ATTACHMENTS', payload: [newAttachment] });
+      setAttachment(newAttachment);
     } catch (error) {
       console.error("File reading error:", error);
       toast({

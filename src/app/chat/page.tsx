@@ -155,9 +155,6 @@ export default function ChatPage() {
 
     setIsLoading(true);
     const userMessageText = input.trim();
-    setInput('');
-    const tempAttachment = attachment;
-    setAttachment(null);
     
     let currentChatId = activeChatId;
 
@@ -175,6 +172,7 @@ export default function ChatPage() {
         createdAt: Timestamp.now(),
     };
     setMessages(prev => [...prev, userMessageForUI]);
+    setInput('');
     
     const personaId = validPersonas.includes(selectedPersonaId as any)
         ? (selectedPersonaId as Persona)
@@ -185,8 +183,10 @@ export default function ChatPage() {
         sessionId: currentChatId,
         persona: personaId,
         isPremium: isPremium ?? false,
-        context: tempAttachment?.url, // Pass the data URI directly
+        context: attachment?.url, // Pass the data URI directly
     };
+    
+    setAttachment(null); // Clear attachment from UI immediately
 
     try {
       const response = await streamChat(chatInput);
