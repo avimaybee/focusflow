@@ -139,16 +139,20 @@ export const chatFlow = ai.defineFlow(
     const { userId, message, context, persona } = input;
     let { sessionId } = input;
 
+    // Correctly instantiate the user-specific session store
     const store = new FirestoreSessionStore(userId);
+    
+    // Load existing session or create a new one if sessionId is not provided
     const session = sessionId 
         ? await ai.loadSession(sessionId, { store })
-        : await ai.createSession({ store });
+        : await ai.createSession({ store }); // Genkit handles creating a unique ID
     
+    // The session ID is now guaranteed to be available
     sessionId = session.id;
     console.log(`DEBUG: Session loaded/created. ID: ${sessionId}`);
 
     const personaInstruction = await getPersonaPrompt(persona || 'neutral');
-    const systemPrompt = `${personaInstruction} You are an expert AI assistant...`; // Truncated for brevity
+    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.`;
     console.log('DEBUG: Persona prompt fetched.');
 
     const model = googleAI.model('gemini-1.5-flash');
@@ -169,6 +173,7 @@ export const chatFlow = ai.defineFlow(
     });
     console.log('DEBUG: Chat object created.');
     
+    // Construct the user message payload
     const userMessageContent: any[] = [{ text: message }];
 
     if (context) {
@@ -179,7 +184,7 @@ export const chatFlow = ai.defineFlow(
 
     let result;
     try {
-      console.log('DEBUG: Attempting to call chat.send() to Gemini API...');
+      console.log('DEBUG: Attempting to call chat.send() to Gemini API with content:', userMessageContent);
       result = await chat.send(userMessageContent, { streamingCallback });
       console.log('DEBUG: chat.send() call was successful.');
     } catch (error) {
@@ -187,7 +192,7 @@ export const chatFlow = ai.defineFlow(
       console.error('DEBUG: The error occurred within the chat.send() call.');
       console.error('DEBUG: Full error object:', error);
       console.error('---------------------------------');
-      throw error;
+      throw error; // Re-throw to be caught by the API route handler
     }
     
     const toolCalls = result.history.at(-1)?.toolCalls;
@@ -200,6 +205,7 @@ export const chatFlow = ai.defineFlow(
       }
     }
 
+    // Return the session ID and the final text response
     return {
         sessionId,
         response: result.text,

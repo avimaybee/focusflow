@@ -51,6 +51,7 @@ export default function ChatPage() {
         setActiveChatId(chatIdFromUrl);
       }
     } else {
+      // If there's no chat ID in the URL, treat it as a new chat
       if (activeChatId) handleNewChat();
     }
   }, [params.chatId]);
@@ -61,28 +62,32 @@ export default function ChatPage() {
         return;
     }
   
+    // Correctly point to the user's specific chat document
     const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
     
     const unsubscribe = onSnapshot(chatRef, async (docSnapshot) => {
       if (docSnapshot.exists()) {
         const sessionData = docSnapshot.data();
         const history = sessionData.history || [];
+        
         const chatMessagesPromises = history.map(async (msg: any, index: number) => {
-          // Find the part of the content that is text
+          // Find the text part of the message content
           const textPart = msg.content?.find((p: any) => p.text);
           const content = textPart?.text || '';
           
           return { 
             id: `${docSnapshot.id}-${index}`,
             role: msg.role,
-            text: await marked.parse(content),
+            text: await marked.parse(content), // Parse markdown for display
             rawText: content,
             createdAt: sessionData.updatedAt || Timestamp.now()
           }
         });
+
         const resolvedMessages = await Promise.all(chatMessagesPromises);
         setMessages(resolvedMessages);
       } else {
+        // If the document doesn't exist, clear messages
         setMessages([]);
       }
     }, (error) => {
@@ -112,7 +117,7 @@ export default function ChatPage() {
 
     setIsSending(true);
     
-    let currentChatId = activeChatId;
+    const isNewChat = !activeChatId;
     
     const personaId = validPersonas.includes(selectedPersonaId as any)
         ? (selectedPersonaId as Persona)
@@ -120,7 +125,7 @@ export default function ChatPage() {
 
     const chatInput = {
         message: input.trim(),
-        sessionId: currentChatId || undefined,
+        sessionId: activeChatId || undefined,
         persona: personaId,
         isPremium: isPremium ?? false,
         context: attachment?.url,
@@ -141,32 +146,38 @@ export default function ChatPage() {
         body: JSON.stringify(chatInput),
       });
 
-      const isNewChat = !currentChatId;
       if (isNewChat) {
+        // After sending, the new session ID will be available in the response header.
+        // We need to read this to update the URL.
         const newSessionId = response.headers.get('X-Session-Id');
         if (newSessionId) {
-          const newPath = `/chat/${newSessionId}`;
-          router.replace(newPath); 
+          // Use `replace` to avoid adding a new entry to browser history for the same chat
+          router.replace(`/chat/${newSessionId}`); 
           setActiveChatId(newSessionId);
         }
       }
 
       if (!response.ok || !response.body) {
-        const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred.' }));
+        // Try to parse the error response from the server for a more specific message
+        const errorData = await response.json().catch(() => ({ error: `The server returned a ${response.status} error with no details.` }));
         console.error('DEBUG (Client): Received error response from server:', errorData);
-        throw new Error(errorData.error || `The server returned a ${response.status} error.`);
+        throw new Error(errorData.error || 'An unknown error occurred.');
       }
       
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       
+      // The streaming response will be handled by the `onSnapshot` listener,
+      // which updates the UI in real-time as the database document changes.
+      // We just need to consume the stream to completion.
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        // The streaming logic for displaying the response is handled by onSnapshot
+        // The stream is consumed, but UI updates are driven by Firestore.
       }
       
-      if (isNewChat || activeChatId) {
+      // If it was a new chat, force the sidebar to refresh to show the new chat title
+      if (isNewChat) {
         forceRefresh();
       }
 
@@ -176,6 +187,7 @@ export default function ChatPage() {
         console.error("-----------------------------------");
 
         let description = 'An unknown error occurred.';
+        // Use the specific error message if it exists
         if (error.message) {
            description = error.message;
         }
@@ -186,6 +198,7 @@ export default function ChatPage() {
             description: description,
         });
 
+        // Display an error message directly in the chat window
         const errorResponse: ChatMessageProps = {
             id: `err-${Date.now()}`,
             role: 'model',
