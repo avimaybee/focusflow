@@ -24,7 +24,7 @@ import { db } from '@/lib/firebase';
 import { PersonaIDs } from '@/lib/constants';
 import { FirestoreSessionStore } from '@/lib/firestore-session-store';
 import { Document } from '@langchain/core/documents';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { RecursiveCharacterTextSplitter } from 'langchain-community/text_splitters';
 import { devVectorStore } from '@genkit-ai/dev-vectorstore';
 import { textEmbedding } from 'genkitx-googleai';
 import * as pdfjs from 'pdf-parse';
