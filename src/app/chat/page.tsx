@@ -15,7 +15,7 @@ import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { UploadCloud } from 'lucide-react';
 import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { Persona } from '@/types/chat-types';
 import { ChatMessageProps } from '@/components/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
@@ -125,19 +125,27 @@ export default function ChatPage() {
     };
     setMessages(prev => [...prev, userMessage]);
   
+    // Revert to the primary chat API and full payload
     const chatInput = {
       message: input.trim(),
+      sessionId: activeChatId || undefined,
+      persona: selectedPersonaId,
+      isPremium,
+      context: attachment?.url,
     };
   
     setInput('');
     setAttachment(null);
   
     try {
-      console.log('DEBUG (Client): Sending request to /api/test-chat with input:', chatInput);
-      const response = await fetch('/api/test-chat', {
+      console.log('DEBUG (Client): Sending request to /api/chat with input:', chatInput);
+      const idToken = await auth.currentUser?.getIdToken();
+
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
         },
         body: JSON.stringify(chatInput),
       });
@@ -145,7 +153,7 @@ export default function ChatPage() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: `The server returned a ${response.status} error with no details.` }));
         console.error('DEBUG (Client): Received error response from server:', errorData);
-        throw new Error(errorData.error || 'An unknown error occurred.');
+        throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
   
       const result = await response.json();
@@ -157,6 +165,12 @@ export default function ChatPage() {
         createdAt: Timestamp.now(),
       };
       setMessages(prev => [...prev, aiResponse]);
+  
+      if (result.sessionId && !activeChatId) {
+        setActiveChatId(result.sessionId);
+        router.push(`/chat/${result.sessionId}`);
+        forceRefresh();
+      }
   
     } catch (error: any) {
       console.error("--- DEBUG (Client): CATCH BLOCK ---");

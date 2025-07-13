@@ -10,12 +10,11 @@ console.log('--- DEBUG: Loading src/ai/genkit.ts ---');
 console.log('DEBUG: GEMINI_API_KEY is:', process.env.GEMINI_API_KEY ? 'SET' : 'NOT SET');
 console.log('------------------------------------');
 
+// By not passing an explicit apiKey, Genkit will automatically look for
+// the GEMINI_API_KEY or GOOGLE_API_KEY in the environment variables.
+// This is the most robust method.
 export const ai = genkit({
-  plugins: [
-    googleAI({
-      apiKey: process.env.GEMINI_API_KEY,
-    }),
-  ],
+  plugins: [googleAI()],
   logLevel: 'debug',
   enableTracingAndMetrics: true,
 });
