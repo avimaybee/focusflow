@@ -6,6 +6,7 @@
         "documents": {
           "users/{userId}": {
             ".read": "request.auth.uid == userId",
+            ".write": "request.auth.uid == userId && (!exists(path) || request.resource.data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'createdAt', 'lastLogin', 'isPremium', 'preferredPersona', 'favoritePrompts']))",
             "chats/{chatId}": {
               ".read": "request.auth.uid == userId",
               ".write": "request.auth.uid == userId"
@@ -33,8 +34,7 @@
             "goals/{goalId}": {
               ".read": "request.auth.uid == userId",
               ".write": "request.auth.uid == userId"
-            },
-            ".write": "request.auth.uid == userId && request.resource.data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'createdAt', 'lastLogin', 'isPremium', 'preferredPersona', 'favoritePrompts'])"
+            }
           },
           "publicSummaries/{slug}": {
             ".read": true,
@@ -45,7 +45,7 @@
             ".write": false
           },
           "personas/{personaId}": {
-            ".read": true,
+            ".read": "request.auth != null",
             ".write": false
           }
         }
