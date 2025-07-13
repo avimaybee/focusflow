@@ -33,10 +33,11 @@ export async function POST(req: NextRequest) {
   try {
     userId = await getUserIdFromRequest(req);
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized: No valid user token provided.' }, { status: 401 });
     }
-  } catch (error) {
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 500 });
+  } catch (error: any) {
+    console.error("Authentication check failed:", error);
+    return NextResponse.json({ error: `Authentication failed: ${error.message}` }, { status: 500 });
   }
 
   const body = await req.json();
@@ -62,23 +63,27 @@ export async function POST(req: NextRequest) {
     });
     console.log('DEBUG: streamFlow call succeeded. Waiting for result...');
 
+    // We must wait for the flow to finish to get the final result, including the session ID
     const result = await getFlowResult();
     console.log('DEBUG: getFlowResult succeeded. Result:', result);
 
+    // Stream the response back to the client
     return new NextResponse(stream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'X-Session-Id': result.sessionId,
+        'X-Session-Id': result.sessionId, // Send the final session ID back
       },
     });
 
   } catch (error: any) {
+    // This will now catch errors from within the Genkit flow itself
     console.error('--- FATAL ERROR in /api/chat ---');
     console.error('DEBUG: The error occurred within the main try/catch block.');
     console.error('DEBUG: Full error object:', error);
     console.error('---------------------------------');
     
-    const errorMessage = error.message || 'An unexpected error occurred.';
+    // Send a more specific error message to the client
+    const errorMessage = error.message || 'An unexpected server error occurred inside the chat flow.';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

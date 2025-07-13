@@ -148,11 +148,13 @@ export const chatFlow = ai.defineFlow(
     const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.`;
     console.log('DEBUG: Persona prompt fetched.');
 
-    const model = googleAI.model('gemini-1.5-flash');
+    const model = googleAI.model('gemini-1.5-flash', {
+      systemInstruction: systemPrompt,
+    });
     
     const chat = session.chat({
-        model,
-        system: systemPrompt,
+        model, // The model now contains the system prompt
+        // system: systemPrompt, // <-- This is the problematic line, now removed.
         tools: [
             summarizeNotesTool,
             createStudyPlanTool,
