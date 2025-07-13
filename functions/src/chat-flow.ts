@@ -167,16 +167,21 @@ export const chatFlow = ai.defineFlow(
 
     // Handle PDF context using the RAG flow
     if (context && context.startsWith("data:application/pdf")) {
-        const answer = await indexAndAnswer({
-            document: context,
-            question: message,
-        });
-        const formattedResponse = marked(answer);
-        return {
-            response: formattedResponse,
-            rawResponse: answer,
-            sessionId: chatSessionId, // RAG flow is stateless for now
-        };
+        try {
+            const answer = await indexAndAnswer({
+                document: context,
+                question: message,
+            });
+            const formattedResponse = await marked(answer);
+            return {
+                response: formattedResponse,
+                rawResponse: answer,
+                sessionId: chatSessionId, // RAG flow is stateless for now
+            };
+        } catch (e) {
+            console.error("Error in RAG flow", e);
+            throw new UserFacingError("RAG_ERROR", "Sorry, I had trouble reading that PDF. Please try again.");
+        }
     }
 
     const model = getModel("googleai/gemini-1.5-flash");
@@ -290,7 +295,7 @@ export const chatFlow = ai.defineFlow(
 
       const responseText =
         result.text() || "Sorry, I am not sure how to help with that.";
-      const formattedResponse = marked(responseText);
+      const formattedResponse = await marked(responseText);
 
       return {
         response: formattedResponse,

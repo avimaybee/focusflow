@@ -103,5 +103,3 @@ export function useFileUpload(setAttachment: (attachment: Attachment | null) => 
     fileUploadHandlers,
   };
 }
-
-    

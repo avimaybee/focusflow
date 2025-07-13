@@ -185,7 +185,7 @@ export default function ChatPage() {
         sessionId: currentChatId,
         persona: personaId,
         isPremium: isPremium ?? false,
-        context: tempAttachment?.url,
+        context: tempAttachment?.url, // Pass the data URI directly
     };
 
     try {
@@ -223,7 +223,7 @@ export default function ChatPage() {
         toast({
             variant: 'destructive',
             title: 'Connection Error',
-            description: error.message || 'Could not connect to the AI service. Please try again.',
+            description: error.message || 'An unknown error occurred.',
         });
         const errorResponse: ChatMessageProps = {
             id: `err-${Date.now()}`,
