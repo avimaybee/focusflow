@@ -3,6 +3,7 @@
   "name": "functions",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
+    "lint:fix": "eslint --ext .js,.ts . --fix",
     "build": "node --max-old-space-size=4096 node_modules/typescript/bin/tsc -p .",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",

@@ -60,9 +60,9 @@ service cloud.firestore {
         allow write: if false; // Only backend/console should write
     }
 
-    // Rules for Genkit sessions.
-    match /sessions/{sessionId} {
-      allow read, write: if true; // Temporarily public for debugging
+        // Rules for Genkit sessions, scoped to the authenticated user.
+    match /users/{userId}/sessions/{sessionId} {
+      allow read, write: if request.auth.uid == userId;
     }
   }
 }

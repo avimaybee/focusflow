@@ -33,16 +33,20 @@ export const summarizeNotesTool = ai.defineTool(
     outputSchema: SummarizeNotesOutputSchema,
   },
   async (input) => {
-    console.log("Summarizing notes:", input.notes.substring(0, 50));
-    // In a real scenario, you'd call a summarization model here.
-    // For now, we mock the output.
-    return {
-      title: "Summary of Provided Notes",
-      summary:
-        "This is a mock summary of the provided notes. It seems to cover " +
-        "several key topics including A, B, and C.",
-      keywords: ["mock", "summary", "notes"],
-    };
+    const {output} = await ai.generate({
+      prompt: `Generate a concise summary for the following notes. Also,
+provide a short, catchy title for the summary and list 3-5 relevant keywords.
+
+Notes:
+${input.notes}`,
+      output: {
+        schema: SummarizeNotesOutputSchema,
+      },
+    });
+    if (!output) {
+      throw new Error("Failed to generate a summary.");
+    }
+    return output;
   }
 );
 
@@ -56,20 +60,20 @@ export const createStudyPlanTool = ai.defineTool(
     outputSchema: CreateStudyPlanOutputSchema,
   },
   async (input) => {
-    console.log(
-      `Creating study plan for ${input.topic} over ${input.durationDays} days.`
-    );
-    return {
-      title: `Study Plan for ${input.topic}`,
-      plan: {
-        "Day 1": [`Introduction to ${input.topic}`, "Read Chapter 1"],
-        "Day 2": ["Practice exercises for Chapter 1", "Review Day 1 notes"],
-        "Day 3": [
-          `Begin Chapter 2 of ${input.topic}`,
-          "Watch relevant videos",
-        ],
+    const {output} = await ai.generate({
+      prompt: `Create a detailed, day-by-day study plan for the topic
+"${input.topic}" to be completed over ${input.durationDays} days. The plan
+should be structured as a JSON object where each key is a "Day X" and the
+value is an array of tasks for that day. Also provide a suitable title for the
+study plan.`,
+      output: {
+        schema: CreateStudyPlanOutputSchema,
       },
-    };
+    });
+    if (!output) {
+      throw new Error("Failed to generate a study plan.");
+    }
+    return output;
   }
 );
 
@@ -83,15 +87,18 @@ export const createFlashcardsTool = ai.defineTool(
     outputSchema: CreateFlashcardsOutputSchema,
   },
   async (input) => {
-    console.log(`Creating ${input.count} flashcards for ${input.topic}.`);
-    return {
-      flashcards: Array.from({length: input.count}, (_, i) => ({
-        question: `What is concept ${i + 1} in ${input.topic}?`,
-        answer:
-          `This is the detailed answer for concept ${i + 1}. It involves ` +
-          "several key ideas.",
-      })),
-    };
+    const {output} = await ai.generate({
+      prompt: `Generate a set of ${input.count} flashcards for the topic
+"${input.topic}". Each flashcard should have a clear question and a
+concise, accurate answer.`,
+      output: {
+        schema: CreateFlashcardsOutputSchema,
+      },
+    });
+    if (!output) {
+      throw new Error("Failed to generate flashcards.");
+    }
+    return output;
   }
 );
 
@@ -105,22 +112,20 @@ export const createQuizTool = ai.defineTool(
     outputSchema: CreateQuizOutputSchema,
   },
   async (input) => {
-    console.log(
-      `Creating a ${input.difficulty} quiz with ${input.questionCount} ` +
-        `questions on ${input.topic}.`
-    );
-    return {
-      title: `Quiz on ${input.topic}`,
-      quiz: {
-        questions: Array.from({length: input.questionCount}, (_, i) => ({
-          questionText:
-            `What is the main idea of ${input.topic}, question ${i + 1}?`,
-          options: ["Option A", "Option B", "Option C", "Option D"],
-          correctAnswer: "Option A",
-          explanation: "This is the explanation for why Option A is correct.",
-        })),
+    const {output} = await ai.generate({
+      prompt: `Generate a multiple-choice quiz on the topic "${input.topic}".
+The quiz should have ${input.questionCount} questions and a difficulty level of
+"${input.difficulty}". Each question must have four options, a single correct
+answer, and a brief explanation for the correct answer. Provide a suitable
+title for the quiz.`,
+      output: {
+        schema: CreateQuizOutputSchema,
       },
-    };
+    });
+    if (!output) {
+      throw new Error("Failed to generate a quiz.");
+    }
+    return output;
   }
 );
 
@@ -134,16 +139,18 @@ export const explainConceptTool = ai.defineTool(
     outputSchema: ExplainConceptOutputSchema,
   },
   async (input) => {
-    console.log(`Explaining concept: ${input.concept}`);
-    return {
-      concept: input.concept,
-      explanation:
-        `This is a detailed explanation of ${input.concept}. It is a ` +
-        "fundamental principle in its field.",
-      analogy:
-        `Think of ${input.concept} like a well-organized library, where ` +
-        "every book has a specific place.",
-    };
+    const {output} = await ai.generate({
+      prompt: `Explain the concept "${input.concept}" in simple,
+easy-to-understand terms. Provide a detailed explanation and a relatable
+analogy to help with understanding.`,
+      output: {
+        schema: ExplainConceptOutputSchema,
+      },
+    });
+    if (!output) {
+      throw new Error("Failed to generate an explanation.");
+    }
+    return output;
   }
 );
 
@@ -157,13 +164,18 @@ export const createMemoryAidTool = ai.defineTool(
     outputSchema: CreateMemoryAidOutputSchema,
   },
   async (input) => {
-    console.log(`Creating a ${input.type} memory aid for ${input.topic}.`);
-    return {
-      title: `Memory Aid for ${input.topic}`,
-      aid:
-        `Here is a memorable ${input.type} to help you remember ` +
-        `${input.topic}.`,
-    };
+    const {output} = await ai.generate({
+      prompt: `Generate a creative and effective memory aid of type
+"${input.type}" for the topic "${input.topic}". Provide a title for the
+memory aid.`,
+      output: {
+        schema: CreateMemoryAidOutputSchema,
+      },
+    });
+    if (!output) {
+      throw new Error("Failed to generate a memory aid.");
+    }
+    return output;
   }
 );
 
@@ -177,17 +189,18 @@ export const createDiscussionPromptsTool = ai.defineTool(
     outputSchema: CreateDiscussionPromptsOutputSchema,
   },
   async (input) => {
-    console.log(
-      `Creating ${input.count} discussion prompts for ${input.topic}.`
-    );
-    return {
-      prompts: Array.from(
-        {length: input.count},
-        (_, i) =>
-          `Prompt ${i + 1} about ${input.topic}: What are the ethical ` +
-          "implications of...?"
-      ),
-    };
+    const {output} = await ai.generate({
+      prompt: `Generate ${input.count} thought-provoking discussion prompts
+for the topic "${input.topic}". The prompts should encourage deeper
+thinking and conversation.`,
+      output: {
+        schema: CreateDiscussionPromptsOutputSchema,
+      },
+    });
+    if (!output) {
+      throw new Error("Failed to generate discussion prompts.");
+    }
+    return output;
   }
 );
 
@@ -201,13 +214,19 @@ export const highlightKeyInsightsTool = ai.defineTool(
     outputSchema: HighlightKeyInsightsOutputSchema,
   },
   async (input) => {
-    console.log("Highlighting key insights from text...");
-    return {
-      insights: [
-        "Insight 1: The primary conclusion is that X directly influences Y.",
-        "Insight 2: A surprising finding was the resilience of Z under " +
-          "pressure.",
-      ],
-    };
+    const {output} = await ai.generate({
+      prompt: `Analyze the following text and identify the key insights or
+"aha" moments. Present these insights as a list of strings.
+
+Text:
+${input.text}`,
+      output: {
+        schema: HighlightKeyInsightsOutputSchema,
+      },
+    });
+    if (!output) {
+      throw new Error("Failed to generate key insights.");
+    }
+    return output;
   }
 );

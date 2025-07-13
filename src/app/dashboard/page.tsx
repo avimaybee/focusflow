@@ -189,7 +189,7 @@ export default function DashboardPage() {
     const uniqueDays = new Set(sortedSessionDates.map(d => d.toISOString().split('T')[0]));
     
     let streak = 0;
-    let today = new Date();
+    const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     // Check if there's a session today or yesterday to start the streak count

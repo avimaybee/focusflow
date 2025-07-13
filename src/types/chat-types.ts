@@ -22,10 +22,8 @@ export const ChatHistoryMessageSchema = z.object({
 });
 
 export const ChatInputSchema = z.object({
-  userId: z.string(),
   message: z.string(),
   sessionId: z.string().optional(),
-  history: z.array(ChatHistoryMessageSchema),
   persona: PersonaSchema.optional().default('neutral'),
   isPremium: z.boolean().optional(),
   context: z.string().optional(),
@@ -35,10 +33,11 @@ export const ChatInputSchema = z.object({
 export const ChatOutputSchema = z.object({
   response: z.string(),
   rawResponse: z.string(),
+  sessionId: z.string().optional(),
+  isError: z.boolean().optional(),
 });
 
 export type ChatInput = z.infer<typeof ChatInputSchema>;
-export type ChatHistoryMessage = z.infer<typeof ChatHistoryMessageSchema>;
 
 // Schemas for individual tools
 export const SummarizeNotesInputSchema = z.object({
