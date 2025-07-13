@@ -1,89 +1,131 @@
-
-// src/app/api/chat/route.ts
+// src/app/api/chat/route.ts (or wherever your API route is)
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from "firebase-admin/auth";
-import { app } from '@/lib/firebase-admin';
 import { chatFlow } from '@/ai/flows/chat-flow';
-import { streamFlow } from 'genkit/beta';
+import { getAuth } from 'firebase-admin/auth';
+import { app } from '@/lib/firebase-admin';
 
-export const dynamic = 'force-dynamic';
-
+// This is a temporary helper function to get the user ID until you
+// decide on a final authentication strategy for this route.
 async function getUserIdFromRequest(req: NextRequest): Promise<string | null> {
-  const authHeader = req.headers.get('Authorization');
-  const idToken = authHeader?.split('Bearer ')[1];
+    const authHeader = req.headers.get('Authorization');
+    const idToken = authHeader?.split('Bearer ')[1];
 
-  if (!idToken) {
-    console.log("DEBUG: No auth token found in request.");
-    return null;
-  }
-  
-  try {
-    const decodedToken = await getAuth(app).verifyIdToken(idToken);
-    console.log(`DEBUG: Successfully authenticated user: ${decodedToken.uid}`);
-    return decodedToken.uid;
-  } catch (error) {
-    console.error('DEBUG: Error verifying auth token:', error);
-    return null;
-  }
+    if (!idToken) {
+        console.log("API ROUTE DEBUG: No auth token found in request.");
+        return null;
+    }
+    
+    try {
+        const decodedToken = await getAuth(app).verifyIdToken(idToken);
+        console.log(`API ROUTE DEBUG: Successfully authenticated user: ${decodedToken.uid}`);
+        return decodedToken.uid;
+    } catch (error) {
+        console.error('API ROUTE DEBUG: Error verifying auth token:', error);
+        return null;
+    }
 }
 
-export async function POST(req: NextRequest) {
-  console.log('\n--- DEBUG: /api/chat POST request received ---');
-  let userId;
+
+export async function POST(request: NextRequest) {
+  console.log('=== API ROUTE: POST /api/chat ===');
+  
   try {
-    userId = await getUserIdFromRequest(req);
+    const userId = await getUserIdFromRequest(request);
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized: No valid user token provided.' }, { status: 401 });
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-  } catch (error: any) {
-    console.error("Authentication check failed:", error);
-    return NextResponse.json({ error: `Authentication failed: ${error.message}` }, { status: 500 });
-  }
 
-  const body = await req.json();
-  console.log('DEBUG: Request body parsed:', body);
+    // Parse request body
+    console.log('DEBUG: Parsing request body...');
+    const body = await request.json();
+    console.log('DEBUG: Request body:', JSON.stringify(body, null, 2));
 
-  const { message, sessionId, context, persona } = body;
+    // Validate required fields
+    if (!body.message) {
+      console.error('ERROR: Missing required field: message');
+      return NextResponse.json(
+        { error: 'Missing required field: message' },
+        { status: 400 }
+      );
+    }
 
-  if (!message && !context) {
-    return NextResponse.json(
-      { error: 'Message or context is required' },
-      { status: 400 }
-    );
-  }
+    // Prepare input for chatFlow
+    const input = {
+      userId: userId, // Use authenticated user ID
+      message: body.message,
+      sessionId: body.sessionId,
+      persona: body.persona || 'neutral',
+      context: body.context,
+    };
 
-  try {
-    console.log('DEBUG: Calling streamFlow with chatFlow...');
-    const { stream, getFlowResult } = await streamFlow(chatFlow, {
-      userId,
-      message,
-      sessionId,
-      persona,
-      context,
-    });
-    console.log('DEBUG: streamFlow call succeeded. Waiting for result...');
+    console.log('DEBUG: Calling chatFlow with input:', JSON.stringify(input, null, 2));
 
-    // We must wait for the flow to finish to get the final result, including the session ID
-    const result = await getFlowResult();
-    console.log('DEBUG: getFlowResult succeeded. Result:', result);
-
-    // Stream the response back to the client
-    return new NextResponse(stream, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'X-Session-Id': result.sessionId, // Send the final session ID back
-      },
-    });
-
-  } catch (error: any) {
-    // This will now catch errors from within the Genkit flow itself
-    console.error('--- FATAL ERROR in /api/chat ---');
-    console.error('DEBUG: The error occurred within the main try/catch block.');
-    console.error('DEBUG: Full error object:', error);
-    console.error('---------------------------------');
+    // This is now a non-streaming call, as per the expert's debugging code.
+    // Note: The client-side will need to be adjusted to handle this.
+    const result = await chatFlow(input, () => {}); // Pass an empty streaming callback
     
-    // Send a more specific error message to the client
-    const errorMessage = error.message || 'An unexpected server error occurred inside the chat flow.';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    console.log('DEBUG: ChatFlow completed successfully');
+    console.log('DEBUG: Result structure:', {
+      sessionId: result.sessionId,
+      responseLength: result.response?.length || 0
+    });
+
+    return NextResponse.json(result);
+
+  } catch (error: any) {
+    console.error('=== API ROUTE ERROR ===');
+    console.error('Error type:', typeof error);
+    console.error('Error name:', error?.name);
+    console.error('Error message:', error?.message);
+    console.error('Error stack:', error?.stack);
+    
+    // Log additional properties
+    if (error?.code) {
+      console.error('Error code:', error.code);
+    }
+    if (error?.status) {
+      console.error('Error status:', error.status);
+    }
+    if (error?.details) {
+      console.error('Error details:', error.details);
+    }
+    
+    // Check for specific error types
+    let errorMessage = 'Internal server error';
+    let statusCode = 500;
+    
+    if (error?.message) {
+      errorMessage = error.message;
+    }
+    
+    if (error?.name === 'ValidationError') {
+      statusCode = 400;
+      errorMessage = `Validation error: ${error.message}`;
+    }
+    
+    if (error?.message?.includes('quota')) {
+      statusCode = 429;
+      errorMessage = 'API quota exceeded. Please try again later.';
+    }
+    
+    if (error?.message?.includes('authentication')) {
+      statusCode = 401;
+      errorMessage = 'Authentication failed. Please check your API keys.';
+    }
+    
+    if (error?.message?.includes('PERMISSION_DENIED')) {
+      statusCode = 403;
+      errorMessage = 'Permission denied. Please check your Firebase configuration.';
+    }
+    
+    console.error('=== END API ROUTE ERROR ===');
+    
+    return NextResponse.json(
+      { 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+      },
+      { status: statusCode }
+    );
   }
 }
