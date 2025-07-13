@@ -12,23 +12,17 @@ import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
-import { Loader2, UploadCloud } from 'lucide-react';
-import { doc, collection, onSnapshot, query, orderBy, Timestamp, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db, functions } from '@/lib/firebase';
-import { httpsCallable } from 'firebase/functions';
-import { ChatInput, validPersonas } from '@/ai/flows/chat-types';
+import { UploadCloud } from 'lucide-react';
+import { doc, collection, onSnapshot, query, orderBy, Timestamp, setDoc, serverTimestamp, addDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { chat } from '@/ai/actions';
+import { ChatInput, ChatHistoryMessage, Persona, validPersonas } from '@/functions/src/chat-types';
 import { ChatMessageProps } from '@/components/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
+import { SmartToolActions } from '@/lib/constants';
 
-const chat = httpsCallable(functions, 'chat');
+import { rewriteText, generateBulletPoints, generateCounterarguments, highlightKeyInsights } from '@/ai/actions';
 
-const SkeletonLoader = () => (
-    <div className="p-4 space-y-4">
-      <div className="h-8 bg-muted/50 rounded-md animate-pulse"></div>
-      <div className="h-8 bg-muted/50 rounded-md animate-pulse w-2/3"></div>
-      <div className="h-8 bg-muted/50 rounded-md animate-pulse w-5/6"></div>
-    </div>
-);
 
 export default function ChatPage() {
   const { user, isPremium, loading: authLoading } = useAuth();
@@ -38,7 +32,6 @@ export default function ChatPage() {
 
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [isMessagesLoading, setIsMessagesLoading] = useState(true);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -54,10 +47,11 @@ export default function ChatPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const chatId = params.chatId as string | undefined;
-    if (chatId) {
-      setActiveChatId(chatId);
-      setSessionId(chatId); // Use the chat ID as the session ID
+    const chatIdFromUrl = params.chatId as string | undefined;
+    if (chatIdFromUrl) {
+      if (chatIdFromUrl !== activeChatId) {
+        setActiveChatId(chatIdFromUrl);
+      }
     } else {
       handleNewChat();
     }
@@ -65,7 +59,9 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!user || !activeChatId) {
-      setIsMessagesLoading(false);
+      if (!params.chatId) {
+        setIsMessagesLoading(false);
+      }
       return;
     }
 
@@ -84,7 +80,7 @@ export default function ChatPage() {
     });
     
     return () => unsubscribe();
-  }, [activeChatId, user, toast]);
+  }, [activeChatId, user, toast, params.chatId]);
 
   useEffect(() => {
     if (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')) {
@@ -95,85 +91,130 @@ export default function ChatPage() {
 
   const handleNewChat = () => {
     setActiveChatId(null);
-    setSessionId(undefined);
     setMessages([]);
-    router.push('/chat');
+    if (params.chatId) {
+        router.push('/chat');
+    }
   };
+  
+  const handleSmartToolAction = async (tool: any, messageText: string) => {
+    setIsLoading(true);
+    let resultText = '';
+
+    try {
+        switch (tool.action) {
+            case SmartToolActions.REWRITE:
+                const rewriteResult = await rewriteText({ textToRewrite: messageText, style: tool.value });
+                resultText = `**Rewritten for Clarity:**\n\n${rewriteResult.rewrittenText}`;
+                break;
+            case SmartToolActions.BULLET_POINTS:
+                const bulletResult = await generateBulletPoints({ textToConvert: messageText });
+                resultText = `**Key Points:**\n\n${bulletResult.bulletPoints.map(p => `- ${p}`).join('\n')}`;
+                break;
+            case SmartToolActions.COUNTERARGUMENTS:
+                const counterResult = await generateCounterarguments({ statementToChallenge: messageText });
+                resultText = `**Counterarguments:**\n\n${counterResult.counterarguments.map(p => `- ${p}`).join('\n')}`;
+                break;
+            case SmartToolActions.INSIGHTS:
+                const insightResult = await highlightKeyInsights({ sourceText: messageText });
+                resultText = `**Key Insights:**\n\n${insightResult.insights.map(p => `- ${p}`).join('\n')}`;
+                break;
+        }
+
+        const aiResponse: ChatMessageProps = {
+            id: `temp-ai-${Date.now()}`,
+            role: 'model',
+            text: resultText.replace(/\n/g, '<br/>'),
+            rawText: resultText,
+            createdAt: Timestamp.now(),
+        };
+        setMessages(prev => [...prev, aiResponse]);
+
+    } catch (error) {
+        console.error(`Error processing smart tool action '${tool.name}':`, error);
+        toast({ variant: 'destructive', title: 'Smart Tool Error', description: 'Could not process your request.' });
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
     if ((!input.trim() && !attachment) || isLoading || !user) return;
 
     setIsLoading(true);
-    const userMessageText = input.trim() || `File Attached: ${attachment?.name}`;
-    const tempUserMessage: ChatMessageProps = {
-      id: `temp-user-${Date.now()}`,
-      role: 'user',
-      text: userMessageText,
-      createdAt: Timestamp.now(),
-    };
-    setMessages(prev => [...prev, tempUserMessage]);
+    const userMessageText = input.trim();
     setInput('');
     const tempAttachment = attachment;
     setAttachment(null);
     
-    try {
-      let currentChatId = activeChatId;
-      if (!currentChatId) {
+    let currentChatId = activeChatId;
+    // Create a new chat document in Firestore if one doesn't exist
+    if (!currentChatId) {
         const newChatRef = doc(collection(db, 'users', user.uid, 'chats'));
         currentChatId = newChatRef.id;
-        setActiveChatId(currentChatId);
-        setSessionId(currentChatId);
         await setDoc(newChatRef, {
           title: userMessageText.substring(0, 40) || 'New Chat',
           createdAt: serverTimestamp(),
           userId: user.uid,
         });
+        setActiveChatId(currentChatId);
         forceRefresh();
         router.push(`/chat/${currentChatId}`, { scroll: false });
-      }
-
-      const personaId: typeof validPersonas[number] = validPersonas.includes(selectedPersonaId as any)
-          ? (selectedPersonaId as typeof validPersonas[number])
-          : 'neutral';
-
-      const chatInput: ChatInput = {
-          userId: user.uid,
-          message: userMessageText,
-          sessionId: sessionId,
-          persona: personaId,
-          isPremium: isPremium ?? false,
-          context: tempAttachment?.url,
-      };
-
-      const result: any = await chat(chatInput);
-      
-      const aiResponse: ChatMessageProps = {
-          id: `temp-ai-${Date.now()}`,
-          role: 'model',
-          text: result.data.response,
-          rawText: result.data.rawResponse,
-          createdAt: Timestamp.now(),
-      };
-      setMessages(prev => [...prev, aiResponse]);
-
-    } catch (error) {
-      console.error('Error in chat flow:', error);
-      toast({
-          variant: 'destructive',
-          title: 'AI Error',
-          description: 'The AI failed to respond. Please try again.',
-      });
-      const errorResponse: ChatMessageProps = {
-          id: `temp-error-${Date.now()}`,
-          role: 'model',
-          text: 'Sorry, an error occurred. Please try again.',
-          isError: true,
-      };
-      setMessages(prev => [...prev, errorResponse]);
-    } finally {
-      setIsLoading(false);
     }
+
+    const userMessage: Omit<ChatMessageProps, 'id'> = {
+      role: 'user',
+      text: userMessageText,
+      createdAt: Timestamp.now(),
+    };
+
+    // Add user message to Firestore
+    const messagesRef = collection(db, 'users', user.uid, 'chats', currentChatId, 'messages');
+    await addDoc(messagesRef, userMessage);
+    
+    // Convert current messages state to the format Genkit expects
+    const historyForAI: ChatHistoryMessage[] = messages.map(m => ({
+        role: m.role,
+        text: m.rawText || (typeof m.text === 'string' ? m.text.replace(/<[^>]*>/g, '') : ''),
+    }));
+
+    const personaId = validPersonas.includes(selectedPersonaId as any)
+        ? (selectedPersonaId as Persona)
+        : 'neutral';
+
+    const chatInput: ChatInput = {
+        userId: user.uid,
+        message: userMessageText,
+        history: historyForAI,
+        persona: personaId,
+        isPremium: isPremium ?? false,
+        context: tempAttachment?.url,
+    };
+
+    const result = await chat(chatInput);
+
+    if (result && !result.isError) {
+        const aiResponse: Omit<ChatMessageProps, 'id'> = {
+            role: 'model',
+            text: result.response,
+            rawText: result.rawResponse,
+            createdAt: Timestamp.now(),
+        };
+        // Add AI response to Firestore
+        await addDoc(messagesRef, aiResponse);
+    } else if (result.isError) {
+        const errorResponse: Omit<ChatMessageProps, 'id'> = {
+            role: 'model',
+            text: result.response,
+            isError: true,
+            createdAt: Timestamp.now()
+        };
+        await addDoc(messagesRef, errorResponse);
+    }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -245,7 +286,7 @@ export default function ChatPage() {
           activeChatId={activeChatId}
           scrollAreaRef={scrollAreaRef}
           onSelectPrompt={setInput}
-          onSmartToolAction={() => {}}
+          onSmartToolAction={handleSmartToolAction}
         />
 
         <div className="w-full bg-background">

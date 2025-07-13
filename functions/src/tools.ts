@@ -2,7 +2,7 @@
  * @fileOverview Defines Genkit tools that the AI can use to perform specific, structured tasks.
  * Each tool is defined with a clear input and output schema to ensure type safety and predictability.
  */
-import { ai } from '../genkit';
+import { ai } from './genkit';
 import { z } from 'zod';
 import {
   SummarizeNotesInputSchema,
@@ -13,75 +13,83 @@ import {
   CreateMemoryAidInputSchema,
   CreateDiscussionPromptsInputSchema,
   HighlightKeyInsightsInputSchema,
+  SummarizeNotesOutputSchema,
+  CreateStudyPlanOutputSchema,
+  CreateFlashcardsOutputSchema,
+  CreateQuizOutputSchema,
+  ExplainConceptOutputSchema,
+  CreateMemoryAidOutputSchema,
+  CreateDiscussionPromptsOutputSchema,
+  HighlightKeyInsightsOutputSchema,
 } from './chat-types';
 
 export const summarizeNotesTool = ai.defineTool(
   {
     name: 'summarizeNotesTool',
-    description: 'Summarizes a long piece of text or a document into a concise digest.',
+    description: 'Summarizes a long piece of text or a document into a concise digest. Use this when the user asks to summarize their notes.',
     inputSchema: SummarizeNotesInputSchema,
-    outputSchema: z.string(),
+    outputSchema: SummarizeNotesOutputSchema,
   },
   async (input) => {
     console.log('Summarizing notes:', input.notes.substring(0, 50));
-    const output = {
-      title: 'Mock Summary',
-      summary: 'This is a mock summary of the provided notes.',
+    // In a real scenario, you'd call a summarization model here.
+    // For now, we mock the output.
+    return {
+      title: 'Summary of Provided Notes',
+      summary: 'This is a mock summary of the provided notes. It seems to cover several key topics including A, B, and C.',
       keywords: ['mock', 'summary', 'notes'],
     };
-    return JSON.stringify(output);
   }
 );
 
 export const createStudyPlanTool = ai.defineTool(
   {
     name: 'createStudyPlanTool',
-    description: 'Generates a structured study plan.',
+    description: 'Generates a structured study plan based on a topic and duration. Use this when the user asks to create a study plan or schedule.',
     inputSchema: CreateStudyPlanInputSchema,
-    outputSchema: z.string(),
+    outputSchema: CreateStudyPlanOutputSchema,
   },
   async (input) => {
     console.log(`Creating study plan for ${input.topic} over ${input.durationDays} days.`);
-    const output = {
+    return {
       title: `Study Plan for ${input.topic}`,
       plan: {
-        'Day 1': ['Introduction to topic', 'Read Chapter 1'],
-        'Day 2': ['Practice exercises', 'Review notes'],
+        'Day 1': [`Introduction to ${input.topic}`, 'Read Chapter 1'],
+        'Day 2': ['Practice exercises for Chapter 1', 'Review Day 1 notes'],
+        'Day 3': [`Begin Chapter 2 of ${input.topic}`, 'Watch relevant videos'],
       },
     };
-    return JSON.stringify(output);
   }
 );
 
 export const createFlashcardsTool = ai.defineTool(
   {
     name: 'createFlashcardsTool',
-    description: 'Generates a set of question-and-answer flashcards.',
+    description: 'Generates a set of question-and-answer flashcards for a topic. Use this when the user asks for flashcards.',
     inputSchema: CreateFlashcardsInputSchema,
-    outputSchema: z.string(),
+    outputSchema: CreateFlashcardsOutputSchema,
   },
   async (input) => {
     console.log(`Creating ${input.count} flashcards for ${input.topic}.`);
-    const output = {
+    return {
       flashcards: Array.from({ length: input.count }, (_, i) => ({
         question: `What is concept ${i + 1} in ${input.topic}?`,
-        answer: `This is the detailed answer for concept ${i + 1}.`,
+        answer: `This is the detailed answer for concept ${i + 1}. It involves several key ideas.`,
       })),
     };
-    return JSON.stringify(output);
   }
 );
 
 export const createQuizTool = ai.defineTool(
   {
     name: 'createQuizTool',
-    description: 'Generates a multiple-choice quiz.',
+    description: 'Generates a multiple-choice quiz on a specific topic. Use this when the user asks to be quizzed or wants a practice test.',
     inputSchema: CreateQuizInputSchema,
-    outputSchema: z.string(),
+    outputSchema: CreateQuizOutputSchema,
   },
   async (input) => {
     console.log(`Creating a ${input.difficulty} quiz with ${input.questionCount} questions on ${input.topic}.`);
-    const output = {
+    return {
       title: `Quiz on ${input.topic}`,
       quiz: {
         questions: Array.from({ length: input.questionCount }, (_, i) => ({
@@ -92,76 +100,71 @@ export const createQuizTool = ai.defineTool(
         })),
       },
     };
-    return JSON.stringify(output);
   }
 );
 
 export const explainConceptTool = ai.defineTool(
   {
     name: 'explainConceptTool',
-    description: 'Explains a specific term or concept.',
+    description: 'Explains a specific term or concept in simple terms, providing an analogy. Use this when the user asks for an explanation of something.',
     inputSchema: ExplainConceptInputSchema,
-    outputSchema: z.string(),
+    outputSchema: ExplainConceptOutputSchema,
   },
   async (input) => {
     console.log(`Explaining concept: ${input.concept}`);
-    const output = {
+    return {
       concept: input.concept,
-      explanation: `This is a detailed explanation of ${input.concept}.`,
-      analogy: `Think of ${input.concept} like a library.`,
+      explanation: `This is a detailed explanation of ${input.concept}. It is a fundamental principle in its field.`,
+      analogy: `Think of ${input.concept} like a well-organized library, where every book has a specific place.`,
     };
-    return JSON.stringify(output);
   }
 );
 
 export const createMemoryAidTool = ai.defineTool(
   {
     name: 'createMemoryAidTool',
-    description: 'Generates a memory aid for a specific concept.',
+    description: 'Generates a memory aid (mnemonic) for a specific concept. Use this when the user asks for help remembering something.',
     inputSchema: CreateMemoryAidInputSchema,
-    outputSchema: z.string(),
+    outputSchema: CreateMemoryAidOutputSchema,
   },
   async (input) => {
     console.log(`Creating a ${input.type} memory aid for ${input.topic}.`);
-    const output = {
+    return {
       title: `Memory Aid for ${input.topic}`,
       aid: `Here is a memorable ${input.type} to help you remember ${input.topic}.`,
     };
-    return JSON.stringify(output);
   }
 );
 
 export const createDiscussionPromptsTool = ai.defineTool(
   {
     name: 'createDiscussionPromptsTool',
-    description: 'Generates a set of discussion prompts.',
+    description: 'Generates a set of thought-provoking discussion prompts for a topic. Use this for brainstorming or deeper thinking.',
     inputSchema: CreateDiscussionPromptsInputSchema,
-    outputSchema: z.string(),
+    outputSchema: CreateDiscussionPromptsOutputSchema,
   },
   async (input) => {
     console.log(`Creating ${input.count} discussion prompts for ${input.topic}.`);
-    const output = {
-      prompts: Array.from({ length: input.count }, (_, i) => `Prompt ${i + 1} about ${input.topic}: ...?`),
+    return {
+      prompts: Array.from({ length: input.count }, (_, i) => `Prompt ${i + 1} about ${input.topic}: What are the ethical implications of...?`),
     };
-    return JSON.stringify(output);
   }
 );
 
 export const highlightKeyInsightsTool = ai.defineTool(
   {
     name: 'highlightKeyInsightsTool',
-    description: 'Identifies and highlights the key insights from a piece of text.',
+    description: 'Identifies and highlights the key insights or "aha" moments from a piece of text.',
     inputSchema: HighlightKeyInsightsInputSchema,
-    outputSchema: z.string(),
+    outputSchema: HighlightKeyInsightsOutputSchema,
   },
   async (input) => {
     console.log('Highlighting key insights from text...');
-    const output = {
+    return {
       insights: [
-        'Insight 1: ...',
-        'Insight 2: ...',
+        'Insight 1: The primary conclusion is that X directly influences Y.',
+        'Insight 2: A surprising finding was the resilience of Z under pressure.',
       ],
     };
-    return JSON.stringify(output);
   }
 );

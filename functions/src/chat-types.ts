@@ -13,6 +13,7 @@ export const validPersonas = [
   'sassy',
 ] as const;
 
+export type Persona = (typeof validPersonas)[number];
 export const PersonaSchema = z.enum(validPersonas);
 
 export const ChatHistoryMessageSchema = z.object({
@@ -24,6 +25,7 @@ export const ChatInputSchema = z.object({
   userId: z.string(),
   message: z.string(),
   sessionId: z.string().optional(),
+  history: z.array(ChatHistoryMessageSchema),
   persona: PersonaSchema.optional().default('neutral'),
   isPremium: z.boolean().optional(),
   context: z.string().optional(),
