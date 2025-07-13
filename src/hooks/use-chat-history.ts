@@ -20,17 +20,18 @@ export function useChatHistory() {
   const fetchHistory = useCallback(() => {
     if (user?.uid) {
       setIsLoading(true);
-      // Point to the 'sessions' subcollection now
       const sessionsRef = collection(db, 'users', user.uid, 'sessions');
       const q = query(sessionsRef, orderBy('updatedAt', 'desc'));
       
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const history = querySnapshot.docs.map(doc => {
             const data = doc.data();
-            const lastMessage = data.history?.[data.history.length -1]?.content?.[0]?.text || 'New Chat';
+            // Use the first user message as the title, fallback to a default.
+            const firstUserMessage = data.history?.find((m: any) => m.role === 'user');
+            const title = firstUserMessage?.content?.[0]?.text || 'New Chat';
             return {
                 id: doc.id,
-                title: lastMessage.substring(0, 50), // Use last message as title
+                title: title.substring(0, 50),
                 createdAt: data.updatedAt,
             }
         });
