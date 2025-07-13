@@ -1,3 +1,4 @@
+
 // src/app/api/chat/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from "firebase-admin/auth";
@@ -72,7 +73,6 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error: any) {
-    // This is the critical log. It will print the *full* error object.
     console.error('--- FATAL ERROR in /api/chat ---');
     console.error('DEBUG: The error occurred within the main try/catch block.');
     console.error('DEBUG: Full error object:', error);
@@ -82,4 +82,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
-

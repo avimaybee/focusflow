@@ -151,7 +151,7 @@ export const chatFlow = ai.defineFlow(
     const systemPrompt = `${personaInstruction} You are an expert AI assistant...`; // Truncated for brevity
     console.log('DEBUG: Persona prompt fetched.');
 
-    const model = googleAI.model('gemini-2.5-flash');
+    const model = googleAI.model('gemini-1.5-flash');
     
     const chat = session.chat({
         model,
@@ -169,13 +169,10 @@ export const chatFlow = ai.defineFlow(
     });
     console.log('DEBUG: Chat object created.');
     
-    // Always include the text part.
     const userMessageContent: any[] = [{ text: message }];
 
-    // If there is context (a file), add it as a separate media part.
     if (context) {
       console.log('DEBUG: Handling file context...');
-      // Robustly extract MIME type
       const mimeType = context.substring(5, context.indexOf(';'));
       userMessageContent.push({ media: { url: context, contentType: mimeType } });
     }
@@ -190,7 +187,6 @@ export const chatFlow = ai.defineFlow(
       console.error('DEBUG: The error occurred within the chat.send() call.');
       console.error('DEBUG: Full error object:', error);
       console.error('---------------------------------');
-      // Re-throw the error to be caught by the main API route handler
       throw error;
     }
     

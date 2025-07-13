@@ -131,6 +131,7 @@ export default function ChatPage() {
     
     try {
       const token = await user.getIdToken();
+      console.log('DEBUG (Client): Sending request to /api/chat with input:', chatInput);
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -145,7 +146,6 @@ export default function ChatPage() {
         const newSessionId = response.headers.get('X-Session-Id');
         if (newSessionId) {
           const newPath = `/chat/${newSessionId}`;
-          // Use router.replace to avoid adding a new entry to the history stack for the redirect
           router.replace(newPath); 
           setActiveChatId(newSessionId);
         }
@@ -153,37 +153,31 @@ export default function ChatPage() {
 
       if (!response.ok || !response.body) {
         const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred.' }));
+        console.error('DEBUG (Client): Received error response from server:', errorData);
         throw new Error(errorData.error || 'The server returned an error.');
       }
       
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let done = false;
       
-      while (!done) {
-        const { value, done: streamDone } = await reader.read();
-        done = streamDone;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        // The streaming logic for displaying the response is handled by onSnapshot
       }
       
-      // Force a refresh of the chat history list after the stream is complete
       if (isNewChat || activeChatId) {
         forceRefresh();
       }
 
     } catch (error: any) {
+        console.error("--- DEBUG (Client): CATCH BLOCK ---");
+        console.error("Full error object:", error);
+        console.error("-----------------------------------");
+
         let description = 'An unknown error occurred.';
-        // Check if the error object has a more specific message from our API
         if (error.message) {
-            try {
-                // The error from our API is often a JSON string in the message
-                const errorData = JSON.parse(error.message);
-                if (errorData.error) {
-                    description = errorData.error;
-                }
-            } catch (e) {
-                // If it's not JSON, use the message directly
-                description = error.message;
-            }
+           description = error.message;
         }
         
         toast({
