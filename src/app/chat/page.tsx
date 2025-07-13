@@ -113,103 +113,78 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    if ((!input.trim() && !attachment) || isSending || !user) return;
-
+    if (!input.trim() || isSending || !user) return;
+  
     setIsSending(true);
-    
-    const isNewChat = !activeChatId;
-    
-    const personaId = validPersonas.includes(selectedPersonaId as any)
-        ? (selectedPersonaId as Persona)
-        : 'neutral';
-
-    const chatInput = {
-        message: input.trim(),
-        sessionId: activeChatId || undefined,
-        persona: personaId,
-        isPremium: isPremium ?? false,
-        context: attachment?.url,
+    const userMessage: ChatMessageProps = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      text: input,
+      rawText: input,
+      createdAt: Timestamp.now(),
     };
-    
+    setMessages(prev => [...prev, userMessage]);
+  
+    const chatInput = {
+      message: input.trim(),
+    };
+  
     setInput('');
     setAttachment(null);
-    
+  
     try {
-      const token = await user.getIdToken();
-      console.log('DEBUG (Client): Sending request to /api/chat with input:', chatInput);
-      const response = await fetch('/api/chat', {
+      console.log('DEBUG (Client): Sending request to /api/test-chat with input:', chatInput);
+      const response = await fetch('/api/test-chat', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(chatInput),
       });
-
-      if (isNewChat) {
-        // After sending, the new session ID will be available in the response header.
-        // We need to read this to update the URL.
-        const newSessionId = response.headers.get('X-Session-Id');
-        if (newSessionId) {
-          // Use `replace` to avoid adding a new entry to browser history for the same chat
-          router.replace(`/chat/${newSessionId}`); 
-          setActiveChatId(newSessionId);
-        }
-      }
-
-      if (!response.ok || !response.body) {
-        // Try to parse the error response from the server for a more specific message
+  
+      if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: `The server returned a ${response.status} error with no details.` }));
         console.error('DEBUG (Client): Received error response from server:', errorData);
         throw new Error(errorData.error || 'An unknown error occurred.');
       }
-      
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      
-      // The streaming response will be handled by the `onSnapshot` listener,
-      // which updates the UI in real-time as the database document changes.
-      // We just need to consume the stream to completion.
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        // The stream is consumed, but UI updates are driven by Firestore.
-      }
-      
-      // If it was a new chat, force the sidebar to refresh to show the new chat title
-      if (isNewChat) {
-        forceRefresh();
-      }
-
+  
+      const result = await response.json();
+      const aiResponse: ChatMessageProps = {
+        id: `model-${Date.now()}`,
+        role: 'model',
+        text: await marked.parse(result.response),
+        rawText: result.response,
+        createdAt: Timestamp.now(),
+      };
+      setMessages(prev => [...prev, aiResponse]);
+  
     } catch (error: any) {
-        console.error("--- DEBUG (Client): CATCH BLOCK ---");
-        console.error("Full error object:", error);
-        console.error("-----------------------------------");
-
-        let description = 'An unknown error occurred.';
-        // Use the specific error message if it exists
-        if (error.message) {
-           description = error.message;
-        }
-        
-        toast({
-            variant: 'destructive',
-            title: 'Connection Error',
-            description: description,
-        });
-
-        // Display an error message directly in the chat window
-        const errorResponse: ChatMessageProps = {
-            id: `err-${Date.now()}`,
-            role: 'model',
-            text: `<p>Sorry, there was a connection error. Please try again.</p><p><i>Detail: ${description}</i></p>`,
-            rawText: `Sorry, there was a connection error. Please try again. Detail: ${description}`,
-            isError: true,
-            createdAt: Timestamp.now()
-        };
-        setMessages(prev => [...prev, errorResponse]);
+      console.error("--- DEBUG (Client): CATCH BLOCK ---");
+      console.error("Full error object:", error);
+      console.error("-----------------------------------");
+  
+      let description = 'An unknown error occurred.';
+      if (error.message) {
+        description = error.message;
+      }
+  
+      toast({
+        variant: 'destructive',
+        title: 'Connection Error',
+        description: description,
+      });
+  
+      const errorResponse: ChatMessageProps = {
+        id: `err-${Date.now()}`,
+        role: 'model',
+        text: `<p>Sorry, there was a connection error. Please try again.</p><p><i>Detail: ${description}</i></p>`,
+        rawText: `Sorry, there was a connection error. Please try again. Detail: ${description}`,
+        isError: true,
+        createdAt: Timestamp.now(),
+      };
+      setMessages(prev => [...prev, errorResponse]);
     } finally {
-        setIsSending(false);
+      setIsSending(false);
     }
   };
 
