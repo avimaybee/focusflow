@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
@@ -13,7 +14,7 @@ import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { UploadCloud } from 'lucide-react';
-import { doc, collection, onSnapshot, query, orderBy, Timestamp, setDoc, serverTimestamp, addDoc } from 'firebase/firestore';
+import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { streamChat } from '@/ai/actions';
 import { Persona, validPersonas } from '@/types/chat-types';
@@ -60,32 +61,38 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!user || !activeChatId) {
-      if (!params.chatId) {
-        setIsMessagesLoading(false);
-      }
+      setMessages([]);
+      setIsMessagesLoading(!params.chatId);
       return;
     }
-
+  
     setIsMessagesLoading(true);
-    const messagesRef = collection(db, 'users', user.uid, 'sessions', activeChatId, 'history');
-    const q = query(messagesRef, orderBy('timestamp', 'asc'));
+    // Listen to the session document itself, not a subcollection
+    const sessionRef = doc(db, 'users', user.uid, 'sessions', activeChatId);
     
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const chatMessages = querySnapshot.docs.map(doc => {
-          const data = doc.data();
+    const unsubscribe = onSnapshot(sessionRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const sessionData = docSnapshot.data();
+        const history = sessionData.history || [];
+        const chatMessages = history.map((msg: any, index: number) => {
+          const content = msg.content?.[0]?.text || '';
           return { 
-              id: doc.id,
-              role: data.role,
-              text: marked.parse(data.content?.[0]?.text || ''), // Parse markdown
-              rawText: data.content?.[0]?.text || '',
-              createdAt: data.timestamp ? new Timestamp(data.timestamp.seconds, data.timestamp.nanoseconds) : Timestamp.now()
+            id: `${docSnapshot.id}-${index}`, // Create a stable ID
+            role: msg.role,
+            text: marked.parse(content),
+            rawText: content,
+            createdAt: sessionData.updatedAt || Timestamp.now()
           }
-      }) as ChatMessageProps[];
-      setMessages(chatMessages);
+        }) as ChatMessageProps[];
+        setMessages(chatMessages);
+      } else {
+        // If the document doesn't exist, clear messages
+        setMessages([]);
+      }
       setIsMessagesLoading(false);
     }, (error) => {
-      console.error("Error fetching messages:", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat messages.' });
+      console.error("Error fetching session document:", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat session.' });
       setIsMessagesLoading(false);
     });
     
@@ -161,11 +168,12 @@ export default function ChatPage() {
     
     let currentChatId = activeChatId;
 
+    // This block correctly creates a new chat session ID if one doesn't exist
     if (!currentChatId) {
       const newChatId = crypto.randomUUID();
       currentChatId = newChatId;
       setActiveChatId(newChatId);
-      forceRefresh();
+      // forceRefresh(); // This will be triggered by the onSnapshot listener for sessions
       router.push(`/chat/${newChatId}`, { scroll: false });
     }
 
@@ -235,6 +243,8 @@ export default function ChatPage() {
             isError: true,
             createdAt: Timestamp.now()
         };
+        // Remove the temporary user message on error
+        setMessages(prev => prev.filter(m => m.id !== userMessageForUI.id));
         setMessages(prev => [...prev, errorResponse]);
     }
     
