@@ -4,7 +4,7 @@ import { Poppins, PT_Sans } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/context/auth-context';
+import { Providers } from '@/context/providers';
 
 const fontHeading = Poppins({
   subsets: ['latin'],
@@ -49,10 +49,10 @@ export default function RootLayout({
           fontBody.variable
         )}
       >
-        <AuthProvider>
+        <Providers>
           <main className="flex-grow flex flex-col">{children}</main>
           <Toaster />
-        </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

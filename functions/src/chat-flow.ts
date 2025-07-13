@@ -1,6 +1,6 @@
 "use server";
 
-import {ai} from "./genkit";
+import {ai, getModel} from "./genkit";
 import {z} from "zod";
 import {marked} from "marked";
 import {
@@ -23,7 +23,7 @@ import {
 } from "firebase/firestore";
 import {db} from "@/lib/firebase";
 import {PersonaIDs} from "@/lib/constants";
-import {Message} from "genkit/beta";
+import {Message,ToolRequestPart, genkitToolAuth, user} from "genkit/beta";
 
 /**
  * Retrieves a persona prompt from Firestore based on the provided persona ID.
@@ -70,29 +70,29 @@ async function saveGeneratedContent(
   };
 
   switch (toolName) {
-  case "summarizeNotesTool":
-    collectionName = "summaries";
-    data.title = output.title || "Summary";
-    data.summary = output.summary;
-    data.keywords = output.keywords;
-    break;
-  case "createFlashcardsTool":
-    collectionName = "flashcardSets";
-    data.title = `Flashcards for: ${source.substring(0, 40)}...`;
-    data.flashcards = output.flashcards;
-    break;
-  case "createQuizTool":
-    collectionName = "quizzes";
-    data.title = output.title || `Quiz for: ${source.substring(0, 40)}...`;
-    data.quiz = output.quiz;
-    break;
-  case "createStudyPlanTool":
-    collectionName = "studyPlans";
-    data.title = output.title || "New Study Plan";
-    data.plan = output.plan;
-    break;
-  default:
-    return; // Don't save for tools that don't generate persistent content
+    case "summarizeNotesTool":
+      collectionName = "summaries";
+      data.title = output.title || "Summary";
+      data.summary = output.summary;
+      data.keywords = output.keywords;
+      break;
+    case "createFlashcardsTool":
+      collectionName = "flashcardSets";
+      data.title = `Flashcards for: ${source.substring(0, 40)}...`;
+      data.flashcards = output.flashcards;
+      break;
+    case "createQuizTool":
+      collectionName = "quizzes";
+      data.title = output.title || `Quiz for: ${source.substring(0, 40)}...`;
+      data.quiz = output.quiz;
+      break;
+    case "createStudyPlanTool":
+      collectionName = "studyPlans";
+      data.title = output.title || "New Study Plan";
+      data.plan = output.plan;
+      break;
+    default:
+      return; // Don't save for tools that don't generate persistent content
   }
 
   try {
@@ -109,14 +109,21 @@ export const chatFlow = ai.defineFlow(
     name: "chatFlow",
     inputSchema: z.any(),
     outputSchema: z.any(),
+    auth: genkitToolAuth((auth, input) => {
+      if (!auth) {
+        throw new Error("Authentication required.");
+      }
+      // You can add more fine-grained authorization checks here
+      // based on the user's role or subscription status.
+      console.log(`Authorizing user: ${auth.uid}`);
+    }),
   },
-  async (input: ChatInput) => {
+  async (input: ChatInput, streamingCallback) => {
     const {userId, message, history, context, persona} = input;
 
-    // In the future, we can select a model based on the request.
-    const model = "googleai/gemini-1.5-flash";
-    const personaInstruction = await getPersonaPrompt(persona);
+    const model = getModel("googleai/gemini-1.5-flash");
 
+    const personaInstruction = await getPersonaPrompt(persona);
     const systemPrompt =
       `${personaInstruction} You are an expert AI assistant and a helpful, ` +
       "conversational study partner. Your responses should be " +
@@ -140,20 +147,9 @@ export const chatFlow = ai.defineFlow(
     ];
 
     // Build the history for the AI model
-    const historyForAI: Message[] = history.reduce((acc: Message[], m) => {
-      if (m && m.role && m.text) {
-        acc.push({
-          role: m.role,
-          content: [{text: m.text}],
-        });
-      }
-      return acc;
-    }, []);
+    const historyForAI: Message[] = history.map((m) => new Message(m.role, m.text));
 
-    const userMessageContent = {
-      role: "user",
-      content: [{text: message}],
-    } as Message;
+    const userMessageContent: (string | ToolRequestPart)[] = [{text: message}];
 
     // Handle file context
     if (context) {
@@ -162,16 +158,12 @@ export const chatFlow = ai.defineFlow(
         const [header, base64Data] = context.split(",");
         const mimeType = header.split(":")[1].split(";")[0];
         if (mimeType.startsWith("image/")) {
-          userMessageContent.content.push({
-            media: {url: context, contentType: mimeType},
-          });
+          userMessageContent.push({media: {url: context, contentType: mimeType}});
         } else {
-          // For non-image files, we prepend the text content to the user's
-          // message
           let textContent = "";
           const buffer = Buffer.from(base64Data, "base64");
           if (mimeType === "application/pdf") {
-            const {parse} = await import("pdf-parse/lib/pdf-parse.js");
+            const {parse} = await import("pdf-parse");
             const pdfData = await parse(buffer);
             textContent = pdfData.text;
           } else {
@@ -179,21 +171,18 @@ export const chatFlow = ai.defineFlow(
           }
           const fileContext =
             `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\n`;
-          userMessageContent.content[0].text =
-            `${fileContext}USER'S REQUEST:\n${message}`;
+          userMessageContent[0] = {text: `${fileContext}USER'S REQUEST:\n${message}`};
         }
       } else {
         const fileContext = `CONTEXT:\n${context}\n\n`;
-        userMessageContent.content[0].text =
-          `${fileContext}USER'S REQUEST:\n${message}`;
+        userMessageContent[0] = {text: `${fileContext}USER'S REQUEST:\n${message}`};
       }
     }
 
-    historyForAI.push(userMessageContent);
+    historyForAI.push(user(userMessageContent));
 
     try {
-      const result = await ai.generate({
-        model,
+      const result = await model.generate({
         system: systemPrompt,
         history: historyForAI,
         tools: availableTools,
@@ -206,6 +195,7 @@ export const chatFlow = ai.defineFlow(
             },
           ],
         },
+        streamingCallback,
       });
 
       const choices = result.candidates;
@@ -214,22 +204,20 @@ export const chatFlow = ai.defineFlow(
         throw new Error("AI model did not return a response.");
       }
 
+      const winningChoice = choices[0];
+
       if (
-        choices[0].finishReason !== "stop" &&
-        choices[0].finishReason !== "other"
+        winningChoice.finishReason !== "stop" &&
+        winningChoice.finishReason !== "other"
       ) {
-        // Handle cases where generation was blocked or stopped for other
-        // reasons
         console.warn(
-          `AI response stopped due to: ${choices[0].finishReason}`
+          `AI response stopped due to: ${winningChoice.finishReason}`
         );
       }
 
-      if (choices[0].toolCalls && choices[0].toolCalls.length > 0) {
-        for (const toolCall of choices[0].toolCalls) {
+      if (winningChoice.toolCalls && winningChoice.toolCalls.length > 0) {
+        for (const toolCall of winningChoice.toolCalls) {
           const toolName = toolCall.name;
-          // The tool output is automatically provided back to the model in
-          // the next turn but we can also save it if needed.
           if (toolCall.output && userId) {
             await saveGeneratedContent(
               userId,
@@ -242,7 +230,7 @@ export const chatFlow = ai.defineFlow(
       }
 
       const responseText =
-        result.text() || "Sorry, I am not sure how to help with that.";
+        result.text || "Sorry, I am not sure how to help with that.";
       const formattedResponse = marked(responseText);
 
       return {
