@@ -21,13 +21,11 @@ export function useChatHistory() {
     if (!user?.uid) {
         setIsLoading(false);
         setChatHistory([]);
-        return () => {}; // Return a no-op function for consistency
+        return () => {};
     };
     
     setIsLoading(true);
     const sessionsRef = collection(db, 'sessions');
-    // We only care about sessions for the current user.
-    // Firestore queries can't do "startsWith" so we have to filter client-side.
     const q = query(sessionsRef, orderBy('updatedAt', 'desc'));
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {

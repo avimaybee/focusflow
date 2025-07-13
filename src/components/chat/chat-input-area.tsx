@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/command';
 import { PromptLibrary } from '@/components/prompt-library';
 import { cn } from '@/lib/utils';
+import type { Attachment } from '@/hooks/use-file-upload';
 
 // Mapping persona IDs to icons
 const personaIcons: { [key: string]: React.ElementType } = {
@@ -58,14 +59,14 @@ interface ChatInputAreaProps {
   handleSendMessage: (e: FormEvent) => void;
   handleFileSelect: (file: File) => void;
   onSelectPrompt: (prompt: string) => void;
-  isLoading: boolean;
+  isSending: boolean;
   isHistoryLoading: boolean;
   personas: any[];
   selectedPersonaId: string;
   setSelectedPersonaId: (id: string) => void;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   activeChatId: string | null;
-  chatContext: { name: string; type: string; } | null;
+  chatContext: Attachment | null;
   clearChatContext: () => void;
 }
 
@@ -75,7 +76,7 @@ export function ChatInputArea({
   handleSendMessage,
   handleFileSelect,
   onSelectPrompt,
-  isLoading,
+  isSending,
   isHistoryLoading,
   personas,
   selectedPersonaId,
@@ -96,12 +97,12 @@ export function ChatInputArea({
 
   return (
     <div className="relative max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto bg-background">
-      <div className="p-2 border-y border-border/60 flex items-center gap-2 flex-wrap">
-          {contextName && (
+      {contextName && (
+        <div className="p-2 border-t border-border/60 flex items-center gap-2 flex-wrap">
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
               <div className="flex items-center gap-2 bg-muted p-1.5 rounded-md text-sm">
                 <FileIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground truncate max-w-[120px]">Context: {contextName}</span>
+                <span className="text-foreground truncate max-w-[120px]">{contextName}</span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -112,8 +113,8 @@ export function ChatInputArea({
                 </Button>
               </div>
             </motion.div>
-          )}
-      </div>
+        </div>
+      )}
       <div className="flex items-start p-2 bg-transparent">
         <motion.div whileHover="hover" whileTap="tap" variants={buttonVariants}>
           <PromptLibrary onSelectPrompt={onSelectPrompt} />
@@ -173,7 +174,10 @@ export function ChatInputArea({
         <input
           type="file"
           ref={fileInputRef}
-          onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])}
+          onChange={(e) => {
+            if (e.target.files?.[0]) handleFileSelect(e.target.files[0]);
+            e.target.value = ''; // Reset file input
+          }}
           className="hidden"
           accept="image/*,application/pdf,text/*"
         />
@@ -197,11 +201,11 @@ export function ChatInputArea({
           <motion.div whileHover="hover" whileTap="tap" variants={buttonVariants}>
             <Button
               type="submit"
-              disabled={isLoading || (!input.trim() && !chatContext) || isHistoryLoading}
+              disabled={isSending || (!input.trim() && !chatContext) || isHistoryLoading}
               size="icon"
               className="h-8 w-8 shrink-0 rounded-full bg-accent text-accent-foreground hover:bg-accent/90"
             >
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </motion.div>
         </form>

@@ -1,28 +1,37 @@
+
 // src/lib/firestore-session-store.ts
-import { SessionData, SessionStore } from 'genkit/beta';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { Message, Session, SessionStore } from 'genkit';
+import { doc, getDoc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from './firebase';
 
-export class FirestoreSessionStore<S = any> implements SessionStore<S> {
+export class FirestoreSessionStore implements SessionStore {
   private getSessionRef(sessionId: string) {
-    const [userId, chatSessionId] = sessionId.split('_');
-    if (!userId || !chatSessionId) {
-      throw new Error('Invalid session ID format. Expected "userId_chatSessionId".');
-    }
-    return doc(db, 'users', userId, 'sessions', chatSessionId);
+    return doc(db, 'sessions', sessionId);
   }
 
-  async get(sessionId: string): Promise<SessionData<S> | undefined> {
+  async get(sessionId: string): Promise<Session | undefined> {
     const sessionRef = this.getSessionRef(sessionId);
     const sessionSnap = await getDoc(sessionRef);
     if (sessionSnap.exists()) {
-      return sessionSnap.data() as SessionData<S>;
+      const data = sessionSnap.data();
+      // Firestore Timestamps need to be converted back to Date objects for Genkit
+      const history = (data.history || []).map((msg: any) => ({
+        ...msg,
+        // Convert any Firestore Timestamps inside message content back to Dates if they exist
+      }));
+      return { ...data, history, updatedAt: data.updatedAt?.toDate() } as Session;
     }
     return undefined;
   }
 
-  async save(sessionId: string, sessionData: SessionData<S>): Promise<void> {
+  async save(sessionId: string, sessionData: Session): Promise<void> {
     const sessionRef = this.getSessionRef(sessionId);
-    await setDoc(sessionRef, { ...sessionData, updatedAt: new Date() });
+    
+    const plainSessionData = JSON.parse(JSON.stringify(sessionData));
+
+    await setDoc(sessionRef, {
+      ...plainSessionData,
+      updatedAt: serverTimestamp() // Use Firestore server timestamp
+    }, { merge: true });
   }
 }

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, DragEvent } from 'react';
+import { useState, DragEvent, Dispatch, SetStateAction } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export type Attachment = {
@@ -10,7 +10,7 @@ export type Attachment = {
   url: string; // This will store the data URI
 };
 
-export function useFileUpload(setAttachment: (attachment: Attachment | null) => void) {
+export function useFileUpload(setAttachment: Dispatch<SetStateAction<Attachment | null>>) {
   const { toast } = useToast();
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
@@ -52,7 +52,6 @@ export function useFileUpload(setAttachment: (attachment: Attachment | null) => 
         type: file.type,
         url: dataUri,
       };
-      // Directly set the attachment in the parent component's state
       setAttachment(newAttachment);
     } catch (error) {
       console.error("File reading error:", error);
