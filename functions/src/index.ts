@@ -2,7 +2,7 @@
 
 import {onCallGenkit} from "firebase-functions/v2/https";
 import {chatFlow} from "./chat-flow";
-import * as admin from 'firebase-admin';
+import * as admin from "firebase-admin";
 
 admin.initializeApp();
 
