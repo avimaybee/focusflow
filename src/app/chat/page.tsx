@@ -62,7 +62,6 @@ export default function ChatPage() {
         return;
     }
   
-    // Correctly point to the user's specific chat document
     const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
     
     const unsubscribe = onSnapshot(chatRef, async (docSnapshot) => {
@@ -71,14 +70,13 @@ export default function ChatPage() {
         const history = sessionData.history || [];
         
         const chatMessagesPromises = history.map(async (msg: any, index: number) => {
-          // Find the text part of the message content
           const textPart = msg.content?.find((p: any) => p.text);
           const content = textPart?.text || '';
           
           return { 
             id: `${docSnapshot.id}-${index}`,
             role: msg.role,
-            text: await marked.parse(content), // Parse markdown for display
+            text: await marked.parse(content),
             rawText: content,
             createdAt: sessionData.updatedAt || Timestamp.now()
           }
@@ -87,7 +85,6 @@ export default function ChatPage() {
         const resolvedMessages = await Promise.all(chatMessagesPromises);
         setMessages(resolvedMessages);
       } else {
-        // If the document doesn't exist, clear messages
         setMessages([]);
       }
     }, (error) => {
@@ -125,12 +122,10 @@ export default function ChatPage() {
     };
     setMessages(prev => [...prev, userMessage]);
   
-    // Revert to the primary chat API and full payload
     const chatInput = {
       message: input.trim(),
       sessionId: activeChatId || undefined,
       persona: selectedPersonaId,
-      isPremium,
       context: attachment?.url,
     };
   
@@ -138,9 +133,12 @@ export default function ChatPage() {
     setAttachment(null);
   
     try {
-      console.log('DEBUG (Client): Sending request to /api/chat with input:', chatInput);
       const idToken = await auth.currentUser?.getIdToken();
+      if (!idToken) {
+        throw new Error("Authentication token not available. Please log in again.");
+      }
 
+      console.log('DEBUG (Client): Sending request to /api/chat with input:', chatInput);
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
