@@ -34,8 +34,7 @@ export default function ChatPage() {
 
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [isMessagesLoading, setIsMessagesLoading] = useState(true);
-
+  
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [input, setInput] = useState('');
   const [attachment, setAttachment] = useState<Attachment | null>(null);
@@ -54,20 +53,17 @@ export default function ChatPage() {
       if (chatIdFromUrl !== activeChatId) {
         setActiveChatId(chatIdFromUrl);
       }
-    } else {
+    } else if (activeChatId) {
       handleNewChat();
     }
-  }, [params.chatId]);
+  }, [params.chatId, activeChatId]);
 
   useEffect(() => {
     if (!user || !activeChatId) {
-      setMessages([]);
-      setIsMessagesLoading(!params.chatId);
-      return;
+        setMessages([]);
+        return;
     }
   
-    setIsMessagesLoading(true);
-    // Listen to the session document itself, not a subcollection
     const sessionRef = doc(db, 'users', user.uid, 'sessions', activeChatId);
     
     const unsubscribe = onSnapshot(sessionRef, (docSnapshot) => {
@@ -86,18 +82,15 @@ export default function ChatPage() {
         }) as ChatMessageProps[];
         setMessages(chatMessages);
       } else {
-        // If the document doesn't exist, clear messages
         setMessages([]);
       }
-      setIsMessagesLoading(false);
     }, (error) => {
       console.error("Error fetching session document:", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat session.' });
-      setIsMessagesLoading(false);
     });
     
     return () => unsubscribe();
-  }, [activeChatId, user, toast, params.chatId]);
+  }, [activeChatId, user, toast]);
 
   useEffect(() => {
     if (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')) {
@@ -168,12 +161,10 @@ export default function ChatPage() {
     
     let currentChatId = activeChatId;
 
-    // This block correctly creates a new chat session ID if one doesn't exist
     if (!currentChatId) {
       const newChatId = crypto.randomUUID();
       currentChatId = newChatId;
       setActiveChatId(newChatId);
-      // forceRefresh(); // This will be triggered by the onSnapshot listener for sessions
       router.push(`/chat/${newChatId}`, { scroll: false });
     }
 
@@ -212,7 +203,6 @@ export default function ChatPage() {
       let aiResponseText = '';
       const aiResponseId = `temp-ai-${Date.now()}`;
 
-      // Add a placeholder for the AI message
       setMessages(prev => [...prev, { id: aiResponseId, role: 'model', text: '', rawText: '', createdAt: Timestamp.now() }]);
 
       while (!done) {
@@ -243,7 +233,6 @@ export default function ChatPage() {
             isError: true,
             createdAt: Timestamp.now()
         };
-        // Remove the temporary user message on error
         setMessages(prev => prev.filter(m => m.id !== userMessageForUI.id));
         setMessages(prev => [...prev, errorResponse]);
     }
@@ -317,7 +306,7 @@ export default function ChatPage() {
         <MessageList
           messages={messages}
           isLoading={isLoading}
-          isHistoryLoading={isMessagesLoading}
+          isHistoryLoading={isHistoryLoading && !!activeChatId}
           activeChatId={activeChatId}
           scrollAreaRef={scrollAreaRef}
           onSelectPrompt={setInput}
@@ -333,7 +322,7 @@ export default function ChatPage() {
                 handleFileSelect={handleFileSelect}
                 onSelectPrompt={setInput}
                 isLoading={isLoading}
-                isHistoryLoading={isMessagesLoading}
+                isHistoryLoading={isHistoryLoading}
                 personas={personas}
                 selectedPersonaId={selectedPersonaId}
                 setSelectedPersonaId={setSelectedPersonaId}

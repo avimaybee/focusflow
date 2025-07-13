@@ -27,7 +27,7 @@ export function MessageList({
   onSelectPrompt,
   onSmartToolAction,
 }: MessageListProps) {
-  const hasMessages = messages.length > 0;
+  const showWelcomeScreen = !activeChatId && messages.length === 0 && !isLoading;
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -37,7 +37,7 @@ export function MessageList({
             <div className="flex justify-center items-center h-[calc(100vh-280px)]">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : !activeChatId && !hasMessages ? (
+          ) : showWelcomeScreen ? (
             <WelcomeScreen onSelectPrompt={onSelectPrompt} />
           ) : (
             messages.map((msg) => (
@@ -55,7 +55,7 @@ export function MessageList({
               </motion.div>
             ))
           )}
-          {isLoading && (
+          {isLoading && !showWelcomeScreen && (
             <ChatMessage role="model" text={
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 bg-primary/50 rounded-full animate-pulse [animation-delay:-0.3s]"></div>

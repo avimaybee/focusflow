@@ -32,7 +32,7 @@ export function useChatHistory() {
             return {
                 id: doc.id,
                 title: title.substring(0, 50),
-                createdAt: data.updatedAt,
+                createdAt: data.updatedAt || Timestamp.now(),
             }
         });
         setChatHistory(history as ChatHistoryItem[]);
