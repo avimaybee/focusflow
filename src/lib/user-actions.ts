@@ -1,17 +1,16 @@
 
 'use server';
 
-import { db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase-admin'; // Use Firebase Admin SDK
 
 export async function updateUserPersona(userId: string, persona: string) {
   if (!userId) return;
-  const userRef = doc(db, 'users', userId);
+  const userRef = db.collection('users').doc(userId);
   try {
     // Ensure the document exists before updating, though updateDoc would fail anyway
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      await updateDoc(userRef, {
+    const userSnap = await userRef.get();
+    if (userSnap.exists) {
+      await userRef.update({
         preferredPersona: persona,
       });
     }
@@ -23,9 +22,9 @@ export async function updateUserPersona(userId: string, persona: string) {
 
 export async function updateUserFavoritePrompts(userId: string, favoriteIds: string[]) {
     if (!userId) return;
-    const userRef = doc(db, 'users', userId);
+    const userRef = db.collection('users').doc(userId);
     try {
-        await updateDoc(userRef, {
+        await userRef.update({
             favoritePrompts: favoriteIds,
         });
     } catch (error) {

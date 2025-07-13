@@ -82,5 +82,6 @@ const PROMPT_TEMPLATES: PromptTemplate[] = [
 export async function getPromptTemplates(): Promise<PromptTemplate[]> {
   // In a real implementation, you would fetch this from Firestore.
   // For now, we return the static list.
+  // This file doesn't need to change as it's not using Firestore yet.
   return PROMPT_TEMPLATES;
 }

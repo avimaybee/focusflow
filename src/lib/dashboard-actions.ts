@@ -1,8 +1,7 @@
 
 'use server';
 
-import { collection, getDocs, query } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from './firebase-admin'; // Use Firebase Admin SDK
 
 interface DashboardStats {
   summariesCount: number;
@@ -30,8 +29,8 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
 
   const counts = await Promise.all(
     collectionsToCount.map(async (collectionName) => {
-      const collRef = collection(db, 'users', userId, collectionName);
-      const snapshot = await getDocs(query(collRef));
+      const collRef = db.collection('users').doc(userId).collection(collectionName);
+      const snapshot = await collRef.get();
       return snapshot.size;
     })
   );

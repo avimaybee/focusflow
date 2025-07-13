@@ -14,29 +14,22 @@ import {
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from '@/ai/tools';
-import {
-  doc,
-  getDoc,
-  collection,
-  addDoc,
-  serverTimestamp,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { doc, getDoc, serverTimestamp, collection, addDoc } from 'firebase-admin/firestore';
+import { db } from '@/lib/firebase-admin'; // Use Firebase Admin SDK
 import { PersonaIDs } from '@/lib/constants';
 import { FirestoreSessionStore } from '@/lib/firestore-session-store';
 import { googleAI } from '@genkit-ai/googleai';
-import * as pdfjs from 'pdf-parse';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
-  const personaRef = doc(db, 'personas', personaId);
-  const personaSnap = await getDoc(personaRef);
-  if (personaSnap.exists()) {
-    return personaSnap.data().prompt;
+  const personaRef = db.collection('personas').doc(personaId);
+  const personaSnap = await personaRef.get();
+  if (personaSnap.exists) {
+    return personaSnap.data()!.prompt;
   }
-  const fallbackRef = doc(db, 'personas', PersonaIDs.NEUTRAL);
-  const fallbackSnap = await getDoc(fallbackRef);
+  const fallbackRef = db.collection('personas').doc(PersonaIDs.NEUTRAL);
+  const fallbackSnap = await fallbackRef.get();
   if (fallbackSnap.exists()) {
-    return fallbackSnap.data().prompt;
+    return fallbackSnap.data()!.prompt;
   }
   return 'You are a helpful AI study assistant.';
 }
@@ -110,8 +103,8 @@ async function saveGeneratedContent(
   }
 
   try {
-    const contentCollection = collection(db, 'users', userId, collectionName);
-    await addDoc(contentCollection, data);
+    const contentCollection = db.collection('users').doc(userId).collection(collectionName);
+    await contentCollection.add(data);
     console.log(`Saved ${collectionName} for user ${userId}`);
   } catch (error) {
     console.error(`Error saving ${collectionName} to Firestore:`, error);
@@ -184,7 +177,7 @@ export const chatFlow = ai.defineFlow(
 
     let result;
     try {
-      console.log('DEBUG: Attempting to call chat.send() to Gemini API with content:', userMessageContent);
+      console.log('DEBUG: Attempting to call chat.send() to Gemini API with content:', JSON.stringify(userMessageContent));
       result = await chat.send(userMessageContent, { streamingCallback });
       console.log('DEBUG: chat.send() call was successful.');
     } catch (error) {

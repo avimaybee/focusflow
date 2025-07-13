@@ -1,5 +1,6 @@
-import { db } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, Timestamp } from 'firebase/firestore';
+
+import { db } from '@/lib/firebase-admin'; // Use Firebase Admin SDK
+import { Timestamp } from 'firebase-admin/firestore';
 
 export interface PublicSummary {
     id: string;
@@ -11,14 +12,14 @@ export interface PublicSummary {
 }
 
 export async function getPublicSummary(slug: string): Promise<PublicSummary | undefined> {
-    const docRef = doc(db, 'publicSummaries', slug);
-    const docSnap = await getDoc(docRef);
+    const docRef = db.collection('publicSummaries').doc(slug);
+    const docSnap = await docRef.get();
 
-    if (!docSnap.exists()) {
+    if (!docSnap.exists) {
         return undefined;
     }
 
-    const data = docSnap.data();
+    const data = docSnap.data()!;
     const publishedAt = (data.publishedAt as Timestamp).toDate().toISOString();
 
     return {
@@ -32,8 +33,8 @@ export async function getPublicSummary(slug: string): Promise<PublicSummary | un
 }
 
 export async function getPublicSummaries(): Promise<PublicSummary[]> {
-    const collectionRef = collection(db, 'publicSummaries');
-    const snapshot = await getDocs(collectionRef);
+    const collectionRef = db.collection('publicSummaries');
+    const snapshot = await collectionRef.get();
     
     return snapshot.docs.map(doc => {
         const data = doc.data();
