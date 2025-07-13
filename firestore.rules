@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -11,14 +12,14 @@ service cloud.firestore {
                        .hasOnly(['preferredPersona', 'favoritePrompts', 'lastLogin']);
       allow list, delete: if false;
     }
-
-    // Rules for the 'chats' subcollection.
-    match /users/{userId}/chats/{chatId} {
+    
+    // Rules for Genkit sessions, scoped to the authenticated user.
+    match /users/{userId}/sessions/{sessionId} {
       allow read, write: if request.auth.uid == userId;
     }
-    
-    // Rules for the 'messages' sub-subcollection.
-    match /users/{userId}/chats/{chatId}/messages/{messageId} {
+
+    // Rules for the message history within a session.
+    match /users/{userId}/sessions/{sessionId}/history/{messageId} {
       allow read, write: if request.auth.uid == userId;
     }
 
@@ -35,7 +36,7 @@ service cloud.firestore {
     match /users/{userId}/studyPlans/{planId} {
       allow read, write: if request.auth.uid == userId;
     }
-    match /users/{userId}/studySessions/{sessionId} {
+    match /users/{userId}/studySessions/{studySessionId} {
       allow read, write: if request.auth.uid == userId;
     }
     match /users/{userId}/goals/{goalId} {
@@ -58,11 +59,6 @@ service cloud.firestore {
     match /personas/{personaId} {
         allow get, list: if true;
         allow write: if false; // Only backend/console should write
-    }
-
-        // Rules for Genkit sessions, scoped to the authenticated user.
-    match /users/{userId}/sessions/{sessionId} {
-      allow read, write: if request.auth.uid == userId;
     }
   }
 }
