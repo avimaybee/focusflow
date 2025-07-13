@@ -11,16 +11,14 @@ service cloud.firestore {
                     && request.resource.data.diff(resource.data).affectedKeys()
                        .hasOnly(['preferredPersona', 'favoritePrompts', 'lastLogin']);
       allow list, delete: if false;
-    }
-    
-    // Rules for Genkit sessions stored at the top level.
-    match /sessions/{sessionId} {
-      // A user can only read/write to their own session documents.
-      // We identify ownership by checking if the resource's userId field
-      // matches the authenticated user's uid.
-      allow read, write: if request.auth != null && (
-        (resource == null) || (resource.data.userId == request.auth.uid)
-      );
+
+      // A user can manage their own chat sessions.
+      // list is required for the useChatHistory hook.
+      // get, create, update are required for the chat flow.
+      match /chats/{chatId} {
+        allow list, get, create, update: if request.auth.uid == userId;
+        allow delete: if false;
+      }
     }
 
     // Rules for user-generated content subcollections.

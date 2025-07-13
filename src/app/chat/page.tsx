@@ -171,16 +171,32 @@ export default function ChatPage() {
       }
 
     } catch (error: any) {
+        let description = 'An unknown error occurred.';
+        // Check if the error object has a more specific message from our API
+        if (error.message) {
+            try {
+                // The error from our API is often a JSON string in the message
+                const errorData = JSON.parse(error.message);
+                if (errorData.error) {
+                    description = errorData.error;
+                }
+            } catch (e) {
+                // If it's not JSON, use the message directly
+                description = error.message;
+            }
+        }
+        
         toast({
             variant: 'destructive',
             title: 'Connection Error',
-            description: error.message || 'An unknown error occurred.',
+            description: description,
         });
+
         const errorResponse: ChatMessageProps = {
             id: `err-${Date.now()}`,
             role: 'model',
-            text: '<p>Sorry, there was a connection error. Please try again.</p>',
-            rawText: 'Sorry, there was a connection error. Please try again.',
+            text: `<p>Sorry, there was a connection error. Please try again.</p><p><i>Detail: ${description}</i></p>`,
+            rawText: `Sorry, there was a connection error. Please try again. Detail: ${description}`,
             isError: true,
             createdAt: Timestamp.now()
         };

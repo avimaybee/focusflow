@@ -1,10 +1,14 @@
 
 // src/lib/firestore-session-store.ts
-import { Session, SessionStore } from 'genkit';
-import { doc, getDoc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { SessionData, SessionStore } from 'genkit/beta';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
 
-export class FirestoreSessionStore implements SessionStore {
+// Define a type for your session state if you have one.
+// For now, we can use `any`.
+type MyState = any;
+
+export class FirestoreSessionStore<S = MyState> implements SessionStore<S> {
   private userId: string;
 
   constructor(userId: string) {
@@ -15,33 +19,33 @@ export class FirestoreSessionStore implements SessionStore {
   }
 
   private getSessionRef(sessionId: string) {
-    // Correctly point to the nested chats subcollection
     return doc(db, 'users', this.userId, 'chats', sessionId);
   }
 
-  async get(sessionId: string): Promise<Session | undefined> {
+  async get(sessionId: string): Promise<SessionData<S> | undefined> {
     const sessionRef = this.getSessionRef(sessionId);
     const sessionSnap = await getDoc(sessionRef);
+
     if (sessionSnap.exists()) {
       const data = sessionSnap.data();
-      // Firestore Timestamps need to be converted back to Date objects for Genkit
-      const history = (data.history || []).map((msg: any) => ({
-        ...msg,
-        // Convert any Firestore Timestamps inside message content back to Dates if they exist
-      }));
-      return { ...data, history, updatedAt: data.updatedAt?.toDate() } as Session;
+      // Firestore Timestamps are automatically handled by Firestore SDK in many cases,
+      // but if you store them as `serverTimestamp()`, they might need conversion on retrieval.
+      // For Genkit's state, ensure data is JSON-serializable.
+      // We are assuming the data in Firestore is compatible with SessionData<S>.
+      // The 'updatedAt' field from the old implementation is part of Genkit's session management.
+      return data as SessionData<S>;
     }
     return undefined;
   }
 
-  async save(sessionId: string, sessionData: Session): Promise<void> {
+  async save(sessionId: string, sessionData: SessionData<S>): Promise<void> {
     const sessionRef = this.getSessionRef(sessionId);
     
     // Ensure the userId is part of the data being saved for security rules
     const dataToSave = {
       ...JSON.parse(JSON.stringify(sessionData)),
       userId: this.userId, 
-      updatedAt: serverTimestamp() // Use Firestore server timestamp
+      updatedAt: serverTimestamp(), // Let Firestore manage the timestamp
     };
 
     await setDoc(sessionRef, dataToSave, { merge: true });
