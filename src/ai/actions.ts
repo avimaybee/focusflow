@@ -4,26 +4,33 @@
 import { functions } from '@/lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import {
-  ChatInput,
   RewriteTextInput,
   GenerateBulletPointsInput,
   GenerateCounterargumentsInput,
   HighlightKeyInsightsInput
 } from '@/types/chat-types';
+import { getAuth } from 'firebase/auth';
 
-// Get a reference to the deployed chat function
-const chatFunction = httpsCallable(functions, 'chat');
+export async function streamChat(input: any) {
+  const auth = getAuth();
+  const user = auth.currentUser;
 
-export async function chat(input: ChatInput) {
-  try {
-    const result = await chatFunction(input);
-    return result.data as any; // Cast to 'any' to avoid type conflicts with server-side types
-  } catch (error) {
-    console.error("Firebase Functions call failed:", error);
-    // Re-throw the error to be handled by the calling component
-    throw new Error('Could not connect to the AI service. Please check your connection and try again.');
+  if (!user) {
+    throw new Error('User is not authenticated.');
   }
+
+  const token = await user.getIdToken();
+
+  return fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(input),
+  });
 }
+
 
 // These actions are placeholders for future "Smart Tool" implementations.
 // They would call separate Firebase Functions if implemented.

@@ -7,7 +7,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/auth-context';
 
 export interface ChatHistoryItem {
-  id: string;
+  id: string; // This will now be the session ID
   title: string;
   createdAt: Timestamp;
 }
@@ -20,17 +20,24 @@ export function useChatHistory() {
   const fetchHistory = useCallback(() => {
     if (user?.uid) {
       setIsLoading(true);
-      const chatsRef = collection(db, 'users', user.uid, 'chats');
-      const q = query(chatsRef, orderBy('createdAt', 'desc'));
+      // Point to the 'sessions' subcollection now
+      const sessionsRef = collection(db, 'users', user.uid, 'sessions');
+      const q = query(sessionsRef, orderBy('updatedAt', 'desc'));
+      
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const history = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          title: doc.data().title,
-          createdAt: doc.data().createdAt,
-        }));
-        setChatHistory(history);
+        const history = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            const lastMessage = data.history?.[data.history.length -1]?.content?.[0]?.text || 'New Chat';
+            return {
+                id: doc.id,
+                title: lastMessage.substring(0, 50), // Use last message as title
+                createdAt: data.updatedAt,
+            }
+        });
+        setChatHistory(history as ChatHistoryItem[]);
         setIsLoading(false);
-      }, () => {
+      }, (error) => {
+        console.error("Error fetching chat history:", error);
         setIsLoading(false);
       });
       return unsubscribe;

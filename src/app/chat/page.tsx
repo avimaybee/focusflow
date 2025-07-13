@@ -15,13 +15,14 @@ import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { UploadCloud } from 'lucide-react';
 import { doc, collection, onSnapshot, query, orderBy, Timestamp, setDoc, serverTimestamp, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { chat } from '@/ai/actions';
-import { ChatInput, ChatHistoryMessage, Persona, validPersonas } from '@/types/chat-types';
+import { streamChat } from '@/ai/actions';
+import { Persona, validPersonas } from '@/types/chat-types';
 import { ChatMessageProps } from '@/components/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
 import { SmartToolActions } from '@/lib/constants';
 
 import { rewriteText, generateBulletPoints, generateCounterarguments, highlightKeyInsights } from '@/ai/actions';
+import { marked } from 'marked';
 
 
 export default function ChatPage() {
@@ -66,11 +67,20 @@ export default function ChatPage() {
     }
 
     setIsMessagesLoading(true);
-    const messagesRef = collection(db, 'users', user.uid, 'chats', activeChatId, 'messages');
-    const q = query(messagesRef, orderBy('createdAt', 'asc'));
+    const messagesRef = collection(db, 'users', user.uid, 'sessions', activeChatId, 'history');
+    const q = query(messagesRef, orderBy('timestamp', 'asc'));
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const chatMessages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ChatMessageProps[];
+      const chatMessages = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return { 
+              id: doc.id,
+              role: data.role,
+              text: marked.parse(data.content?.[0]?.text || ''), // Parse markdown
+              rawText: data.content?.[0]?.text || '',
+              createdAt: data.timestamp ? new Timestamp(data.timestamp.seconds, data.timestamp.nanoseconds) : Timestamp.now()
+          }
+      }) as ChatMessageProps[];
       setMessages(chatMessages);
       setIsMessagesLoading(false);
     }, (error) => {
@@ -87,7 +97,7 @@ export default function ChatPage() {
       const scrollableView = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]')!;
       scrollableView.scrollTo({ top: scrollableView.scrollHeight, behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleNewChat = () => {
     setActiveChatId(null);
@@ -150,91 +160,86 @@ export default function ChatPage() {
     setAttachment(null);
     
     let currentChatId = activeChatId;
-    // Create a new chat document in Firestore if one doesn't exist
+
     if (!currentChatId) {
-        try {
-            const newChatRef = doc(collection(db, 'users', user.uid, 'chats'));
-            currentChatId = newChatRef.id;
-            await setDoc(newChatRef, {
-              title: userMessageText.substring(0, 40) || 'New Chat',
-              createdAt: serverTimestamp(),
-              userId: user.uid,
-            });
-            setActiveChatId(currentChatId);
-            forceRefresh();
-            router.push(`/chat/${currentChatId}`, { scroll: false });
-        } catch (error) {
-            console.error("Error creating new chat:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not start a new chat.' });
-            setIsLoading(false);
-            return;
-        }
+      const newChatId = crypto.randomUUID();
+      currentChatId = newChatId;
+      setActiveChatId(newChatId);
+      forceRefresh();
+      router.push(`/chat/${newChatId}`, { scroll: false });
     }
 
-    const messagesRef = collection(db, 'users', user.uid, 'chats', currentChatId, 'messages');
-
-    const userMessage: Omit<ChatMessageProps, 'id'> = {
-      role: 'user',
-      text: userMessageText,
-      createdAt: Timestamp.now(),
+    const userMessageForUI: ChatMessageProps = {
+        id: `temp-user-${Date.now()}`,
+        role: 'user',
+        text: userMessageText,
+        createdAt: Timestamp.now(),
     };
-    await addDoc(messagesRef, userMessage);
+    setMessages(prev => [...prev, userMessageForUI]);
     
-    const historyForAI: ChatHistoryMessage[] = messages.map(m => ({
-        role: m.role,
-        text: m.rawText || (typeof m.text === 'string' ? m.text.replace(/<[^>]*>/g, '') : ''),
-    }));
-
     const personaId = validPersonas.includes(selectedPersonaId as any)
         ? (selectedPersonaId as Persona)
         : 'neutral';
 
-    const chatInput: ChatInput = {
-        userId: user.uid,
+    const chatInput = {
         message: userMessageText,
-        history: historyForAI,
+        sessionId: currentChatId,
         persona: personaId,
         isPremium: isPremium ?? false,
         context: tempAttachment?.url,
     };
 
     try {
-      const result = await chat(chatInput);
+      const response = await streamChat(chatInput);
 
-      if (result && !result.isError) {
-          const aiResponse: Omit<ChatMessageProps, 'id'> = {
-              role: 'model',
-              text: result.response,
-              rawText: result.rawResponse,
-              createdAt: Timestamp.now(),
-          };
-          await addDoc(messagesRef, aiResponse);
-      } else if (result?.isError) {
-          const errorResponse: Omit<ChatMessageProps, 'id'> = {
-              role: 'model',
-              text: result.response,
-              isError: true,
-              createdAt: Timestamp.now()
-          };
-          await addDoc(messagesRef, errorResponse);
+      if (!response.ok || !response.body) {
+        const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred.' }));
+        throw new Error(errorData.error);
       }
+      
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      let aiResponseText = '';
+      const aiResponseId = `temp-ai-${Date.now()}`;
+
+      // Add a placeholder for the AI message
+      setMessages(prev => [...prev, { id: aiResponseId, role: 'model', text: '', rawText: '', createdAt: Timestamp.now() }]);
+
+      while (!done) {
+        const { value, done: streamDone } = await reader.read();
+        done = streamDone;
+        if (value) {
+          aiResponseText += decoder.decode(value, { stream: true });
+          const formattedHtml = await marked.parse(aiResponseText);
+          setMessages(prev => prev.map(msg => 
+            msg.id === aiResponseId 
+              ? { ...msg, text: formattedHtml, rawText: aiResponseText } 
+              : msg
+          ));
+        }
+      }
+
     } catch (error: any) {
         toast({
             variant: 'destructive',
             title: 'Connection Error',
             description: error.message || 'Could not connect to the AI service. Please try again.',
         });
-        const errorResponse: Omit<ChatMessageProps, 'id'> = {
+        const errorResponse: ChatMessageProps = {
+            id: `err-${Date.now()}`,
             role: 'model',
             text: '<p>Sorry, there was a connection error. Please try again.</p>',
             rawText: 'Sorry, there was a connection error. Please try again.',
             isError: true,
             createdAt: Timestamp.now()
         };
-        await addDoc(messagesRef, errorResponse);
+        setMessages(prev => [...prev, errorResponse]);
     }
     
     setIsLoading(false);
+    forceRefresh();
   };
 
   return (
