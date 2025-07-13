@@ -154,7 +154,7 @@ export default function ChatPage() {
       if (!response.ok || !response.body) {
         const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred.' }));
         console.error('DEBUG (Client): Received error response from server:', errorData);
-        throw new Error(errorData.error || 'The server returned an error.');
+        throw new Error(errorData.error || `The server returned a ${response.status} error.`);
       }
       
       const reader = response.body.getReader();
