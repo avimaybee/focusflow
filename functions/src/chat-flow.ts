@@ -29,6 +29,7 @@ import {
   UserFacingError,
 } from "genkit/beta";
 import {FirestoreSessionStore} from "@/lib/firestore-session-store";
+import { indexAndAnswer } from "./rag-flow";
 
 /**
  * Retrieves a persona prompt from Firestore based on the provided persona ID.
@@ -164,6 +165,20 @@ export const chatFlow = ai.defineFlow(
       );
     }
 
+    // Handle PDF context using the RAG flow
+    if (context && context.startsWith("data:application/pdf")) {
+        const answer = await indexAndAnswer({
+            document: context,
+            question: message,
+        });
+        const formattedResponse = marked(answer);
+        return {
+            response: formattedResponse,
+            rawResponse: answer,
+            sessionId: chatSessionId, // RAG flow is stateless for now
+        };
+    }
+
     const model = getModel("googleai/gemini-1.5-flash");
     const personaInstruction = await getPersonaPrompt(persona);
     const systemPrompt =
@@ -213,16 +228,10 @@ export const chatFlow = ai.defineFlow(
                 contentType: mimeType,
               },
             });
-          } else {
+          } else if (!mimeType.includes("pdf")) { // PDFs handled above
             let textContent = "";
             const buffer = Buffer.from(base64Data, "base64");
-            if (mimeType === "application/pdf") {
-              const {parse} = await import("pdf-parse");
-              const pdfData = await parse(buffer);
-              textContent = pdfData.text;
-            } else {
-              textContent = buffer.toString("utf-8");
-            }
+            textContent = buffer.toString("utf-8");
             const fileContext = `FILE CONTENT:\n${textContent}\n\n`;
             userMessageContent[0] = {
               text: `${fileContext}USER'S REQUEST:\n${message}`,
