@@ -1,3 +1,4 @@
+
 {
   "name": "functions",
   "scripts": {
@@ -30,6 +31,7 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.25.4",
     "firebase-functions-test": "^3.1.0",
+    "pdf-parse": "^1.1.1",
     "typescript": "^5.7.3"
   },
   "private": true

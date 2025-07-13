@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 "use server";
 
 import {ai, getModel} from "./genkit";
@@ -23,7 +24,7 @@ import {
 } from "firebase/firestore";
 import {db} from "@/lib/firebase";
 import {PersonaIDs} from "@/lib/constants";
-import {Message,ToolRequestPart, genkitToolAuth, user} from "genkit/beta";
+import {Message, ToolRequestPart, genkitToolAuth, user} from "genkit/beta";
 
 /**
  * Retrieves a persona prompt from Firestore based on the provided persona ID.
@@ -70,29 +71,29 @@ async function saveGeneratedContent(
   };
 
   switch (toolName) {
-    case "summarizeNotesTool":
-      collectionName = "summaries";
-      data.title = output.title || "Summary";
-      data.summary = output.summary;
-      data.keywords = output.keywords;
-      break;
-    case "createFlashcardsTool":
-      collectionName = "flashcardSets";
-      data.title = `Flashcards for: ${source.substring(0, 40)}...`;
-      data.flashcards = output.flashcards;
-      break;
-    case "createQuizTool":
-      collectionName = "quizzes";
-      data.title = output.title || `Quiz for: ${source.substring(0, 40)}...`;
-      data.quiz = output.quiz;
-      break;
-    case "createStudyPlanTool":
-      collectionName = "studyPlans";
-      data.title = output.title || "New Study Plan";
-      data.plan = output.plan;
-      break;
-    default:
-      return; // Don't save for tools that don't generate persistent content
+  case "summarizeNotesTool":
+    collectionName = "summaries";
+    data.title = output.title || "Summary";
+    data.summary = output.summary;
+    data.keywords = output.keywords;
+    break;
+  case "createFlashcardsTool":
+    collectionName = "flashcardSets";
+    data.title = `Flashcards for: ${source.substring(0, 40)}...`;
+    data.flashcards = output.flashcards;
+    break;
+  case "createQuizTool":
+    collectionName = "quizzes";
+    data.title = output.title || `Quiz for: ${source.substring(0, 40)}...`;
+    data.quiz = output.quiz;
+    break;
+  case "createStudyPlanTool":
+    collectionName = "studyPlans";
+    data.title = output.title || "New Study Plan";
+    data.plan = output.plan;
+    break;
+  default:
+    return; // Don't save for tools that don't generate persistent content
   }
 
   try {
@@ -158,7 +159,13 @@ export const chatFlow = ai.defineFlow(
         const [header, base64Data] = context.split(",");
         const mimeType = header.split(":")[1].split(";")[0];
         if (mimeType.startsWith("image/")) {
-          userMessageContent.push({media: {url: context, contentType: mimeType}});
+          // eslint-disable-next-line max-len
+          userMessageContent.push({
+            media: {
+              url: context,
+              contentType: mimeType,
+            },
+          });
         } else {
           let textContent = "";
           const buffer = Buffer.from(base64Data, "base64");
@@ -169,13 +176,16 @@ export const chatFlow = ai.defineFlow(
           } else {
             textContent = buffer.toString("utf-8");
           }
-          const fileContext =
-            `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\n`;
-          userMessageContent[0] = {text: `${fileContext}USER'S REQUEST:\n${message}`};
+          const fileContext = `FILE CONTENT:\n${textContent}\n\n`;
+          userMessageContent[0] = {
+            text: `${fileContext}USER'S REQUEST:\n${message}`,
+          };
         }
       } else {
         const fileContext = `CONTEXT:\n${context}\n\n`;
-        userMessageContent[0] = {text: `${fileContext}USER'S REQUEST:\n${message}`};
+        userMessageContent[0] = {
+          text: `${fileContext}USER'S REQUEST:\n${message}`,
+        };
       }
     }
 
