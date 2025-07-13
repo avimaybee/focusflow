@@ -118,3 +118,18 @@ export const HighlightKeyInsightsInputSchema = z.object({
 export const HighlightKeyInsightsOutputSchema = z.object({
   insights: z.array(z.string()),
 });
+
+
+// Smart Tool Inputs
+export type RewriteTextInput = {
+  textToRewrite: string;
+  style: 'clearer and more concise' | 'more professional' | 'more casual';
+};
+
+export type GenerateBulletPointsInput = {
+  textToConvert: string;
+};
+
+export type GenerateCounterargumentsInput = {
+  statementToChallenge: string;
+};

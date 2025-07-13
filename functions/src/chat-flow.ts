@@ -1,11 +1,8 @@
 'use server';
 
-import {
-  ChatHistoryMessage,
-  ChatInput,
-} from './chat-types';
-import {ai} from '@/functions/src/genkit';
-import { optimizeChatHistory } from './history-optimizer';
+import { ai } from './genkit';
+import { z } from 'zod';
+import { marked } from 'marked';
 import {
   createDiscussionPromptsTool,
   createFlashcardsTool,
@@ -16,26 +13,23 @@ import {
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from './tools';
-import type { Message } from 'genkit';
-import { marked } from 'marked';
+import { ChatInput, Persona, validPersonas } from '@/types/chat-types';
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PersonaIDs } from '@/lib/constants';
-import { z } from 'zod';
-import * as admin from 'firebase-admin';
-
+import { Message } from 'genkit/beta';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
-    const personaRef = admin.firestore().collection('personas').doc(personaId);
-    const personaSnap = await personaRef.get();
-    if (personaSnap.exists) {
-        return personaSnap.data()?.prompt;
+    const personaRef = doc(db, 'personas', personaId);
+    const personaSnap = await getDoc(personaRef);
+    if (personaSnap.exists()) {
+        return personaSnap.data().prompt;
     }
     // Fallback to a neutral prompt if the persona is not found
-    const fallbackRef = admin.firestore().collection('personas').doc(PersonaIDs.NEUTRAL);
-    const fallbackSnap = await fallbackRef.get();
+    const fallbackRef = doc(db, 'personas', PersonaIDs.NEUTRAL);
+    const fallbackSnap = await getDoc(fallbackRef);
     if (fallbackSnap.exists()) {
-        return fallbackSnap.data()?.prompt;
+        return fallbackSnap.data().prompt;
     }
     return 'You are a helpful AI study assistant. Your tone is knowledgeable, encouraging, and clear. You provide direct and effective help without a strong personality. Your goal is to be a reliable and straightforward academic tool.';
 }
@@ -43,11 +37,10 @@ async function getPersonaPrompt(personaId: string): Promise<string> {
 async function saveGeneratedContent(userId: string, toolName: string, output: any, source: string) {
   if (!userId || !toolName || !output) return;
 
-  const firestore = admin.firestore();
   let collectionName = '';
   let data: any = {
     sourceText: source,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdAt: serverTimestamp(),
   };
 
   switch (toolName) {
@@ -77,8 +70,8 @@ async function saveGeneratedContent(userId: string, toolName: string, output: an
   }
 
   try {
-    const contentCollection = firestore.collection('users').doc(userId).collection(collectionName);
-    await contentCollection.add(data);
+    const contentCollection = collection(db, 'users', userId, collectionName);
+    await addDoc(contentCollection, data);
     console.log(`Saved ${collectionName} for user ${userId}`);
   } catch (error) {
     console.error(`Error saving ${collectionName} to Firestore:`, error);
@@ -93,13 +86,13 @@ export const chatFlow = ai.defineFlow(
   },
   async (input: ChatInput) => {
     const { userId, message, history, context, isPremium, persona } = input;
-
-    // Use a simple model for now
+    
+    // In the future, we can select a model based on the request.
     const model = 'googleai/gemini-1.5-flash';
     const personaInstruction = await getPersonaPrompt(persona);
-    
-    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting (e.g., headings, bold text, lists) to improve readability. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it (like pasting text or uploading a file). Do not try to use a tool without the required information.`;
 
+    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting (e.g., headings, bold text, lists) to improve readability. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it (like pasting text or uploading a file). Do not try to use a tool without the required information.`;
+    
     const availableTools = [
       summarizeNotesTool,
       createStudyPlanTool,
@@ -111,45 +104,52 @@ export const chatFlow = ai.defineFlow(
       highlightKeyInsightsTool,
     ];
 
-    const llmHistory: Message[] = [];
-    
-    if (history && Array.isArray(history)) {
-      for (const m of history) {
-        if (m && m.role && m.text) {
-          llmHistory.push({
-            role: m.role as 'user' | 'model',
-            content: [{ text: m.text }],
-          });
-        }
+    // Build the history for the AI model
+    const historyForAI: Message[] = history.reduce((acc: Message[], m) => {
+      if (m && m.role && m.text) {
+        acc.push({
+          role: m.role,
+          content: [{ text: m.text }],
+        });
       }
-    }
+      return acc;
+    }, []);
 
-    if (message && message.trim()) {
-      llmHistory.push({
-        role: 'user',
-        content: [{ text: message }],
-      });
-    }
+    const userMessageContent = { role: 'user', content: [{ text: message }] } as Message;
 
-    const lastMessage = llmHistory[llmHistory.length - 1];
-    if (context && lastMessage?.role === 'user' && lastMessage.content && lastMessage.content.length > 0) {
+    // Handle file context
+    if (context) {
         const isDataUri = context.startsWith('data:');
         if (isDataUri) {
-             const [header, base64Data] = context.split(',');
-             const mimeType = header.split(':')[1].split(';')[0];
-             if (mimeType.startsWith('image/')) {
-                 lastMessage.content.push({ media: { url: context, contentType: mimeType } });
-             }
+            const [header, base64Data] = context.split(',');
+            const mimeType = header.split(':')[1].split(';')[0];
+            if (mimeType.startsWith('image/')) {
+                 userMessageContent.content.push({ media: { url: context, contentType: mimeType } });
+            } else {
+                // For non-image files, we prepend the text content to the user's message
+                let textContent = '';
+                const buffer = Buffer.from(base64Data, 'base64');
+                if (mimeType === 'application/pdf') {
+                    const { parse } = await import('pdf-parse/lib/pdf-parse.js');
+                    const pdfData = await parse(buffer);
+                    textContent = pdfData.text;
+                } else {
+                    textContent = buffer.toString('utf-8');
+                }
+                 userMessageContent.content[0].text = `CONTEXT FROM UPLOADED FILE:\n${textContent}\n\nUSER'S REQUEST:\n${message}`;
+            }
+        } else {
+             userMessageContent.content[0].text = `CONTEXT:\n${context}\n\nUSER'S REQUEST:\n${message}`;
         }
     }
 
-    const finalHistory = await optimizeChatHistory(llmHistory);
+    historyForAI.push(userMessageContent);
 
     try {
       const result = await ai.generate({
         model,
         system: systemPrompt,
-        history: finalHistory, 
+        history: historyForAI,
         tools: availableTools,
         toolChoice: 'auto',
         config: {
@@ -165,26 +165,23 @@ export const chatFlow = ai.defineFlow(
       const choices = result.candidates;
       
       if (!choices || choices.length === 0) {
-        const errorMessage = 'Sorry, the AI model did not return a response. This could be due to a safety filter or a temporary issue. Please try rephrasing your request.';
-        return {
-          response: errorMessage,
-          rawResponse: errorMessage,
-        };
+        throw new Error('AI model did not return a response.');
       }
 
       if (choices[0].finishReason !== 'stop' && choices[0].finishReason !== 'other') {
           // Handle cases where generation was blocked or stopped for other reasons
+          console.warn(`AI response stopped due to: ${choices[0].finishReason}`);
       }
-
+      
       if (choices[0].toolCalls && choices[0].toolCalls.length > 0) {
-        for (const toolCall of choices[0].toolCalls) {
-            const toolName = toolCall.name;
-            // The tool output is automatically provided back to the model in the next turn
-            // but we can also save it if needed.
-            if (toolCall.output && userId) {
-                await saveGeneratedContent(userId, toolName, toolCall.output, message);
-            }
-        }
+          for (const toolCall of choices[0].toolCalls) {
+              const toolName = toolCall.name;
+              // The tool output is automatically provided back to the model in the next turn
+              // but we can also save it if needed.
+              if (toolCall.output && userId) {
+                  await saveGeneratedContent(userId, toolName, toolCall.output, message);
+              }
+          }
       }
 
       const responseText = result.text() || 'Sorry, I am not sure how to help with that.';
@@ -194,13 +191,17 @@ export const chatFlow = ai.defineFlow(
         response: formattedResponse,
         rawResponse: responseText,
       };
-    } catch (error) {
+
+    } catch (error: any) {
       console.error('Error in ai.generate:', error);
+      const errorMessage = error.message.includes('SAFETY') 
+          ? 'Sorry, the response was blocked by a safety filter. Please try rephrasing your request.'
+          : 'Sorry, there was an error processing your request. Please try again.';
       
-      const errorMessage = 'Sorry, there was an error processing your request. Please try again.';
       return {
         response: errorMessage,
         rawResponse: errorMessage,
+        isError: true,
       };
     }
   }

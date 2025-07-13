@@ -16,7 +16,7 @@ import { UploadCloud } from 'lucide-react';
 import { doc, collection, onSnapshot, query, orderBy, Timestamp, setDoc, serverTimestamp, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { chat } from '@/ai/actions';
-import { ChatInput, ChatHistoryMessage, Persona, validPersonas } from '@/functions/src/chat-types';
+import { ChatInput, ChatHistoryMessage, Persona, validPersonas } from '@/types/chat-types';
 import { ChatMessageProps } from '@/components/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
 import { SmartToolActions } from '@/lib/constants';
@@ -116,7 +116,7 @@ export default function ChatPage() {
                 resultText = `**Counterarguments:**\n\n${counterResult.counterarguments.map(p => `- ${p}`).join('\n')}`;
                 break;
             case SmartToolActions.INSIGHTS:
-                const insightResult = await highlightKeyInsights({ sourceText: messageText });
+                const insightResult = await highlightKeyInsights({ text: messageText });
                 resultText = `**Key Insights:**\n\n${insightResult.insights.map(p => `- ${p}`).join('\n')}`;
                 break;
         }

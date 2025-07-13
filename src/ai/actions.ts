@@ -9,7 +9,7 @@ import {
   GenerateBulletPointsInput,
   GenerateCounterargumentsInput,
   HighlightKeyInsightsInput
-} from '@/functions/src/chat-types';
+} from '@/types/chat-types';
 import { useToast } from '@/hooks/use-toast';
 
 // Get a reference to the deployed chat function

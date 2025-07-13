@@ -21,7 +21,7 @@ import {
   CreateMemoryAidOutputSchema,
   CreateDiscussionPromptsOutputSchema,
   HighlightKeyInsightsOutputSchema,
-} from './chat-types';
+} from '@/types/chat-types';
 
 export const summarizeNotesTool = ai.defineTool(
   {
