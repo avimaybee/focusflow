@@ -93,11 +93,9 @@ export default function LoginPage() {
   const handleSignup = async (values: SignupFormValues) => {
     setIsLoading(true);
     try {
-      // Create user, but DO NOT create the Firestore document here.
-      // The onUserCreate Cloud Function will handle that.
+      // Create user. The AuthProvider will handle creating the Firestore document.
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       
-      // We can, however, update the auth profile display name
       await updateProfile(userCredential.user, {
         displayName: values.email.split('@')[0]
       });

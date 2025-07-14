@@ -4,7 +4,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
@@ -16,6 +16,33 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// This function creates the user document if it doesn't exist.
+// It's the centralized logic to prevent race conditions.
+const createUserDocumentIfNeeded = async (user: User) => {
+  const userRef = doc(db, 'users', user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    // Document doesn't exist, so create it.
+    try {
+      await setDoc(userRef, {
+        uid: user.uid,
+        email: user.email || null,
+        displayName: user.displayName || user.email?.split('@')[0] || 'Anonymous User',
+        photoURL: user.photoURL || null,
+        createdAt: serverTimestamp(),
+        isPremium: false,
+        preferredPersona: 'neutral',
+        favoritePrompts: [],
+      });
+      console.log(`Created user document for UID: ${user.uid}`);
+    } catch (error) {
+      console.error(`Error creating user document for UID: ${user.uid}`, error);
+    }
+  }
+};
+
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -30,8 +57,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (user) {
         setUser(user);
         
-        // Set up a realtime listener for user data from Firestore.
-        // The user document is now created by the `onUserCreate` Cloud Function.
+        // Ensure user document exists before setting up the listener
+        await createUserDocumentIfNeeded(user);
+
         const userRef = doc(db, 'users', user.uid);
         const unsubscribeFirestore = onSnapshot(userRef, (userSnap) => {
             if (userSnap.exists()) {
