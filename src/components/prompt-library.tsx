@@ -119,7 +119,10 @@ export function PromptLibrary({ onSelectPrompt, children }: PromptLibraryProps) 
                         key={template.id} 
                         className="flex flex-col cursor-pointer hover:bg-muted/50 transition-colors group"
                         onClick={() => handleSelect(template.prompt)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSelect(template.prompt)}
                         tabIndex={0}
+                        role="button"
+                        aria-label={`Select prompt: ${template.title}`}
                     >
                       <CardHeader className="flex-row items-start justify-between pb-2">
                         <div className="flex items-center gap-3">

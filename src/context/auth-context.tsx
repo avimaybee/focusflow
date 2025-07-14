@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
   const [preferredPersona, setPreferredPersona] = useState<string | null>(null);
-  const [favoritePrompts, setFavoritePrompts] = useState<string[] | null>(null);
+  const [favoritePrompts, setFavoritePrompts] = useState<string[] | null>([]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
