@@ -204,7 +204,7 @@ export const Header = () => {
   const loggedOutButtons = (
      <div className="hidden md:flex items-center gap-2">
         <motion.div layoutId="auth-modal-trigger-login">
-          <Button variant="ghost" onClick={() => handleOpenAuthModal('login', 'auth-modal-trigger-login')}>
+          <Button variant="outline" onClick={() => handleOpenAuthModal('login', 'auth-modal-trigger-login')}>
               Login
           </Button>
         </motion.div>
