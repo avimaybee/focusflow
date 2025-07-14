@@ -37,7 +37,7 @@ export const smartTools: SmartTool[] = [
   },
   {
     name: 'Create Presentation Outline',
-    prompt: (text) => `Create a 5-slide presentation outline for the topic: "${text}"`,
+    prompt: (text) => `Create a 12-slide presentation outline for the topic: "${text}"`,
     icon: <Presentation className="h-4 w-4" />,
   },
 ];
