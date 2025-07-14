@@ -20,6 +20,8 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
     throw new Error('User ID is required to fetch dashboard stats.');
   }
 
+  const userDocRef = db.collection('users').doc(userId);
+
   const collectionsToCount = [
     'summaries',
     'quizzes',
@@ -29,9 +31,10 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
 
   const counts = await Promise.all(
     collectionsToCount.map(async (collectionName) => {
-      const collRef = db.collection('users').doc(userId).collection(collectionName);
-      const snapshot = await collRef.get();
-      return snapshot.size;
+      const collRef = userDocRef.collection(collectionName);
+      // Use .count() for efficient counting without fetching all documents
+      const snapshot = await collRef.count().get();
+      return snapshot.data().count;
     })
   );
 
@@ -42,3 +45,5 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
     studyPlansCount: counts[3],
   };
 }
+
+    

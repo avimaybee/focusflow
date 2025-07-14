@@ -7,7 +7,6 @@ import { db } from '@/lib/firebase';
 import {
   collection,
   query,
-  where,
   onSnapshot,
   addDoc,
   updateDoc,
@@ -15,6 +14,7 @@ import {
   serverTimestamp,
   Timestamp,
   getDocs,
+  where,
 } from 'firebase/firestore';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -49,7 +49,7 @@ import {
 } from 'recharts';
 import { Loader2, Target, BookOpen, Plus, FileText, HelpCircle, BrainCircuit, Calendar, Flame, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getWeek, startOfWeek, endOfWeek, format } from 'date-fns';
+import { startOfWeek, endOfWeek, format, eachDayOfInterval } from 'date-fns';
 import { getDashboardStats } from '@/lib/dashboard-actions';
 import AnimatedNumberCountdown from '@/components/ui/animated-number-countdown';
 import Link from 'next/link';
@@ -114,7 +114,7 @@ export default function DashboardPage() {
     if (user?.uid) {
         getDashboardStats(user.uid).then(stats => {
             setKpiStats(stats);
-        });
+        }).catch(err => console.error("Failed to fetch dashboard stats", err));
     }
   }, [user?.uid]);
 
@@ -135,26 +135,63 @@ export default function DashboardPage() {
     return () => unsubscribe();
   }, [user?.uid]);
 
-  // Fetch Study Sessions for the current week
+  // Fetch all study sessions for streak calculation
+  // And weekly sessions for chart
   useEffect(() => {
     if (!user?.uid) return;
-    const now = new Date();
-    const start = startOfWeek(now);
-    const end = endOfWeek(now);
-
+    setIsLoading(true);
     const sessionsRef = collection(db, 'users', user.uid, 'studySessions');
-    const q = query(
-      sessionsRef,
-      where('createdAt', '>=', start),
-      where('createdAt', '<=', end)
-    );
+    const q = query(sessionsRef, orderBy('createdAt', 'desc'));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const weeklySessions = snapshot.docs.map((doc) => ({
+      const allSessions = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as StudySession[];
+      
+      // Calculate streak with all sessions
+      const sessionDates = allSessions.map(s => s.createdAt.toDate());
+      const uniqueDays = new Set(sessionDates.map(d => d.toISOString().split('T')[0]));
+      
+      let streak = 0;
+      let currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
+      // Check for session today or yesterday to start counting
+      if (uniqueDays.has(currentDate.toISOString().split('T')[0])) {
+          streak++;
+      } else {
+        currentDate.setDate(currentDate.getDate() - 1);
+        if (uniqueDays.has(currentDate.toISOString().split('T')[0])) {
+          streak++;
+        }
+      }
+      
+      if(streak > 0) {
+        while (true) {
+            const prevDay = new Date(currentDate);
+            prevDay.setDate(currentDate.getDate() - 1);
+            const prevDayStr = prevDay.toISOString().split('T')[0];
+            if (uniqueDays.has(prevDayStr)) {
+                streak++;
+                currentDate = prevDay;
+            } else {
+                break;
+            }
+        }
+      }
+      setStudyStreak(streak);
+
+      // Filter for current week for chart
+      const now = new Date();
+      const start = startOfWeek(now);
+      const end = endOfWeek(now);
+      const weeklySessions = allSessions.filter(s => {
+          const sessionDate = s.createdAt.toDate();
+          return sessionDate >= start && sessionDate <= end;
+      });
       setSessions(weeklySessions);
+
       setIsLoading(false);
     });
 
@@ -164,71 +201,23 @@ export default function DashboardPage() {
   // Process data for the chart
   useEffect(() => {
     const dailyGoal = goal ? (goal.weeklyHours * 60) / 7 : 0;
-    const newChartData = dayNames.map((day, index) => {
+    const now = new Date();
+    const start = startOfWeek(now);
+    const end = endOfWeek(now);
+    const weekDays = eachDayOfInterval({ start, end });
+
+    const newChartData = weekDays.map((day, index) => {
       const totalMinutes = sessions
-        .filter((s) => s.createdAt.toDate().getDay() === index)
+        .filter((s) => s.createdAt.toDate().getDay() === day.getDay())
         .reduce((acc, curr) => acc + curr.duration, 0);
       return {
-        name: day,
+        name: dayNames[day.getDay()],
         logged: parseFloat((totalMinutes / 60).toFixed(2)),
         goal: parseFloat((dailyGoal / 60).toFixed(2)),
       };
     });
     setChartData(newChartData);
   }, [sessions, goal]);
-
-  // Calculate Study Streak
-  useEffect(() => {
-    if (sessions.length === 0) {
-      setStudyStreak(0);
-      return;
-    }
-
-    const sortedSessionDates = sessions
-      .map(s => s.createdAt.toDate())
-      .sort((a, b) => b.getTime() - a.getTime());
-    
-    const uniqueDays = new Set(sortedSessionDates.map(d => d.toISOString().split('T')[0]));
-    
-    let streak = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Check if there's a session today or yesterday to start the streak count
-    const todayStr = today.toISOString().split('T')[0];
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-    if (uniqueDays.has(todayStr) || uniqueDays.has(yesterdayStr)) {
-        streak = uniqueDays.has(todayStr) ? 1 : 0;
-        let currentDay = new Date(today);
-
-        if (uniqueDays.has(yesterdayStr)) {
-            if (!uniqueDays.has(todayStr)) {
-                streak = 1;
-                currentDay.setDate(currentDay.getDate() - 1);
-            } else {
-                streak = 1;
-            }
-        }
-
-        while (true) {
-            const prevDay = new Date(currentDay);
-            prevDay.setDate(currentDay.getDate() - 1);
-            const prevDayStr = prevDay.toISOString().split('T')[0];
-
-            if (uniqueDays.has(prevDayStr)) {
-                streak++;
-                currentDay = prevDay;
-            } else {
-                break;
-            }
-        }
-    }
-    
-    setStudyStreak(streak);
-  }, [sessions]);
 
   // Check for earned badges
   useEffect(() => {
@@ -517,9 +506,11 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
                 {earnedBadges.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        {earnedBadges.map(badge => (
-                            <div key={badge.id} className="flex flex-col items-center text-center gap-2 p-4 rounded-lg bg-secondary/50">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                        {badges.map(badge => (
+                            <div key={badge.id} className="flex flex-col items-center text-center gap-2 p-4 rounded-lg bg-secondary/50 transition-all"
+                                style={{ opacity: earnedBadges.some(b => b.id === badge.id) ? 1 : 0.3 }}
+                            >
                                 <badge.icon className="h-10 w-10 text-primary" />
                                 <p className="font-semibold text-sm">{badge.title}</p>
                                 <p className="text-xs text-muted-foreground">{badge.description}</p>
@@ -540,3 +531,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
