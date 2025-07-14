@@ -100,6 +100,51 @@
   .glowing-card > .glowing-card-content {
     @apply h-full w-full rounded-[7px] bg-secondary/50;
   }
+
+  /* Flipping Heading Text Styles */
+  .flip-heading {
+    display: inline-flex;
+    flex-wrap: wrap; /* Allow wrapping for longer text */
+    line-height: 1.2;
+    cursor: default;
+    outline: none;
+  }
+
+  .char-wrapper {
+    position: relative;
+    display: inline-block;
+    perspective: 500px;
+  }
+
+  .char-front,
+  .char-back {
+    display: inline-block;
+    backface-visibility: hidden;
+    transition:
+      transform 0.5s ease,
+      opacity 0.4s ease;
+    transition-delay: var(--delay);
+  }
+
+  .char-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotateX(-90deg);
+    opacity: 0;
+  }
+
+  .flip-heading:hover .char-front,
+  .flip-heading:focus-within .char-front {
+    transform: rotateX(90deg);
+    opacity: 0;
+  }
+
+  .flip-heading:hover .char-back,
+  .flip-heading:focus-within .char-back {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
 }
 
 

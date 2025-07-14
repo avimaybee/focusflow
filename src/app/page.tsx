@@ -33,6 +33,7 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { motion } from 'framer-motion';
 import { useAuthModal } from '@/hooks/use-auth-modal';
+import { FlipHeading } from '@/components/ui/flip-heading';
 
 const HeroGradient = () => (
   <div
@@ -210,9 +211,10 @@ export default function LandingPage() {
         <section className="relative py-24 md:py-32 text-center">
           <HeroGradient />
           <div className="container mx-auto px-4 relative">
-            <h1 className="text-4xl md:text-6xl font-bold max-w-3xl mx-auto leading-tight tracking-tighter font-heading">
-              Study Smarter, Not Harder
-            </h1>
+            <FlipHeading
+              text="Study Smarter, Not Harder"
+              className="text-4xl md:text-6xl font-bold max-w-3xl mx-auto leading-tight tracking-tighter"
+            />
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               FocusFlow is your AI co-pilot for learning. Turn any document
               into summaries, flashcards, and quizzes—in seconds.
