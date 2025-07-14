@@ -25,6 +25,12 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { cn } from '@/lib/utils';
 import { GlowingCard } from '@/components/ui/glowing-card';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
 
 const HeroGradient = () => (
   <div
@@ -178,6 +184,18 @@ export default function LandingPage() {
       name: 'Emily R.',
       role: 'College Freshman',
     },
+    {
+      quote:
+        'As someone with ADHD, the AI-generated study plans are a lifesaver. It breaks everything down into manageable chunks and keeps me on track.',
+      name: 'Alex P.',
+      role: 'Graduate Student',
+    },
+    {
+      quote:
+        'The different AI personas are a fantastic touch. Switching to the "Cram Buddy" persona before an exam really gets me in the zone.',
+      name: 'Jessica W.',
+      role: 'Medical Student',
+    }
   ];
 
   return (
@@ -237,29 +255,43 @@ export default function LandingPage() {
                 saying.
               </p>
             </div>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <Card
-                  key={index}
-                  className="bg-background/60 border-border/60"
-                >
-                  <CardContent className="p-6 flex flex-col h-full">
-                    <Quote className="w-8 h-8 text-primary/50 mb-4" />
-                    <p className="italic text-base text-foreground/90 leading-relaxed flex-grow">
-                      "{testimonial.quote}"
-                    </p>
-                    <div className="mt-6">
-                      <p className="font-semibold text-sm">
-                        {testimonial.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {testimonial.role}
-                      </p>
+            <Carousel
+              opts={{
+                align: 'start',
+                loop: true,
+              }}
+              plugins={[
+                Autoplay({
+                  delay: 3000,
+                }),
+              ]}
+              className="w-full mt-12"
+            >
+              <CarouselContent>
+                {testimonials.map((testimonial, index) => (
+                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1">
+                      <Card className="bg-background/60 border-border/60 h-full">
+                        <CardContent className="p-6 flex flex-col h-full">
+                          <Quote className="w-8 h-8 text-primary/50 mb-4" />
+                          <p className="italic text-base text-foreground/90 leading-relaxed flex-grow">
+                            "{testimonial.quote}"
+                          </p>
+                          <div className="mt-6">
+                            <p className="font-semibold text-sm">
+                              {testimonial.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {testimonial.role}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
           </div>
         </section>
 
