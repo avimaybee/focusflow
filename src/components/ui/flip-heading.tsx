@@ -19,15 +19,13 @@ export function FlipHeading({ text, className }: FlipHeadingProps) {
     >
       {letters.map((char, i) => (
         <span
-          key={i}
-          className="char-wrapper"
-          style={{ '--delay': `${i * 30}ms` } as React.CSSProperties}
+          key={`${char}-${i}`}
+          className="letter-container"
+          style={{ '--delay': `${i * 35}ms` } as React.CSSProperties}
         >
-          <span className="char-front" aria-hidden="true">
-            {char === ' ' ? '\u00A0' : char}
-          </span>
-          <span className="char-back" aria-hidden="true">
-            {char === ' ' ? '\u00A0' : char}
+          <span className="letter-scroller">
+            <span aria-hidden="true">{char === ' ' ? '\u00A0' : char}</span>
+            <span aria-hidden="true">{char === ' ' ? '\u00A0' : char}</span>
           </span>
         </span>
       ))}

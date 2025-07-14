@@ -101,50 +101,37 @@
     @apply h-full w-full rounded-[7px] bg-secondary/50;
   }
 
-  /* Flipping Heading Text Styles */
+  /* Vertical Scrolling Heading Text Styles */
   .flip-heading {
-    display: inline-flex;
-    flex-wrap: wrap; /* Allow wrapping for longer text */
-    line-height: 1.2;
+    display: flex;
     cursor: default;
     outline: none;
   }
-
-  .char-wrapper {
-    position: relative;
+  
+  .letter-container {
     display: inline-block;
-    perspective: 500px;
+    height: 1em; /* Set to the height of one letter */
+    line-height: 1em;
+    overflow: hidden;
   }
-
-  .char-front,
-  .char-back {
-    display: inline-block;
-    backface-visibility: hidden;
-    transition:
-      transform 0.5s ease,
-      opacity 0.4s ease;
+  
+  .letter-scroller {
+    display: block;
+    transform: translateY(0);
+    transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
     transition-delay: var(--delay);
   }
-
-  .char-back {
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform: rotateX(-90deg);
-    opacity: 0;
+  
+  .letter-scroller span {
+    display: block;
+    height: 1em;
+    line-height: 1em;
   }
-
-  .flip-heading:hover .char-front,
-  .flip-heading:focus-within .char-front {
-    transform: rotateX(90deg);
-    opacity: 0;
-  }
-
-  .flip-heading:hover .char-back,
-  .flip-heading:focus-within .char-back {
-    transform: rotateX(0deg);
-    opacity: 1;
-  }
+  
+  .flip-heading:hover .letter-scroller,
+  .flip-heading:focus-within .letter-scroller {
+    transform: translateY(-1em); /* Move up by the height of one letter */
+  }  
 }
 
 
