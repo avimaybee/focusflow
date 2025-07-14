@@ -1,7 +1,7 @@
 
 'use server';
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/genkit/beta';
 import { z } from 'zod';
 import { googleAI } from '@genkit-ai/googleai';
 import { db } from '@/lib/firebase-admin';
@@ -16,7 +16,7 @@ import {
   summarizeNotesTool,
 } from '@/ai/tools';
 import { FirestoreSessionStore } from '@/lib/firestore-session-store';
-import { serverTimestamp } from 'firebase/admin/firestore';
+import { serverTimestamp } from 'firebase-admin/firestore';
 import type { MessageData } from 'genkit/beta';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
@@ -136,14 +136,12 @@ const chatFlow = ai.defineFlow(
     let { sessionId } = input;
 
     const store = new FirestoreSessionStore(userId);
-    let session;
-
-    if (sessionId) {
-      session = await ai.loadSession(sessionId, { store });
-    } else {
-      session = await ai.createSession({ store });
-      sessionId = session.id; // Get the newly created session ID
-    }
+    
+    const session = sessionId
+      ? await ai.loadSession(sessionId, { store })
+      : await ai.createSession({ store });
+      
+    sessionId = session.id;
 
     const personaInstruction = await getPersonaPrompt(persona || 'neutral');
 
@@ -166,14 +164,12 @@ const chatFlow = ai.defineFlow(
       ],
     });
     
-    // Prepare user message with optional context
-    const userMessageContent: any[] = [{ text: message }];
+    const userMessageContent: (string | { media: { url: string } })[] = [message];
     if (context) {
       userMessageContent.push({ media: { url: context } });
     }
-    const userMessage: MessageData = { role: 'user', content: userMessageContent };
-
-    const result = await chat.send(userMessage);
+    
+    const result = await chat.send(userMessageContent);
 
     const toolCalls = result.history[result.history.length-1].toolCalls;
     if (toolCalls && toolCalls.length > 0) {
