@@ -132,7 +132,10 @@ export default function ChatPage() {
 
   // Main function to handle sending a message
   const handleSendMessage = async (e: FormEvent, prompt?: string) => {
-    e.preventDefault();
+    // Check if `e` is a real event object before calling preventDefault
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
     const messageToSend = prompt || input;
     if (!messageToSend.trim() && !attachment || isSending || authLoading ) return;
 
