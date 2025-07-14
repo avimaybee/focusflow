@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { Logo } from './logo';
 import { useAuth } from '@/context/auth-context';
-import { ArrowRight, MessageSquare, Menu, LogOut, LayoutDashboard, Library } from 'lucide-react';
+import { ArrowRight, MessageSquare, Menu, LogOut, LayoutDashboard, Library, Newspaper } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -33,6 +33,7 @@ import { motion } from 'framer-motion';
 const navLinks = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/my-content', label: 'My Content', icon: Library },
+    { href: '/blog', label: 'Blog', icon: Newspaper },
     { href: '/premium', label: 'Premium', icon: null },
 ];
 
@@ -189,6 +190,9 @@ export const Header = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/my-content"><Library className="mr-2 h-4 w-4" />My Content</Link>
+                </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                    <Link href="/blog"><Newspaper className="mr-2 h-4 w-4" />Blog</Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
