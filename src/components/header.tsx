@@ -143,12 +143,16 @@ export const Header = () => {
                </>
             ) : (
               <>
-                <Button variant="outline" onClick={() => handleOpenAuthModal('login', 'mobile-login-trigger')}>
-                  Login
-                </Button>
-                <Button onClick={() => handleOpenAuthModal('signup', 'mobile-signup-trigger')}>
-                  Get Started
-                </Button>
+                <motion.div layoutId="mobile-login-trigger">
+                  <Button variant="outline" className="w-full" onClick={() => handleOpenAuthModal('login', 'mobile-login-trigger')}>
+                    Login
+                  </Button>
+                </motion.div>
+                <motion.div layoutId="mobile-signup-trigger">
+                  <Button className="w-full" onClick={() => handleOpenAuthModal('signup', 'mobile-signup-trigger')}>
+                    Get Started
+                  </Button>
+                </motion.div>
               </>
             )}
           </div>
@@ -204,11 +208,6 @@ export const Header = () => {
         <motion.div layoutId="auth-modal-trigger-login">
           <Button variant="ghost" onClick={() => handleOpenAuthModal('login', 'auth-modal-trigger-login')}>
               Login
-          </Button>
-        </motion.div>
-        <motion.div layoutId="auth-modal-trigger-signup">
-          <Button onClick={() => handleOpenAuthModal('signup', 'auth-modal-trigger-signup')}>
-              Get Started <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </motion.div>
      </div>

@@ -218,12 +218,10 @@ export default function LandingPage() {
               into summaries, flashcards, and quizzes—in seconds.
             </p>
             <div className="mt-8 flex gap-4 justify-center">
-              <motion.div layoutId="auth-modal-trigger-main">
-                <Button size="lg" asChild>
-                  <Link href="/chat">
-                    Start Studying Smarter{' '}
-                    <MoveRight className="ml-2 h-5 w-5" />
-                  </Link>
+              <motion.div layoutId="auth-modal-trigger-hero">
+                <Button size="lg" onClick={() => onOpen('signup', 'auth-modal-trigger-hero')}>
+                  Get Started for Free{' '}
+                  <MoveRight className="ml-2 h-5 w-5" />
                 </Button>
               </motion.div>
             </div>
