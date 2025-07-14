@@ -110,7 +110,7 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isSending || !user) return;
+    if (!input.trim() || isSending || authLoading || !user) return;
   
     setIsSending(true);
     const userMessage: ChatMessageProps = {
@@ -133,7 +133,7 @@ export default function ChatPage() {
     setAttachment(null);
   
     try {
-      const idToken = await auth.currentUser?.getIdToken();
+      const idToken = user ? await user.getIdToken() : null;
       if (!idToken) {
         throw new Error("Authentication token not available. Please log in again.");
       }

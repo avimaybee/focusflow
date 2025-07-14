@@ -1,9 +1,11 @@
 
 // src/ai/flows/chat-flow.ts
-'use server';
+console.log('DEBUG: Loading /ai/flows/chat-flow.ts module');
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+// ... (rest of the file is unchanged)
+
 import {
   createDiscussionPromptsTool,
   createFlashcardsTool,
@@ -19,6 +21,8 @@ import { db } from '@/lib/firebase-admin';
 import { PersonaIDs } from '@/lib/constants';
 import { FirestoreSessionStore } from '@/lib/firestore-session-store';
 import { googleAI } from '@genkit-ai/googleai';
+
+console.log('DEBUG: /ai/flows/chat-flow.ts module loaded, imports processed');
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
   try {
@@ -118,6 +122,7 @@ async function saveGeneratedContent(
   }
 }
 
+console.log('DEBUG: Defining chatFlow...');
 export const chatFlow = ai.defineFlow(
   {
     name: 'chatFlow',
@@ -135,10 +140,13 @@ export const chatFlow = ai.defineFlow(
     stream: true,
   },
   async (input, streamingCallback) => {
+    console.log('--- CHAT FLOW EXECUTION START ---');
     const { userId, message, context, persona } = input;
     let { sessionId } = input;
+    console.log(`DEBUG: Flow inputs - userId: ${userId}, sessionId: ${sessionId}, persona: ${persona}`);
 
     try {
+      console.log('DEBUG: Creating Firestore session store...');
       const store = new FirestoreSessionStore(userId);
       
       const session = sessionId 
@@ -146,10 +154,13 @@ export const chatFlow = ai.defineFlow(
           : await ai.createSession({ store });
       
       sessionId = session.id;
+      console.log(`DEBUG: Session ready. ID: ${sessionId}`);
 
+      console.log('DEBUG: Fetching persona prompt...');
       const personaInstruction = await getPersonaPrompt(persona || 'neutral');
       const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.`;
       
+      console.log('DEBUG: Configuring model...');
       const model = googleAI.model('gemini-1.5-flash', {
         systemInstruction: systemPrompt,
       });
@@ -185,10 +196,13 @@ export const chatFlow = ai.defineFlow(
         }
       }
 
+      console.log('DEBUG: Sending message to model...');
       const result = await chat.send(userMessageContent, { streamingCallback });
+      console.log('DEBUG: Received response from model.');
       
       const toolCalls = result.history.at(-1)?.toolCalls;
       if (toolCalls && toolCalls.length > 0) {
+        console.log(`DEBUG: Detected ${toolCalls.length} tool calls.`);
         for (const toolCall of toolCalls) {
           if (toolCall.output) {
               await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
@@ -196,6 +210,7 @@ export const chatFlow = ai.defineFlow(
         }
       }
 
+      console.log('--- CHAT FLOW EXECUTION END ---');
       return {
           sessionId,
           response: result.text || "",
@@ -210,3 +225,4 @@ export const chatFlow = ai.defineFlow(
     }
   }
 );
+console.log('DEBUG: chatFlow defined successfully.');
