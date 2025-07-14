@@ -104,6 +104,7 @@
   /* Vertical Scrolling Heading Text Styles */
   .flip-heading {
     display: flex;
+    justify-content: center;
     cursor: default;
     outline: none;
   }
