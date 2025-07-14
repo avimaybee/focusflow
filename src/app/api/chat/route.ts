@@ -9,7 +9,7 @@ import { app } from '@/lib/firebase-admin';
 async function getUserIdFromRequest(req: NextRequest): Promise<string | null> {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-        console.error('API ROUTE ERROR: No Authorization header found.');
+        // This is a guest user if there's no auth header.
         return null;
     }
 
@@ -31,10 +31,10 @@ async function getUserIdFromRequest(req: NextRequest): Promise<string | null> {
 export async function POST(request: NextRequest) {
   try {
     const userId = await getUserIdFromRequest(request);
-    if (!userId) {
-        console.error("API ROUTE: Unauthorized access detected.");
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+
+    // If there's no userId, it's a guest request.
+    // In a production app, you might add rate-limiting here.
+    const isGuest = !userId;
 
     const body = await request.json();
     console.log("API ROUTE: Received request body:", body);
@@ -45,9 +45,10 @@ export async function POST(request: NextRequest) {
 
     // This is the input that will be passed to our main AI flow.
     const input = {
-      userId: userId,
+      // Use a placeholder for guest users or the actual user ID.
+      userId: userId || 'guest-user',
       message: body.message,
-      sessionId: body.sessionId,
+      sessionId: isGuest ? undefined : body.sessionId,
       persona: body.persona || 'neutral',
       context: body.context, // This can be a data URI for a file
     };

@@ -53,7 +53,7 @@ async function saveGeneratedContent(
   output: unknown,
   toolInput: unknown
 ) {
-  if (!userId || !toolName || !output || !toolInput) return;
+  if (!userId || userId === 'guest-user' || !toolName || !output || !toolInput) return;
 
   let collectionName = '';
   let sourceText = '';
@@ -147,9 +147,12 @@ const chatFlow = ai.defineFlow(
   },
   async (input) => {
     const { userId, message, context, persona } = input;
-    const store = new FirestoreSessionStore(userId);
+    const isGuest = userId === 'guest-user';
     
-    // Load existing session or create a new one using the Firestore store
+    // For guests, we don't use a persistent session store.
+    // For logged-in users, we use Firestore.
+    const store = isGuest ? undefined : new FirestoreSessionStore(userId);
+    
     const session = input.sessionId
       ? await ai.loadSession(input.sessionId, { store })
       : await ai.createSession({ store });
@@ -158,10 +161,8 @@ const chatFlow = ai.defineFlow(
 
     const model = googleAI.model('gemini-1.5-flash');
 
-    // Define the base system prompt for the AI
     const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.`;
 
-    // Start a chat within the session, providing the model, system prompt, and available tools
     const chat = session.chat({
       model,
       system: systemPrompt,
@@ -177,20 +178,16 @@ const chatFlow = ai.defineFlow(
       ],
     });
     
-    // Construct the user's message, including any file context
     const userMessageContent: (string | { media: { url: string } })[] = [message];
     if (context) {
       userMessageContent.push({ media: { url: context } });
     }
     
-    // Send the message to the chat session and get the result
     const result = await chat.send(userMessageContent);
 
-    // After the response, safely check if any tools were called and save their output.
-    // The last message in the history is the model's response.
-    if (result.history && result.history.length > 0) {
+    // Only save content for non-guest users.
+    if (!isGuest && result.history && result.history.length > 0) {
       const lastMessage = result.history[result.history.length - 1];
-      // The 'toolCalls' property only exists if the model decided to call a tool.
       if (lastMessage.toolCalls && lastMessage.toolCalls.length > 0) {
         for (const toolCall of lastMessage.toolCalls) {
           if (toolCall.output) {
@@ -200,7 +197,6 @@ const chatFlow = ai.defineFlow(
       }
     }
     
-    // Return the session ID and the AI's text response
     return {
       sessionId: session.id,
       response: result.text,

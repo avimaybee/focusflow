@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, Copy, RefreshCw } from 'lucide-react';
+import { Bot, Copy, RefreshCw, User } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import { FlashcardViewer } from './flashcard-viewer';
@@ -107,7 +107,7 @@ export function ChatMessage({
         <>
           <AvatarImage src={userAvatar || undefined} data-ai-hint="person" />
           <AvatarFallback>
-            {userName?.charAt(0).toUpperCase() || 'U'}
+            {userName === 'Guest' ? <User className="h-5 w-5" /> : userName?.charAt(0).toUpperCase() || 'U'}
           </AvatarFallback>
         </>
       ) : (

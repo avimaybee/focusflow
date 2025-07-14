@@ -21,6 +21,7 @@ import { ChatMessageProps } from '@/components/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
 import { marked } from 'marked';
 
+const GUEST_MESSAGE_LIMIT = 10;
 
 export default function ChatPage() {
   const { user, loading: authLoading } = useAuth();
@@ -38,6 +39,9 @@ export default function ChatPage() {
   const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [isSending, setIsSending] = useState(false);
   
+  // State for guest users
+  const [guestMessageCount, setGuestMessageCount] = useState(0);
+
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
   const { chatHistory, isLoading: isHistoryLoading, forceRefresh } = useChatHistory();
   const { isDraggingOver, handleFileSelect, fileUploadHandlers } = useFileUpload(setAttachment);
@@ -60,8 +64,12 @@ export default function ChatPage() {
 
   // Effect to listen for changes in the active chat document in Firestore
   useEffect(() => {
+    // This listener only runs for logged-in users with an active chat.
     if (!user || !activeChatId) {
-        setMessages([]); // Clear messages if no user or active chat
+        if (!user) { // If user logs out, clear guest messages too
+            setMessages([]);
+            setGuestMessageCount(0);
+        }
         return;
     }
   
@@ -71,19 +79,18 @@ export default function ChatPage() {
     const unsubscribe = onSnapshot(chatRef, async (docSnapshot) => {
       if (docSnapshot.exists()) {
         const sessionData = docSnapshot.data();
-        // THE FIX: Read from the correct nested field where Genkit stores chat history.
+        // Read from the correct nested field where Genkit stores chat history.
         const history = sessionData.threads?.main || [];
         
         // Map the stored history to the format our ChatMessage component expects
         const chatMessagesPromises = history.map(async (msg: any, index: number) => {
-            // Find the text part of the message content
             const textPart = msg.content?.find((p: any) => p.text);
             const textContent = textPart?.text || '';
           
           return { 
             id: `${docSnapshot.id}-${index}`,
             role: msg.role,
-            text: await marked.parse(textContent), // Parse markdown for display
+            text: await marked.parse(textContent),
             rawText: textContent,
             createdAt: sessionData.updatedAt || Timestamp.now(),
             userName: msg.role === 'user' ? user.displayName : undefined,
@@ -94,7 +101,6 @@ export default function ChatPage() {
         const resolvedMessages = await Promise.all(chatMessagesPromises);
         setMessages(resolvedMessages);
       } else {
-        // If the document doesn't exist (e.g., old/deleted chat ID), clear messages
         setMessages([]);
       }
     }, (error) => {
@@ -118,6 +124,7 @@ export default function ChatPage() {
   const handleNewChat = () => {
     setActiveChatId(null);
     setMessages([]);
+    setGuestMessageCount(0);
     router.push('/chat');
   };
 
@@ -126,30 +133,50 @@ export default function ChatPage() {
     e.preventDefault();
     if (!input.trim() && !attachment || isSending || authLoading ) return;
 
+    // Guest user logic
     if (!user) {
-        openAuthModal('signup');
-        return;
+        if (guestMessageCount >= GUEST_MESSAGE_LIMIT) {
+            openAuthModal('signup');
+            toast({
+                title: 'Message Limit Reached',
+                description: 'Please sign up or log in to continue chatting.',
+            });
+            return;
+        }
+
+        const guestMessage: ChatMessageProps = {
+            id: `guest-${Date.now()}`,
+            role: 'user',
+            text: await marked.parse(input.trim()),
+            rawText: input.trim(),
+            userName: 'Guest',
+            userAvatar: null,
+            createdAt: Timestamp.now(),
+        };
+        setMessages(prev => [...prev, guestMessage]);
+        setGuestMessageCount(prev => prev + 1);
     }
   
     setIsSending(true);
   
     const chatInput = {
       message: input.trim(),
-      sessionId: activeChatId || undefined, // Pass current session ID or none for a new chat
+      sessionId: user ? activeChatId || undefined : undefined,
       persona: selectedPersonaId,
-      context: attachment?.url, // Pass file data URI if attached
+      context: attachment?.url,
     };
   
-    // Clear the input fields after sending
     setInput('');
     setAttachment(null);
   
     try {
-      const idToken = await user.getIdToken();
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`,
-      };
+      const idToken = await user?.getIdToken();
+      const headers: { [key:string]: string } = { 'Content-Type': 'application/json' };
+      if (idToken) {
+        headers['Authorization'] = `Bearer ${idToken}`;
+      } else {
+        // No auth header for guest users
+      }
 
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -160,26 +187,34 @@ export default function ChatPage() {
       const result = await response.json();
       
       if (!response.ok) {
-        // Pass the entire response to the error handler
         throw { response, result };
       }
       
-      // If this was a new chat, the server returns a new session ID.
-      // We then redirect the user to the new chat's URL.
-      if (result.sessionId && !activeChatId) {
+      // If user is logged in and it was a new chat, redirect.
+      if (user && result.sessionId && !activeChatId) {
         router.push(`/chat/${result.sessionId}`);
-        forceRefresh(); // Refresh the sidebar to show the new chat
+        forceRefresh();
+      } else if (!user) {
+        // For guests, add the AI response to local state.
+        const modelResponse: ChatMessageProps = {
+            id: `guest-ai-${Date.now()}`,
+            role: 'model',
+            text: await marked.parse(result.response),
+            rawText: result.response,
+            createdAt: Timestamp.now(),
+        };
+        setMessages(prev => [...prev, modelResponse]);
       }
   
     } catch (error: any) {
       console.error("Client-side send message error:", error);
+      const description = error.result?.error || error.message || 'An unknown error occurred.';
       toast({
         variant: 'destructive',
         title: 'Message Failed',
-        description: error.result?.error || error.message || 'An unknown error occurred.',
+        description: description,
       });
   
-      // Add an error message to the chat UI
       const errorResponse: ChatMessageProps = {
         id: `err-${Date.now()}`,
         role: 'model',
