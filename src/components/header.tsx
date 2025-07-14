@@ -13,6 +13,7 @@ import {
   SheetClose,
 } from '@/components/ui/sheet';
 import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 const navLinks = [
     { href: '/dashboard', label: 'Dashboard' },
@@ -31,15 +32,23 @@ export const Header = () => {
 
   const desktopNav = (
     <nav className="hidden md:flex items-center gap-6">
-      {navLinks.map((link) => (
-        <Link
-          key={link.href + link.label}
-          href={link.href}
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {link.label}
-        </Link>
-      ))}
+      {navLinks.map((link) => {
+        const isActive = pathname === link.href;
+        return (
+            <Link
+              key={link.href + link.label}
+              href={link.href}
+              className={cn(
+                "text-sm font-medium transition-colors",
+                isActive
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {link.label}
+            </Link>
+        );
+    })}
     </nav>
   );
 
@@ -58,16 +67,24 @@ export const Header = () => {
             <span className="font-bold text-lg">FocusFlow AI</span>
           </Link>
           <nav className="flex flex-col gap-4">
-            {navLinks.map((link) => (
-              <SheetClose asChild key={link.href + link.label}>
-                <Link
-                  href={link.href}
-                  className="text-lg font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link.label}
-                </Link>
-              </SheetClose>
-            ))}
+            {navLinks.map((link) => {
+               const isActive = pathname === link.href;
+               return (
+                  <SheetClose asChild key={link.href + link.label}>
+                    <Link
+                      href={link.href}
+                      className={cn(
+                          "text-lg font-medium transition-colors",
+                           isActive
+                            ? "text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  </SheetClose>
+               );
+            })}
           </nav>
           <div className="flex flex-col gap-2 mt-auto">
             {user ? (
