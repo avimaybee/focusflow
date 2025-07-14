@@ -12,14 +12,12 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import {
   BrainCircuit,
-  Combine,
-  Lightbulb,
-  Zap,
+  ClipboardList,
+  Library,
   MoveRight,
   Quote,
-  BookOpen,
-  ClipboardList,
   Sparkles,
+  Users,
 } from 'lucide-react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -87,24 +85,6 @@ const AppPreview = () => (
 const BentoGrid = () => {
   const features = [
     {
-      icon: <ClipboardList className="h-8 w-8 text-primary" />,
-      title: 'Generate Summaries',
-      description: 'Distill long texts into concise summaries.',
-      className: 'md:col-span-1',
-    },
-    {
-      icon: <BookOpen className="h-8 w-8 text-primary" />,
-      title: 'Create Flashcards',
-      description: 'Turn notes into interactive flashcards for active recall.',
-      className: 'md:col-span-1',
-    },
-    {
-      icon: <BrainCircuit className="h-8 w-8 text-primary" />,
-      title: 'Build Quizzes',
-      description: 'Test your knowledge with AI-generated quizzes.',
-      className: 'md:col-span-1',
-    },
-    {
       icon: <Sparkles className="h-8 w-8 text-primary" />,
       title: 'AI-Powered Chat',
       description:
@@ -112,10 +92,31 @@ const BentoGrid = () => {
       className: 'md:col-span-2',
     },
     {
-      icon: <Combine className="h-8 w-8 text-primary" />,
-      title: 'Seamless Workflow',
+      icon: <Users className="h-8 w-8 text-primary" />,
+      title: 'Customizable AI Personas',
       description:
-        'From upload to summary to quiz, enjoy a frictionless study experience.',
+        'Choose from various AI personalities, from a formal professor to a sassy friend.',
+      className: 'md:col-span-1',
+    },
+    {
+      icon: <ClipboardList className="h-8 w-8 text-primary" />,
+      title: 'Generate Study Materials',
+      description:
+        'Instantly create summaries, quizzes, and flashcards from any document.',
+      className: 'md:col-span-1',
+    },
+    {
+      icon: <Library className="h-8 w-8 text-primary" />,
+      title: 'Rich Prompt Library',
+      description:
+        'Kickstart your sessions with expertly crafted prompts for any study task.',
+      className: 'md:col-span-1',
+    },
+    {
+      icon: <BrainCircuit className="h-8 w-8 text-primary" />,
+      title: 'Track Your Progress',
+      description:
+        'Log study sessions, set goals, and earn badges on your personal dashboard.',
       className: 'md:col-span-1',
     },
   ];
@@ -200,7 +201,7 @@ export default function LandingPage() {
         'The different AI personas are a fantastic touch. Switching to the "Cram Buddy" persona before an exam really gets me in the zone.',
       name: 'Jessica W.',
       role: 'Medical Student',
-    }
+    },
   ];
 
   return (
@@ -275,7 +276,10 @@ export default function LandingPage() {
             >
               <CarouselContent>
                 {testimonials.map((testimonial, index) => (
-                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                  <CarouselItem
+                    key={index}
+                    className="md:basis-1/2 lg:basis-1/3"
+                  >
                     <div className="p-1">
                       <Card className="bg-background/60 border-border/60 h-full">
                         <CardContent className="p-6 flex flex-col h-full">
@@ -328,3 +332,5 @@ export default function LandingPage() {
     </>
   );
 }
+
+    
