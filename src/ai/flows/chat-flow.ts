@@ -1,7 +1,7 @@
 
 'use server';
 
-import { ai } from '@/ai/genkit/beta';
+import { genkit, MessageData } from 'genkit/beta';
 import { z } from 'zod';
 import { googleAI } from '@genkit-ai/googleai';
 import { db } from '@/lib/firebase-admin';
@@ -17,7 +17,7 @@ import {
 } from '@/ai/tools';
 import { FirestoreSessionStore } from '@/lib/firestore-session-store';
 import { serverTimestamp } from 'firebase-admin/firestore';
-import type { MessageData } from 'genkit/beta';
+import { ai } from '@/ai/genkit';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
   try {
@@ -133,16 +133,12 @@ const chatFlow = ai.defineFlow(
   },
   async (input) => {
     const { userId, message, context, persona } = input;
-    let { sessionId } = input;
-
     const store = new FirestoreSessionStore(userId);
     
-    const session = sessionId
-      ? await ai.loadSession(sessionId, { store })
+    const session = input.sessionId
+      ? await ai.loadSession(input.sessionId, { store })
       : await ai.createSession({ store });
       
-    sessionId = session.id;
-
     const personaInstruction = await getPersonaPrompt(persona || 'neutral');
 
     const model = googleAI.model('gemini-1.5-flash');
@@ -181,7 +177,7 @@ const chatFlow = ai.defineFlow(
     }
     
     return {
-      sessionId: sessionId!,
+      sessionId: session.id,
       response: result.text,
     };
   }
