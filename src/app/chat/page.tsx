@@ -84,10 +84,26 @@ export default function ChatPage() {
         
         // Map the stored history to the format our ChatMessage component expects
         const chatMessagesPromises = history
-          .filter((msg: any) => msg.role !== 'system') // <-- FIX: Filter out system prompts
+          .filter((msg: any) => msg.role !== 'system') // <-- Filter out system prompts
           .map(async (msg: any, index: number) => {
             const textPart = msg.content?.find((p: any) => p.text);
+            const toolCallPart = msg.content?.find((p: any) => p.toolCall);
+            
             const textContent = textPart?.text || '';
+
+            // This is the crucial part for structured data like quizzes/flashcards
+            let toolCallOutput: any = {};
+            if (msg.role === 'model' && msg.toolCalls?.length > 0) {
+              const call = msg.toolCalls[0];
+              if (call.output) {
+                if (call.name === 'createFlashcardsTool') {
+                  toolCallOutput.flashcards = call.output.flashcards;
+                }
+                if (call.name === 'createQuizTool') {
+                  toolCallOutput.quiz = call.output.quiz;
+                }
+              }
+            }
           
           return { 
             id: `${docSnapshot.id}-${index}`,
@@ -97,6 +113,7 @@ export default function ChatPage() {
             createdAt: sessionData.updatedAt || Timestamp.now(),
             userName: msg.role === 'user' ? user.displayName : undefined,
             userAvatar: msg.role === 'user' ? user.photoURL : undefined,
+            ...toolCallOutput,
           } as ChatMessageProps;
         });
 
@@ -203,11 +220,14 @@ export default function ChatPage() {
         forceRefresh();
       } else if (!user) {
         // For guests, add the AI response to local state.
+        // This part needs to be smarter to handle structured data.
         const modelResponse: ChatMessageProps = {
             id: `guest-ai-${Date.now()}`,
             role: 'model',
-            text: await marked.parse(result.response),
+            text: await marked.parse(result.response), // Assuming result.response contains the main text
             rawText: result.response,
+            flashcards: result.flashcards, // Pass along flashcards if they exist
+            quiz: result.quiz, // Pass along quiz if it exists
             createdAt: Timestamp.now(),
         };
         setMessages(prev => [...prev, modelResponse]);

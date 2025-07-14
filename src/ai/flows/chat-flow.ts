@@ -148,6 +148,9 @@ const chatFlow = ai.defineFlow(
     outputSchema: z.object({
       sessionId: z.string(),
       response: z.string(),
+      // Add fields for structured data
+      flashcards: z.any().optional(),
+      quiz: z.any().optional(),
     }),
   },
   async (input) => {
@@ -164,12 +167,10 @@ const chatFlow = ai.defineFlow(
       
     const personaInstruction = await getPersonaPrompt(persona || 'neutral');
 
-    // Use the light, fast model for general conversation and tool routing.
-    // The complex model is specified within the tools themselves.
     const model = googleAI.model('gemini-1.5-flash');
     console.log('Using light model for conversation/routing: gemini-1.5-flash');
 
-    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.`;
+    const systemPrompt = `You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format. If you use a tool like createFlashcardsTool or createQuizTool, do not add any additional text to your response, just the tool output.`;
 
     const chat = session.chat({
       model,
@@ -197,13 +198,24 @@ const chatFlow = ai.defineFlow(
     
     const result = await chat.send(userMessageContent);
 
+    let structuredOutput: { flashcards?: any; quiz?: any } = {};
+
     // Only save content for non-guest users.
-    if (!isGuest && result.history && result.history.length > 0) {
+    if (result.history && result.history.length > 0) {
       const lastMessage = result.history[result.history.length - 1];
       if (lastMessage.toolCalls && lastMessage.toolCalls.length > 0) {
         for (const toolCall of lastMessage.toolCalls) {
           if (toolCall.output) {
-              await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
+              if (!isGuest) {
+                 await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
+              }
+              // Extract structured output to return to the client
+              if (toolCall.name === 'createFlashcardsTool') {
+                structuredOutput.flashcards = (toolCall.output as any).flashcards;
+              }
+              if (toolCall.name === 'createQuizTool') {
+                structuredOutput.quiz = (toolCall.output as any).quiz;
+              }
           }
         }
       }
@@ -212,6 +224,7 @@ const chatFlow = ai.defineFlow(
     return {
       sessionId: session.id,
       response: result.text,
+      ...structuredOutput,
     };
   }
 );

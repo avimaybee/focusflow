@@ -5,7 +5,7 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CaseUpper, ListTodo, Scale, BookText, Presentation, Sparkles } from 'lucide-react';
+import { CaseUpper, ListTodo, Scale, BookText, Presentation, Sparkles, Album, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type SmartTool = {
@@ -39,6 +39,16 @@ export const smartTools: SmartTool[] = [
     name: 'Create Presentation Outline',
     prompt: (text) => `Create a 12-slide presentation outline for the topic: "${text}"`,
     icon: <Presentation className="h-4 w-4" />,
+  },
+  {
+    name: 'Create Flashcards',
+    prompt: (text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`,
+    icon: <Album className="h-4 w-4" />,
+  },
+  {
+    name: 'Create Quiz',
+    prompt: (text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`,
+    icon: <HelpCircle className="h-4 w-4" />,
   },
 ];
 

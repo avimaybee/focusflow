@@ -55,7 +55,6 @@ export function ChatMessage({
   userName,
   isError = false,
   isFirstInGroup = true,
-  isLastInGroup = true,
   onToolAction,
 }: ChatMessageProps) {
   const isUser = role === 'user';
@@ -140,26 +139,11 @@ export function ChatMessage({
         <div
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'max-w-2xl p-3 text-sm',
+            'max-w-2xl p-3 text-sm rounded-xl',
             isUser
               ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
               : 'bg-secondary',
-            isError && 'bg-destructive/10 border border-destructive/20',
-            isUser
-              ? isFirstInGroup && isLastInGroup
-                ? 'rounded-xl'
-                : isFirstInGroup
-                ? 'rounded-t-xl rounded-bl-xl'
-                : isLastInGroup
-                ? 'rounded-b-xl rounded-tl-xl'
-                : 'rounded-l-xl'
-              : isFirstInGroup && isLastInGroup
-              ? 'rounded-xl'
-              : isFirstInGroup
-              ? 'rounded-t-xl rounded-br-xl'
-              : isLastInGroup
-              ? 'rounded-b-xl rounded-tr-xl'
-              : 'rounded-r-xl'
+            isError && 'bg-destructive/10 border border-destructive/20'
           )}
         >
           {renderContent()}
@@ -201,7 +185,7 @@ export function ChatMessage({
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
-            {onToolAction && (
+            {onToolAction && rawText && (
               <SmartToolsMenu
                 onAction={(tool) => onToolAction(tool, rawText)}
               />
