@@ -147,7 +147,16 @@ export const chatFlow = ai.defineFlow(
     if (input.sessionId) {
       const chatSnap = await sessionRef.get();
       if (chatSnap.exists()) {
-        history = chatSnap.data()?.history || [];
+        const rawHistory = chatSnap.data()?.history || [];
+        // Defensive mapping to ensure history is valid
+        history = rawHistory
+          .map((msg: any) => {
+            if (msg && msg.role && Array.isArray(msg.content)) {
+              return { role: msg.role, content: msg.content };
+            }
+            return null;
+          })
+          .filter((msg: MessageData | null): msg is MessageData => msg !== null);
       }
     }
     

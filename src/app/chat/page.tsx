@@ -69,11 +69,9 @@ export default function ChatPage() {
         
         const chatMessagesPromises = history.map(async (msg: any, index: number) => {
             let textContent = '';
-            if (msg.role === 'model') {
-                const textPart = msg.content?.find((p: any) => p.text);
-                textContent = textPart?.text || '';
-            } else if (msg.role === 'user') {
-                const textPart = msg.content?.find((p: any) => p.text);
+            // Safely extract text content from the message parts
+            if (Array.isArray(msg.content)) {
+                const textPart = msg.content.find((p: any) => p.text);
                 textContent = textPart?.text || '';
             }
           
