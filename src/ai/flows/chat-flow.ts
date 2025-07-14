@@ -1,9 +1,12 @@
 
 'use server';
-// src/ai/flows/chat-flow.ts
+
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-
+import { googleAI } from '@genkit-ai/googleai';
+import { db } from '@/lib/firebase-admin';
+import { serverTimestamp } from 'firebase-admin/firestore';
+import { v4 as uuidv4 } from 'uuid';
 import {
   createDiscussionPromptsTool,
   createFlashcardsTool,
@@ -14,11 +17,7 @@ import {
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from '@/ai/tools';
-import { serverTimestamp } from 'firebase-admin/firestore';
-import { db } from '@/lib/firebase-admin';
-import { PersonaIDs } from '@/lib/constants';
-import { googleAI } from '@genkit-ai/googleai';
-import { v4 as uuidv4 } from 'uuid';
+import { defineHistory } from 'genkit/experimental/ai';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
   try {
@@ -27,13 +26,12 @@ async function getPersonaPrompt(personaId: string): Promise<string> {
     if (personaSnap.exists) {
       return personaSnap.data()!.prompt;
     }
-    
-    const fallbackRef = db.collection('personas').doc(PersonaIDs.NEUTRAL);
+    console.warn(`Persona '${personaId}' not found, falling back to neutral.`);
+    const fallbackRef = db.collection('personas').doc('neutral');
     const fallbackSnap = await fallbackRef.get();
     if (fallbackSnap.exists) {
       return fallbackSnap.data()!.prompt;
     }
-    
     return 'You are a helpful AI study assistant.';
   } catch (error) {
     console.error('Error fetching persona prompt:', error);
@@ -118,6 +116,7 @@ async function saveGeneratedContent(
   }
 }
 
+
 export const chatFlow = ai.defineFlow(
   {
     name: 'chatFlow',
@@ -129,15 +128,14 @@ export const chatFlow = ai.defineFlow(
       context: z.string().optional(),
     }),
     outputSchema: z.object({
-        sessionId: z.string(),
-        response: z.string()
+      sessionId: z.string(),
+      response: z.string(),
     }),
-    stream: true,
   },
-  async (input, streamingCallback) => {
+  async (input) => {
     const { userId, message, context, persona } = input;
     let { sessionId } = input;
-    
+
     // 1. Determine Session ID and Reference
     if (!sessionId) {
       sessionId = uuidv4();
@@ -146,87 +144,77 @@ export const chatFlow = ai.defineFlow(
 
     // 2. Load History if it exists
     let history = [];
-    if (input.sessionId) { // only load if it's an existing chat
-        const chatSnap = await sessionRef.get();
-        if (chatSnap.exists) {
-            history = chatSnap.data()?.history || [];
-        }
+    if (input.sessionId) {
+      const chatSnap = await sessionRef.get();
+      if (chatSnap.exists) {
+        history = chatSnap.data()?.history || [];
+      }
     }
+    
+    // 3. Get persona instruction
+    const personaInstruction = await getPersonaPrompt(persona || 'neutral');
+    
+    // 4. Construct the model with system prompt and tools
+    const model = googleAI.model('gemini-1.5-flash');
 
-    // 3. Create a session with the loaded history
-    const session = await ai.createSession({ history });
-
-    try {
-      const personaInstruction = await getPersonaPrompt(persona || 'neutral');
-      const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.`;
+    const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.`;
       
-      const model = googleAI.model('gemini-1.5-flash', {
-        systemInstruction: systemPrompt,
-      });
-      
-      const chat = session.chat({
-          model,
-          tools: [
-              summarizeNotesTool,
-              createStudyPlanTool,
-              createFlashcardsTool,
-              createQuizTool,
-              explainConceptTool,
-              createMemoryAidTool,
-              createDiscussionPromptsTool,
-              highlightKeyInsightsTool,
-          ],
-      });
-      
-      const userMessageContent: any[] = [{ text: message }];
-
-      if (context) {
+    // 5. Prepare user message with optional context
+    const userMessageContent: any[] = [{ text: message }];
+    if (context) {
         try {
           const mimeType = context.substring(5, context.indexOf(';'));
           if (mimeType && context.includes('base64,')) {
-            userMessageContent.push({ 
-              media: { url: context, contentType: mimeType } 
-            });
+            userMessageContent.push({ media: { url: context, contentType: mimeType } });
           } else {
-            console.warn('DEBUG: Invalid data URI format, skipping media attachment');
+            console.warn('Invalid data URI format, skipping media attachment');
           }
         } catch (error) {
           console.error('Error processing context:', error);
         }
-      }
+    }
+    
+    // 6. Generate the AI response
+    const result = await ai.generate({
+      model,
+      history: [...history, { role: 'user', content: userMessageContent }],
+      system: systemPrompt,
+      tools: [
+        summarizeNotesTool,
+        createStudyPlanTool,
+        createFlashcardsTool,
+        createQuizTool,
+        explainConceptTool,
+        createMemoryAidTool,
+        createDiscussionPromptsTool,
+        highlightKeyInsightsTool,
+      ],
+    });
 
-      const result = await chat.send(userMessageContent, { streamingCallback });
-      
-      // 4. Save history and metadata back to Firestore
-      await sessionRef.set({
-          id: sessionId,
-          userId: userId,
-          history: session.history,
-          updatedAt: serverTimestamp(),
-      }, { merge: true });
-      
-      const toolCalls = result.history.at(-1)?.toolCalls;
-      if (toolCalls && toolCalls.length > 0) {
-        for (const toolCall of toolCalls) {
-          if (toolCall.output) {
-              await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
-          }
+    // 7. Save updated history and metadata back to Firestore
+    const newHistory = [...history, { role: 'user', content: userMessageContent }, result.history[result.history.length-1]];
+    await sessionRef.set({
+        id: sessionId,
+        userId: userId,
+        history: newHistory,
+        updatedAt: serverTimestamp(),
+        title: message.substring(0, 50),
+    }, { merge: true });
+
+    // 8. Handle and save tool call outputs
+    const toolCalls = result.history.at(-1)?.toolCalls;
+    if (toolCalls && toolCalls.length > 0) {
+      for (const toolCall of toolCalls) {
+        if (toolCall.output) {
+            await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
         }
       }
-
-      return {
-          sessionId,
-          response: result.text || "",
-      };
-      
-    } catch (error: any) {
-      console.error('--- FATAL ERROR in chatFlow ---');
-      console.error('Error details:', error.message);
-      console.error('Stack trace:', error.stack);
-      console.error('---------------------------------');
-      throw error;
     }
+    
+    // 9. Return the result
+    return {
+      sessionId,
+      response: result.text,
+    };
   }
 );
-
-    
