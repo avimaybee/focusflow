@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { Logo } from './logo';
 import { useAuth } from '@/context/auth-context';
-import { ArrowRight, Menu } from 'lucide-react';
+import { ArrowRight, MessageSquare, Menu } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -15,19 +15,17 @@ import {
 import { usePathname } from 'next/navigation';
 
 const navLinks = [
-    { href: '#features', label: 'Summarizer' },
-    { href: '#features', label: 'Flashcards' },
-    { href: '#features', label: 'Notes' },
-    { href: '#features', label: 'Tools' },
-    { href: '#features', label: 'Help' },
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/my-content', label: 'My Content' },
+    { href: '/premium', label: 'Premium' },
 ];
 
 export const Header = () => {
   const { user } = useAuth();
   const pathname = usePathname();
 
-  // Do not render the header on the main chat page
-  if (pathname === '/chat') {
+  // Do not render the header on the main chat page or any of its sub-routes
+  if (pathname.startsWith('/chat')) {
     return null;
   }
 
@@ -74,7 +72,9 @@ export const Header = () => {
           <div className="flex flex-col gap-2 mt-auto">
             {user ? (
               <Button asChild>
-                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/chat">
+                    <MessageSquare className="mr-2 h-4 w-4" /> Go to Chat
+                </Link>
               </Button>
             ) : (
               <>
@@ -82,7 +82,7 @@ export const Header = () => {
                   <Link href="/login">Login</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/login">Go Premium</Link>
+                  <Link href="/login">Get Started</Link>
                 </Button>
               </>
             )}
@@ -99,12 +99,14 @@ export const Header = () => {
           <Logo className="h-8 w-8" />
           <span className="font-bold text-lg hidden sm:inline-block">FocusFlow AI</span>
         </Link>
-        {desktopNav}
+        {user && desktopNav}
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-2">
             {user ? (
               <Button asChild>
-                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/chat">
+                  <MessageSquare className="mr-2 h-4 w-4" /> Go to Chat
+                </Link>
               </Button>
             ) : (
               <>
@@ -113,7 +115,7 @@ export const Header = () => {
                 </Button>
                 <Button asChild>
                   <Link href="/login">
-                    Go Premium <ArrowRight className="ml-2 h-4 w-4" />
+                    Get Started <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </>
