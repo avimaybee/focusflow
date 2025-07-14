@@ -30,11 +30,13 @@ export class FirestoreSessionStore<S = any> implements SessionStore<S> {
         return undefined;
     }
 
-    // Convert Firestore Timestamps back to Dates for Genkit
-    const history = (data.history || []).map((msg: any) => ({
-      ...msg,
-      timestamp: msg.timestamp instanceof Timestamp ? msg.timestamp.toDate() : msg.timestamp,
-    }));
+    // Convert Firestore Timestamps back to Dates for Genkit. This is critical.
+    const history = (data.history || []).map((msg: any) => {
+        if (msg.timestamp && msg.timestamp instanceof Timestamp) {
+            return { ...msg, timestamp: msg.timestamp.toDate() };
+        }
+        return msg;
+    });
     
     const sessionData: SessionData<S> = {
       history,
@@ -65,10 +67,19 @@ export class FirestoreSessionStore<S = any> implements SessionStore<S> {
         }
     }
     
+    // Convert Dates back to Firestore Timestamps for storage
+    const historyToSave = (sessionData.history || []).map((msg: any) => {
+        if (msg.timestamp && msg.timestamp instanceof Date) {
+            return { ...msg, timestamp: Timestamp.fromDate(msg.timestamp) };
+        }
+        return msg;
+    });
+
     const dataToSave = {
       ...sessionData,
+      history: historyToSave,
       title: title,
-      updatedAt: Timestamp.now(), // Use server timestamp for consistency
+      updatedAt: Timestamp.now(),
     };
 
     await docRef.set(dataToSave, { merge: true });
