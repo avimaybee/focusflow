@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export const validPersonas = [
@@ -112,12 +113,51 @@ export const CreateDiscussionPromptsOutputSchema = z.object({
 });
 
 export const HighlightKeyInsightsInputSchema = z.object({
-  text: z.string(),
+  text: z.string().min(1, { message: 'Please provide text to highlight insights.' }),
 });
 export const HighlightKeyInsightsOutputSchema = z.object({
   insights: z.array(z.string()),
 });
 
+// NEW SCHEMAS FOR SMART TOOLS
+
+export const RewriteTextInputSchema = z.object({
+  text: z.string().min(1, { message: 'Please provide text to rewrite.' }),
+  style: z.enum(['clearer and more concise', 'more professional', 'more casual', 'like a tweet']),
+});
+export const RewriteTextOutputSchema = z.object({
+  rewrittenText: z.string(),
+});
+
+export const ConvertToBulletPointsInputSchema = z.object({
+  text: z.string().min(1, { message: 'Please provide text to convert to bullet points.' }),
+});
+export const ConvertToBulletPointsOutputSchema = z.object({
+  bulletPoints: z.array(z.string()),
+});
+
+export const GenerateCounterargumentsInputSchema = z.object({
+  text: z.string().min(1, { message: 'Please provide a statement to generate counterarguments for.' }),
+});
+export const GenerateCounterargumentsOutputSchema = z.object({
+  counterarguments: z.array(z.object({
+    point: z.string(),
+    explanation: z.string(),
+  })),
+});
+
+export const GeneratePresentationOutlineInputSchema = z.object({
+  topic: z.string().min(1, { message: 'Please provide a topic for the presentation.' }),
+  slideCount: z.number().min(3).max(20),
+});
+export const GeneratePresentationOutlineOutputSchema = z.object({
+  title: z.string(),
+  outline: z.array(z.object({
+    slide: z.number(),
+    title: z.string(),
+    content: z.array(z.string()),
+  })),
+});
 
 // Smart Tool Inputs
 export type RewriteTextInput = {

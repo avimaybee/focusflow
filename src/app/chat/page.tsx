@@ -131,9 +131,10 @@ export default function ChatPage() {
   };
 
   // Main function to handle sending a message
-  const handleSendMessage = async (e: FormEvent) => {
+  const handleSendMessage = async (e: FormEvent, prompt?: string) => {
     e.preventDefault();
-    if (!input.trim() && !attachment || isSending || authLoading ) return;
+    const messageToSend = prompt || input;
+    if (!messageToSend.trim() && !attachment || isSending || authLoading ) return;
 
     // Guest user logic
     if (!user) {
@@ -152,8 +153,8 @@ export default function ChatPage() {
     const userMessage: ChatMessageProps = {
         id: `user-${Date.now()}`,
         role: 'user',
-        text: await marked.parse(input.trim()),
-        rawText: input.trim(),
+        text: await marked.parse(messageToSend.trim()),
+        rawText: messageToSend.trim(),
         userName: user?.displayName || 'Guest',
         userAvatar: user?.photoURL || null,
         createdAt: Timestamp.now(),
@@ -165,7 +166,7 @@ export default function ChatPage() {
     }
   
     const chatInput = {
-      message: input.trim(),
+      message: messageToSend.trim(),
       sessionId: user ? activeChatId || undefined : undefined,
       persona: selectedPersonaId,
       context: attachment?.url,

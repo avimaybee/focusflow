@@ -14,6 +14,10 @@ import {
   explainConceptTool,
   highlightKeyInsightsTool,
   summarizeNotesTool,
+  rewriteTextTool,
+  convertToBulletPointsTool,
+  generateCounterargumentsTool,
+  generatePresentationOutlineTool,
 } from '@/ai/tools';
 import { FirestoreSessionStore } from '@/lib/firestore-session-store';
 import { serverTimestamp } from 'firebase-admin/firestore';
@@ -179,6 +183,10 @@ const chatFlow = ai.defineFlow(
         createMemoryAidTool,
         createDiscussionPromptsTool,
         highlightKeyInsightsTool,
+        rewriteTextTool,
+        convertToBulletPointsTool,
+        generateCounterargumentsTool,
+        generatePresentationOutlineTool,
       ],
     });
     

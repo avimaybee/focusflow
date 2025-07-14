@@ -8,7 +8,6 @@ import {
   FormEvent,
   useCallback,
 } from 'react';
-import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Paperclip,
@@ -29,6 +28,12 @@ import {
   Drama,
   Plus,
   File,
+  Sparkles,
+  CaseUpper,
+  BookText,
+  Scale,
+  Presentation,
+  ListTodo,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,6 +49,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from '@/components/ui/command';
 import { PromptLibrary } from '@/components/prompt-library';
 import { cn } from '@/lib/utils';
@@ -64,10 +70,39 @@ const personaIcons: { [key: string]: React.ElementType } = {
   sassy: Drama,
 };
 
+// New smart tools configuration
+const smartTools = [
+  {
+    name: 'Rewrite Text',
+    icon: CaseUpper,
+    prompt: (text: string) => `Rewrite the following text to be clearer and more concise: "${text}"`,
+  },
+  {
+    name: 'To Bullet Points',
+    icon: ListTodo,
+    prompt: (text: string) => `Convert the following text into a list of key bullet points: "${text}"`,
+  },
+  {
+    name: 'Find Counterarguments',
+    icon: Scale,
+    prompt: (text: string) => `Generate 3 strong counterarguments to the following statement: "${text}"`,
+  },
+    {
+    name: 'Highlight Key Insights',
+    icon: BookText,
+    prompt: (text: string) => `Analyze the following text and identify the key insights or "aha" moments: "${text}"`,
+  },
+  {
+    name: 'Create Presentation Outline',
+    icon: Presentation,
+    prompt: (text: string) => `Create a 5-slide presentation outline for the topic: "${text}"`,
+  },
+];
+
 interface ChatInputAreaProps {
   input: string;
   setInput: (value: string) => void;
-  handleSendMessage: (e: FormEvent) => void;
+  handleSendMessage: (e: FormEvent, prompt?: string) => void;
   handleFileSelect: (file: File) => void;
   onSelectPrompt: (prompt: string) => void;
   isSending: boolean;
@@ -116,6 +151,8 @@ export function ChatInputArea({
 }: ChatInputAreaProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
+  const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
+
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 24, // Matches the leading-normal (1.5rem)
     maxHeight: 200,
@@ -132,6 +169,14 @@ export function ChatInputArea({
     handleSendMessage(e);
     // After sending, reset the textarea height
     adjustHeight(true);
+  };
+  
+  const handleToolSelect = (toolPromptFn: (text: string) => string) => {
+    const prompt = toolPromptFn(input);
+    const syntheticEvent = {} as FormEvent; // Create a synthetic event
+    handleSendMessage(syntheticEvent, prompt);
+    adjustHeight(true);
+    setToolsMenuOpen(false);
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -184,7 +229,56 @@ export function ChatInputArea({
         <div className="flex items-end gap-2">
           {/* Left-side buttons */}
           <div className="flex items-center gap-1">
-            <PromptLibrary onSelectPrompt={onSelectPrompt} />
+             <Popover open={toolsMenuOpen} onOpenChange={setToolsMenuOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted"
+                >
+                  <Sparkles className="h-5 w-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-[340px] p-0 mb-2">
+                <Command>
+                  <CommandInput placeholder="Select a smart tool..." />
+                  <CommandList>
+                    <CommandEmpty>No tool found.</CommandEmpty>
+                    <CommandGroup heading="Smart Tools">
+                      {smartTools.map((tool) => (
+                        <CommandItem
+                          key={tool.name}
+                          onSelect={() => handleToolSelect(tool.prompt)}
+                          className="group flex items-start gap-3 cursor-pointer py-2.5"
+                          disabled={!input.trim()}
+                        >
+                          <tool.icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
+                          <div className="text-left flex-1">
+                            <p className="font-semibold text-sm text-foreground">
+                              {tool.name}
+                            </p>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                    <CommandSeparator />
+                     <CommandGroup heading="Library">
+                        <PromptLibrary onSelectPrompt={onSelectPrompt}>
+                             <CommandItem onSelect={() => {}} className="group flex items-start gap-3 cursor-pointer py-2.5">
+                                <Plus className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
+                                <div className="text-left flex-1">
+                                    <p className="font-semibold text-sm text-foreground">
+                                    Add from Prompt Library
+                                    </p>
+                                </div>
+                            </CommandItem>
+                        </PromptLibrary>
+                     </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+
             <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
               <PopoverTrigger asChild>
                 <Button

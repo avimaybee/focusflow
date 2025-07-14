@@ -24,9 +24,10 @@ const iconMap: { [key: string]: React.ElementType } = {
 
 interface PromptLibraryProps {
   onSelectPrompt: (prompt: string) => void;
+  children: React.ReactNode;
 }
 
-export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
+export function PromptLibrary({ onSelectPrompt, children }: PromptLibraryProps) {
   const { user, favoritePrompts, setFavoritePrompts } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [templates, setTemplates] = useState<PromptTemplate[]>([]);
@@ -76,14 +77,7 @@ export function PromptLibrary({ onSelectPrompt }: PromptLibraryProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground" 
-            aria-label="Open prompt library"
-        >
-          <Plus className="h-5 w-5" />
-        </Button>
+        {children}
       </DialogTrigger>
       <DialogContent className="max-w-4xl h-[70vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-4 border-b">

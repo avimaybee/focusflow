@@ -24,6 +24,14 @@ import {
   CreateMemoryAidOutputSchema,
   CreateDiscussionPromptsOutputSchema,
   HighlightKeyInsightsOutputSchema,
+  RewriteTextInputSchema,
+  RewriteTextOutputSchema,
+  ConvertToBulletPointsInputSchema,
+  ConvertToBulletPointsOutputSchema,
+  GenerateCounterargumentsInputSchema,
+  GenerateCounterargumentsOutputSchema,
+  GeneratePresentationOutlineInputSchema,
+  GeneratePresentationOutlineOutputSchema,
 } from '@/types/chat-types';
 
 // Define the powerful model to be used for all complex tool-based tasks.
@@ -240,6 +248,97 @@ ${input.text}`,
     });
     if (!output) {
       throw new Error('Failed to generate key insights.');
+    }
+    return output;
+  }
+);
+
+// NEW SMART TOOLS
+
+export const rewriteTextTool = ai.defineTool(
+  {
+    name: 'rewriteTextTool',
+    description: 'Rewrites a given piece of text in a specified style.',
+    inputSchema: RewriteTextInputSchema,
+    outputSchema: RewriteTextOutputSchema,
+  },
+  async input => {
+    const {output} = await ai.generate({
+      model: complexTaskModel,
+      prompt: `Rewrite the following text to be ${input.style}:\n\n${input.text}`,
+      output: {
+        schema: RewriteTextOutputSchema,
+      },
+    });
+    if (!output) {
+      throw new Error('Failed to rewrite text.');
+    }
+    return output;
+  }
+);
+
+export const convertToBulletPointsTool = ai.defineTool(
+  {
+    name: 'convertToBulletPointsTool',
+    description: 'Converts a block of text into a concise bulleted list.',
+    inputSchema: ConvertToBulletPointsInputSchema,
+    outputSchema: ConvertToBulletPointsOutputSchema,
+  },
+  async input => {
+    const {output} = await ai.generate({
+      model: complexTaskModel,
+      prompt: `Convert the following text into a list of key bullet points:\n\n${input.text}`,
+      output: {
+        schema: ConvertToBulletPointsOutputSchema,
+      },
+    });
+    if (!output) {
+      throw new Error('Failed to convert to bullet points.');
+    }
+    return output;
+  }
+);
+
+export const generateCounterargumentsTool = ai.defineTool(
+  {
+    name: 'generateCounterargumentsTool',
+    description:
+      'Generates counterarguments for a given statement or piece of text.',
+    inputSchema: GenerateCounterargumentsInputSchema,
+    outputSchema: GenerateCounterargumentsOutputSchema,
+  },
+  async input => {
+    const {output} = await ai.generate({
+      model: complexTaskModel,
+      prompt: `Generate 3 strong counterarguments to the following statement. For each, provide the counterpoint and a brief explanation:\n\n${input.text}`,
+      output: {
+        schema: GenerateCounterargumentsOutputSchema,
+      },
+    });
+    if (!output) {
+      throw new Error('Failed to generate counterarguments.');
+    }
+    return output;
+  }
+);
+
+export const generatePresentationOutlineTool = ai.defineTool(
+  {
+    name: 'generatePresentationOutlineTool',
+    description: 'Generates a presentation outline for a given topic.',
+    inputSchema: GeneratePresentationOutlineInputSchema,
+    outputSchema: GeneratePresentationOutlineOutputSchema,
+  },
+  async input => {
+    const {output} = await ai.generate({
+      model: complexTaskModel,
+      prompt: `Create a ${input.slideCount}-slide presentation outline for the topic: "${input.topic}". Include a title for the presentation and for each slide, provide a slide title and 3-4 content bullet points.`,
+      output: {
+        schema: GeneratePresentationOutlineOutputSchema,
+      },
+    });
+    if (!output) {
+      throw new Error('Failed to generate a presentation outline.');
     }
     return output;
   }
