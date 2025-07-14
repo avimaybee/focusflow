@@ -118,7 +118,7 @@ const BentoGrid = () => {
           key={index}
           className={cn('transition-colors', feature.className)}
         >
-          <div className="p-6 flex flex-col gap-4 items-start justify-center h-full">
+          <div className="glowing-card-content p-6 flex flex-col gap-4 items-start justify-center h-full">
             <div className="bg-primary/10 rounded-lg h-14 w-14 flex items-center justify-center border border-primary/20">
               {feature.icon}
             </div>

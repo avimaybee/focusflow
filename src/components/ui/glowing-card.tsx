@@ -35,7 +35,7 @@ export const GlowingCard = ({
 
   return (
     <div ref={cardRef} className={cn('glowing-card', className)} {...props}>
-      <div className="glowing-card-content">{children}</div>
+      {children}
     </div>
   );
 };
