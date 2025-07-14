@@ -5,6 +5,7 @@ import { useState, useRef, useEffect, FormEvent } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
+import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
@@ -23,6 +24,7 @@ import { marked } from 'marked';
 
 export default function ChatPage() {
   const { user, loading: authLoading } = useAuth();
+  const { onOpen: openAuthModal } = useAuthModal();
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
@@ -125,11 +127,7 @@ export default function ChatPage() {
     if (!input.trim() && !attachment || isSending || authLoading ) return;
 
     if (!user) {
-        toast({
-            variant: 'destructive',
-            title: 'Not Logged In',
-            description: "Please log in to send a message.",
-        });
+        openAuthModal('signup');
         return;
     }
   

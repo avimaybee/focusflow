@@ -148,11 +148,9 @@ export const Header = () => {
                     Login
                   </Button>
                 </motion.div>
-                <motion.div layoutId="mobile-signup-trigger">
-                  <Button className="w-full" onClick={() => handleOpenAuthModal('signup', 'mobile-signup-trigger')}>
-                    Get Started
-                  </Button>
-                </motion.div>
+                <Button asChild className="w-full">
+                    <Link href="/chat">Get Started</Link>
+                </Button>
               </>
             )}
           </div>
@@ -210,6 +208,12 @@ export const Header = () => {
               Login
           </Button>
         </motion.div>
+        <Button asChild>
+            <Link href="/chat">
+                Get Started
+                <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+        </Button>
      </div>
   )
 
