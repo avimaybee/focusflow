@@ -6,7 +6,7 @@ import { ArrowUpRight, X } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const ANNOUNCEMENT_ID = 'featureAnnouncement_2025_07'; // Use a unique ID for each new announcement
+const ANNOUNCEMENT_ID = 'personaBlogPost_2025_07_15'; // Use a unique ID for each new announcement
 
 export function AnnouncementBanner() {
   const [isVisible, setIsVisible] = useState(false);
@@ -36,9 +36,9 @@ export function AnnouncementBanner() {
           aria-live="polite"
         >
           <div className="announcement-wrapper">
-            <span className="announcement-badge">Latest update</span>
-            <Link href="/premium" className="announcement-message hover:text-foreground transition-colors">
-              New feature added <ArrowUpRight className="h-4 w-4" />
+            <span className="announcement-badge">New</span>
+            <Link href="/blog/mastering-ai-personas" className="announcement-message hover:text-foreground transition-colors">
+              Learn how to use AI Personas to match your study style <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
           <button

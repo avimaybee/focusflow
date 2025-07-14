@@ -1,3 +1,4 @@
+
 export interface Post {
   slug: string;
   title: string;
@@ -8,6 +9,38 @@ export interface Post {
 }
 
 export const posts: Post[] = [
+  {
+    slug: 'mastering-ai-personas',
+    title: 'Mastering Your Study Style with AI Personas',
+    excerpt: 'Unlock a new level of personalized learning by choosing an AI persona that matches your needs. Learn how each persona can enhance your study sessions.',
+    date: '2025-07-16',
+    author: 'Alex Chen, Learning Innovator',
+    content: `
+## Why One-Size-Fits-All Fails in Learning
+
+Every student learns differently. Some thrive on direct, no-nonsense feedback, while others need concepts broken down into simple, relatable analogies. Traditional study tools often ignore this crucial aspect of learning, offering a single, generic experience. FocusFlow AI's "Personas" feature tackles this head-on.
+
+## Meet Your AI Study Partners
+
+By selecting a persona, you're not just changing the AI's tone; you're changing its entire approach to teaching and interaction. Let's explore a few:
+
+### The Straight Shooter (Casey)
+Need the facts, fast? Casey delivers information in structured lists and bullet points. Perfect for quick reviews and cutting through the fluff to get to the core concepts.
+
+### Explain Like I'm 5 (Lily)
+Struggling with a complex topic? Lily breaks it down using simple words and everyday analogies. This persona is fantastic for building foundational understanding before diving into more complex details.
+
+### The Brutally Honest Mentor (Dr. Sterling)
+Preparing for a debate or defending a thesis? Dr. Sterling provides sharp, critical feedback, pointing out logical fallacies and challenging your assumptions. This persona helps you build stronger, more resilient arguments.
+
+### The Cram Buddy (Max)
+Facing an exam tomorrow? Max's high-energy, urgent tone delivers key facts, definitions, and mnemonic devices to help you absorb the most critical information in the shortest amount of time.
+
+## How to Switch Personas
+
+You can easily switch between personas at any time during your chat session using the persona selector in the input area. Experiment with different personas for different tasks to see which one works best for you. By tailoring the AI's communication style to your needs, you can create a more effective and engaging learning environment.
+`,
+  },
   {
     slug: 'how-to-study-smarter-with-ai',
     title: 'How to Study Smarter, Not Harder, with AI Tools',
