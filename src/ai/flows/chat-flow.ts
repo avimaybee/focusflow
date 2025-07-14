@@ -17,6 +17,7 @@ import {
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from '@/ai/tools';
+import { MessageData } from 'genkit/beta';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
   try {
@@ -134,7 +135,7 @@ export const chatFlow = ai.defineFlow(
   async (input) => {
     const { userId, message, context, persona } = input;
     let { sessionId } = input;
-
+    
     // 1. Determine Session ID and Reference
     if (!sessionId) {
       sessionId = uuidv4();
@@ -142,16 +143,30 @@ export const chatFlow = ai.defineFlow(
     const sessionRef = db.collection('users').doc(userId).collection('chats').doc(sessionId);
 
     // 2. Load and validate History if it exists
-    let history: any[] = [];
+    let history: MessageData[] = [];
     if (input.sessionId) {
       const chatSnap = await sessionRef.get();
-      if (chatSnap.exists) {
+      if (chatSnap.exists()) {
         const storedHistory = chatSnap.data()?.history || [];
-        // Ensure history is in the correct format for Genkit
-        history = storedHistory.map((msg: any) => ({
+        // Defensively map the history to the required format
+        history = storedHistory.map((msg: any) => {
+          if (!msg.content || !Array.isArray(msg.content)) {
+            // If the message is malformed, skip it.
+            return null;
+          }
+          const textPart = msg.content.find((p: any) => p.text);
+          const mediaPart = msg.content.find((p: any) => p.media);
+          
+          if (!textPart && !mediaPart) {
+             // Skip if no valid content part is found
+            return null;
+          }
+
+          return {
             role: msg.role,
             content: msg.content,
-        }));
+          };
+        }).filter((item: MessageData | null): item is MessageData => item !== null); // Filter out nulls
       }
     }
     
@@ -166,16 +181,7 @@ export const chatFlow = ai.defineFlow(
     // 5. Prepare user message with optional context
     const userMessageContent: any[] = [{ text: message }];
     if (context) {
-        try {
-          // A simple check for data URI format
-          if (context.startsWith('data:') && context.includes(';base64,')) {
-            userMessageContent.push({ media: { url: context } });
-          } else {
-            console.warn('Invalid data URI format, skipping media attachment');
-          }
-        } catch (error) {
-          console.error('Error processing context:', error);
-        }
+      userMessageContent.push({ media: { url: context } });
     }
     
     // 6. Generate the AI response
@@ -193,6 +199,9 @@ export const chatFlow = ai.defineFlow(
         createDiscussionPromptsTool,
         highlightKeyInsightsTool,
       ],
+      output: {
+        format: 'text',
+      },
     });
     
     // 7. Extract the final AI response and prepare the new history

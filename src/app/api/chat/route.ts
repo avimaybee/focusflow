@@ -9,25 +9,25 @@ async function getUserIdFromRequest(req: NextRequest): Promise<string | null> {
     console.log('API ROUTE: Verifying user auth...');
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-        console.error('API ROUTE: No Authorization header found.');
+        console.error('API ROUTE ERROR: No Authorization header found.');
         return null;
     }
-    console.log('API ROUTE: Authorization header found.');
+    console.log('API ROUTE DEBUG: Authorization header found.');
 
     const idToken = authHeader.split('Bearer ')[1];
     if (!idToken) {
-        console.error('API ROUTE: Bearer token not found in Authorization header.');
+        console.error('API ROUTE ERROR: Bearer token not found in Authorization header.');
         return null;
     }
-    console.log(`API ROUTE: Extracted token: ${idToken.substring(0, 10)}...`);
+    console.log(`API ROUTE DEBUG: Extracted token: ${idToken.substring(0, 15)}...`);
     
     try {
-        console.log('API ROUTE: Calling getAuth(app).verifyIdToken...');
+        console.log('API ROUTE DEBUG: Calling getAuth(app).verifyIdToken...');
         const decodedToken = await getAuth(app).verifyIdToken(idToken);
-        console.log(`API ROUTE: Token verified successfully for UID: ${decodedToken.uid}`);
+        console.log(`API ROUTE DEBUG: Token verified successfully for UID: ${decodedToken.uid}`);
         return decodedToken.uid;
     } catch (error) {
-        console.error('API ROUTE: Error verifying auth token:', error);
+        console.error('API ROUTE ERROR: Error verifying auth token:', error);
         return null;
     }
 }
@@ -40,6 +40,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('API ROUTE DEBUG: Received request body:', body);
+
 
     if (!body.message) {
       return NextResponse.json({ error: 'Missing required field: message' }, { status: 400 });
@@ -53,13 +55,16 @@ export async function POST(request: NextRequest) {
       context: body.context,
     };
     
-    const result = await chatFlow(input, () => {});
+    console.log('API ROUTE DEBUG: Calling chatFlow with input:', input);
+    const result = await chatFlow(input);
+    console.log('API ROUTE DEBUG: chatFlow completed successfully. Result:', result);
     
     return NextResponse.json(result);
 
   } catch (error: any) {
     console.error('=== FATAL API ROUTE ERROR ===');
     console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     
     return NextResponse.json(
       { 

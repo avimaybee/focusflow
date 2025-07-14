@@ -70,6 +70,7 @@ export default function ChatPage() {
         const history = sessionData.history || [];
         
         const chatMessagesPromises = history.map(async (msg: any, index: number) => {
+          // Find the first text part in the content array
           const textPart = msg.content?.find((p: any) => p.text);
           const content = textPart?.text || '';
           
@@ -113,7 +114,7 @@ export default function ChatPage() {
     if (!input.trim() || isSending || authLoading ) return;
 
     if (!user) {
-        console.error("DEBUG (Client): handleSendMessage called but user is not logged in.");
+        console.error("CLIENT DEBUG: handleSendMessage called but user is not logged in.");
         toast({
             variant: 'destructive',
             title: 'Not Logged In',
@@ -143,33 +144,35 @@ export default function ChatPage() {
     setAttachment(null);
   
     try {
-      console.log('DEBUG (Client): User object available:', !!user);
+      console.log('CLIENT DEBUG: User object available:', !!user);
       const idToken = await user.getIdToken();
-      console.log(`DEBUG (Client): Successfully fetched ID token. Length: ${idToken.length}`);
+      console.log(`CLIENT DEBUG: Successfully fetched ID token. Length: ${idToken.length}`);
 
       const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${idToken}`,
       };
-      console.log('DEBUG (Client): Request headers prepared:', {
+      console.log('CLIENT DEBUG: Request headers prepared:', {
         'Content-Type': headers['Content-Type'],
         'Authorization': `Bearer ${idToken.substring(0, 15)}...`
       });
 
-      console.log('DEBUG (Client): Sending request to /api/chat with input:', chatInput);
+      console.log('CLIENT DEBUG: Sending request to /api/chat with input:', chatInput);
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: headers,
         body: JSON.stringify(chatInput),
       });
   
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: `The server returned a ${response.status} error with no details.` }));
-        console.error('DEBUG (Client): Received error response from server:', errorData);
-        throw new Error(errorData.error || `Request failed with status ${response.status}`);
-      }
-  
       const result = await response.json();
+      
+      if (!response.ok) {
+        console.error('CLIENT DEBUG: Received error response from server:', result);
+        throw new Error(result.error || `Request failed with status ${response.status}`);
+      }
+      
+      console.log('CLIENT DEBUG: Received successful response from server:', result);
+      
       const aiResponse: ChatMessageProps = {
         id: `model-${Date.now()}`,
         role: 'model',
@@ -186,7 +189,7 @@ export default function ChatPage() {
       }
   
     } catch (error: any) {
-      console.error("--- DEBUG (Client): CATCH BLOCK ---");
+      console.error("--- CLIENT DEBUG: CATCH BLOCK ---");
       console.error("Full error object:", error);
       console.error("-----------------------------------");
   
