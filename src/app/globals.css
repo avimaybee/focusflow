@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import "../styles/ellipsis-spinner.css";
+
 @layer base {
   :root {
     --background: 224 10% 10%; /* #1B1F23 - Deep Charcoal */
@@ -134,7 +136,7 @@
     transform: translateY(-1em); /* Move up by the height of one letter */
   }
   
-  /* New Announcement Banner Styles */
+  /* Announcement Banner Styles */
   .announcement-banner {
     @apply flex items-center justify-center p-1.5 transition-all;
   }
@@ -142,7 +144,7 @@
     @apply flex items-center gap-4 border border-border/80 bg-secondary/50 rounded-full px-2 py-1 shadow-md;
   }
   .announcement-badge {
-    @apply bg-primary/10 text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full;
+    @apply bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full;
   }
   .announcement-message {
     @apply flex items-center gap-2 text-sm text-muted-foreground;

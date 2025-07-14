@@ -1,4 +1,3 @@
-
 'use client';
 
 import { motion } from 'framer-motion';
@@ -7,6 +6,7 @@ import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { Loader2 } from 'lucide-react';
 import { WelcomeScreen } from './welcome-screen';
 import { RefObject } from 'react';
+import { EllipsisSpinner } from '../ui/ellipsis-spinner';
 
 interface MessageListProps {
   messages: ChatMessageProps[];
@@ -68,10 +68,8 @@ export function MessageList({
               <ChatMessage
                 role="model"
                 text={
-                  <div className="flex items-center gap-2 p-2">
-                    <div className="h-2 w-2 bg-primary/50 rounded-full animate-pulse [animation-delay:-0.3s]"></div>
-                    <div className="h-2 w-2 bg-primary/50 rounded-full animate-pulse [animation-delay:-0.15s]"></div>
-                    <div className="h-2 w-2 bg-primary/50 rounded-full animate-pulse"></div>
+                  <div className="p-1">
+                    <EllipsisSpinner size="40px" dotSize="8px" />
                   </div>
                 }
               />
