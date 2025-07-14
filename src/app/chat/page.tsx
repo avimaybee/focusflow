@@ -110,7 +110,17 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isSending || authLoading || !user) return;
+    if (!input.trim() || isSending || authLoading ) return;
+
+    if (!user) {
+        console.error("DEBUG (Client): handleSendMessage called but user is not logged in.");
+        toast({
+            variant: 'destructive',
+            title: 'Not Logged In',
+            description: "Please log in to send a message.",
+        });
+        return;
+    }
   
     setIsSending(true);
     const userMessage: ChatMessageProps = {
@@ -133,18 +143,23 @@ export default function ChatPage() {
     setAttachment(null);
   
     try {
-      const idToken = user ? await user.getIdToken() : null;
-      if (!idToken) {
-        throw new Error("Authentication token not available. Please log in again.");
-      }
+      console.log('DEBUG (Client): User object available:', !!user);
+      const idToken = await user.getIdToken();
+      console.log(`DEBUG (Client): Successfully fetched ID token. Length: ${idToken.length}`);
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`,
+      };
+      console.log('DEBUG (Client): Request headers prepared:', {
+        'Content-Type': headers['Content-Type'],
+        'Authorization': `Bearer ${idToken.substring(0, 15)}...`
+      });
 
       console.log('DEBUG (Client): Sending request to /api/chat with input:', chatInput);
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`,
-        },
+        headers: headers,
         body: JSON.stringify(chatInput),
       });
   

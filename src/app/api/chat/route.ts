@@ -6,20 +6,25 @@ import { getAuth } from 'firebase-admin/auth';
 import { app } from '@/lib/firebase-admin';
 
 async function getUserIdFromRequest(req: NextRequest): Promise<string | null> {
+    console.log('API ROUTE: Verifying user auth...');
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
         console.error('API ROUTE: No Authorization header found.');
         return null;
     }
+    console.log('API ROUTE: Authorization header found.');
 
     const idToken = authHeader.split('Bearer ')[1];
     if (!idToken) {
         console.error('API ROUTE: Bearer token not found in Authorization header.');
         return null;
     }
+    console.log(`API ROUTE: Extracted token: ${idToken.substring(0, 10)}...`);
     
     try {
+        console.log('API ROUTE: Calling getAuth(app).verifyIdToken...');
         const decodedToken = await getAuth(app).verifyIdToken(idToken);
+        console.log(`API ROUTE: Token verified successfully for UID: ${decodedToken.uid}`);
         return decodedToken.uid;
     } catch (error) {
         console.error('API ROUTE: Error verifying auth token:', error);
@@ -48,7 +53,6 @@ export async function POST(request: NextRequest) {
       context: body.context,
     };
     
-    // The expert-provided code is non-streaming. We must pass an empty callback.
     const result = await chatFlow(input, () => {});
     
     return NextResponse.json(result);
