@@ -4,7 +4,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, setDoc, serverTimestamp, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
@@ -25,44 +25,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [favoritePrompts, setFavoritePrompts] = useState<string[] | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      setLoading(true);
       if (user) {
         setUser(user);
-        const userRef = doc(db, 'users', user.uid);
         
-        const userSnap = await getDoc(userRef);
-
-        if (!userSnap.exists()) {
-          // New user: create the document
-          try {
-            await setDoc(userRef, {
-              uid: user.uid,
-              email: user.email,
-              displayName: user.displayName,
-              photoURL: user.photoURL,
-              createdAt: serverTimestamp(),
-              lastLogin: serverTimestamp(),
-              isPremium: false,
-              preferredPersona: 'neutral',
-              favoritePrompts: [],
-            });
-          } catch (error) {
-              console.error("Error creating user document:", error);
-          }
-        } else {
-          // Existing user: update last login time
-          try {
-            await updateDoc(userRef, {
-              lastLogin: serverTimestamp(),
-            });
-          } catch (error) {
-             console.error("Error updating last login:", error);
-          }
-        }
-
-
-        // Set up a realtime listener for user data
-        const unsubFromUserDoc = onSnapshot(userRef, (userSnap) => {
+        // Set up a realtime listener for user data from Firestore.
+        // The user document is now created by the `onUserCreate` Cloud Function.
+        const userRef = doc(db, 'users', user.uid);
+        const unsubscribeFirestore = onSnapshot(userRef, (userSnap) => {
             if (userSnap.exists()) {
                 const userData = userSnap.data();
                 setIsPremium(userData.isPremium || false);
@@ -75,9 +46,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setLoading(false);
         });
 
-        return () => unsubFromUserDoc();
+        // Return the firestore unsubscribe function to be called on cleanup.
+        return () => unsubscribeFirestore();
         
       } else {
+        // User is signed out
         setUser(null);
         setIsPremium(false);
         setPreferredPersona(null);
@@ -86,7 +59,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    return () => unsubscribe();
+    // Cleanup auth subscription on component unmount
+    return () => unsubscribeAuth();
   }, []);
 
   const value = { user, loading, isPremium, preferredPersona, favoritePrompts, setFavoritePrompts };

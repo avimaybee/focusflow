@@ -11,14 +11,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { auth, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Loader2, LogIn } from 'lucide-react';
@@ -93,16 +93,15 @@ export default function LoginPage() {
   const handleSignup = async (values: SignupFormValues) => {
     setIsLoading(true);
     try {
+      // Create user, but DO NOT create the Firestore document here.
+      // The onUserCreate Cloud Function will handle that.
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-      await setDoc(doc(db, 'users', userCredential.user.uid), {
-        uid: userCredential.user.uid,
-        email: values.email,
-        displayName: values.email.split('@')[0],
-        createdAt: serverTimestamp(),
-        isPremium: false,
-        preferredPersona: 'neutral',
-        favoritePrompts: [],
+      
+      // We can, however, update the auth profile display name
+      await updateProfile(userCredential.user, {
+        displayName: values.email.split('@')[0]
       });
+
       toast({ title: 'Signup Successful', description: 'Welcome to FocusFlow AI!' });
       router.push('/dashboard');
     } catch (error: any) {
