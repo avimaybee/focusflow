@@ -143,21 +143,24 @@ export default function ChatPage() {
             });
             return;
         }
+    }
 
-        const guestMessage: ChatMessageProps = {
-            id: `guest-${Date.now()}`,
-            role: 'user',
-            text: await marked.parse(input.trim()),
-            rawText: input.trim(),
-            userName: 'Guest',
-            userAvatar: null,
-            createdAt: Timestamp.now(),
-        };
-        setMessages(prev => [...prev, guestMessage]);
+    setIsSending(true);
+
+    const userMessage: ChatMessageProps = {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        text: await marked.parse(input.trim()),
+        rawText: input.trim(),
+        userName: user?.displayName || 'Guest',
+        userAvatar: user?.photoURL || null,
+        createdAt: Timestamp.now(),
+    };
+    setMessages(prev => [...prev, userMessage]);
+
+    if (!user) {
         setGuestMessageCount(prev => prev + 1);
     }
-  
-    setIsSending(true);
   
     const chatInput = {
       message: input.trim(),
@@ -174,8 +177,6 @@ export default function ChatPage() {
       const headers: { [key:string]: string } = { 'Content-Type': 'application/json' };
       if (idToken) {
         headers['Authorization'] = `Bearer ${idToken}`;
-      } else {
-        // No auth header for guest users
       }
 
       const response = await fetch('/api/chat', {
