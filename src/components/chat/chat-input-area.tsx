@@ -47,11 +47,7 @@ import {
 } from '@/components/ui/command';
 import { PromptLibrary } from '@/components/prompt-library';
 import { cn } from '@/lib/utils';
-import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
 import type { Attachment } from '@/hooks/use-file-upload';
-
-const MIN_HEIGHT = 48;
-const MAX_HEIGHT = 164;
 
 // Mapping persona IDs to icons
 const personaIcons: { [key: string]: React.ElementType } = {
@@ -96,7 +92,7 @@ const AnimatedPlaceholder = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -5 }}
       transition={{ duration: 0.15 }}
-      className="pointer-events-none absolute text-base text-muted-foreground"
+      className="pointer-events-none absolute text-base text-muted-foreground whitespace-nowrap"
     >
       {activeChatId ? 'Ask a follow-up...' : 'Start a new conversation...'}
     </motion.p>
