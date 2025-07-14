@@ -28,6 +28,7 @@ import {
   Lightbulb,
   Clock,
   Drama,
+  Plus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -80,7 +81,7 @@ interface ChatInputAreaProps {
   activeChatId: string | null;
   chatContext: Attachment | null;
   clearChatContext: () => void;
-  // Remove textareaRef from props as the hook will manage it internally
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
 }
 
 const AnimatedPlaceholder = ({
@@ -116,23 +117,14 @@ export function ChatInputArea({
   activeChatId,
   chatContext,
   clearChatContext,
+  textareaRef,
 }: ChatInputAreaProps) {
-  const { textareaRef, adjustHeight } = useAutoResizeTextarea({
-    minHeight: MIN_HEIGHT,
-    maxHeight: MAX_HEIGHT,
-  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
 
-  const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
-    adjustHeight();
-  };
-
   const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
     handleSendMessage(e);
-    // Use a timeout to allow the message to be sent before resetting height
-    setTimeout(() => adjustHeight(true), 100);
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -151,13 +143,6 @@ export function ChatInputArea({
     e.stopPropagation();
     clearChatContext();
   };
-
-  // Adjust height when input is cleared externally (e.g., after sending)
-  useEffect(() => {
-    if (!input) {
-      adjustHeight(true);
-    }
-  }, [input, adjustHeight]);
 
   return (
     <div className="w-full py-4">
@@ -190,31 +175,25 @@ export function ChatInputArea({
               </motion.div>
             )}
           </AnimatePresence>
-          <div
-            className="overflow-y-auto"
-            style={{ maxHeight: `${MAX_HEIGHT}px` }}
-          >
-            <div className="relative">
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                placeholder=""
-                className="w-full rounded-2xl px-4 py-3 bg-transparent border-none text-base text-foreground resize-none focus-visible:ring-0 leading-[1.4]"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit(e);
-                  }
-                }}
-                onChange={handleTextareaChange}
-                disabled={isHistoryLoading}
-              />
-              {!input && (
-                <div className="absolute left-4 top-3.5">
-                  <AnimatedPlaceholder activeChatId={activeChatId} />
-                </div>
-              )}
-            </div>
+          <div className="relative">
+            <Textarea
+              ref={textareaRef}
+              value={input}
+              placeholder=""
+              className="w-full rounded-2xl pl-4 pr-12 py-3 bg-transparent border-none text-base text-foreground resize-none focus-visible:ring-0 leading-[1.4]"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  handleSubmit(e);
+                }
+              }}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={isHistoryLoading}
+            />
+            {!input && (
+              <div className="absolute left-4 top-3.5">
+                <AnimatedPlaceholder activeChatId={activeChatId} />
+              </div>
+            )}
           </div>
 
           <div className="h-14 bg-background rounded-b-xl flex items-center justify-between px-3">
