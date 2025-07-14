@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { Button } from './ui/button';
 import { FlashcardViewer } from './flashcard-viewer';
 import { QuizViewer } from './quiz-viewer';
+import { SmartToolsMenu, type SmartTool } from './smart-tools-menu';
 import { useToast } from '@/hooks/use-toast';
 import type { Timestamp } from 'firebase/firestore';
 
@@ -40,6 +41,7 @@ export type ChatMessageProps = {
   isError?: boolean;
   isFirstInGroup?: boolean;
   isLastInGroup?: boolean;
+  onToolAction?: (tool: SmartTool, text?: string) => void;
 };
 
 export function ChatMessage({
@@ -54,6 +56,7 @@ export function ChatMessage({
   isError = false,
   isFirstInGroup = true,
   isLastInGroup = true,
+  onToolAction,
 }: ChatMessageProps) {
   const isUser = role === 'user';
   const { toast } = useToast();
@@ -178,11 +181,9 @@ export function ChatMessage({
             </div>
           )}
         </div>
-        {!isUser &&
-          typeof text === 'string' &&
-          !isError &&
-          isLastInGroup && (
-            <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border opacity-0 group-hover:opacity-100 transition-opacity">
+        {!isUser && !isError && isLastInGroup && (
+          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
               <Button
                 variant="ghost"
                 size="icon"
@@ -200,7 +201,13 @@ export function ChatMessage({
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
-          )}
+            {onToolAction && (
+              <SmartToolsMenu
+                onAction={(tool) => onToolAction(tool, rawText)}
+              />
+            )}
+          </div>
+        )}
       </div>
       {isUser && avatar}
     </div>

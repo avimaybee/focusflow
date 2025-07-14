@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { WelcomeScreen } from './welcome-screen';
 import { RefObject } from 'react';
 import { EllipsisSpinner } from '../ui/ellipsis-spinner';
+import type { SmartTool } from '@/components/smart-tools-menu';
 
 interface MessageListProps {
   messages: ChatMessageProps[];
@@ -15,6 +16,7 @@ interface MessageListProps {
   activeChatId: string | null;
   scrollAreaRef: RefObject<HTMLDivElement>;
   onSelectPrompt: (prompt: string) => void;
+  onSmartToolAction: (prompt: string) => void;
 }
 
 export function MessageList({
@@ -24,6 +26,7 @@ export function MessageList({
   activeChatId,
   scrollAreaRef,
   onSelectPrompt,
+  onSmartToolAction,
 }: MessageListProps) {
   if (isHistoryLoading) {
     return (
@@ -34,6 +37,12 @@ export function MessageList({
   }
 
   const showWelcomeScreen = !activeChatId && messages.length === 0 && !isSending;
+
+  const handleToolAction = (tool: SmartTool, text?: string) => {
+    if (!text) return;
+    const prompt = tool.prompt(text);
+    onSmartToolAction(prompt);
+  };
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -60,6 +69,7 @@ export function MessageList({
                     {...msg}
                     isFirstInGroup={isFirstInGroup}
                     isLastInGroup={isLastInGroup}
+                    onToolAction={handleToolAction}
                   />
                 </motion.div>
               );

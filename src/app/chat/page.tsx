@@ -304,6 +304,10 @@ export default function ChatPage() {
           activeChatId={activeChatId}
           scrollAreaRef={scrollAreaRef}
           onSelectPrompt={setInput}
+          onSmartToolAction={(prompt) => {
+            const syntheticEvent = {} as FormEvent;
+            handleSendMessage(syntheticEvent, prompt);
+          }}
         />
 
         <div className="w-full bg-background">
