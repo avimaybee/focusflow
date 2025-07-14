@@ -127,24 +127,9 @@ async function saveGeneratedContent(
 }
 
 /**
- * Selects an AI model based on the query complexity.
- * A simple heuristic: short messages are "light", longer ones are "complex".
- */
-function selectModel(message: string) {
-  const isComplex = message.length > 100; // Simple heuristic for complexity
-
-  if (isComplex) {
-    console.log('Using complex model: gemini-1.5-pro');
-    return googleAI.model('gemini-1.5-pro'); // For complex queries, tool use
-  }
-  
-  console.log('Using light model: gemini-1.5-flash');
-  return googleAI.model('gemini-1.5-flash'); // For light, conversational tasks
-}
-
-/**
  * The main Genkit flow for handling chat interactions.
  * It uses the Genkit Beta session management API for persistent conversations.
+ * This flow is optimized for fast, conversational responses.
  */
 const chatFlow = ai.defineFlow(
   {
@@ -175,8 +160,10 @@ const chatFlow = ai.defineFlow(
       
     const personaInstruction = await getPersonaPrompt(persona || 'neutral');
 
-    // Dynamically select the model based on the user's message
-    const model = selectModel(message);
+    // Use the light, fast model for general conversation and tool routing.
+    // The complex model is specified within the tools themselves.
+    const model = googleAI.model('gemini-1.5-flash');
+    console.log('Using light model for conversation/routing: gemini-1.5-flash');
 
     const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.`;
 

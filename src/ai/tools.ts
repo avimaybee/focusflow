@@ -5,6 +5,7 @@
  * to ensure type safety and predictability.
  */
 import {ai} from './genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import {
   SummarizeNotesInputSchema,
   CreateStudyPlanInputSchema,
@@ -24,6 +25,9 @@ import {
   HighlightKeyInsightsOutputSchema,
 } from '@/types/chat-types';
 
+// Define the powerful model to be used for all complex tool-based tasks.
+const complexTaskModel = googleAI.model('gemini-1.5-pro');
+
 export const summarizeNotesTool = ai.defineTool(
   {
     name: 'summarizeNotesTool',
@@ -35,6 +39,7 @@ export const summarizeNotesTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
+      model: complexTaskModel,
       prompt: `Generate a concise summary for the following notes. Also,
 provide a short, catchy title for the summary and list 3-5 relevant keywords.
 
@@ -62,6 +67,7 @@ export const createStudyPlanTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
+      model: complexTaskModel,
       prompt: `Create a detailed, day-by-day study plan for the topic
 "${input.topic}" to be completed over ${input.durationDays} days. The plan
 should be structured as a JSON object where each key is a "Day X" and the
@@ -89,6 +95,7 @@ export const createFlashcardsTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
+      model: complexTaskModel,
       prompt: `Generate a set of ${input.count} flashcards for the topic
 "${input.topic}". Each flashcard should have a clear question and a
 concise, accurate answer.`,
@@ -114,6 +121,7 @@ export const createQuizTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
+      model: complexTaskModel,
       prompt: `Generate a multiple-choice quiz on the topic "${input.topic}".
 The quiz should have ${input.questionCount} questions and a difficulty level of
 "${input.difficulty}". Each question must have four options, a single correct
@@ -141,6 +149,7 @@ export const explainConceptTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
+      model: complexTaskModel,
       prompt: `Explain the concept "${input.concept}" in simple,
 easy-to-understand terms. Provide a detailed explanation and a relatable
 analogy to help with understanding.`,
@@ -166,6 +175,7 @@ export const createMemoryAidTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
+      model: complexTaskModel,
       prompt: `Generate a creative and effective memory aid of type
 "${input.type}" for the topic "${input.topic}". Provide a title for the
 memory aid.`,
@@ -191,6 +201,7 @@ export const createDiscussionPromptsTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
+      model: complexTaskModel,
       prompt: `Generate ${input.count} thought-provoking discussion prompts
 for the topic "${input.topic}". The prompts should encourage deeper
 thinking and conversation.`,
@@ -216,6 +227,7 @@ export const highlightKeyInsightsTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
+      model: complexTaskModel,
       prompt: `Analyze the following text and identify the key insights or
 "aha" moments. Present these insights as a list of strings.
 
