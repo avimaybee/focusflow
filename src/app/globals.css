@@ -79,6 +79,27 @@
   .premium-gradient {
     @apply bg-gradient-to-r from-purple-500 to-blue-500 text-primary-foreground;
   }
+
+  .glowing-card {
+    @apply relative p-px rounded-lg;
+  }
+  .glowing-card::before {
+    content: "";
+    @apply absolute inset-0 rounded-lg -z-10;
+    background: radial-gradient(
+      350px circle at var(--x) var(--y),
+      hsl(var(--primary) / 0.15),
+      transparent 80%
+    );
+    opacity: 0;
+    transition: opacity 200ms ease-out;
+  }
+  .glowing-card:hover::before {
+    @apply opacity-100;
+  }
+  .glowing-card > .glowing-card-content {
+    @apply h-full w-full rounded-[7px] bg-secondary/50;
+  }
 }
 
 

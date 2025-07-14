@@ -24,6 +24,7 @@ import {
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { cn } from '@/lib/utils';
+import { GlowingCard } from '@/components/ui/glowing-card';
 
 const HeroGradient = () => (
   <div
@@ -113,23 +114,22 @@ const BentoGrid = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {features.map((feature, index) => (
-        <Card
+        <GlowingCard
           key={index}
-          className={cn(
-            'bg-secondary/50 border-border/60 p-6 flex flex-col gap-4 items-start justify-center hover:border-primary/50 transition-colors',
-            feature.className
-          )}
+          className={cn('transition-colors', feature.className)}
         >
-          <div className="bg-primary/10 rounded-lg h-14 w-14 flex items-center justify-center border border-primary/20">
-            {feature.icon}
+          <div className="p-6 flex flex-col gap-4 items-start justify-center h-full">
+            <div className="bg-primary/10 rounded-lg h-14 w-14 flex items-center justify-center border border-primary/20">
+              {feature.icon}
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-lg font-bold">{feature.title}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {feature.description}
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <h3 className="text-lg font-bold">{feature.title}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {feature.description}
-            </p>
-          </div>
-        </Card>
+        </GlowingCard>
       ))}
     </div>
   );
@@ -290,5 +290,3 @@ export default function LandingPage() {
     </>
   );
 }
-
-    
