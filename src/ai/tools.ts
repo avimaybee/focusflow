@@ -105,7 +105,7 @@ export const createFlashcardsTool = ai.defineTool(
   async input => {
     const {output} = await ai.generate({
       model: complexTaskModel,
-      prompt: `Generate a set of ${input.count} flashcards for the topic
+      prompt: `Generate a set of ${input.count} questions suitable for flashcards for the topic
 "${input.topic}". Each flashcard should have a clear question and a
 concise, accurate answer.`,
       output: {
