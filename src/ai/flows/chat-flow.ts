@@ -16,7 +16,7 @@ import {
   summarizeNotesTool,
 } from '@/ai/tools';
 import { FirestoreSessionStore } from '@/lib/firestore-session-store';
-import { serverTimestamp } from 'firebase-admin/firestore';
+import { serverTimestamp } from 'firebase/admin/firestore';
 import type { MessageData } from 'genkit/beta';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
