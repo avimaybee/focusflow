@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/sheet';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useAuthModal } from '@/hooks/use-auth-modal';
 
 const navLinks = [
     { href: '/dashboard', label: 'Dashboard' },
@@ -24,10 +25,16 @@ const navLinks = [
 export const Header = () => {
   const { user } = useAuth();
   const pathname = usePathname();
+  const authModal = useAuthModal();
 
   // Do not render the header on the main chat page or any of its sub-routes
   if (pathname.startsWith('/chat')) {
     return null;
+  }
+  
+  const handleOpenAuthModal = (view: 'login' | 'signup') => {
+    authModal.setView(view);
+    authModal.onOpen();
   }
 
   const desktopNav = (
@@ -95,11 +102,11 @@ export const Header = () => {
               </Button>
             ) : (
               <>
-                <Button variant="outline" asChild>
-                  <Link href="/login">Login</Link>
+                <Button variant="outline" onClick={() => handleOpenAuthModal('login')}>
+                  Login
                 </Button>
-                <Button asChild>
-                  <Link href="/login">Get Started</Link>
+                <Button onClick={() => handleOpenAuthModal('signup')}>
+                  Get Started
                 </Button>
               </>
             )}
@@ -127,13 +134,11 @@ export const Header = () => {
               </Button>
             ) : (
               <>
-                <Button variant="ghost" asChild>
-                  <Link href="/login">Login</Link>
+                <Button variant="ghost" onClick={() => handleOpenAuthModal('login')}>
+                  Login
                 </Button>
-                <Button asChild>
-                  <Link href="/login">
-                    Get Started <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
+                <Button onClick={() => handleOpenAuthModal('signup')}>
+                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </>
             )}

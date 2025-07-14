@@ -1,10 +1,12 @@
 
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import localFont from 'next/font/local';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from '@/context/providers';
+import { AuthModal } from '@/components/auth/auth-modal';
 
 const fontHeading = localFont({
   src: '../assets/fonts/Satoshi-Variable.ttf',
@@ -47,6 +49,7 @@ export default function RootLayout({
         )}
       >
         <Providers>
+          <AuthModal />
           <main className="flex-grow flex flex-col">{children}</main>
           <Toaster />
         </Providers>
