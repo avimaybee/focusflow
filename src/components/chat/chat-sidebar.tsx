@@ -85,7 +85,7 @@ export function ChatSidebar({
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
       });
-      router.push('/login');
+      router.push('/');
     } catch (error) {
       console.error('Error logging out:', error);
       toast({
