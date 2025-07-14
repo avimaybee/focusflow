@@ -91,7 +91,7 @@ const AnimatedPlaceholder = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -5 }}
       transition={{ duration: 0.15 }}
-      className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-base text-muted-foreground whitespace-nowrap"
+      className="pointer-events-none text-base text-muted-foreground whitespace-nowrap"
     >
       {activeChatId ? 'Ask a follow-up...' : 'Start a new conversation...'}
     </motion.p>
@@ -116,7 +116,7 @@ export function ChatInputArea({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
-    minHeight: 24, // Adjusted for a single line
+    minHeight: 24, // Matches the leading-normal (1.5rem)
     maxHeight: 200,
   });
 
@@ -129,6 +129,8 @@ export function ChatInputArea({
     e.preventDefault();
     if (!input.trim() && !chatContext) return;
     handleSendMessage(e);
+    // After sending, reset the textarea height
+    adjustHeight(true);
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -151,17 +153,17 @@ export function ChatInputArea({
     <div className="w-full py-4">
       <form
         onSubmit={handleSubmit}
-        className="relative max-w-4xl mx-auto rounded-2xl bg-secondary/70 border border-border/80"
+        className="relative max-w-4xl mx-auto rounded-2xl bg-secondary/70 border border-border/80 p-3"
       >
         <AnimatePresence>
           {chatContext && (
             <motion.div
-              initial={{ opacity: 0, height: 0, padding: 0 }}
-              animate={{ opacity: 1, height: 'auto', padding: '0.75rem' }}
-              exit={{ opacity: 0, height: 0, padding: 0 }}
-              className="px-3"
+              initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+              animate={{ opacity: 1, height: 'auto', marginBottom: '0.75rem' }}
+              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+              className="px-1"
             >
-              <div className="relative w-24 h-24 rounded-lg overflow-hidden ml-1">
+              <div className="relative w-24 h-24 rounded-lg overflow-hidden">
                 <Image
                   src={chatContext.url}
                   alt="Attachment preview"
@@ -180,8 +182,86 @@ export function ChatInputArea({
             </motion.div>
           )}
         </AnimatePresence>
-        <div className="relative flex flex-col">
-          <div className="relative flex-grow pl-4 pr-14 py-3">
+        
+        {/* Main content flex container */}
+        <div className="flex items-end gap-2">
+          {/* Left-side buttons */}
+          <div className="flex items-center gap-1">
+            <PromptLibrary onSelectPrompt={onSelectPrompt} />
+            <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted"
+                >
+                  <Users className="h-5 w-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-[340px] p-0 mb-2">
+                <Command>
+                  <CommandInput placeholder="Select a persona..." />
+                  <CommandList>
+                    <CommandEmpty>No persona found.</CommandEmpty>
+                    <CommandGroup>
+                      {personas.map((p) => {
+                        const Icon = personaIcons[p.id] || Bot;
+                        return (
+                          <CommandItem
+                            key={p.id}
+                            value={p.id}
+                            onSelect={(currentValue) => {
+                              setSelectedPersonaId(currentValue);
+                              setPersonaMenuOpen(false);
+                            }}
+                            className="group flex items-start gap-3 cursor-pointer py-2.5"
+                          >
+                            <Icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
+                            <div className="text-left flex-1">
+                              <p className="font-semibold text-sm text-foreground">
+                                {p.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground group-hover:text-foreground/80">
+                                {p.description}
+                              </p>
+                            </div>
+                            <Check
+                              className={cn(
+                                'h-4 w-4 mr-2',
+                                selectedPersonaId === p.id
+                                  ? 'opacity-100'
+                                  : 'opacity-0'
+                              )}
+                            />
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:bg-muted"
+            >
+              <label>
+                <Paperclip className="w-5 h-5" />
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept="image/*,application/pdf,text/*"
+                />
+              </label>
+            </Button>
+          </div>
+          
+          {/* Textarea and Placeholder wrapper */}
+          <div className="relative flex-1 min-h-[2.25rem] flex items-center">
              <Textarea
               ref={textareaRef}
               value={input}
@@ -197,100 +277,26 @@ export function ChatInputArea({
               disabled={isHistoryLoading}
             />
             {!input && !chatContext && (
-              <AnimatedPlaceholder activeChatId={activeChatId} />
+              <div className="absolute inset-0 flex items-center pointer-events-none">
+                 <AnimatedPlaceholder activeChatId={activeChatId} />
+              </div>
             )}
           </div>
-          <div className="flex items-center justify-between py-2 px-3">
-            <div className="flex items-center gap-1">
-              <PromptLibrary onSelectPrompt={onSelectPrompt} />
-              <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted"
-                  >
-                    <Users className="h-5 w-5" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="start"
-                  className="w-[340px] p-0 mb-2"
-                >
-                  <Command>
-                    <CommandInput placeholder="Select a persona..." />
-                    <CommandList>
-                      <CommandEmpty>No persona found.</CommandEmpty>
-                      <CommandGroup>
-                        {personas.map((p) => {
-                          const Icon = personaIcons[p.id] || Bot;
-                          return (
-                            <CommandItem
-                              key={p.id}
-                              value={p.id}
-                              onSelect={(currentValue) => {
-                                setSelectedPersonaId(currentValue);
-                                setPersonaMenuOpen(false);
-                              }}
-                              className="group flex items-start gap-3 cursor-pointer py-2.5"
-                            >
-                              <Icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
-                              <div className="text-left flex-1">
-                                <p className="font-semibold text-sm text-foreground">
-                                  {p.name}
-                                </p>
-                                <p className="text-xs text-muted-foreground group-hover:text-foreground/80">
-                                  {p.description}
-                                </p>
-                              </div>
-                              <Check
-                                className={cn(
-                                  'h-4 w-4 mr-2',
-                                  selectedPersonaId === p.id
-                                    ? 'opacity-100'
-                                    : 'opacity-0'
-                                )}
-                              />
-                            </CommandItem>
-                          );
-                        })}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <Button
-                asChild
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:bg-muted"
-              >
-                <label>
-                  <Paperclip className="w-5 h-5" />
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept="image/*,application/pdf,text/*"
-                  />
-                </label>
-              </Button>
-            </div>
-            <div className="flex items-center">
-              <Button
-                type="submit"
-                disabled={isSending || (!input.trim() && !chatContext)}
-                size="icon"
-                className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
-              >
-                {isSending ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Send className="h-5 w-5" />
-                )}
-              </Button>
-            </div>
+          
+          {/* Right-side Send button */}
+          <div className="flex items-center">
+            <Button
+              type="submit"
+              disabled={isSending || (!input.trim() && !chatContext)}
+              size="icon"
+              className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+            >
+              {isSending ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
+            </Button>
           </div>
         </div>
       </form>
