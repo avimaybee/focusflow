@@ -45,7 +45,7 @@
     "firebase-admin": "^12.1.0",
     "framer-motion": "^12.23.3",
     "genkit": "~1.14.1",
-    "genkitx-langchain": "^1.14.1",
+    "genkitx-langchain": "~1.14.1",
     "langchain": "^0.1.36",
     "@langchain/community": "^0.2.14",
     "lucide-react": "^0.475.0",
@@ -77,5 +77,3 @@
     "typescript": "^5"
   }
 }
-
-    

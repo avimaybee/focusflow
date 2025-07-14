@@ -120,7 +120,7 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isSending || authLoading ) return;
+    if (!input.trim() && !attachment || isSending || authLoading ) return;
 
     if (!user) {
         console.error("CLIENT DEBUG: handleSendMessage called but user is not logged in.");
