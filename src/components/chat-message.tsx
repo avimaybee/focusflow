@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, Copy, RefreshCw, User } from 'lucide-react';
+import { Bot, Copy, RefreshCw, User, Album, HelpCircle } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import { FlashcardViewer } from './flashcard-viewer';
@@ -12,6 +12,7 @@ import { QuizViewer } from './quiz-viewer';
 import { SmartToolsMenu, type SmartTool } from './smart-tools-menu';
 import { useToast } from '@/hooks/use-toast';
 import type { Timestamp } from 'firebase/firestore';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface FlashcardData {
   question: string;
@@ -40,7 +41,6 @@ export type ChatMessageProps = {
   createdAt?: Timestamp;
   isError?: boolean;
   isFirstInGroup?: boolean;
-  isLastInGroup?: boolean;
   onToolAction?: (tool: SmartTool, text?: string) => void;
 };
 
@@ -77,6 +77,17 @@ export function ChatMessage({
     toast({
       title: 'Retry functionality coming soon!',
     });
+  };
+
+  const handleFeatureAction = (featurePrompt: (text: string) => string) => {
+    if (onToolAction && rawText) {
+      const tool: SmartTool = {
+        name: 'feature', // Name doesn't matter as much here
+        prompt: featurePrompt,
+        icon: <></>, // Icon not used in this path
+      };
+      onToolAction(tool, rawText);
+    }
   };
 
   const renderContent = () => {
@@ -165,32 +176,58 @@ export function ChatMessage({
             </div>
           )}
         </div>
-        {!isUser && !isError && (
-          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-full"
-                onClick={handleCopy}
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-full"
-                onClick={handleRetry}
-              >
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-            </div>
-            {onToolAction && rawText && (
+        {!isUser && !isError && onToolAction && rawText && (
+          <TooltipProvider>
+            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
+                <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleCopy}>
+                            <Copy className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Copy</p></TooltipContent>
+                </Tooltip>
+                <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleRetry}>
+                            <RefreshCw className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Retry</p></TooltipContent>
+                </Tooltip>
+                 <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`)}
+                        >
+                            <Album className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Create Flashcards</p></TooltipContent>
+                </Tooltip>
+                 <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`)}
+                        >
+                            <HelpCircle className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Create Quiz</p></TooltipContent>
+                </Tooltip>
+              </div>
               <SmartToolsMenu
                 onAction={(tool) => onToolAction(tool, rawText)}
               />
-            )}
-          </div>
+            </div>
+          </TooltipProvider>
         )}
       </div>
       {isUser && avatar}
