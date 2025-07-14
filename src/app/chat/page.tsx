@@ -83,7 +83,9 @@ export default function ChatPage() {
         const history = sessionData.threads?.main || [];
         
         // Map the stored history to the format our ChatMessage component expects
-        const chatMessagesPromises = history.map(async (msg: any, index: number) => {
+        const chatMessagesPromises = history
+          .filter((msg: any) => msg.role !== 'system') // <-- FIX: Filter out system prompts
+          .map(async (msg: any, index: number) => {
             const textPart = msg.content?.find((p: any) => p.text);
             const textContent = textPart?.text || '';
           
