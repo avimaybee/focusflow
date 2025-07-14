@@ -10,8 +10,8 @@
     --card-foreground: 210 40% 98%;
     --popover: 224 10% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 215 50% 70%; /* #89B9F2 - Soft Blue */
-    --primary-foreground: 224 10% 10%;
+    --primary: 217 91% 60%; /* #3B82F6 - Vibrant Blue */
+    --primary-foreground: 210 40% 98%; /* Off-white for high contrast */
     --secondary: 224 10% 15%; /* Darker shade for secondary elements */
     --secondary-foreground: 210 40% 98%;
     --muted: 224 10% 15%;
@@ -22,7 +22,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 224 10% 20%; /* Border color */
     --input: 224 10% 15%;
-    --ring: 215 50% 70%; /* Ring color to match primary */
+    --ring: 217 91% 60%; /* Ring color to match primary */
     --radius: 0.5rem;
   }
 
@@ -33,8 +33,8 @@
     --card-foreground: 210 40% 98%;
     --popover: 224 10% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 215 50% 70%; /* #89B9F2 - Soft Blue */
-    --primary-foreground: 224 10% 10%;
+    --primary: 217 91% 60%; /* #3B82F6 - Vibrant Blue */
+    --primary-foreground: 210 40% 98%; /* Off-white for high contrast */
     --secondary: 224 10% 15%; /* Darker shade for secondary elements */
     --secondary-foreground: 210 40% 98%;
     --muted: 224 10% 15%;
@@ -45,7 +45,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 224 10% 20%; /* Border color */
     --input: 224 10% 15%;
-    --ring: 215 50% 70%; /* Ring color to match primary */
+    --ring: 217 91% 60%; /* Ring color to match primary */
   }
 }
 

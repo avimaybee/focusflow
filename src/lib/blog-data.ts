@@ -1,76 +1,75 @@
+export interface Post {
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  author: string;
+  content: string;
+}
 
-export type BlogPost = {
-    slug: string;
-    title: string;
-    excerpt: string;
-    image: string;
-    keywords: string[];
-    content: string;
-    datePublished: string;
-  };
-  
-  const blogPosts: BlogPost[] = [
-    {
-      slug: 'how-to-use-ai-to-study-smarter',
-      title: 'How to Use AI to Study Smarter, Not Harder',
-      excerpt: 'Discover practical ways artificial intelligence can revolutionize your study habits, from summarizing texts to creating personalized learning plans.',
-      image: 'https://placehold.co/600x400.png',
-      keywords: ['AI in Education', 'Study Techniques', 'Productivity'],
-      datePublished: '2024-05-15',
-      content: `
-        <p>In today's fast-paced academic world, leveraging technology is key to staying ahead. Artificial Intelligence (AI) is no longer a futuristic concept; it's a powerful tool that can transform your study routine. Here’s how you can use AI to study smarter.</p>
-        <h2 class="font-headline">1. Instant Summarization with AI Tools</h2>
-        <p>Drowning in reading materials? AI summarizers, like our <a href="/summarizer">AI Note Summarizer</a>, can condense lengthy articles, research papers, and lecture notes into bite-sized summaries. This allows you to grasp key concepts quickly, saving you hours of reading time and helping you focus on the most important information.</p>
-        <h2 class="font-headline">2. Personalized Study Plans</h2>
-        <p>Feeling overwhelmed by your schedule? Our <a href="/planner">AI Study Planner</a> can create customized learning schedules based on your subjects, exam dates, and available time. By analyzing your inputs, these tools create a balanced and efficient plan, ensuring you cover all your topics without the stress of manual planning. This proactive approach helps prevent last-minute cramming.</p>
-        <h2 class="font-headline">3. Interactive Learning with Quizzes and Flashcards</h2>
-        <p>AI can act as a personal tutor by generating study materials. Use our <a href="/quiz">AI Quiz Generator</a> to create practice questions on any topic. This active recall method is scientifically proven to be more effective for long-term memory than passive reading. You can also automatically create review materials with the <a href="/flashcards">AI Flashcard Generator</a>.</p>
-        `
-    },
-    {
-        slug: 'mastering-the-pomodoro-technique',
-        title: 'Mastering the Pomodoro Technique with a Digital Twist',
-        excerpt: 'The classic time management method gets an upgrade. Learn how to combine the Pomodoro Technique with digital tools for maximum focus and productivity.',
-        image: 'https://placehold.co/600x400.png',
-        keywords: ['Time Management', 'Pomodoro Technique', 'Focus'],
-        datePublished: '2024-05-10',
-        content: `
-            <p>The Pomodoro Technique is a simple yet effective time management method developed by Francesco Cirillo in the late 1980s. It uses a timer to break down work into intervals, traditionally 25 minutes in length, separated by short breaks. Here’s how to master it with a modern, digital approach.</p>
-            <h2 class="font-headline">The Core Principles</h2>
-            <ol>
-                <li>Choose a task to be accomplished.</li>
-                <li>Set a timer for 25 minutes.</li>
-                <li>Work on the task until the timer rings.</li>
-                <li>Take a short break (5 minutes).</li>
-                <li>After four "pomodoros," take a longer break (15-30 minutes).</li>
-            </ol>
-            <h2 class="font-headline">Integrating Digital Tools</h2>
-            <p>While a simple kitchen timer works, digital tools can enhance the experience. Use apps to track your pomodoros, categorize your tasks, and see your productivity metrics over time. Combine this with our <a href="/tracker">Progress Tracker</a> to log your focused study sessions and visualize your commitment.</p>
-        `
-    },
-    {
-      slug: 'the-science-of-active-recall',
-      title: 'The Science of Active Recall: Why It’s the Best Way to Study',
-      excerpt: "Move beyond passive reading. We dive into the cognitive science behind active recall and spaced repetition, and how you can implement these powerful techniques.",
-      image: 'https://placehold.co/600x400.png',
-      keywords: ['Cognitive Science', 'Study Methods', 'Memory'],
-      datePublished: '2024-05-01',
-      content: `
-        <p>If your study method consists of rereading textbooks and highlighting passages, you might be working hard, but not smart. The key to durable, long-term learning lies in a concept called active recall.</p>
-        <h2 class="font-headline">What is Active Recall?</h2>
-        <p>Active recall, also known as retrieval practice, is the process of actively stimulating your memory for a piece of information. It's the opposite of passive review, where you simply re-consume the material. Great examples of active recall include using our <a href="/flashcards">AI Flashcard Generator</a> or testing your knowledge with the <a href="/quiz">AI Quiz Generator</a>.</p>
-        <h2 class="font-headline">Why It Works</h2>
-        <p>Every time you retrieve a memory, you strengthen its neural pathway, making it easier to recall in the future. This effortful process signals to your brain that the information is important and should be stored for the long term. It's the mental equivalent of lifting weights—the struggle is what builds strength.</p>
-      `
-    }
-  ];
-  
-  export function getBlogPosts(): BlogPost[] {
-    // Returning a new array of plain objects to avoid issues with Next.js param enumeration
-    return blogPosts.map(p => ({...p}));
-  }
-  
-  export function getBlogPostBySlug(slug: string): BlogPost | undefined {
-    return blogPosts.find(post => post.slug === slug);
-  }
-  
+export const posts: Post[] = [
+  {
+    slug: 'how-to-study-smarter-with-ai',
+    title: 'How to Study Smarter, Not Harder, with AI Tools',
+    excerpt:
+      'Discover five ways you can leverage AI to supercharge your study sessions, from generating summaries to creating personalized quizzes.',
+    date: '2025-07-15',
+    author: 'Jane Doe, EdTech Specialist',
+    content: `
+## The Challenge of Modern Studying
+
+In today's fast-paced academic world, the sheer volume of information can be overwhelming. Traditional study methods, while valuable, often fall short in helping students efficiently process and retain knowledge. This is where AI study tools like FocusFlow AI can be a game-changer.
+
+## 1. Automated Summarization
+
+Instead of spending hours manually highlighting and condensing texts, you can use an AI summarizer to get the key points in seconds. This frees up your time to focus on understanding the core concepts rather than getting bogged down in the details.
+
+## 2. Active Recall with Flashcards
+
+Passive reading is one of the least effective ways to learn. AI can instantly turn your notes into a deck of flashcards, prompting you to actively recall information, which is scientifically proven to strengthen memory retention.
+
+## 3. Personalized Quizzes
+
+Test your knowledge with quizzes tailored to your study materials. AI can generate a variety of question types to ensure you've grasped the concepts from multiple angles. This is far more effective than generic, one-size-fits-all tests.
+
+## 4. The AI Tutor
+
+Ever been stuck on a concept and wished you had a tutor on standby? With a conversational AI chat, you can ask for explanations, examples, and analogies 24/7, ensuring you never lose momentum while studying.
+
+## 5. Smart Study Planning
+
+Feeling overwhelmed and not sure where to start? AI can help you create a structured study plan based on your materials and deadlines, breaking down large topics into manageable chunks.
+
+By integrating these AI-powered strategies, you can create a more efficient, engaging, and effective learning workflow.
+`,
+  },
+  {
+    slug: 'the-science-of-active-recall',
+    title: 'The Science of Active Recall: Why It Unlocks Long-Term Memory',
+    excerpt:
+      'Dive into the cognitive science behind active recall and learn why it is the most effective study technique for long-term retention.',
+    date: '2025-07-10',
+    author: 'John Smith, Cognitive Scientist',
+    content: `
+## What is Active Recall?
+
+Active recall is the process of actively retrieving information from your memory, rather than passively reviewing it. Every time you bring a memory to the forefront of your mind, you strengthen the neural pathways associated with it.
+
+## The Forgetting Curve
+
+Pioneered by Hermann Ebbinghaus, the "forgetting curve" shows how quickly we forget information if we don't make a conscious effort to remember it. Active recall is the most powerful tool to combat this curve.
+
+## How to Practice Active Recall
+
+- **Flashcards:** The classic example. One side has a prompt, the other the answer.
+- **Quizzing:** Testing yourself forces you to retrieve information under pressure.
+- **Feynman Technique:** Trying to explain a concept in simple terms reveals gaps in your understanding and forces active recall.
+
+FocusFlow AI's flashcard and quiz generation tools are built on this very principle, making it easy to integrate this powerful technique into your study routine.
+`,
+  },
+];
+
+export const getPostBySlug = (slug: string) => {
+  return posts.find((post) => post.slug === slug);
+};

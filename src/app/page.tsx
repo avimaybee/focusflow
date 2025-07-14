@@ -9,13 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   BrainCircuit,
   Combine,
@@ -23,80 +17,125 @@ import {
   Zap,
   MoveRight,
   Quote,
+  BookOpen,
+  ClipboardList,
+  Sparkles,
 } from 'lucide-react';
-import Image from 'next/image';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { cn } from '@/lib/utils';
 
-// Custom SVG component for the hero section background
 const HeroGradient = () => (
-  <div className="absolute inset-0 -z-10 overflow-hidden">
-    <div className="absolute left-[50%] top-0 h-[50rem] w-[50rem] -translate-x-[50%] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(60,130,246,0.2),rgba(255,255,255,0))]"></div>
+  <div
+    aria-hidden="true"
+    className="absolute inset-0 -z-10 overflow-hidden"
+  >
+    <div className="absolute left-[50%] top-0 h-[50rem] w-[50rem] -translate-x-[50%] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(60,130,246,0.15),rgba(255,255,255,0))]" />
   </div>
 );
 
-// Custom SVG for the app preview
 const AppPreview = () => (
-    <div className="relative w-full max-w-5xl mx-auto mt-12">
-        <div className="aspect-[16/9] rounded-2xl bg-secondary/50 border border-border/50 shadow-2xl shadow-primary/10 flex items-center justify-center p-8">
-            <div className="w-full h-full rounded-lg bg-background/80 flex flex-col">
-                <div className="h-8 bg-secondary/80 rounded-t-lg flex items-center px-2">
-                    <div className="flex gap-1.5">
-                        <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
-                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
-                        <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
-                    </div>
-                </div>
-                <div className="flex-1 p-4 space-y-4">
-                    <div className="flex items-start gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex-shrink-0"></div>
-                        <div className="space-y-2 flex-1">
-                            <div className="h-4 bg-secondary/80 rounded-full w-3/4"></div>
-                            <div className="h-4 bg-secondary/80 rounded-full w-1/2"></div>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-2 justify-end">
-                         <div className="space-y-2 flex-1 text-right">
-                            <div className="h-4 bg-muted/80 rounded-full w-3/4 ml-auto"></div>
-                        </div>
-                        <div className="w-8 h-8 rounded-full bg-muted/80 flex-shrink-0"></div>
-                    </div>
-                </div>
-            </div>
+  <div className="relative w-full max-w-6xl mx-auto mt-16">
+    <div className="aspect-[16/9] rounded-2xl bg-background/50 border-2 border-primary/10 shadow-2xl shadow-primary/20 flex items-center justify-center p-4">
+      <div className="w-full h-full rounded-lg bg-background/80 flex flex-col ring-1 ring-inset ring-border">
+        <div className="h-10 bg-secondary rounded-t-lg flex items-center px-4 justify-between">
+          <div className="flex gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-red-500/80" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+            <div className="w-3 h-3 rounded-full bg-green-500/80" />
+          </div>
+          <div className="w-1/2 h-4 bg-muted/50 rounded-full" />
         </div>
+        <div className="flex-1 p-6 grid grid-cols-3 gap-6">
+          <div className="col-span-1 bg-secondary/80 rounded-lg p-4 space-y-4">
+            <div className="h-8 w-8 rounded-lg bg-primary/20" />
+            <div className="h-4 w-3/4 rounded-full bg-muted/80" />
+            <div className="h-4 w-1/2 rounded-full bg-muted/80" />
+            <div className="h-4 w-5/6 rounded-full bg-muted/80" />
+          </div>
+          <div className="col-span-2 bg-secondary/80 rounded-lg p-4 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex-shrink-0" />
+              <div className="space-y-2 flex-1">
+                <div className="h-4 bg-muted/80 rounded-full w-3/4" />
+                <div className="h-4 bg-muted/80 rounded-full w-1/2" />
+              </div>
+            </div>
+            <div className="flex items-start gap-3 justify-end">
+              <div className="space-y-2 flex-1 text-right">
+                <div className="h-4 bg-primary/20 rounded-full w-3/4 ml-auto" />
+              </div>
+              <div className="w-8 h-8 rounded-full bg-background flex-shrink-0" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 );
 
-
-export default function LandingPage() {
+const BentoGrid = () => {
   const features = [
     {
-      icon: <Combine className="h-8 w-8 text-primary" />,
-      title: 'The Seamless AI Workflow',
-      description:
-        'Stop juggling apps. FocusFlow is your single, intelligent hub for every study need, from summaries to quizzes, all in one place.',
+      icon: <ClipboardList className="h-8 w-8 text-primary" />,
+      title: 'Generate Summaries',
+      description: 'Distill long texts into concise summaries.',
+      className: 'md:col-span-1',
     },
     {
-      icon: <Lightbulb className="h-8 w-8 text-primary" />,
-      title: 'AI-Powered Active Learning',
-      description:
-        "Don't just read it, master it. Actively learn and truly understand with AI-generated flashcards, quizzes, and contextual explanations.",
+      icon: <BookOpen className="h-8 w-8 text-primary" />,
+      title: 'Create Flashcards',
+      description: 'Turn notes into interactive flashcards for active recall.',
+      className: 'md:col-span-1',
     },
     {
       icon: <BrainCircuit className="h-8 w-8 text-primary" />,
-      title: 'High-Quality, Contextual AI Output',
-      description:
-        'Get precise summaries, smart plans, and effective learning tools, powered by Gemini for intelligent, tailored study assistance.',
+      title: 'Build Quizzes',
+      description: 'Test your knowledge with AI-generated quizzes.',
+      className: 'md:col-span-1',
     },
     {
-      icon: <Zap className="h-8 w-8 text-primary" />,
-      title: 'Frictionless & Rewarding Experience',
+      icon: <Sparkles className="h-8 w-8 text-primary" />,
+      title: 'AI-Powered Chat',
       description:
-        'Start studying smarter in seconds with no signup required. Enjoy a delightful and rewarding journey with a gamified dashboard.',
+        'Go beyond simple questions with a contextual AI tutor that understands your materials.',
+      className: 'md:col-span-2',
+    },
+    {
+      icon: <Combine className="h-8 w-8 text-primary" />,
+      title: 'Seamless Workflow',
+      description:
+        'From upload to summary to quiz, enjoy a frictionless study experience.',
+      className: 'md:col-span-1',
     },
   ];
 
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {features.map((feature, index) => (
+        <Card
+          key={index}
+          className={cn(
+            'bg-secondary/50 border-border/60 p-6 flex flex-col gap-4 items-start justify-center hover:border-primary/50 transition-colors',
+            feature.className
+          )}
+        >
+          <div className="bg-primary/10 rounded-lg h-14 w-14 flex items-center justify-center border border-primary/20">
+            {feature.icon}
+          </div>
+          <div className="flex flex-col">
+            <h3 className="text-lg font-bold">{feature.title}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {feature.description}
+            </p>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+export default function LandingPage() {
   const faqs = [
     {
       question: 'Is FocusFlow AI free to use?',
@@ -149,17 +188,18 @@ export default function LandingPage() {
         <section className="relative py-24 md:py-32 text-center">
           <HeroGradient />
           <div className="container mx-auto px-4 relative">
-            <h1 className="text-4xl md:text-6xl font-bold max-w-3xl mx-auto leading-tight tracking-tighter">
-              Your AI-Powered Study Co-Pilot
+            <h1 className="text-4xl md:text-6xl font-bold max-w-3xl mx-auto leading-tight tracking-tighter font-heading">
+              Study Smarter, Not Harder
             </h1>
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Stop juggling apps. Summarize notes, create flashcards, build
-              study plans, and chat with an AI tutor—all in one place.
+              FocusFlow is your AI co-pilot for learning. Turn any document
+              into summaries, flashcards, and quizzes—in seconds.
             </p>
             <div className="mt-8 flex gap-4 justify-center">
               <Button size="lg" asChild>
                 <Link href="/chat">
-                  Start for Free <MoveRight className="ml-2 h-5 w-5" />
+                  Start Studying Smarter{' '}
+                  <MoveRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
             </div>
@@ -168,59 +208,53 @@ export default function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-20 bg-secondary/30">
+        <section id="features" className="py-20">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto">
-                <h2 className="text-3xl md:text-4xl font-bold">
-                    An Entire Study Toolkit in One App
-                </h2>
-                <p className="mt-4 text-lg text-muted-foreground leading-snug">
-                    FocusFlow AI integrates every tool you need to study smarter, not
-                    harder.
-                </p>
+              <h2 className="text-3xl md:text-4xl font-bold font-heading">
+                Your Entire Study Toolkit, Reimagined
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground leading-snug">
+                FocusFlow AI integrates every tool you need to learn better,
+                all in one intelligent platform.
+              </p>
             </div>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {features.map((feature, index) => (
-                <Card key={index} className="bg-background/60 border-border/60 backdrop-blur-sm">
-                  <CardHeader>
-                    <div className="mx-auto bg-primary/10 rounded-lg h-12 w-12 flex items-center justify-center border border-primary/20">
-                      {feature.icon}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="text-center">
-                    <h3 className="text-lg font-semibold">{feature.title}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="mt-12 max-w-6xl mx-auto">
+              <BentoGrid />
             </div>
           </div>
         </section>
 
         {/* Testimonials Section */}
-        <section id="testimonials" className="py-20">
+        <section id="testimonials" className="py-20 bg-secondary/30">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto">
-                <h2 className="text-3xl md:text-4xl font-bold">
-                    Loved by Students Everywhere
-                </h2>
-                 <p className="mt-4 text-lg text-muted-foreground leading-snug">
-                    Don't just take our word for it. Here's what students are saying.
-                </p>
+              <h2 className="text-3xl md:text-4xl font-bold font-heading">
+                Loved by Students Everywhere
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground leading-snug">
+                Don't just take our word for it. Here's what students are
+                saying.
+              </p>
             </div>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
               {testimonials.map((testimonial, index) => (
-                <Card key={index} className="bg-secondary/30 border-border/60">
+                <Card
+                  key={index}
+                  className="bg-background/60 border-border/60"
+                >
                   <CardContent className="p-6 flex flex-col h-full">
                     <Quote className="w-8 h-8 text-primary/50 mb-4" />
                     <p className="italic text-base text-foreground/90 leading-relaxed flex-grow">
                       "{testimonial.quote}"
                     </p>
                     <div className="mt-6">
-                      <p className="font-semibold text-sm">{testimonial.name}</p>
-                      <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                      <p className="font-semibold text-sm">
+                        {testimonial.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {testimonial.role}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -230,12 +264,12 @@ export default function LandingPage() {
         </section>
 
         {/* FAQ Section */}
-        <section id="faq" className="py-20 bg-secondary/30">
+        <section id="faq" className="py-20">
           <div className="container mx-auto px-4 max-w-3xl">
             <div className="text-center max-w-3xl mx-auto">
-                <h2 className="text-3xl md:text-4xl font-bold">
-                    Frequently Asked Questions
-                </h2>
+              <h2 className="text-3xl md:text-4xl font-bold font-heading">
+                Frequently Asked Questions
+              </h2>
             </div>
             <Accordion type="single" collapsible className="w-full mt-8">
               {faqs.map((faq, index) => (

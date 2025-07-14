@@ -31,6 +31,7 @@ export default function ChatPage() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [input, setInput] = useState('');
   const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -214,7 +215,7 @@ export default function ChatPage() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="fixed z-40 h-full w-80 bg-background md:hidden"
+              className="fixed z-40 h-full md:hidden"
             >
               <ChatSidebar
                 user={user}
@@ -223,22 +224,24 @@ export default function ChatPage() {
                 onNewChat={handleNewChat}
                 onChatSelect={(id) => router.push(`/chat/${id}`)}
                 isLoading={isHistoryLoading}
+                isCollapsed={false}
+                onToggle={() => setSidebarOpen(false)}
               />
             </motion.div>
           </>
         )}
       </AnimatePresence>
       
-      <div className="hidden md:flex">
-        <ChatSidebar
-            user={user}
-            chatHistory={chatHistory}
-            activeChatId={activeChatId}
-            onNewChat={handleNewChat}
-            onChatSelect={(id) => router.push(`/chat/${id}`)}
-            isLoading={isHistoryLoading}
-        />
-      </div>
+      <ChatSidebar
+        user={user}
+        chatHistory={chatHistory}
+        activeChatId={activeChatId}
+        onNewChat={handleNewChat}
+        onChatSelect={(id) => router.push(`/chat/${id}`)}
+        isLoading={isHistoryLoading}
+        isCollapsed={isSidebarCollapsed}
+        onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
+      />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden" {...fileUploadHandlers}>
         {isDraggingOver && (

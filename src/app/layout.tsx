@@ -1,23 +1,20 @@
 
-import type { Metadata } from 'next';
-import { Poppins, PT_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from '@/context/providers';
 
-const fontHeading = Poppins({
-  subsets: ['latin'],
-  display: 'swap',
+const fontHeading = localFont({
+  src: '../assets/fonts/Satoshi-Variable.ttf',
   variable: '--font-heading',
-  weight: ['400', '700']
+  weight: '400 700',
 });
 
-const fontBody = PT_Sans({
+const fontBody = Inter({
   subsets: ['latin'],
-  display: 'swap',
   variable: '--font-body',
-  weight: ['400', '700']
 });
 
 export const metadata: Metadata = {
