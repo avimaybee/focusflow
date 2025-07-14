@@ -61,48 +61,10 @@ export default function ChatPage() {
         return;
     }
   
-    console.log(`CLIENT DEBUG: Setting up Firestore listener for chat ID: ${activeChatId}`);
-    const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
+    // This listener can be simplified for the test-chat route as it doesn't support history.
+    // For now, we clear messages when a chat is selected.
+    setMessages([]);
     
-    const unsubscribe = onSnapshot(chatRef, async (docSnapshot) => {
-      if (docSnapshot.exists()) {
-        console.log("CLIENT DEBUG: Chat snapshot received from Firestore.");
-        const sessionData = docSnapshot.data();
-        const history = sessionData.history || [];
-        
-        const chatMessagesPromises = history.map(async (msg: any, index: number) => {
-            let textContent = '';
-            // Safely extract text content from the message parts
-            if (Array.isArray(msg.content)) {
-                const textPart = msg.content.find((p: any) => p.text);
-                textContent = textPart?.text || '';
-            }
-          
-          return { 
-            id: `${docSnapshot.id}-${index}`,
-            role: msg.role,
-            text: await marked.parse(textContent),
-            rawText: textContent,
-            createdAt: sessionData.updatedAt || Timestamp.now()
-          }
-        });
-
-        const resolvedMessages = await Promise.all(chatMessagesPromises);
-        setMessages(resolvedMessages);
-        console.log(`CLIENT DEBUG: Parsed and set ${resolvedMessages.length} messages.`);
-      } else {
-        console.log("CLIENT DEBUG: Chat document does not exist in Firestore.");
-        setMessages([]);
-      }
-    }, (error) => {
-      console.error("Error fetching chat document:", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat session.' });
-    });
-    
-    return () => {
-      console.log(`CLIENT DEBUG: Unsubscribing from Firestore listener for chat ID: ${activeChatId}`);
-      unsubscribe();
-    }
   }, [activeChatId, user, toast]);
 
   useEffect(() => {
@@ -133,41 +95,38 @@ export default function ChatPage() {
     }
   
     setIsSending(true);
+    const userMessageText = input;
     const userMessage: ChatMessageProps = {
       id: `user-${Date.now()}`,
       role: 'user',
-      text: input,
-      rawText: input,
+      text: userMessageText,
+      rawText: userMessageText,
       createdAt: Timestamp.now(),
+      userName: user.displayName,
+      userAvatar: user.photoURL,
     };
     setMessages(prev => [...prev, userMessage]);
   
     const chatInput = {
       message: input.trim(),
-      sessionId: activeChatId || undefined,
-      persona: selectedPersonaId,
-      context: attachment?.url,
+      // We don't need these for the simple test flow
+      // sessionId: activeChatId || undefined, 
+      // persona: selectedPersonaId,
+      // context: attachment?.url,
     };
   
     setInput('');
     setAttachment(null);
   
     try {
-      console.log('CLIENT DEBUG: User object available:', !!user);
       const idToken = await user.getIdToken();
-      console.log(`CLIENT DEBUG: Successfully fetched ID token. Length: ${idToken.length}`);
-
       const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${idToken}`,
       };
-      console.log('CLIENT DEBUG: Request headers prepared:', {
-        'Content-Type': headers['Content-Type'],
-        'Authorization': `Bearer ${idToken.substring(0, 15)}...`
-      });
 
-      console.log('CLIENT DEBUG: Sending request to /api/chat with input:', chatInput);
-      const response = await fetch('/api/chat', {
+      console.log('CLIENT DEBUG: Sending request to /api/test-chat with input:', chatInput);
+      const response = await fetch('/api/test-chat', {
         method: 'POST',
         headers: headers,
         body: JSON.stringify(chatInput),
@@ -181,12 +140,18 @@ export default function ChatPage() {
       }
       
       console.log('CLIENT DEBUG: Received successful response from server:', result);
-  
-      if (result.sessionId && !activeChatId) {
-        setActiveChatId(result.sessionId);
-        router.push(`/chat/${result.sessionId}`);
-        forceRefresh();
-      }
+      
+      const aiResponse: ChatMessageProps = {
+          id: `model-${Date.now()}`,
+          role: 'model',
+          text: await marked.parse(result.response),
+          rawText: result.response,
+          createdAt: Timestamp.now(),
+      };
+      setMessages(prev => [...prev, aiResponse]);
+
+      // Since the test route doesn't support history, we won't get a session ID back.
+      // This simplifies the logic significantly.
   
     } catch (error: any) {
       console.error("--- CLIENT DEBUG: CATCH BLOCK ---");
