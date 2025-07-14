@@ -9,6 +9,7 @@ import {
   BookOpen,
   LayoutGrid,
   Plus,
+  Loader2,
 } from 'lucide-react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -21,63 +22,71 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import { ExpandedTabs } from '@/components/ui/expanded-tabs';
-import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/auth-context';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
+import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
-
-// Mock data for user's content
-const allContent = [
-  {
-    id: 1,
-    type: 'summary',
-    title: 'Quantum Physics Summary',
-    description: 'A summary of the key concepts from the lecture on quantum mechanics.',
-    date: '2025-07-10',
-  },
-  {
-    id: 2,
-    type: 'quiz',
-    title: 'History Midterm Quiz',
-    description: 'A 20-question quiz covering the major events of WWII.',
-    date: '2025-07-09',
-  },
-  {
-    id: 3,
-    type: 'flashcards',
-    title: 'Biology Vocabulary',
-    description: 'A set of 50 flashcards for key biological terms.',
-    date: '2025-07-08',
-  },
-  {
-    id: 4,
-    type: 'summary',
-    title: 'The Great Gatsby Notes',
-    description: 'A chapter-by-chapter summary of the novel.',
-    date: '2025-07-07',
-  },
-  {
-    id: 5,
-    type: 'summary',
-    title: 'Calculus Formulas',
-    description: 'A concise summary of important differentiation rules.',
-    date: '2025-07-11',
-  },
-  {
-    id: 6,
-    type: 'quiz',
-    title: 'Chemistry Pop Quiz',
-    description: 'A quick 10-question quiz on the periodic table.',
-    date: '2025-07-05',
-  },
-];
 
 const contentIcons: { [key: string]: React.ElementType } = {
   summary: FileText,
   quiz: HelpCircle,
-  flashcards: BookOpen,
+  flashcardSet: BookOpen,
 };
 
+interface ContentItem {
+    id: string;
+    type: 'summary' | 'quiz' | 'flashcardSet';
+    title: string;
+    description: string;
+    createdAt: Timestamp;
+}
+
 export default function MyContentPage() {
+  const { user, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = React.useState('All');
+  const [allContent, setAllContent] = React.useState<ContentItem[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!user) {
+        if (!authLoading) setIsLoading(false);
+        return;
+    }
+
+    const fetchContent = async () => {
+      setIsLoading(true);
+      const contentTypes = ['summaries', 'quizzes', 'flashcardSets'];
+      const promises = contentTypes.map(async (type) => {
+        const contentRef = collection(db, 'users', user.uid, type);
+        const q = query(contentRef, orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            let description = '';
+            if (type === 'summaries') description = data.summary;
+            if (type === 'quizzes') description = `A quiz on "${data.sourceText}"`;
+            if (type === 'flashcardSets') description = `Flashcards for "${data.sourceText}"`;
+
+            return {
+                id: doc.id,
+                type: type.slice(0, -1) as ContentItem['type'], // 'summaries' -> 'summary'
+                title: data.title,
+                description: description,
+                createdAt: data.createdAt as Timestamp
+            };
+        });
+      });
+
+      const fetchedContent = (await Promise.all(promises)).flat();
+      fetchedContent.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
+      setAllContent(fetchedContent as ContentItem[]);
+      setIsLoading(false);
+    };
+
+    fetchContent();
+  }, [user, authLoading]);
+
 
   const tabs = [
     { title: 'All', icon: LayoutGrid, type: 'tab' as const },
@@ -86,68 +95,83 @@ export default function MyContentPage() {
     { title: 'Flashcards', icon: BookOpen, type: 'tab' as const },
   ];
 
-  const filteredContent = allContent.filter(
-    (item) =>
-      activeTab === 'All' ||
-      item.type === activeTab.slice(0, -1).toLowerCase()
-  );
+  const filteredContent = allContent.filter((item) => {
+    if (activeTab === 'All') return true;
+    if (activeTab === 'Summaries') return item.type === 'summary';
+    if (activeTab === 'Quizzes') return item.type === 'quiz';
+    if (activeTab === 'Flashcards') return item.type === 'flashcardSet';
+    return false;
+  });
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow bg-secondary/30">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col items-center text-center mb-8">
-            <h1 className="text-4xl font-bold font-heading">My Content</h1>
-            <p className="text-lg text-muted-foreground mt-1 max-w-2xl">
-              All of your generated study materials, saved in one place.
-            </p>
-            <div className="mt-6">
-              <ExpandedTabs tabs={tabs} onTabChange={setActiveTab} />
+  const renderContent = () => {
+    if (isLoading || authLoading) {
+        return <div className="col-span-full flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    }
+
+    if (!user && !authLoading) {
+        return (
+            <div className="col-span-full flex flex-col items-center justify-center text-center py-20 border-2 border-dashed border-border rounded-lg">
+                <h2 className="text-xl font-semibold mb-2">Please Log In</h2>
+                <p className="text-muted-foreground mb-4">You need to be logged in to see your content.</p>
+                <Button asChild>
+                    <Link href="/login">Log In</Link>
+                </Button>
             </div>
-          </div>
+        )
+    }
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence>
-              {filteredContent.map((item) => {
-                const Icon = contentIcons[item.type];
-                return (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Card className="h-full flex flex-col hover:border-primary/80 hover:bg-muted transition-all">
-                      <CardHeader>
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-primary/10 rounded-lg">
-                            <Icon className="h-6 w-6 text-primary" />
-                          </div>
-                          <CardTitle>{item.title}</CardTitle>
+    if (allContent.length === 0 && !isLoading) {
+        return (
+            <div className="col-span-full flex flex-col items-center justify-center text-center py-20 border-2 border-dashed border-border rounded-lg">
+                <h2 className="text-xl font-semibold mb-2">No Content Yet</h2>
+                <p className="text-muted-foreground mb-4">Use the chat to create summaries, quizzes, and more!</p>
+                <Button asChild>
+                    <Link href="/chat">Start Creating</Link>
+                </Button>
+            </div>
+        )
+    }
+
+    return (
+        <AnimatePresence>
+            {filteredContent.map((item) => {
+            const Icon = contentIcons[item.type];
+            return (
+                <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                >
+                <Card className="h-full flex flex-col hover:border-primary/80 hover:bg-muted transition-all">
+                    <CardHeader>
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-primary/10 rounded-lg">
+                        <Icon className="h-6 w-6 text-primary" />
                         </div>
-                      </CardHeader>
-                      <CardContent className="flex-grow flex flex-col">
-                        <CardDescription className="flex-grow mb-4">
-                          {item.description}
-                        </CardDescription>
-                        <p className="text-xs text-muted-foreground">
-                          Created: {item.date}
-                        </p>
-                      </CardContent>
-                      <div className="p-6 pt-0">
-                         <Button asChild className="w-full">
-                            <Link href="#">View Content</Link>
-                         </Button>
-                      </div>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-            <motion.div
+                        <CardTitle className="line-clamp-2">{item.title}</CardTitle>
+                    </div>
+                    </CardHeader>
+                    <CardContent className="flex-grow flex flex-col">
+                    <CardDescription className="flex-grow mb-4 line-clamp-3">
+                        {item.description}
+                    </CardDescription>
+                    <p className="text-xs text-muted-foreground">
+                        Created: {item.createdAt ? formatDistanceToNow(item.createdAt.toDate(), { addSuffix: true }) : 'Just now'}
+                    </p>
+                    </CardContent>
+                    <div className="p-6 pt-0">
+                        <Button asChild className="w-full">
+                        <Link href={`/my-content/${item.type}s/${item.id}`}>View Content</Link>
+                        </Button>
+                    </div>
+                </Card>
+                </motion.div>
+            );
+            })}
+             <motion.div
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -166,6 +190,27 @@ export default function MyContentPage() {
                 </Link>
               </Button>
             </motion.div>
+        </AnimatePresence>
+    )
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow bg-secondary/30">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center text-center mb-8">
+            <h1 className="text-4xl font-bold font-heading">My Content</h1>
+            <p className="text-lg text-muted-foreground mt-1 max-w-2xl">
+              All of your generated study materials, saved in one place.
+            </p>
+            <div className="mt-6">
+              <ExpandedTabs tabs={tabs} onTabChange={setActiveTab} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {renderContent()}
           </div>
         </div>
       </main>
