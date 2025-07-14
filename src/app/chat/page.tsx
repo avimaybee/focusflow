@@ -69,7 +69,8 @@ export default function ChatPage() {
     const unsubscribe = onSnapshot(chatRef, async (docSnapshot) => {
       if (docSnapshot.exists()) {
         const sessionData = docSnapshot.data();
-        const history = sessionData.history || [];
+        // THE FIX: Read from the correct nested field where Genkit stores chat history.
+        const history = sessionData.threads?.main || [];
         
         // Map the stored history to the format our ChatMessage component expects
         const chatMessagesPromises = history.map(async (msg: any, index: number) => {
@@ -161,7 +162,8 @@ export default function ChatPage() {
       const result = await response.json();
       
       if (!response.ok) {
-        throw new Error(result.error || `Request failed with status ${response.status}`);
+        // Pass the entire response to the error handler
+        throw { response, result };
       }
       
       // If this was a new chat, the server returns a new session ID.
@@ -176,7 +178,7 @@ export default function ChatPage() {
       toast({
         variant: 'destructive',
         title: 'Message Failed',
-        description: error.message || 'An unknown error occurred.',
+        description: error.result?.error || error.message || 'An unknown error occurred.',
       });
   
       // Add an error message to the chat UI

@@ -1,7 +1,45 @@
-
 import { SessionStore, SessionData } from 'genkit/beta';
 import { db } from './firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
+
+// Helper function to recursively convert Firestore Timestamps to JS Dates
+function convertTimestampsToDates(data: any): any {
+  if (!data) return data;
+  if (data instanceof Timestamp) {
+    return data.toDate();
+  }
+  if (Array.isArray(data)) {
+    return data.map(convertTimestampsToDates);
+  }
+  if (typeof data === 'object') {
+    const newObj: { [key: string]: any } = {};
+    for (const key in data) {
+      newObj[key] = convertTimestampsToDates(data[key]);
+    }
+    return newObj;
+  }
+  return data;
+}
+
+// Helper function to recursively convert JS Dates to Firestore Timestamps
+function convertDatesToTimestamps(data: any): any {
+  if (!data) return data;
+  if (data instanceof Date) {
+    return Timestamp.fromDate(data);
+  }
+  if (Array.isArray(data)) {
+    return data.map(convertDatesToTimestamps);
+  }
+  if (typeof data === 'object') {
+    const newObj: { [key: string]: any } = {};
+    for (const key in data) {
+      newObj[key] = convertDatesToTimestamps(data[key]);
+    }
+    return newObj;
+  }
+  return data;
+}
+
 
 export class FirestoreSessionStore<S = any> implements SessionStore<S> {
   private userId: string;
@@ -30,19 +68,10 @@ export class FirestoreSessionStore<S = any> implements SessionStore<S> {
         return undefined;
     }
 
-    // Convert Firestore Timestamps back to Dates for Genkit. This is critical.
-    const history = (data.history || []).map((msg: any) => {
-        if (msg.timestamp && msg.timestamp instanceof Timestamp) {
-            return { ...msg, timestamp: msg.timestamp.toDate() };
-        }
-        return msg;
-    });
-    
-    const sessionData: SessionData<S> = {
-      history,
-      state: data.state,
-      id: docSnap.id,
-    };
+    // Recursively convert all Firestore Timestamps to Dates for Genkit
+    const sessionData = convertTimestampsToDates(data) as SessionData<S>;
+    sessionData.id = docSnap.id;
+
 
     console.log(`SESSION STORE (GET): Session loaded successfully.`);
     return sessionData;
@@ -67,20 +96,26 @@ export class FirestoreSessionStore<S = any> implements SessionStore<S> {
         }
     }
     
-    // Convert Dates back to Firestore Timestamps for storage
-    const historyToSave = (sessionData.history || []).map((msg: any) => {
-        if (msg.timestamp && msg.timestamp instanceof Date) {
-            return { ...msg, timestamp: Timestamp.fromDate(msg.timestamp) };
-        }
-        return msg;
+    const sessionDataCopy = { ...sessionData };
+
+    // THE FIX: Explicitly remove the state property if it is undefined.
+    if (sessionDataCopy.state === undefined) {
+      delete (sessionDataCopy as Partial<SessionData<S>>).state;
+    }
+
+    // Deep convert Dates to Timestamps before saving
+    const dataToSave = convertDatesToTimestamps({
+        ...sessionDataCopy,
+        history: sessionData.history || [], // Ensure history is always present
+        title: title,
+        updatedAt: new Date(), // Will be converted to Timestamp
     });
 
-    const dataToSave = {
-      ...sessionData,
-      history: historyToSave,
-      title: title,
-      updatedAt: Timestamp.now(),
-    };
+    // Add createdAt timestamp robustly if it's a new document
+    const docSnap = await docRef.get();
+    if (!docSnap.exists) {
+        dataToSave.createdAt = new Date(); // Will be converted to Timestamp
+    }
 
     await docRef.set(dataToSave, { merge: true });
     console.log(`SESSION STORE (SAVE): Session saved successfully.`);

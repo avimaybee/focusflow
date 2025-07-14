@@ -186,12 +186,16 @@ const chatFlow = ai.defineFlow(
     // Send the message to the chat session and get the result
     const result = await chat.send(userMessageContent);
 
-    // After the response, check if any tools were called and save their output
-    const toolCalls = result.history[result.history.length-1].toolCalls;
-    if (toolCalls && toolCalls.length > 0) {
-      for (const toolCall of toolCalls) {
-        if (toolCall.output) {
-            await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
+    // After the response, safely check if any tools were called and save their output.
+    // The last message in the history is the model's response.
+    if (result.history && result.history.length > 0) {
+      const lastMessage = result.history[result.history.length - 1];
+      // The 'toolCalls' property only exists if the model decided to call a tool.
+      if (lastMessage.toolCalls && lastMessage.toolCalls.length > 0) {
+        for (const toolCall of lastMessage.toolCalls) {
+          if (toolCall.output) {
+              await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
+          }
         }
       }
     }
