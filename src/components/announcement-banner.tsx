@@ -5,21 +5,26 @@ import { useState, useEffect } from 'react';
 import { ArrowUpRight, X } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-
-const ANNOUNCEMENT_ID = 'personaBlogPost_2025_07_15'; // Use a unique ID for each new announcement
+import { currentAnnouncement } from '@/lib/announcement-config';
 
 export function AnnouncementBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const hasBeenDismissed = localStorage.getItem(ANNOUNCEMENT_ID);
-    if (!hasBeenDismissed) {
-      setIsVisible(true);
+    if (currentAnnouncement) {
+      const hasBeenDismissed = localStorage.getItem(currentAnnouncement.id);
+      if (!hasBeenDismissed) {
+        setIsVisible(true);
+      }
     }
   }, []);
 
+  if (!currentAnnouncement || !isVisible) {
+    return null;
+  }
+
   const handleDismiss = () => {
-    localStorage.setItem(ANNOUNCEMENT_ID, 'true');
+    localStorage.setItem(currentAnnouncement.id, 'true');
     setIsVisible(false);
   };
 
@@ -36,9 +41,9 @@ export function AnnouncementBanner() {
           aria-live="polite"
         >
           <div className="announcement-wrapper">
-            <span className="announcement-badge">New</span>
-            <Link href="/blog/mastering-ai-personas" className="announcement-message hover:text-foreground transition-colors">
-              Learn how to use AI Personas to match your study style <ArrowUpRight className="h-4 w-4" />
+            <span className="announcement-badge">{currentAnnouncement.badge}</span>
+            <Link href={currentAnnouncement.href} className="announcement-message hover:text-foreground transition-colors">
+              {currentAnnouncement.message} <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
           <button

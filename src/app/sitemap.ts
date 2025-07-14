@@ -33,8 +33,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/',
     '/chat',
     '/dashboard',
+    '/my-content',
+    '/premium',
     '/blog',
-    '/login',
   ];
 
   const staticUrls = staticRoutes.map(route => ({

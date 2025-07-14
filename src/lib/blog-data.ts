@@ -4,6 +4,7 @@ export interface Post {
   title: string;
   excerpt: string;
   date: string;
+  datePublished: string;
   author: string;
   content: string;
 }
@@ -13,7 +14,8 @@ export const posts: Post[] = [
     slug: 'mastering-ai-personas',
     title: 'Mastering Your Study Style with AI Personas',
     excerpt: 'Unlock a new level of personalized learning by choosing an AI persona that matches your needs. Learn how each persona can enhance your study sessions.',
-    date: '2025-07-16',
+    date: 'July 16, 2025',
+    datePublished: '2025-07-16T10:00:00Z',
     author: 'Alex Chen, Learning Innovator',
     content: `
 ## Why One-Size-Fits-All Fails in Learning
@@ -46,7 +48,8 @@ You can easily switch between personas at any time during your chat session usin
     title: 'How to Study Smarter, Not Harder, with AI Tools',
     excerpt:
       'Discover five ways you can leverage AI to supercharge your study sessions, from generating summaries to creating personalized quizzes.',
-    date: '2025-07-15',
+    date: 'July 15, 2025',
+    datePublished: '2025-07-15T10:00:00Z',
     author: 'Jane Doe, EdTech Specialist',
     content: `
 ## The Challenge of Modern Studying
@@ -81,7 +84,8 @@ By integrating these AI-powered strategies, you can create a more efficient, eng
     title: 'The Science of Active Recall: Why It Unlocks Long-Term Memory',
     excerpt:
       'Dive into the cognitive science behind active recall and learn why it is the most effective study technique for long-term retention.',
-    date: '2025-07-10',
+    date: 'July 10, 2025',
+    datePublished: '2025-07-10T10:00:00Z',
     author: 'John Smith, Cognitive Scientist',
     content: `
 ## What is Active Recall?
@@ -102,6 +106,10 @@ FocusFlow AI's flashcard and quiz generation tools are built on this very princi
 `,
   },
 ];
+
+export function getBlogPosts() {
+  return posts;
+}
 
 export const getPostBySlug = (slug: string) => {
   return posts.find((post) => post.slug === slug);
