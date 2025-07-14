@@ -6,7 +6,6 @@ import {
   useRef,
   ChangeEvent,
   FormEvent,
-  useEffect,
   useCallback,
 } from 'react';
 import Image from 'next/image';
@@ -48,6 +47,7 @@ import {
 import { PromptLibrary } from '@/components/prompt-library';
 import { cn } from '@/lib/utils';
 import type { Attachment } from '@/hooks/use-file-upload';
+import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
 
 // Mapping persona IDs to icons
 const personaIcons: { [key: string]: React.ElementType } = {
@@ -77,7 +77,6 @@ interface ChatInputAreaProps {
   activeChatId: string | null;
   chatContext: Attachment | null;
   clearChatContext: () => void;
-  textareaRef: React.RefObject<HTMLTextAreaElement>;
 }
 
 const AnimatedPlaceholder = ({
@@ -113,14 +112,24 @@ export function ChatInputArea({
   activeChatId,
   chatContext,
   clearChatContext,
-  textareaRef,
 }: ChatInputAreaProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
+  const { textareaRef, adjustHeight } = useAutoResizeTextarea({
+    minHeight: 24, // Adjusted for a single line
+    maxHeight: 200,
+  });
+
+  const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    adjustHeight();
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    if (!input.trim() && !chatContext) return;
     handleSendMessage(e);
+    adjustHeight(true); // Reset height after sending
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -176,17 +185,18 @@ export function ChatInputArea({
               ref={textareaRef}
               value={input}
               placeholder=""
-              className="w-full rounded-2xl pl-4 pr-12 py-3 bg-transparent border-none text-base text-foreground resize-none focus-visible:ring-0 leading-[1.4]"
+              rows={1}
+              className="w-full rounded-2xl pl-4 pr-12 py-3 bg-transparent border-none text-base text-foreground resize-none focus-visible:ring-0 leading-tight"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   handleSubmit(e);
                 }
               }}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={handleTextareaChange}
               disabled={isHistoryLoading}
             />
             {!input && (
-              <div className="absolute left-4 top-3.5">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2">
                 <AnimatedPlaceholder activeChatId={activeChatId} />
               </div>
             )}

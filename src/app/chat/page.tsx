@@ -41,7 +41,6 @@ export default function ChatPage() {
   const { isDraggingOver, handleFileSelect, fileUploadHandlers } = useFileUpload(setAttachment);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Effect to sync the active chat ID with the URL
   useEffect(() => {
@@ -283,7 +282,6 @@ export default function ChatPage() {
                 personas={personas}
                 selectedPersonaId={selectedPersonaId}
                 setSelectedPersonaId={setSelectedPersonaId}
-                textareaRef={textareaRef}
                 activeChatId={activeChatId}
                 chatContext={attachment}
                 clearChatContext={() => setAttachment(null)}
