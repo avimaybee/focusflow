@@ -91,7 +91,7 @@ const AnimatedPlaceholder = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -5 }}
       transition={{ duration: 0.15 }}
-      className="pointer-events-none absolute text-base text-muted-foreground whitespace-nowrap"
+      className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-base text-muted-foreground whitespace-nowrap"
     >
       {activeChatId ? 'Ask a follow-up...' : 'Start a new conversation...'}
     </motion.p>
@@ -129,7 +129,6 @@ export function ChatInputArea({
     e.preventDefault();
     if (!input.trim() && !chatContext) return;
     handleSendMessage(e);
-    adjustHeight(true); // Reset height after sending
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -137,7 +136,6 @@ export function ChatInputArea({
     if (file) {
       handleFileSelect(file);
     }
-    // Reset file input to allow selecting the same file again
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -151,42 +149,45 @@ export function ChatInputArea({
 
   return (
     <div className="w-full py-4">
-      <div className="relative max-w-4xl border rounded-[22px] border-border/60 bg-secondary/50 p-1 w-full mx-auto shadow-sm">
-        <div className="relative rounded-2xl border border-border/60 bg-background flex flex-col">
-          <AnimatePresence>
-            {chatContext && (
-              <motion.div
-                initial={{ opacity: 0, height: 0, y: 20 }}
-                animate={{ opacity: 1, height: 'auto', y: 0 }}
-                exit={{ opacity: 0, height: 0, y: 20 }}
-                className="p-2"
-              >
-                <div className="relative w-24 h-24 rounded-lg overflow-hidden ml-4">
-                  <Image
-                    src={chatContext.url}
-                    alt="Attachment preview"
-                    layout="fill"
-                    objectFit="cover"
-                  />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={handleClearAttachment}
-                    className="bg-background/50 hover:bg-background/80 text-foreground absolute top-1 right-1 h-6 w-6 rounded-full"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <div className="relative">
-            <Textarea
+      <form
+        onSubmit={handleSubmit}
+        className="relative max-w-4xl mx-auto rounded-2xl bg-secondary/70 border border-border/80"
+      >
+        <AnimatePresence>
+          {chatContext && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, padding: 0 }}
+              animate={{ opacity: 1, height: 'auto', padding: '0.75rem' }}
+              exit={{ opacity: 0, height: 0, padding: 0 }}
+              className="px-3"
+            >
+              <div className="relative w-24 h-24 rounded-lg overflow-hidden ml-1">
+                <Image
+                  src={chatContext.url}
+                  alt="Attachment preview"
+                  layout="fill"
+                  objectFit="cover"
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={handleClearAttachment}
+                  className="bg-background/50 hover:bg-background/80 text-foreground absolute top-1 right-1 h-6 w-6 rounded-full"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <div className="relative flex flex-col">
+          <div className="relative flex-grow pl-4 pr-14 py-3">
+             <Textarea
               ref={textareaRef}
               value={input}
               placeholder=""
               rows={1}
-              className="w-full rounded-2xl pl-4 pr-12 py-3 bg-transparent border-none text-base text-foreground resize-none focus-visible:ring-0 leading-tight"
+              className="w-full bg-transparent border-none text-base text-foreground resize-none focus-visible:ring-0 p-0 leading-normal"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   handleSubmit(e);
@@ -195,14 +196,11 @@ export function ChatInputArea({
               onChange={handleTextareaChange}
               disabled={isHistoryLoading}
             />
-            {!input && (
-              <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                <AnimatedPlaceholder activeChatId={activeChatId} />
-              </div>
+            {!input && !chatContext && (
+              <AnimatedPlaceholder activeChatId={activeChatId} />
             )}
           </div>
-
-          <div className="h-14 bg-background rounded-b-xl flex items-center justify-between px-3">
+          <div className="flex items-center justify-between py-2 px-3">
             <div className="flex items-center gap-1">
               <PromptLibrary onSelectPrompt={onSelectPrompt} />
               <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
@@ -281,8 +279,7 @@ export function ChatInputArea({
             </div>
             <div className="flex items-center">
               <Button
-                type="button"
-                onClick={handleSubmit}
+                type="submit"
                 disabled={isSending || (!input.trim() && !chatContext)}
                 size="icon"
                 className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
@@ -296,7 +293,7 @@ export function ChatInputArea({
             </div>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
