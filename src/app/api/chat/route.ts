@@ -1,3 +1,4 @@
+
 // src/app/api/chat/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { chatFlow } from '@/ai/flows/chat-flow';
@@ -46,8 +47,12 @@ export async function POST(request: NextRequest) {
       persona: body.persona || 'neutral',
       context: body.context,
     };
+
+    console.log("SERVER DEBUG: API Route received input:", input);
     
     const result = await chatFlow(input);
+
+    console.log("SERVER DEBUG: API Route received result from flow:", result);
     
     return NextResponse.json(result);
 

@@ -52,6 +52,7 @@ export default function ChatPage() {
       // If there's no chat ID in the URL, treat it as a new chat
       if (activeChatId) handleNewChat();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.chatId]);
 
   useEffect(() => {
@@ -60,10 +61,12 @@ export default function ChatPage() {
         return;
     }
   
+    console.log(`CLIENT DEBUG: Setting up Firestore listener for chat ID: ${activeChatId}`);
     const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
     
     const unsubscribe = onSnapshot(chatRef, async (docSnapshot) => {
       if (docSnapshot.exists()) {
+        console.log("CLIENT DEBUG: Chat snapshot received from Firestore.");
         const sessionData = docSnapshot.data();
         const history = sessionData.history || [];
         
@@ -86,7 +89,9 @@ export default function ChatPage() {
 
         const resolvedMessages = await Promise.all(chatMessagesPromises);
         setMessages(resolvedMessages);
+        console.log(`CLIENT DEBUG: Parsed and set ${resolvedMessages.length} messages.`);
       } else {
+        console.log("CLIENT DEBUG: Chat document does not exist in Firestore.");
         setMessages([]);
       }
     }, (error) => {
@@ -94,7 +99,10 @@ export default function ChatPage() {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat session.' });
     });
     
-    return () => unsubscribe();
+    return () => {
+      console.log(`CLIENT DEBUG: Unsubscribing from Firestore listener for chat ID: ${activeChatId}`);
+      unsubscribe();
+    }
   }, [activeChatId, user, toast]);
 
   useEffect(() => {
@@ -305,5 +313,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
