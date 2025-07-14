@@ -17,7 +17,6 @@ import {
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from '@/ai/tools';
-import { defineHistory } from 'genkit/experimental/ai';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
   try {
@@ -142,12 +141,17 @@ export const chatFlow = ai.defineFlow(
     }
     const sessionRef = db.collection('users').doc(userId).collection('chats').doc(sessionId);
 
-    // 2. Load History if it exists
-    let history = [];
+    // 2. Load and validate History if it exists
+    let history: any[] = [];
     if (input.sessionId) {
       const chatSnap = await sessionRef.get();
       if (chatSnap.exists) {
-        history = chatSnap.data()?.history || [];
+        const storedHistory = chatSnap.data()?.history || [];
+        // Ensure history is in the correct format for Genkit
+        history = storedHistory.map((msg: any) => ({
+            role: msg.role,
+            content: msg.content,
+        }));
       }
     }
     
@@ -163,9 +167,9 @@ export const chatFlow = ai.defineFlow(
     const userMessageContent: any[] = [{ text: message }];
     if (context) {
         try {
-          const mimeType = context.substring(5, context.indexOf(';'));
-          if (mimeType && context.includes('base64,')) {
-            userMessageContent.push({ media: { url: context, contentType: mimeType } });
+          // A simple check for data URI format
+          if (context.startsWith('data:') && context.includes(';base64,')) {
+            userMessageContent.push({ media: { url: context } });
           } else {
             console.warn('Invalid data URI format, skipping media attachment');
           }
@@ -190,9 +194,12 @@ export const chatFlow = ai.defineFlow(
         highlightKeyInsightsTool,
       ],
     });
-
-    // 7. Save updated history and metadata back to Firestore
-    const newHistory = [...history, { role: 'user', content: userMessageContent }, result.history[result.history.length-1]];
+    
+    // 7. Extract the final AI response and prepare the new history
+    const aiResponse = result.history[result.history.length-1];
+    const newHistory = [...history, { role: 'user', content: userMessageContent }, aiResponse];
+    
+    // 8. Save updated history and metadata back to Firestore
     await sessionRef.set({
         id: sessionId,
         userId: userId,
@@ -201,8 +208,8 @@ export const chatFlow = ai.defineFlow(
         title: message.substring(0, 50),
     }, { merge: true });
 
-    // 8. Handle and save tool call outputs
-    const toolCalls = result.history.at(-1)?.toolCalls;
+    // 9. Handle and save tool call outputs
+    const toolCalls = aiResponse.toolCalls;
     if (toolCalls && toolCalls.length > 0) {
       for (const toolCall of toolCalls) {
         if (toolCall.output) {
@@ -211,7 +218,7 @@ export const chatFlow = ai.defineFlow(
       }
     }
     
-    // 9. Return the result
+    // 10. Return the result
     return {
       sessionId,
       response: result.text,
