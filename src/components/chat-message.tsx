@@ -181,7 +181,7 @@ export function ChatMessage({
             </div>
           )}
         </div>
-        {!isUser && !isError && isLastInGroup && (
+        {!isUser && !isError && (
           <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
               <Button
