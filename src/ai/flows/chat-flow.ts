@@ -158,7 +158,7 @@ const chatFlow = ai.defineFlow(
     const isGuest = userId === 'guest-user';
     
     // For guests, we don't use a persistent session store.
-    // For logged-in users, we use Firestore.
+    // For logged-in users, we use Firestore for session management.
     const store = isGuest ? undefined : new FirestoreSessionStore(userId);
     
     const session = input.sessionId
@@ -200,12 +200,13 @@ const chatFlow = ai.defineFlow(
 
     let structuredOutput: { flashcards?: any; quiz?: any } = {};
 
-    // Only save content for non-guest users.
+    // Check the last message for tool calls and extract structured data
     if (result.history && result.history.length > 0) {
       const lastMessage = result.history[result.history.length - 1];
-      if (lastMessage.toolCalls && lastMessage.toolCalls.length > 0) {
+      if (lastMessage.role === 'model' && lastMessage.toolCalls && lastMessage.toolCalls.length > 0) {
         for (const toolCall of lastMessage.toolCalls) {
           if (toolCall.output) {
+              // Save generated content for logged-in users
               if (!isGuest) {
                  await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
               }

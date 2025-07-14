@@ -62,36 +62,31 @@ export default function ChatPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.chatId]);
 
-  // Effect to listen for changes in the active chat document in Firestore
+  // Effect to handle chat history for LOGGED-IN users.
+  // This does NOT manage chat state, only loads history from Firestore on chat select.
   useEffect(() => {
-    // This listener only runs for logged-in users with an active chat.
     if (!user || !activeChatId) {
-        if (!user) { // If user logs out, clear guest messages too
+        if (!user) { // If user logs out, clear any existing local messages
             setMessages([]);
             setGuestMessageCount(0);
         }
         return;
     }
   
-    // Listen to the specific chat document for the current user
+    // This is a one-time read or a listener for the session document
     const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
     
     const unsubscribe = onSnapshot(chatRef, async (docSnapshot) => {
       if (docSnapshot.exists()) {
         const sessionData = docSnapshot.data();
-        // Read from the correct nested field where Genkit stores chat history.
         const history = sessionData.threads?.main || [];
         
-        // Map the stored history to the format our ChatMessage component expects
         const chatMessagesPromises = history
-          .filter((msg: any) => msg.role !== 'system') // <-- Filter out system prompts
+          .filter((msg: any) => msg.role !== 'system') // Filter out system prompts
           .map(async (msg: any, index: number) => {
-            const textPart = msg.content?.find((p: any) => p.text);
-            const toolCallPart = msg.content?.find((p: any) => p.toolCall);
-            
-            const textContent = textPart?.text || '';
+            const textContent = msg.content?.find((p: any) => p.text)?.text || '';
 
-            // This is the crucial part for structured data like quizzes/flashcards
+            // Handle structured tool output
             let toolCallOutput: any = {};
             if (msg.role === 'model' && msg.toolCalls?.length > 0) {
               const call = msg.toolCalls[0];
@@ -120,14 +115,13 @@ export default function ChatPage() {
         const resolvedMessages = await Promise.all(chatMessagesPromises);
         setMessages(resolvedMessages);
       } else {
-        setMessages([]);
+        setMessages([]); // Clear messages if document doesn't exist
       }
     }, (error) => {
       console.error("Error fetching chat document:", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat session.' });
     });
     
-    // Cleanup the listener when the component unmounts or dependencies change
     return () => unsubscribe();
   }, [activeChatId, user, toast]);
 
@@ -149,21 +143,16 @@ export default function ChatPage() {
 
   // Main function to handle sending a message
   const handleSendMessage = async (e: FormEvent, prompt?: string) => {
-    // Check if `e` is a real event object before calling preventDefault
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
     }
     const messageToSend = prompt || input;
     if (!messageToSend.trim() && !attachment || isSending || authLoading ) return;
 
-    // Guest user logic
     if (!user) {
         if (guestMessageCount >= GUEST_MESSAGE_LIMIT) {
             openAuthModal('signup');
-            toast({
-                title: 'Message Limit Reached',
-                description: 'Please sign up or log in to continue chatting.',
-            });
+            toast({ title: 'Message Limit Reached', description: 'Please sign up or log in to continue chatting.' });
             return;
         }
     }
@@ -214,23 +203,24 @@ export default function ChatPage() {
         throw { response, result };
       }
       
-      // If user is logged in and it was a new chat, redirect.
       if (user && result.sessionId && !activeChatId) {
+        // Logged-in user on a new chat; redirect and let the listener handle the update
         router.push(`/chat/${result.sessionId}`);
         forceRefresh();
       } else if (!user) {
-        // For guests, add the AI response to local state.
-        // This part needs to be smarter to handle structured data.
+        // GUEST USER: Manually add AI response to local state.
         const modelResponse: ChatMessageProps = {
             id: `guest-ai-${Date.now()}`,
             role: 'model',
-            text: await marked.parse(result.response), // Assuming result.response contains the main text
+            text: await marked.parse(result.response),
             rawText: result.response,
-            flashcards: result.flashcards, // Pass along flashcards if they exist
-            quiz: result.quiz, // Pass along quiz if it exists
+            flashcards: result.flashcards, // Pass structured data
+            quiz: result.quiz,             // Pass structured data
             createdAt: Timestamp.now(),
         };
         setMessages(prev => [...prev, modelResponse]);
+      } else if (user) {
+        // LOGGED-IN USER (existing chat): Do nothing. The Firestore onSnapshot listener will handle the update.
       }
   
     } catch (error: any) {
