@@ -2,6 +2,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import {
   LogOut,
   Plus,
@@ -21,6 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
+import { useToast } from '@/hooks/use-toast';
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { ChatHistoryItem } from '@/hooks/use-chat-history';
 
@@ -50,8 +54,29 @@ export function ChatSidebar({
   onChatSelect,
   isLoading,
 }: ChatSidebarProps) {
+  const router = useRouter();
+  const { toast } = useToast();
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
   const initial = displayName.charAt(0).toUpperCase();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({
+        title: 'Logged Out',
+        description: 'You have been successfully logged out.',
+      });
+      router.push('/login');
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast({
+        variant: "destructive",
+        title: "Logout Failed",
+        description: "An error occurred while logging out. Please try again.",
+      });
+    }
+  };
+
 
   return (
     <aside className="w-80 flex-col bg-secondary/30 p-4 border-r border-border/60 hidden md:flex group/sidebar">
@@ -111,7 +136,7 @@ export function ChatSidebar({
               </Link>
             </Button>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" /> Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
