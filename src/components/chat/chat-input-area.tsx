@@ -28,6 +28,7 @@ import {
   Clock,
   Drama,
   Plus,
+  File,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -163,18 +164,14 @@ export function ChatInputArea({
               exit={{ opacity: 0, height: 0, marginBottom: 0 }}
               className="px-1"
             >
-              <div className="relative w-24 h-24 rounded-lg overflow-hidden">
-                <Image
-                  src={chatContext.url}
-                  alt="Attachment preview"
-                  layout="fill"
-                  objectFit="cover"
-                />
+              <div className="inline-flex items-center gap-2 rounded-full bg-background/60 border border-border py-1 pl-2 pr-1 text-sm">
+                <File className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{chatContext.name}</span>
                 <Button
                   size="icon"
                   variant="ghost"
                   onClick={handleClearAttachment}
-                  className="bg-background/50 hover:bg-background/80 text-foreground absolute top-1 right-1 h-6 w-6 rounded-full"
+                  className="h-6 w-6 rounded-full"
                 >
                   <X className="w-4 h-4" />
                 </Button>
