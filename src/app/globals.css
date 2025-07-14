@@ -132,7 +132,21 @@
   .flip-heading:hover .letter-scroller,
   .flip-heading:focus-within .letter-scroller {
     transform: translateY(-1em); /* Move up by the height of one letter */
-  }  
+  }
+  
+  /* New Announcement Banner Styles */
+  .announcement-banner {
+    @apply flex items-center justify-center p-1.5 transition-all;
+  }
+  .announcement-wrapper {
+    @apply flex items-center gap-4 border border-border/80 bg-secondary/50 rounded-full px-2 py-1 shadow-md;
+  }
+  .announcement-badge {
+    @apply bg-primary/10 text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full;
+  }
+  .announcement-message {
+    @apply flex items-center gap-2 text-sm text-muted-foreground;
+  }
 }
 
 

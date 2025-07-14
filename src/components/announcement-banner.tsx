@@ -2,11 +2,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Rocket, X } from 'lucide-react';
+import { ArrowUpRight, X } from 'lucide-react';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
 
-const ANNOUNCEMENT_ID = 'earlyAccessBetaAnnouncement';
+const ANNOUNCEMENT_ID = 'featureAnnouncement_2025_07'; // Use a unique ID for each new announcement
 
 export function AnnouncementBanner() {
   const [isVisible, setIsVisible] = useState(false);
@@ -23,29 +23,33 @@ export function AnnouncementBanner() {
     setIsVisible(false);
   };
 
-  if (!isVisible) {
-    return null;
-  }
-
   return (
-    <div className="relative bg-primary/10 border-b border-primary/20 text-sm text-center p-2">
-      <div className="container mx-auto flex items-center justify-center gap-2">
-        <Rocket className="h-4 w-4" />
-        <p>
-          <span className="font-semibold">Early Access Beta:</span> All Premium features are free for a limited time.{' '}
-          <Link href="/premium" className="underline hover:opacity-80">
-            Learn More
-          </Link>
-        </p>
-      </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-1/2 right-4 -translate-y-1/2 h-6 w-6"
-        onClick={handleDismiss}
-      >
-        <X className="h-4 w-4" />
-      </Button>
-    </div>
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          className="announcement-banner"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="announcement-wrapper">
+            <span className="announcement-badge">Latest update</span>
+            <Link href="/premium" className="announcement-message hover:text-foreground transition-colors">
+              New feature added <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <button
+            onClick={handleDismiss}
+            aria-label="Dismiss announcement"
+            className="ml-4 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
