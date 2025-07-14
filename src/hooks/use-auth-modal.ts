@@ -6,7 +6,8 @@ type AuthModalView = 'login' | 'signup';
 interface AuthModalStore {
   isOpen: boolean;
   view: AuthModalView;
-  onOpen: () => void;
+  layoutId: string | null; // To track the triggering element for the animation
+  onOpen: (view?: AuthModalView, layoutId?: string) => void;
   onClose: () => void;
   setView: (view: AuthModalView) => void;
 }
@@ -14,7 +15,8 @@ interface AuthModalStore {
 export const useAuthModal = create<AuthModalStore>((set) => ({
   isOpen: false,
   view: 'login',
-  onOpen: () => set({ isOpen: true }),
-  onClose: () => set({ isOpen: false }),
+  layoutId: null,
+  onOpen: (view = 'login', layoutId) => set({ isOpen: true, view, layoutId: layoutId || null }),
+  onClose: () => set({ isOpen: false, layoutId: null }),
   setView: (view) => set({ view }),
 }));

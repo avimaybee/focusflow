@@ -28,6 +28,7 @@ import { useAuthModal } from '@/hooks/use-auth-modal';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
 
 const navLinks = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -42,14 +43,12 @@ export const Header = () => {
   const authModal = useAuthModal();
   const { toast } = useToast();
 
-  // Do not render the header on the main chat page or any of its sub-routes
   if (pathname.startsWith('/chat')) {
     return null;
   }
   
-  const handleOpenAuthModal = (view: 'login' | 'signup') => {
-    authModal.setView(view);
-    authModal.onOpen();
+  const handleOpenAuthModal = (view: 'login' | 'signup', layoutId: string) => {
+    authModal.onOpen(view, layoutId);
   }
 
   const handleLogout = async () => {
@@ -144,10 +143,10 @@ export const Header = () => {
                </>
             ) : (
               <>
-                <Button variant="outline" onClick={() => handleOpenAuthModal('login')}>
+                <Button variant="outline" onClick={() => handleOpenAuthModal('login', 'mobile-login-trigger')}>
                   Login
                 </Button>
-                <Button onClick={() => handleOpenAuthModal('signup')}>
+                <Button onClick={() => handleOpenAuthModal('signup', 'mobile-signup-trigger')}>
                   Get Started
                 </Button>
               </>
@@ -202,12 +201,16 @@ export const Header = () => {
 
   const loggedOutButtons = (
      <div className="hidden md:flex items-center gap-2">
-        <Button variant="ghost" onClick={() => handleOpenAuthModal('login')}>
-            Login
-        </Button>
-        <Button onClick={() => handleOpenAuthModal('signup')}>
-            Get Started <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        <motion.div layoutId="auth-modal-trigger-login">
+          <Button variant="ghost" onClick={() => handleOpenAuthModal('login', 'auth-modal-trigger-login')}>
+              Login
+          </Button>
+        </motion.div>
+        <motion.div layoutId="auth-modal-trigger-signup">
+          <Button onClick={() => handleOpenAuthModal('signup', 'auth-modal-trigger-signup')}>
+              Get Started <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </motion.div>
      </div>
   )
 

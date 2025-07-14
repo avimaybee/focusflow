@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Loader2, Check, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -46,10 +47,10 @@ const GoogleIcon = () => (
       <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
       <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C42.021,35.596,44,30.138,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
     </svg>
-  );
+);
 
 export function AuthModal() {
-  const { isOpen, view, setView, onClose } = useAuthModal();
+  const { isOpen, view, layoutId, setView, onClose } = useAuthModal();
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -66,7 +67,6 @@ export function AuthModal() {
   });
 
   useEffect(() => {
-    // Close modal if user logs in successfully
     if (user && isOpen) {
       setFormState('success');
       setTimeout(() => {
@@ -77,13 +77,12 @@ export function AuthModal() {
   }, [user, isOpen, onClose, router]);
   
   useEffect(() => {
-    // Reset form state when modal is closed or view changes
     if (!isOpen) {
       setTimeout(() => {
         setFormState('idle');
         loginForm.reset();
         signupForm.reset();
-      }, 300); // delay to allow for closing animation
+      }, 300);
     }
   }, [isOpen, loginForm, signupForm]);
 
@@ -96,7 +95,6 @@ export function AuthModal() {
     try {
       await action(values.email, values.password);
       toast({ title: 'Success!', description: successMessage });
-      // The useEffect for `user` will handle the rest
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Authentication Failed', description: error.message });
       setFormState('idle');
@@ -143,114 +141,140 @@ export function AuthModal() {
     const onSubmit = isSignup ? handleSignup : handleLogin;
     
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                    <FormItem>
-                        <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
-                        <FormControl>
-                        <Input id={isSignup ? 'signup-email' : 'login-email'} type="email" placeholder="you@example.com" {...field} disabled={isLoading} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                    <FormItem>
-                        <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
-                        <FormControl>
-                        <Input id={isSignup ? 'signup-password' : 'login-password'} type="password" {...field} disabled={isLoading}/>
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignup ? 'Create Account' : 'Log In')}
-                </Button>
-            </form>
-        </Form>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={isSignup ? 'signup' : 'login'}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0, transition: { delay: 0.15, duration: 0.2 } }}
+          exit={{ opacity: 0, y: -10, transition: { duration: 0.1 } }}
+          className="w-full"
+        >
+          <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                      <FormItem>
+                          <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
+                          <FormControl>
+                          <Input id={isSignup ? 'signup-email' : 'login-email'} type="email" placeholder="you@example.com" {...field} disabled={isLoading} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                  <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                      <FormItem>
+                          <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
+                          <FormControl>
+                          <Input id={isSignup ? 'signup-password' : 'login-password'} type="password" {...field} disabled={isLoading}/>
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignup ? 'Create Account' : 'Log In')}
+                  </Button>
+              </form>
+          </Form>
+        </motion.div>
+      </AnimatePresence>
     );
   };
-  
+
   return (
     <AnimatePresence>
-        {isOpen && (
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
-                onClick={onClose}
-            >
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          onClick={onClose}
+        >
+          {/* Background Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+          />
+
+          {/* Morphing Modal Content */}
+          <motion.div
+            layoutId={layoutId || undefined}
+            className={cn(
+              "relative z-10 w-full max-w-sm rounded-xl bg-secondary border border-border/80 shadow-2xl overflow-hidden",
+              "flex flex-col items-center justify-center p-6"
+            )}
+            initial={{ borderRadius: 12 }}
+            animate={{ borderRadius: 12 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AnimatePresence mode="wait">
+              {formState === 'success' ? (
                 <motion.div
-                    initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                    transition={{ duration: 0.2, ease: 'easeOut' }}
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    onClick={(e) => e.stopPropagation()}
+                  key="success"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1, transition: { delay: 0.2 } }}
+                  className="flex flex-col items-center justify-center p-8 h-[370px]"
                 >
-                    <div className="relative w-full max-w-sm rounded-xl bg-secondary border border-border/80 shadow-2xl">
-                        <AnimatePresence mode="wait">
-                            {formState === 'success' ? (
-                                <motion.div
-                                    key="success"
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="flex flex-col items-center justify-center p-8 h-64"
-                                >
-                                    <div className="h-16 w-16 bg-green-500/20 rounded-full flex items-center justify-center">
-                                        <Check className="h-8 w-8 text-green-500" />
-                                    </div>
-                                    <p className="mt-4 text-lg font-medium">Success!</p>
-                                    <p className="text-sm text-muted-foreground">Redirecting you now...</p>
-                                </motion.div>
-                            ) : (
-                                <motion.div key="form" className="p-6">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h2 className="text-xl font-bold">{view === 'login' ? 'Welcome Back' : 'Create Account'}</h2>
-                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}><X className="h-4 w-4" /></Button>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <AuthForm isSignup={view === 'signup'} />
-
-                                        <div className="relative my-4">
-                                            <div className="absolute inset-0 flex items-center">
-                                                <span className="w-full border-t" />
-                                            </div>
-                                            <div className="relative flex justify-center text-xs uppercase">
-                                                <span className="bg-secondary px-2 text-muted-foreground">Or</span>
-                                            </div>
-                                        </div>
-
-                                        <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading}>
-                                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                            Continue with Google
-                                        </Button>
-
-                                        <p className="text-center text-sm text-muted-foreground">
-                                            {view === 'login' ? "Don't have an account?" : "Already have an account?"}
-                                            <Button variant="link" className="p-1" onClick={() => setView(view === 'login' ? 'signup' : 'login')}>
-                                                {view === 'login' ? 'Sign up' : 'Log in'}
-                                            </Button>
-                                        </p>
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
+                  <div className="h-16 w-16 bg-green-500/20 rounded-full flex items-center justify-center">
+                    <Check className="h-8 w-8 text-green-500" />
+                  </div>
+                  <p className="mt-4 text-lg font-medium">Success!</p>
+                  <p className="text-sm text-muted-foreground">Redirecting you now...</p>
                 </motion.div>
-            </motion.div>
-        )}
+              ) : (
+                <motion.div
+                  key="form"
+                  className="w-full flex flex-col items-center"
+                >
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0, transition: { delay: 0.15, duration: 0.2 } }}
+                    className="w-full"
+                  >
+                    <div className="flex justify-between items-center mb-4 w-full">
+                        <h2 className="text-xl font-bold">{view === 'login' ? 'Welcome Back' : 'Create Account'}</h2>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}><X className="h-4 w-4" /></Button>
+                    </div>
+
+                    <div className="space-y-4 w-full">
+                        <AuthForm isSignup={view === 'signup'} />
+
+                        <div className="relative my-4">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-secondary px-2 text-muted-foreground">Or</span>
+                            </div>
+                        </div>
+
+                        <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading}>
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                            Continue with Google
+                        </Button>
+
+                        <p className="text-center text-sm text-muted-foreground">
+                            {view === 'login' ? "Don't have an account?" : "Already have an account?"}
+                            <Button variant="link" className="p-1" onClick={() => setView(view === 'login' ? 'signup' : 'login')}>
+                                {view === 'login' ? 'Sign up' : 'Log in'}
+                            </Button>
+                        </p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
+      )}
     </AnimatePresence>
   );
 }

@@ -31,6 +31,8 @@ import {
   CarouselItem,
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
+import { motion } from 'framer-motion';
+import { useAuthModal } from '@/hooks/use-auth-modal';
 
 const HeroGradient = () => (
   <div
@@ -142,6 +144,8 @@ const BentoGrid = () => {
 };
 
 export default function LandingPage() {
+  const { onOpen } = useAuthModal();
+
   const faqs = [
     {
       question: 'Is FocusFlow AI free to use?',
@@ -214,12 +218,14 @@ export default function LandingPage() {
               into summaries, flashcards, and quizzes—in seconds.
             </p>
             <div className="mt-8 flex gap-4 justify-center">
-              <Button size="lg" asChild>
-                <Link href="/chat">
-                  Start Studying Smarter{' '}
-                  <MoveRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+              <motion.div layoutId="auth-modal-trigger-main">
+                <Button size="lg" asChild>
+                  <Link href="/chat">
+                    Start Studying Smarter{' '}
+                    <MoveRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </motion.div>
             </div>
             <AppPreview />
           </div>
