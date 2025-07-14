@@ -42,6 +42,7 @@ export default function ChatPage() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Effect to sync the active chat ID with the URL
   useEffect(() => {
     const chatIdFromUrl = params.chatId as string | undefined;
     if (chatIdFromUrl) {
@@ -49,24 +50,60 @@ export default function ChatPage() {
         setActiveChatId(chatIdFromUrl);
       }
     } else {
-      // If there's no chat ID in the URL, treat it as a new chat
+      // If there's no chat ID in the URL, it's a new chat, so clear state.
       if (activeChatId) handleNewChat();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.chatId]);
 
+  // Effect to listen for changes in the active chat document in Firestore
   useEffect(() => {
     if (!user || !activeChatId) {
-        setMessages([]);
+        setMessages([]); // Clear messages if no user or active chat
         return;
     }
   
-    // This listener can be simplified for the test-chat route as it doesn't support history.
-    // For now, we clear messages when a chat is selected.
-    setMessages([]);
+    // Listen to the specific chat document for the current user
+    const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
     
+    const unsubscribe = onSnapshot(chatRef, async (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const sessionData = docSnapshot.data();
+        const history = sessionData.history || [];
+        
+        // Map the stored history to the format our ChatMessage component expects
+        const chatMessagesPromises = history.map(async (msg: any, index: number) => {
+            // Find the text part of the message content
+            const textPart = msg.content?.find((p: any) => p.text);
+            const textContent = textPart?.text || '';
+          
+          return { 
+            id: `${docSnapshot.id}-${index}`,
+            role: msg.role,
+            text: await marked.parse(textContent), // Parse markdown for display
+            rawText: textContent,
+            createdAt: sessionData.updatedAt || Timestamp.now(),
+            userName: msg.role === 'user' ? user.displayName : undefined,
+            userAvatar: msg.role === 'user' ? user.photoURL : undefined,
+          } as ChatMessageProps;
+        });
+
+        const resolvedMessages = await Promise.all(chatMessagesPromises);
+        setMessages(resolvedMessages);
+      } else {
+        // If the document doesn't exist (e.g., old/deleted chat ID), clear messages
+        setMessages([]);
+      }
+    }, (error) => {
+      console.error("Error fetching chat document:", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat session.' });
+    });
+    
+    // Cleanup the listener when the component unmounts or dependencies change
+    return () => unsubscribe();
   }, [activeChatId, user, toast]);
 
+  // Effect to scroll to the bottom of the chat when new messages arrive
   useEffect(() => {
     if (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')) {
       const scrollableView = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]')!;
@@ -74,18 +111,19 @@ export default function ChatPage() {
     }
   }, [messages]);
 
+  // Function to start a new chat
   const handleNewChat = () => {
     setActiveChatId(null);
     setMessages([]);
     router.push('/chat');
   };
 
+  // Main function to handle sending a message
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim() && !attachment || isSending || authLoading ) return;
 
     if (!user) {
-        console.error("CLIENT DEBUG: handleSendMessage called but user is not logged in.");
         toast({
             variant: 'destructive',
             title: 'Not Logged In',
@@ -95,26 +133,15 @@ export default function ChatPage() {
     }
   
     setIsSending(true);
-    const userMessageText = input;
-    const userMessage: ChatMessageProps = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      text: userMessageText,
-      rawText: userMessageText,
-      createdAt: Timestamp.now(),
-      userName: user.displayName,
-      userAvatar: user.photoURL,
-    };
-    setMessages(prev => [...prev, userMessage]);
   
     const chatInput = {
       message: input.trim(),
-      // We don't need these for the simple test flow
-      // sessionId: activeChatId || undefined, 
-      // persona: selectedPersonaId,
-      // context: attachment?.url,
+      sessionId: activeChatId || undefined, // Pass current session ID or none for a new chat
+      persona: selectedPersonaId,
+      context: attachment?.url, // Pass file data URI if attached
     };
   
+    // Clear the input fields after sending
     setInput('');
     setAttachment(null);
   
@@ -125,8 +152,7 @@ export default function ChatPage() {
         'Authorization': `Bearer ${idToken}`,
       };
 
-      console.log('CLIENT DEBUG: Sending request to /api/test-chat with input:', chatInput);
-      const response = await fetch('/api/test-chat', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: headers,
         body: JSON.stringify(chatInput),
@@ -135,45 +161,30 @@ export default function ChatPage() {
       const result = await response.json();
       
       if (!response.ok) {
-        console.error('CLIENT DEBUG: Received error response from server:', result);
         throw new Error(result.error || `Request failed with status ${response.status}`);
       }
       
-      console.log('CLIENT DEBUG: Received successful response from server:', result);
-      
-      const aiResponse: ChatMessageProps = {
-          id: `model-${Date.now()}`,
-          role: 'model',
-          text: await marked.parse(result.response),
-          rawText: result.response,
-          createdAt: Timestamp.now(),
-      };
-      setMessages(prev => [...prev, aiResponse]);
-
-      // Since the test route doesn't support history, we won't get a session ID back.
-      // This simplifies the logic significantly.
-  
-    } catch (error: any) {
-      console.error("--- CLIENT DEBUG: CATCH BLOCK ---");
-      console.error("Full error object:", error);
-      console.error("-----------------------------------");
-  
-      let description = 'An unknown error occurred.';
-      if (error.message) {
-        description = error.message;
+      // If this was a new chat, the server returns a new session ID.
+      // We then redirect the user to the new chat's URL.
+      if (result.sessionId && !activeChatId) {
+        router.push(`/chat/${result.sessionId}`);
+        forceRefresh(); // Refresh the sidebar to show the new chat
       }
   
+    } catch (error: any) {
+      console.error("Client-side send message error:", error);
       toast({
         variant: 'destructive',
-        title: 'Connection Error',
-        description: description,
+        title: 'Message Failed',
+        description: error.message || 'An unknown error occurred.',
       });
   
+      // Add an error message to the chat UI
       const errorResponse: ChatMessageProps = {
         id: `err-${Date.now()}`,
         role: 'model',
-        text: `<p>Sorry, there was a connection error. Please try again.</p><p><i>Detail: ${description}</i></p>`,
-        rawText: `Sorry, there was a connection error. Please try again. Detail: ${description}`,
+        text: `<p>Sorry, there was an error. Please try again.</p>`,
+        rawText: `Sorry, there was an error. Please try again.`,
         isError: true,
         createdAt: Timestamp.now(),
       };

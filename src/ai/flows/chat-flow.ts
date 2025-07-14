@@ -19,6 +19,10 @@ import { FirestoreSessionStore } from '@/lib/firestore-session-store';
 import { serverTimestamp } from 'firebase-admin/firestore';
 import { ai } from '@/ai/genkit';
 
+/**
+ * Fetches the system prompt for a given persona from Firestore.
+ * Falls back to a neutral persona if the requested one is not found.
+ */
 async function getPersonaPrompt(personaId: string): Promise<string> {
   try {
     const personaRef = db.collection('personas').doc(personaId);
@@ -39,6 +43,10 @@ async function getPersonaPrompt(personaId: string): Promise<string> {
   }
 }
 
+/**
+ * Saves the output of a tool call (e.g., a summary, a quiz) to Firestore
+ * for the user's persistent "My Content" section.
+ */
 async function saveGeneratedContent(
   userId: string,
   toolName: string,
@@ -50,6 +58,7 @@ async function saveGeneratedContent(
   let collectionName = '';
   let sourceText = '';
 
+  // Determine which collection to save to based on the tool used
   switch (toolName) {
     case 'summarizeNotesTool':
       collectionName = 'summaries';
@@ -72,7 +81,7 @@ async function saveGeneratedContent(
       sourceText = (toolInput as { text: string }).text;
       break;
     default:
-      return;
+      return; // Don't save for other tools
   }
 
   const data: Record<string, unknown> = {
@@ -81,6 +90,7 @@ async function saveGeneratedContent(
     createdAt: serverTimestamp(),
   };
 
+  // Shape the data according to the tool's output schema
   switch (toolName) {
     case 'summarizeNotesTool':
       data.title = (output as { title: string }).title || 'Summary';
@@ -116,6 +126,10 @@ async function saveGeneratedContent(
   }
 }
 
+/**
+ * The main Genkit flow for handling chat interactions.
+ * It uses the Genkit Beta session management API for persistent conversations.
+ */
 const chatFlow = ai.defineFlow(
   {
     name: 'chatFlow',
@@ -124,7 +138,7 @@ const chatFlow = ai.defineFlow(
       message: z.string(),
       sessionId: z.string().optional(),
       persona: z.string().optional(),
-      context: z.string().optional(),
+      context: z.string().optional(), // For file uploads as data URIs
     }),
     outputSchema: z.object({
       sessionId: z.string(),
@@ -135,6 +149,7 @@ const chatFlow = ai.defineFlow(
     const { userId, message, context, persona } = input;
     const store = new FirestoreSessionStore(userId);
     
+    // Load existing session or create a new one using the Firestore store
     const session = input.sessionId
       ? await ai.loadSession(input.sessionId, { store })
       : await ai.createSession({ store });
@@ -143,8 +158,10 @@ const chatFlow = ai.defineFlow(
 
     const model = googleAI.model('gemini-1.5-flash');
 
+    // Define the base system prompt for the AI
     const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.`;
 
+    // Start a chat within the session, providing the model, system prompt, and available tools
     const chat = session.chat({
       model,
       system: systemPrompt,
@@ -160,13 +177,16 @@ const chatFlow = ai.defineFlow(
       ],
     });
     
+    // Construct the user's message, including any file context
     const userMessageContent: (string | { media: { url: string } })[] = [message];
     if (context) {
       userMessageContent.push({ media: { url: context } });
     }
     
+    // Send the message to the chat session and get the result
     const result = await chat.send(userMessageContent);
 
+    // After the response, check if any tools were called and save their output
     const toolCalls = result.history[result.history.length-1].toolCalls;
     if (toolCalls && toolCalls.length > 0) {
       for (const toolCall of toolCalls) {
@@ -176,6 +196,7 @@ const chatFlow = ai.defineFlow(
       }
     }
     
+    // Return the session ID and the AI's text response
     return {
       sessionId: session.id,
       response: result.text,
