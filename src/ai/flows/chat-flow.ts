@@ -5,7 +5,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { googleAI } from '@genkit-ai/googleai';
 import { db } from '@/lib/firebase-admin';
-import { serverTimestamp } from 'firebase-admin/firestore';
+import { serverTimestamp, Timestamp } from 'firebase-admin/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import {
   createDiscussionPromptsTool,
@@ -17,7 +17,7 @@ import {
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from '@/ai/tools';
-import { MessageData } from 'genkit/beta';
+import type { MessageData } from 'genkit/beta';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
   try {
@@ -147,26 +147,7 @@ export const chatFlow = ai.defineFlow(
     if (input.sessionId) {
       const chatSnap = await sessionRef.get();
       if (chatSnap.exists()) {
-        const storedHistory = chatSnap.data()?.history || [];
-        // Defensively map the history to the required format
-        history = storedHistory.map((msg: any) => {
-          if (!msg.content || !Array.isArray(msg.content)) {
-            // If the message is malformed, skip it.
-            return null;
-          }
-          const textPart = msg.content.find((p: any) => p.text);
-          const mediaPart = msg.content.find((p: any) => p.media);
-          
-          if (!textPart && !mediaPart) {
-             // Skip if no valid content part is found
-            return null;
-          }
-
-          return {
-            role: msg.role,
-            content: msg.content,
-          };
-        }).filter((item: MessageData | null): item is MessageData => item !== null); // Filter out nulls
+        history = chatSnap.data()?.history || [];
       }
     }
     
@@ -184,10 +165,12 @@ export const chatFlow = ai.defineFlow(
       userMessageContent.push({ media: { url: context } });
     }
     
+    const currentUserMessage: MessageData = { role: 'user', content: userMessageContent };
+    
     // 6. Generate the AI response
     const result = await ai.generate({
       model,
-      history: [...history, { role: 'user', content: userMessageContent }],
+      history: [...history, currentUserMessage],
       system: systemPrompt,
       tools: [
         summarizeNotesTool,
@@ -206,7 +189,7 @@ export const chatFlow = ai.defineFlow(
     
     // 7. Extract the final AI response and prepare the new history
     const aiResponse = result.history[result.history.length-1];
-    const newHistory = [...history, { role: 'user', content: userMessageContent }, aiResponse];
+    const newHistory = [...history, currentUserMessage, aiResponse];
     
     // 8. Save updated history and metadata back to Firestore
     await sessionRef.set({
@@ -234,3 +217,5 @@ export const chatFlow = ai.defineFlow(
     };
   }
 );
+
+    

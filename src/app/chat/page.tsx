@@ -15,16 +15,14 @@ import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
 import { UploadCloud } from 'lucide-react';
 import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
-import { Persona } from '@/types/chat-types';
+import { db } from '@/lib/firebase';
 import { ChatMessageProps } from '@/components/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
 import { marked } from 'marked';
-import { validPersonas } from '@/types/chat-types';
 
 
 export default function ChatPage() {
-  const { user, isPremium, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
@@ -70,15 +68,20 @@ export default function ChatPage() {
         const history = sessionData.history || [];
         
         const chatMessagesPromises = history.map(async (msg: any, index: number) => {
-          // Find the first text part in the content array
-          const textPart = msg.content?.find((p: any) => p.text);
-          const content = textPart?.text || '';
+            let textContent = '';
+            if (msg.role === 'model') {
+                const textPart = msg.content?.find((p: any) => p.text);
+                textContent = textPart?.text || '';
+            } else if (msg.role === 'user') {
+                const textPart = msg.content?.find((p: any) => p.text);
+                textContent = textPart?.text || '';
+            }
           
           return { 
             id: `${docSnapshot.id}-${index}`,
             role: msg.role,
-            text: await marked.parse(content),
-            rawText: content,
+            text: await marked.parse(textContent),
+            rawText: textContent,
             createdAt: sessionData.updatedAt || Timestamp.now()
           }
         });
@@ -172,15 +175,6 @@ export default function ChatPage() {
       }
       
       console.log('CLIENT DEBUG: Received successful response from server:', result);
-      
-      const aiResponse: ChatMessageProps = {
-        id: `model-${Date.now()}`,
-        role: 'model',
-        text: await marked.parse(result.response),
-        rawText: result.response,
-        createdAt: Timestamp.now(),
-      };
-      setMessages(prev => [...prev, aiResponse]);
   
       if (result.sessionId && !activeChatId) {
         setActiveChatId(result.sessionId);
@@ -313,3 +307,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
