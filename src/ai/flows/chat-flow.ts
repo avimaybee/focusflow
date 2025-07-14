@@ -1,12 +1,9 @@
-
 'use server';
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { googleAI } from '@genkit-ai/googleai';
 import { db } from '@/lib/firebase-admin';
-import { serverTimestamp, Timestamp } from 'firebase-admin/firestore';
-import { v4 as uuidv4 } from 'uuid';
 import {
   createDiscussionPromptsTool,
   createFlashcardsTool,
@@ -17,6 +14,8 @@ import {
   highlightKeyInsightsTool,
   summarizeNotesTool,
 } from '@/ai/tools';
+import { FirestoreSessionStore } from '@/lib/firestore-session-store';
+import { serverTimestamp } from 'firebase-admin/firestore';
 import type { MessageData } from 'genkit/beta';
 
 async function getPersonaPrompt(personaId: string): Promise<string> {
@@ -116,8 +115,7 @@ async function saveGeneratedContent(
   }
 }
 
-
-export const chatFlow = ai.defineFlow(
+const chatFlow = ai.defineFlow(
   {
     name: 'chatFlow',
     inputSchema: z.object({
@@ -135,51 +133,25 @@ export const chatFlow = ai.defineFlow(
   async (input) => {
     const { userId, message, context, persona } = input;
     let { sessionId } = input;
-    
-    // 1. Determine Session ID and Reference
-    if (!sessionId) {
-      sessionId = uuidv4();
-    }
-    const sessionRef = db.collection('users').doc(userId).collection('chats').doc(sessionId);
 
-    // 2. Load and validate History if it exists
-    let history: MessageData[] = [];
-    if (input.sessionId) {
-      const chatSnap = await sessionRef.get();
-      if (chatSnap.exists()) {
-        const rawHistory = chatSnap.data()?.history || [];
-        // Defensive mapping to ensure history is valid
-        history = rawHistory
-          .map((msg: any) => {
-            if (msg && msg.role && Array.isArray(msg.content)) {
-              return { role: msg.role, content: msg.content };
-            }
-            return null;
-          })
-          .filter((msg: MessageData | null): msg is MessageData => msg !== null);
-      }
+    const store = new FirestoreSessionStore(userId);
+    let session;
+
+    if (sessionId) {
+      session = await ai.loadSession(sessionId, { store });
+    } else {
+      session = await ai.createSession({ store });
+      sessionId = session.id; // Get the newly created session ID
     }
-    
-    // 3. Get persona instruction
+
     const personaInstruction = await getPersonaPrompt(persona || 'neutral');
-    
-    // 4. Construct the model with system prompt and tools
+
     const model = googleAI.model('gemini-1.5-flash');
 
     const systemPrompt = `${personaInstruction} You are an expert AI assistant and a helpful, conversational study partner. Your responses should be well-structured and use markdown for formatting. If you need information from the user to use a tool (like source text for a quiz), and the user does not provide it, you must explain clearly why you need it and suggest ways the user can provide it. When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.`;
-      
-    // 5. Prepare user message with optional context
-    const userMessageContent: any[] = [{ text: message }];
-    if (context) {
-      userMessageContent.push({ media: { url: context } });
-    }
-    
-    const currentUserMessage: MessageData = { role: 'user', content: userMessageContent };
-    
-    // 6. Generate the AI response
-    const result = await ai.generate({
+
+    const chat = session.chat({
       model,
-      history: [...history, currentUserMessage],
       system: systemPrompt,
       tools: [
         summarizeNotesTool,
@@ -191,26 +163,18 @@ export const chatFlow = ai.defineFlow(
         createDiscussionPromptsTool,
         highlightKeyInsightsTool,
       ],
-      output: {
-        format: 'text',
-      },
     });
     
-    // 7. Extract the final AI response and prepare the new history
-    const aiResponse = result.history[result.history.length-1];
-    const newHistory = [...history, currentUserMessage, aiResponse];
-    
-    // 8. Save updated history and metadata back to Firestore
-    await sessionRef.set({
-        id: sessionId,
-        userId: userId,
-        history: newHistory,
-        updatedAt: serverTimestamp(),
-        title: message.substring(0, 50),
-    }, { merge: true });
+    // Prepare user message with optional context
+    const userMessageContent: any[] = [{ text: message }];
+    if (context) {
+      userMessageContent.push({ media: { url: context } });
+    }
+    const userMessage: MessageData = { role: 'user', content: userMessageContent };
 
-    // 9. Handle and save tool call outputs
-    const toolCalls = aiResponse.toolCalls;
+    const result = await chat.send(userMessage);
+
+    const toolCalls = result.history[result.history.length-1].toolCalls;
     if (toolCalls && toolCalls.length > 0) {
       for (const toolCall of toolCalls) {
         if (toolCall.output) {
@@ -219,12 +183,11 @@ export const chatFlow = ai.defineFlow(
       }
     }
     
-    // 10. Return the result
     return {
-      sessionId,
+      sessionId: sessionId!,
       response: result.text,
     };
   }
 );
 
-    
+export { chatFlow };
