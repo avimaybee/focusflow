@@ -10,7 +10,7 @@ import {
   Plus,
   Settings,
   Sparkles,
-  User,
+  LayoutDashboard,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -122,15 +122,18 @@ export function ChatSidebar({
           <DropdownMenuContent className="w-64" side="top" align="start">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" /> Profile
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard">
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                Dashboard
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Settings className="mr-2 h-4 w-4" /> Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/dashboard">
+            <Button asChild variant="outline" className="w-full my-1">
+              <Link href="/premium">
                 <Sparkles className="h-4 w-4 mr-2" />
                 Upgrade to Premium
               </Link>

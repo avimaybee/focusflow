@@ -66,7 +66,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-        router.push('/dashboard');
+        router.push('/chat');
     }
   }, [user, router]);
   
@@ -75,7 +75,7 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       toast({ title: 'Login Successful', description: "Welcome back!" });
-      router.push('/dashboard');
+      router.push('/chat');
     } catch (error: any) {
       if (error.code === 'auth/invalid-api-key') {
         toast({
@@ -93,7 +93,6 @@ export default function LoginPage() {
   const handleSignup = async (values: SignupFormValues) => {
     setIsLoading(true);
     try {
-      // Create user. The AuthProvider will handle creating the Firestore document.
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       
       await updateProfile(userCredential.user, {
@@ -101,7 +100,7 @@ export default function LoginPage() {
       });
 
       toast({ title: 'Signup Successful', description: 'Welcome to FocusFlow AI!' });
-      router.push('/dashboard');
+      router.push('/chat');
     } catch (error: any) {
       if (error.code === 'auth/invalid-api-key') {
         toast({
@@ -122,7 +121,7 @@ export default function LoginPage() {
     try {
         await signInWithPopup(auth, provider);
         toast({ title: 'Signed in with Google!', description: 'Welcome to FocusFlow AI!' });
-        router.push('/dashboard');
+        router.push('/chat');
     } catch (error: any) {
        if (error.code === 'auth/invalid-api-key') {
         toast({
