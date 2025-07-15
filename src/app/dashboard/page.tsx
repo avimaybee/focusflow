@@ -95,7 +95,7 @@ const badges = [
 ];
 
 export default function DashboardPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isPremium } = useAuth();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<StudySession[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -378,23 +378,25 @@ export default function DashboardPage() {
 
             {/* Actions & Stats */}
             <div className="space-y-6">
-              <Card className="bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-secondary/10">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    Premium Trial Ends Soon
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center justify-center text-center">
-                  <p className="text-muted-foreground mb-4">Upgrade now to keep access to all premium features.</p>
-                  <AnimatedNumberCountdown endDate={new Date("2025-12-31T23:59:59")} />
-                  <Link href="/premium" className="w-full">
-                    <Button className="w-full mt-4 premium-gradient">
-                      Upgrade Now
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+              {!isPremium && (
+                <Card className="bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-secondary/10">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      Premium Trial Ends Soon
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-col items-center justify-center text-center">
+                    <p className="text-muted-foreground mb-4">Upgrade now to keep access to all premium features.</p>
+                    <AnimatedNumberCountdown endDate={new Date("2025-12-31T23:59:59")} />
+                    <Link href="/premium" className="w-full">
+                      <Button className="w-full mt-4 premium-gradient">
+                        Upgrade Now
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
