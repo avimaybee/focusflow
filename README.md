@@ -47,13 +47,13 @@ A personalized dashboard tracks user activity and progress.
 - **Frontend:** Next.js (App Router), React, TypeScript
 - **Styling:** Tailwind CSS, ShadCN UI, Framer Motion
 - **Backend & Database:** Firebase (Authentication, Firestore, Functions)
-- **AI:** Google Genkit, Google Gemini Models (e.g., `gemini-2.0-flash-lite` for all tasks)
+- **AI:** Google Genkit, Google Gemini Models (e.g., `gemini-1.5-flash` for most tasks)
 
 ### b. Core Chat Flow
-1.  **User Input:** The user sends a message or selects a tool from the `ChatPage` UI.
+1.  **User Input:** The user sends a message or selects a tool from the `ChatPage` UI. They can also attach a file (like a PDF), which is converted to a Data URI on the client-side.
 2.  **API Route:** A request is made to the `/api/chat` Next.js server route, containing the message, user auth token, and any contextual data (like a file's data URI or a selected persona).
 3.  **Genkit Flow (`chatFlow`):** The API route invokes the main Genkit flow (`src/ai/flows/chat-flow.ts`).
-4.  **Tool Dispatch:** The flow, powered by a Gemini model, determines user intent. It either formulates a direct conversational response or calls a specific, predefined **Genkit Tool** (e.g., `createQuizTool`, `summarizeNotesTool`).
+4.  **Tool Dispatch:** The flow, powered by a Gemini model, determines user intent. It either formulates a direct conversational response or calls a specific, predefined **Genkit Tool** (e.g., `createQuizTool`, `summarizeNotesTool`). The file's Data URI is passed along, allowing the AI to "read" the document.
 5.  **Structured Output:** Tools are designed to return structured JSON data (e.g., an array of flashcard objects, a quiz object with questions and answers).
 6.  **Data Persistence:** If a tool was used, the `chatFlow` saves the generated content to the user's Firestore `My Content` subcollection (e.g., `/users/{userId}/quizzes/{quizId}`).
 7.  **Response to Client:** The flow returns a response object containing the AI's text and any structured data (like the quiz object).
@@ -63,17 +63,17 @@ A personalized dashboard tracks user activity and progress.
 
 ## 4. Key Development Challenge & Resolution
 
-The project's most significant hurdle was a persistent `500 Internal Server Error` during early development of the chat feature. This critical bug blocked all AI interactions and stemmed from an incompatibility with the (now deprecated) **Genkit Beta Chat Session API**.
+A significant challenge was ensuring that large file contexts, especially from multi-page PDFs, were reliably processed and understood by the AI model. Simply passing a large Data URI was not enough; it required a robust, end-to-end data handling strategy.
 
 ### The Problem:
-The bug was traced to the `FirestoreSessionStore`, which was responsible for saving and loading conversation history for Genkit's session management. The root causes were:
-1.  **Timestamp Mismatch:** Firestore stores dates as a proprietary `Timestamp` object, but the Genkit library expected standard JavaScript `Date` objects. The session store was not converting these types correctly upon loading, corrupting the history data.
-2.  **History Structure Inconsistency:** The structure of the `history` array required by the Genkit model adapter was extremely specific. Minor deviations in the saved format caused a `TypeError`, leading to the server crash.
+- **Client-Side Processing:** Reading large files into memory as Data URIs on the client can be slow and memory-intensive, potentially crashing the browser tab.
+- **API Payload Limits:** Sending large Data URIs in a JSON payload to the API route risks exceeding server payload size limits.
+- **AI Context Window:** The AI model needs to receive the file content in a format it can interpret within its context window, alongside the user's prompt and other instructions.
 
 ### The Solution:
-The issue was resolved by moving away from the problematic automated session management and implementing a more direct and robust state management strategy.
-1.  **Refined `FirestoreSessionStore`:** The class was rewritten to be more robust, with recursive helper functions to reliably convert `Timestamp` objects to `Date` objects when loading data, and vice-versa when saving.
-2.  **Stabilized Client-Side Rendering:** The chat page (`src/app/chat/page.tsx`) was updated to correctly read the chat history directly from the session document in Firestore, ensuring messages and their associated data are rendered reliably.
-3.  **Explicit Data Flow:** The `chatFlow` was made more explicit. Instead of relying on automatic history, it now manually processes tool outputs and includes structured data directly in its return object, which the client can then parse and render.
+A multi-stage solution was implemented to create a robust file processing pipeline:
+1.  **Client-Side Validation & Conversion:** The `useFileUpload` hook was refined to include strict checks on file size (e.g., under 10MB) and type (PDF, image, text) before attempting to read the file. It efficiently converts the validated file into a `data:mime/type;base64,...` Data URI.
+2.  **Streamlined API Handling:** The Next.js API route at `/api/chat` was configured to handle large request bodies. It receives the entire JSON payload, including the Data URI.
+3.  **Genkit Media Handling:** The `chatFlow` was architected to correctly pass the Data URI to the Gemini model. The `chat.send()` method in Genkit natively supports a `media` object, so the Data URI is passed as `{ media: { url: context } }`. This tells Genkit to handle the base64 decoding and present the file content to the model in an optimal format.
 
-This solution completely stabilized the chat feature, making it the robust and functional core of the application it is today.
+This solution ensures that users can seamlessly upload documents, have them processed efficiently, and receive AI-generated insights based on the full context of their materials, which is the cornerstone of the FocusFlow AI experience.
