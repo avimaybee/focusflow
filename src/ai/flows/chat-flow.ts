@@ -154,6 +154,7 @@ const chatFlow = ai.defineFlow(
     }),
   },
   async (input) => {
+    console.log('[DEBUG: chatFlow] Received input:', JSON.stringify(input, null, 2));
     const { userId, message, context, persona } = input;
     const isGuest = userId === 'guest-user';
     
@@ -200,6 +201,7 @@ Your responses should be well-structured and use markdown for formatting.`;
         generateCounterargumentsTool,
         generatePresentationOutlineTool,
       ],
+      auth: { uid: userId },
     });
     
     const userMessageContent: (string | { media: { url: string } })[] = [message];

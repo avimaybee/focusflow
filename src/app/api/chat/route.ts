@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const isGuest = !userId;
 
     const body = await request.json();
-    console.log("API ROUTE: Received request body:", body);
+    console.log("[DEBUG: API Route] Received request body:", JSON.stringify(body, null, 2));
 
     if (!body.message) {
       return NextResponse.json({ error: 'Missing required field: message' }, { status: 400 });

@@ -229,6 +229,8 @@ export default function ChatPage() {
       persona: selectedPersonaId,
       context: attachment?.url,
     };
+
+    console.log('[DEBUG: ChatPage] Sending chatInput:', JSON.stringify(chatInput, null, 2));
   
     setInput('');
     setAttachment(null);
