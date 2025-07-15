@@ -10,6 +10,7 @@ import {
   LayoutGrid,
   Plus,
   Loader2,
+  Save,
 } from 'lucide-react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -32,11 +33,12 @@ const contentIcons: { [key: string]: React.ElementType } = {
   summary: FileText,
   quiz: HelpCircle,
   flashcardSet: BookOpen,
+  savedMessage: Save,
 };
 
 interface ContentItem {
     id: string;
-    type: 'summary' | 'quiz' | 'flashcardSet';
+    type: 'summary' | 'quiz' | 'flashcardSet' | 'savedMessage';
     title: string;
     description: string;
     createdAt: Timestamp;
@@ -56,7 +58,7 @@ export default function MyContentPage() {
 
     const fetchContent = async () => {
       setIsLoading(true);
-      const contentTypes = ['summaries', 'quizzes', 'flashcardSets'];
+      const contentTypes = ['summaries', 'quizzes', 'flashcardSets', 'savedMessages'];
       const promises = contentTypes.map(async (type) => {
         const contentRef = collection(db, 'users', user.uid, type);
         const q = query(contentRef, orderBy('createdAt', 'desc'));
@@ -64,14 +66,33 @@ export default function MyContentPage() {
         return querySnapshot.docs.map(doc => {
             const data = doc.data();
             let description = '';
-            if (type === 'summaries') description = data.summary;
-            if (type === 'quizzes') description = `A quiz on "${data.sourceText}"`;
-            if (type === 'flashcardSets') description = `Flashcards for "${data.sourceText}"`;
+            let title = data.title;
+            let itemType: ContentItem['type'] = 'summary';
+
+            switch (type) {
+                case 'summaries':
+                    description = data.summary;
+                    itemType = 'summary';
+                    break;
+                case 'quizzes':
+                    description = `A quiz on "${data.sourceText}"`;
+                    itemType = 'quiz';
+                    break;
+                case 'flashcardSets':
+                    description = `Flashcards for "${data.sourceText}"`;
+                    itemType = 'flashcardSet';
+                    break;
+                case 'savedMessages':
+                    description = data.content;
+                    title = `Saved Message`;
+                    itemType = 'savedMessage';
+                    break;
+            }
 
             return {
                 id: doc.id,
-                type: type.slice(0, -1) as ContentItem['type'], // 'summaries' -> 'summary'
-                title: data.title,
+                type: itemType,
+                title: title,
                 description: description,
                 createdAt: data.createdAt as Timestamp
             };
@@ -90,6 +111,7 @@ export default function MyContentPage() {
 
   const tabs = [
     { title: 'All', icon: LayoutGrid, type: 'tab' as const },
+    { title: 'Saved', icon: Save, type: 'tab' as const },
     { title: 'Summaries', icon: FileText, type: 'tab' as const },
     { title: 'Quizzes', icon: HelpCircle, type: 'tab' as const },
     { title: 'Flashcards', icon: BookOpen, type: 'tab' as const },
@@ -97,6 +119,7 @@ export default function MyContentPage() {
 
   const filteredContent = allContent.filter((item) => {
     if (activeTab === 'All') return true;
+    if (activeTab === 'Saved') return item.type === 'savedMessage';
     if (activeTab === 'Summaries') return item.type === 'summary';
     if (activeTab === 'Quizzes') return item.type === 'quiz';
     if (activeTab === 'Flashcards') return item.type === 'flashcardSet';
@@ -136,6 +159,8 @@ export default function MyContentPage() {
         <AnimatePresence>
             {filteredContent.map((item) => {
             const Icon = contentIcons[item.type];
+            const linkHref = item.type === 'savedMessage' ? `/my-content/summaries/${item.id}` : `/my-content/${item.type}s/${item.id}`;
+
             return (
                 <motion.div
                 key={item.id}
@@ -164,7 +189,7 @@ export default function MyContentPage() {
                     </CardContent>
                     <div className="p-6 pt-0">
                         <Button asChild className="w-full">
-                        <Link href={`/my-content/${item.type}s/${item.id}`}>View Content</Link>
+                           <Link href={linkHref}>View Content</Link>
                         </Button>
                     </div>
                 </Card>

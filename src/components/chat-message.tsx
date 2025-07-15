@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, Copy, RefreshCw, User, Album, HelpCircle } from 'lucide-react';
+import { Bot, Copy, RefreshCw, User, Album, HelpCircle, Save } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import { FlashcardViewer } from './flashcard-viewer';
@@ -13,6 +13,8 @@ import { SmartToolsMenu, type SmartTool } from './smart-tools-menu';
 import { useToast } from '@/hooks/use-toast';
 import type { Timestamp } from 'firebase/firestore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { useAuth } from '@/context/auth-context';
+import { saveChatMessage } from '@/lib/content-actions';
 
 interface FlashcardData {
   question: string;
@@ -58,6 +60,7 @@ export function ChatMessage({
   onToolAction,
 }: ChatMessageProps) {
   const isUser = role === 'user';
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const handleCopy = () => {
@@ -68,6 +71,31 @@ export function ChatMessage({
       toast({
         title: 'Copied to clipboard!',
         description: 'The message content has been copied.',
+      });
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user || !rawText) {
+      toast({
+        variant: 'destructive',
+        title: 'Could not save message',
+        description: 'You must be logged in and the message must have content.',
+      });
+      return;
+    }
+    try {
+      await saveChatMessage(user.uid, rawText);
+      toast({
+        title: 'Message Saved!',
+        description: 'You can find it in your "My Content" page.',
+      });
+    } catch (error) {
+      console.error('Error saving chat message:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'There was a problem saving your message.',
       });
     }
   };
@@ -196,6 +224,16 @@ export function ChatMessage({
                     </TooltipTrigger>
                     <TooltipContent><p>Retry</p></TooltipContent>
                 </Tooltip>
+                {user && (
+                  <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleSave}>
+                              <Save className="h-4 w-4" />
+                          </Button>
+                      </TooltipTrigger>
+                      <TooltipContent><p>Save to My Content</p></TooltipContent>
+                  </Tooltip>
+                )}
                  <Tooltip delayDuration={300}>
                     <TooltipTrigger asChild>
                         <Button
