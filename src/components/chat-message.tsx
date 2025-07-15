@@ -15,6 +15,7 @@ import type { Timestamp } from 'firebase/firestore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { useAuth } from '@/context/auth-context';
 import { saveChatMessage } from '@/lib/content-actions';
+import { TextSelectionMenu } from './notes/text-selection-menu';
 
 interface FlashcardData {
   question: string;
@@ -62,6 +63,7 @@ export function ChatMessage({
   const isUser = role === 'user';
   const { user } = useAuth();
   const { toast } = useToast();
+  const contentRef = React.useRef<HTMLDivElement>(null);
 
   const handleCopy = () => {
     const textToCopy =
@@ -176,15 +178,17 @@ export function ChatMessage({
         )}
       >
         <div
+          ref={contentRef}
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'max-w-2xl p-3 text-sm rounded-xl',
+            'relative max-w-2xl p-3 text-sm rounded-xl',
             isUser
               ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
               : 'bg-secondary',
             isError && 'bg-destructive/10 border border-destructive/20'
           )}
         >
+          {user && <TextSelectionMenu containerRef={contentRef} />}
           {renderContent()}
           {images && images.length > 0 && (
             <div className="mt-2 grid gap-2 grid-cols-2">

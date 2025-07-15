@@ -19,25 +19,28 @@ FocusFlow AI is an intelligent, all-in-one study toolkit designed to be a studen
 ### a. Conversational AI Chat
 The central feature is a dynamic chat interface where users interact with an AI study assistant. It supports text input and file uploads (PDF, images, text) to provide context for conversations.
 
-### b. Customizable AI Personas
+### b. Integrated Notes Panel
+A persistent, side-by-side notepad lives alongside the main chat interface. Users can seamlessly send selected text from an AI's response directly to their notes with a single click, or type freely into the notepad. The content is auto-saved, providing a fluid experience for capturing ideas, drafting outlines, and collecting important information without ever leaving the chat view.
+
+### c. Customizable AI Personas
 Users can select from a variety of AI personas (e.g., *Explain Like I'm 5*, *Brutally Honest Mentor*, *Cram Buddy*) to tailor the AI's tone and teaching style to their specific learning needs.
 
-### c. Integrated Study Tools
+### d. Integrated Study Tools
 - **Flashcard & Quiz Generation:** From any AI response or user-provided text, users can instantly generate interactive, flippable flashcards and multiple-choice quizzes directly within the chat interface. These are core, first-class features.
 - **Smart Text Utilities:** A context-aware toolbar appears under AI messages, offering tools to `Rewrite Text`, `Convert to Bullets`, `Find Counterarguments`, and `Create a Presentation Outline`.
 
-### d. Prompt Template Library
+### e. Prompt Template Library
 A rich library of pre-made prompts helps users kickstart complex tasks like creating study plans, proofreading text, or brainstorming essay ideas.
 
-### e. User Dashboard & Gamification
+### f. User Dashboard & Gamification
 A personalized dashboard tracks user activity and progress.
 - **KPIs:** Displays counts of summaries, quizzes, and flashcards created.
 - **Progress Tracking:** A chart visualizes weekly study sessions against user-set goals.
 - **Gamification:** Features a "Study Streak" counter and unlockable badges to motivate consistent learning.
 
-### f. Authentication & Content Persistence
+### g. Authentication & Content Persistence
 - **Secure Authentication:** Supports Email/Password and Google Sign-In via **Firebase Authentication**.
-- **Personalized Content:** Logged-in users have their generated summaries, quizzes, flashcard sets, and study plans automatically saved to their personal "My Content" area, powered by **Firestore**.
+- **Personalized Content:** Logged-in users have their generated summaries, quizzes, flashcard sets, study plans, and notes automatically saved to their personal "My Content" area, powered by **Firestore**.
 
 ---
 
@@ -55,7 +58,7 @@ A personalized dashboard tracks user activity and progress.
 3.  **Genkit Flow (`chatFlow`):** The API route invokes the main Genkit flow (`src/ai/flows/chat-flow.ts`).
 4.  **Tool Dispatch:** The flow, powered by a Gemini model, determines user intent. It either formulates a direct conversational response or calls a specific, predefined **Genkit Tool** (e.g., `createQuizTool`, `summarizeNotesTool`). The file's Data URI is passed along, allowing the AI to "read" the document.
 5.  **Structured Output:** Tools are designed to return structured JSON data (e.g., an array of flashcard objects, a quiz object with questions and answers).
-6.  **Data Persistence:** If a tool was used, the `chatFlow` saves the generated content to the user's Firestore `My Content` subcollection (e.g., `/users/{userId}/quizzes/{quizId}`).
+6.  **Data Persistence:** If a tool was used, the `chatFlow` saves the generated content to the user's Firestore `My Content` subcollection (e.g., `/users/{userId}/quizzes/{quizId}`). The notepad content is saved to a dedicated `notepad` subcollection, with a debounced server action ensuring changes are saved automatically.
 7.  **Response to Client:** The flow returns a response object containing the AI's text and any structured data (like the quiz object).
 8.  **Frontend Rendering:** The `ChatPage` receives the response. If structured data is present, it renders the corresponding interactive component (`QuizViewer`, `FlashcardViewer`); otherwise, it displays the formatted text response.
 

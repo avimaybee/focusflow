@@ -44,6 +44,11 @@ service cloud.firestore {
         allow read, write: if request.auth.uid == userId;
     }
 
+    // A user can manage their own notes document.
+    match /users/{userId}/notes/{noteId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
     // Public summaries collection: Allow anyone to read, but disallow client writes.
     match /publicSummaries/{slug} {
       allow get, list: if true;

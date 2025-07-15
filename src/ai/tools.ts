@@ -202,9 +202,7 @@ export const explainConceptTool = ai.defineTool(
   async input => {
     const {output} = await ai.generate({
       model: liteModel,
-      prompt: `Explain the concept "${input.concept}" in simple,
-easy-to-understand terms. Provide a detailed explanation and a relatable
-analogy to help with understanding.`,
+      prompt: `Explain the concept "${input.concept}" as concisely as possible (in 2-3 sentences). Then, provide a simple, one-sentence analogy.`,
       output: {
         schema: ExplainConceptOutputSchema,
       },
