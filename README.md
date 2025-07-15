@@ -82,3 +82,4 @@ A multi-stage solution was implemented to create a robust file processing pipeli
 3.  **Genkit Media Handling:** The `chatFlow` was architected to correctly pass the Data URI to the Gemini model. The `chat.send()` method in Genkit natively supports a `media` object, so the Data URI is passed as `{ media: { url: context } }`. This tells Genkit to handle the base64 decoding and present the file content to the model in an optimal format.
 
 This solution ensures that users can seamlessly upload documents, have them processed efficiently, and receive AI-generated insights based on the full context of their materials, which is the cornerstone of the FocusFlow AI experience.
+meow
