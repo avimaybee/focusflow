@@ -38,7 +38,7 @@ const navLinks = [
 ];
 
 export const Header = () => {
-  const { user } = useAuth();
+  const { user, isPremium } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const authModal = useAuthModal();
@@ -76,6 +76,7 @@ export const Header = () => {
   const desktopNav = (
     <nav className="hidden md:flex items-center gap-6">
       {navLinks.map((link) => {
+        if (link.label === 'Premium' && (user ? isPremium : true)) return null;
         if (!link.icon) return null;
         const isActive = pathname === link.href;
         return (
@@ -112,6 +113,7 @@ export const Header = () => {
           </Link>
           <nav className="flex flex-col gap-4">
             {navLinks.map((link) => {
+               if (link.label === 'Premium' && (user ? isPremium : true)) return null;
                const isActive = pathname === link.href;
                return (
                   <SheetClose asChild key={link.href + link.label}>

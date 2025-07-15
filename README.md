@@ -41,6 +41,7 @@ A personalized dashboard tracks user activity and progress.
 ### g. Authentication & Content Persistence
 - **Secure Authentication:** Supports Email/Password and Google Sign-In via **Firebase Authentication**.
 - **Personalized Content:** Logged-in users have their generated summaries, quizzes, flashcard sets, study plans, and notes automatically saved to their personal "My Content" area, powered by **Firestore**.
+- **Feature Gating:** The application supports a premium tier. A user's `isPremium` status, stored in their Firestore document, controls access to advanced features and lifts usage limits on core tools.
 
 ---
 
@@ -56,11 +57,12 @@ A personalized dashboard tracks user activity and progress.
 1.  **User Input:** The user sends a message or selects a tool from the `ChatPage` UI. They can also attach a file (like a PDF), which is converted to a Data URI on the client-side.
 2.  **API Route:** A request is made to the `/api/chat` Next.js server route, containing the message, user auth token, and any contextual data (like a file's data URI or a selected persona).
 3.  **Genkit Flow (`chatFlow`):** The API route invokes the main Genkit flow (`src/ai/flows/chat-flow.ts`).
-4.  **Tool Dispatch:** The flow, powered by a Gemini model, determines user intent. It either formulates a direct conversational response or calls a specific, predefined **Genkit Tool** (e.g., `createQuizTool`, `summarizeNotesTool`). The file's Data URI is passed along, allowing the AI to "read" the document.
-5.  **Structured Output:** Tools are designed to return structured JSON data (e.g., an array of flashcard objects, a quiz object with questions and answers).
-6.  **Data Persistence:** If a tool was used, the `chatFlow` saves the generated content to the user's Firestore `My Content` subcollection (e.g., `/users/{userId}/quizzes/{quizId}`). The notepad content is saved to a dedicated `notepad` subcollection, with a debounced server action ensuring changes are saved automatically.
-7.  **Response to Client:** The flow returns a response object containing the AI's text and any structured data (like the quiz object).
-8.  **Frontend Rendering:** The `ChatPage` receives the response. If structured data is present, it renders the corresponding interactive component (`QuizViewer`, `FlashcardViewer`); otherwise, it displays the formatted text response.
+4.  **Usage Check (for Tools):** Before executing a protected tool (like `createQuizTool`), the flow checks the user's `isPremium` status and their monthly usage count stored in Firestore. If a free user exceeds their limit, the flow returns an error.
+5.  **Tool Dispatch:** The flow, powered by a Gemini model, determines user intent. It either formulates a direct conversational response or calls a specific, predefined **Genkit Tool** (e.g., `createQuizTool`, `summarizeNotesTool`). The file's Data URI is passed along, allowing the AI to "read" the document.
+6.  **Structured Output:** Tools are designed to return structured JSON data (e.g., an array of flashcard objects, a quiz object with questions and answers).
+7.  **Data Persistence:** If a tool was used, the `chatFlow` saves the generated content to the user's Firestore `My Content` subcollection (e.g., `/users/{userId}/quizzes/{quizId}`). The notepad content is saved to a dedicated `notepad` subcollection, with a debounced server action ensuring changes are saved automatically.
+8.  **Response to Client:** The flow returns a response object containing the AI's text and any structured data (like the quiz object).
+9.  **Frontend Rendering:** The `ChatPage` receives the response. If structured data is present, it renders the corresponding interactive component (`QuizViewer`, `FlashcardViewer`); otherwise, it displays the formatted text response.
 
 ---
 

@@ -68,10 +68,15 @@ const SidebarSkeleton = ({ isCollapsed }: { isCollapsed: boolean }) => (
   </div>
 );
 
+import { useAuth } from '@/context/auth-context';
+
+// ... (imports)
+
 const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
   const router = useRouter();
   const { toast } = useToast();
   const authModal = useAuthModal();
+  const { isPremium } = useAuth(); // Use the auth context
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
   const initial = displayName.charAt(0).toUpperCase();
 
@@ -125,7 +130,9 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
               className={'text-left transition-opacity duration-200'}
             >
               <p className="font-semibold truncate">{displayName}</p>
-              <p className="text-xs text-muted-foreground">Free Plan</p>
+              <p className="text-xs text-muted-foreground">
+                {isPremium ? 'Premium Plan' : 'Free Plan'}
+              </p>
             </div>
           </Button>
         </DropdownMenuTrigger>
@@ -142,16 +149,20 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
           <Settings className="mr-2 h-4 w-4" /> Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link
-            href="/premium"
-            className="premium-gradient w-full flex items-center justify-center text-primary-foreground rounded-md py-1.5 focus:ring-0"
-          >
-            <Sparkles className="h-4 w-4 mr-2" />
-            Upgrade to Premium
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
+        {!isPremium && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link
+                href="/premium"
+                className="premium-gradient w-full flex items-center justify-center text-primary-foreground rounded-md py-1.5 focus:ring-0"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Upgrade to Premium
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" /> Logout
         </DropdownMenuItem>
