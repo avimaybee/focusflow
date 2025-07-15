@@ -12,17 +12,20 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Rocket } from 'lucide-react';
 
 const freeFeatures = [
-  'Generate summaries from notes',
-  'Create quizzes from any text',
-  'Build basic study plans',
-  'Access to all AI personas',
+  '5 summaries per month',
+  '5 quizzes per month',
+  '3 flashcard sets per month',
+  '2 study plans per month',
+  '5 memory aids per month',
   '5 document uploads per month',
+  'Access to all AI personas',
 ];
 
 const premiumFeatures = [
   'Everything in Free, plus:',
-  'Unlimited document uploads',
   'Unlimited summaries, quizzes, and plans',
+  'Unlimited flashcards and memory aids',
+  'Unlimited document uploads',
   'Advanced AI Tutor chat mode',
   'Google Calendar sync for study plans',
   'Save and reuse custom prompts',

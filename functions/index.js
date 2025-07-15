@@ -29,9 +29,19 @@ exports.createUserDocument = onUserCreate(async (event) => {
       isPremium: false,
       preferredPersona: "neutral",
       favoritePrompts: [],
+      usage: {
+        summaries: 0,
+        quizzes: 0,
+        flashcardSets: 0,
+        studyPlans: 0,
+        memoryAids: 0,
+        uploads: 0,
+      }
     });
     console.log(`Successfully created user document for UID: ${uid}`);
   } catch (error) {
     console.error(`Error creating user document for UID: ${uid}`, error);
   }
 });
+
+exports.scheduled = require('./src/scheduled');

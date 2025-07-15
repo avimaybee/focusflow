@@ -9,7 +9,7 @@ service cloud.firestore {
       allow get, create: if request.auth.uid == userId;
       allow update: if request.auth.uid == userId
                     && request.resource.data.diff(resource.data).affectedKeys()
-                       .hasOnly(['preferredPersona', 'favoritePrompts', 'lastLogin']);
+                       .hasOnly(['preferredPersona', 'favoritePrompts', 'lastLogin', 'usage']);
       allow list, delete: if false;
 
       // A user can manage their own chat sessions.
@@ -17,7 +17,7 @@ service cloud.firestore {
       // get, create, update are required for the chat flow.
       match /chats/{chatId} {
         allow list, get, create, update: if request.auth.uid == userId;
-        allow delete: if false;
+        allow delete: if request.auth.uid == userId;
       }
     }
 
@@ -40,11 +40,38 @@ service cloud.firestore {
     match /users/{userId}/goals/{goalId} {
       allow read, write: if request.auth.uid == userId;
     }
+    match /users/{userId}/savedMessages/{messageId} {
+        allow read, write: if request.auth.uid == userId;
+    }
 
     // Public summaries collection: Allow anyone to read, but disallow client writes.
     match /publicSummaries/{slug} {
-      allow get: if true;
-      allow list, write: if false;
+      allow get, list: if true;
+      allow write: if false;
+    }
+
+    // Public flashcards collection: Allow anyone to read, but disallow client writes.
+    match /publicFlashcardSets/{slug} {
+      allow get, list: if true;
+      allow write: if false;
+    }
+
+    // Public quizzes collection: Allow anyone to read, but disallow client writes.
+    match /publicQuizzes/{slug} {
+      allow get, list: if true;
+      allow write: if false;
+    }
+
+    // Public study plans collection: Allow anyone to read, but disallow client writes.
+    match /publicStudyPlans/{slug} {
+      allow get, list: if true;
+      allow write: if false;
+    }
+
+    // Public blog posts collection: Allow anyone to read, but disallow client writes.
+    match /publicBlogPosts/{slug} {
+      allow get, list: if true;
+      allow write: if false;
     }
 
     // Prompt templates can be read by any user, authenticated or not.

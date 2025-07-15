@@ -47,7 +47,7 @@ A personalized dashboard tracks user activity and progress.
 - **Frontend:** Next.js (App Router), React, TypeScript
 - **Styling:** Tailwind CSS, ShadCN UI, Framer Motion
 - **Backend & Database:** Firebase (Authentication, Firestore, Functions)
-- **AI:** Google Genkit, Google Gemini Models (e.g., `gemini-1.5-pro` for complex tasks, `gemini-1.5-flash` for conversational routing)
+- **AI:** Google Genkit, Google Gemini Models (e.g., `gemini-2.0-flash-lite` for all tasks)
 
 ### b. Core Chat Flow
 1.  **User Input:** The user sends a message or selects a tool from the `ChatPage` UI.

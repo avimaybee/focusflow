@@ -16,6 +16,7 @@ import {
   PanelRightClose,
   MessageSquare,
   User,
+  Trash2,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,7 @@ interface ChatSidebarProps {
   activeChatId: string | null;
   onNewChat: () => void;
   onChatSelect: (id: string) => void;
+  onDeleteChat: (id: string) => void;
   isLoading: boolean;
   isCollapsed: boolean;
   onToggle: () => void;
@@ -164,6 +166,7 @@ export function ChatSidebar({
   activeChatId,
   onNewChat,
   onChatSelect,
+  onDeleteChat,
   isLoading,
   isCollapsed,
   onToggle,
@@ -235,10 +238,11 @@ export function ChatSidebar({
               {chatHistory.map((chat) => (
                 <Tooltip key={chat.id}>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant={activeChatId === chat.id ? 'secondary' : 'ghost'}
+                    <div
+                      role="button"
                       className={cn(
-                        'w-full justify-start gap-3 font-normal py-3 px-4 hover:bg-muted/50 text-foreground',
+                        'flex items-center w-full justify-start gap-3 font-normal py-3 px-4 rounded-md cursor-pointer hover:bg-muted/50 text-foreground',
+                        activeChatId === chat.id && 'bg-secondary',
                         isCollapsed && 'justify-center px-2'
                       )}
                       onClick={() => onChatSelect(chat.id)}
@@ -247,7 +251,20 @@ export function ChatSidebar({
                       <span className={cn('truncate', isCollapsed && 'hidden')}>
                         {chat.title}
                       </span>
-                    </Button>
+                      {!isCollapsed && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 ml-auto shrink-0"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteChat(chat.id);
+                            }}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </TooltipTrigger>
                   {isCollapsed && (
                     <TooltipContent side="right" align="center">

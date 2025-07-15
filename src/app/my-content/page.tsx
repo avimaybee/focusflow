@@ -11,6 +11,7 @@ import {
   Plus,
   Loader2,
   Save,
+  Calendar,
 } from 'lucide-react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -21,6 +22,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
+  CardFooter,
 } from '@/components/ui/card';
 import { ExpandedTabs } from '@/components/ui/expanded-tabs';
 import { useAuth } from '@/context/auth-context';
@@ -28,20 +30,25 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
+import { PublishAsBlogModal } from '@/components/publish-as-blog-modal';
+import { makeSummaryPublic, makeFlashcardsPublic, makeQuizPublic, makeStudyPlanPublic, deleteContent } from '@/lib/content-actions';
 
 const contentIcons: { [key: string]: React.ElementType } = {
   summary: FileText,
   quiz: HelpCircle,
   flashcardSet: BookOpen,
   savedMessage: Save,
+  studyPlan: Calendar,
 };
 
 interface ContentItem {
     id: string;
-    type: 'summary' | 'quiz' | 'flashcardSet' | 'savedMessage';
+    type: 'summary' | 'quiz' | 'flashcardSet' | 'savedMessage' | 'studyPlan';
     title: string;
     description: string;
     createdAt: Timestamp;
+    isPublic: boolean;
+    publicSlug: string | null;
 }
 
 export default function MyContentPage() {
@@ -49,6 +56,7 @@ export default function MyContentPage() {
   const [activeTab, setActiveTab] = React.useState('All');
   const [allContent, setAllContent] = React.useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [selectedSummary, setSelectedSummary] = React.useState<ContentItem | null>(null);
 
   React.useEffect(() => {
     if (!user) {
@@ -58,7 +66,7 @@ export default function MyContentPage() {
 
     const fetchContent = async () => {
       setIsLoading(true);
-      const contentTypes = ['summaries', 'quizzes', 'flashcardSets', 'savedMessages'];
+      const contentTypes = ['summaries', 'quizzes', 'flashcardSets', 'savedMessages', 'studyPlans'];
       const promises = contentTypes.map(async (type) => {
         const contentRef = collection(db, 'users', user.uid, type);
         const q = query(contentRef, orderBy('createdAt', 'desc'));
@@ -82,6 +90,10 @@ export default function MyContentPage() {
                     description = `Flashcards for "${data.sourceText}"`;
                     itemType = 'flashcardSet';
                     break;
+                case 'studyPlans':
+                    description = `A study plan for "${data.sourceText}"`;
+                    itemType = 'studyPlan';
+                    break;
                 case 'savedMessages':
                     description = data.content;
                     title = `Saved Message`;
@@ -94,7 +106,9 @@ export default function MyContentPage() {
                 type: itemType,
                 title: title,
                 description: description,
-                createdAt: data.createdAt as Timestamp
+                createdAt: data.createdAt as Timestamp,
+                isPublic: data.isPublic || false,
+                publicSlug: data.publicSlug || null,
             };
         });
       });
@@ -109,12 +123,79 @@ export default function MyContentPage() {
   }, [user, authLoading]);
 
 
+  const [isSharing, setIsSharing] = React.useState<string | null>(null);
+  const [justShared, setJustShared] = React.useState<string | null>(null);
+
+  const handleShare = async (itemId: string, type: ContentItem['type']) => {
+    if (!user) return;
+    setIsSharing(itemId);
+    try {
+      let slug = '';
+      let path = '';
+      switch (type) {
+        case 'summary':
+          slug = await makeSummaryPublic(user.uid, itemId);
+          path = 'summaries';
+          break;
+        case 'flashcardSet':
+          slug = await makeFlashcardsPublic(user.uid, itemId);
+          path = 'flashcards';
+          break;
+        case 'quiz':
+          slug = await makeQuizPublic(user.uid, itemId);
+          path = 'quizzes';
+          break;
+        case 'studyPlan':
+            slug = await makeStudyPlanPublic(user.uid, itemId);
+            path = 'plans';
+            break;
+        default:
+          throw new Error('Invalid content type for sharing.');
+      }
+      setJustShared(`${window.location.origin}/${path}/${slug}`);
+    } catch (error) {
+      console.error(`Failed to share ${type}:`, error);
+      // You would typically show a toast notification here
+    } finally {
+      setIsSharing(null);
+    }
+  };
+
+  const handleDelete = async (itemId: string, type: ContentItem['type']) => {
+    if (!user || !window.confirm('Are you sure you want to delete this item?')) return;
+    
+    try {
+        await deleteContent(user.uid, itemId, type);
+        setAllContent(prev => prev.filter(item => item.id !== itemId));
+        // You would typically show a success toast here
+    } catch (error) {
+        console.error(`Failed to delete ${type}:`, error);
+        // You would typically show an error toast here
+    }
+  };
+
+  React.useEffect(() => {
+    if (justShared) {
+      // You could show a confirmation modal here
+      alert(`Successfully shared! Public URL: ${justShared}`);
+      setJustShared(null);
+      // Refresh content to get public status
+      if (user) {
+          // This is a simplified refresh. In a real app, you might want a more elegant solution.
+          const btn = document.querySelector('button');
+          btn?.click();
+          btn?.click();
+      }
+    }
+  }, [justShared, user]);
+
   const tabs = [
     { title: 'All', icon: LayoutGrid, type: 'tab' as const },
     { title: 'Saved', icon: Save, type: 'tab' as const },
     { title: 'Summaries', icon: FileText, type: 'tab' as const },
     { title: 'Quizzes', icon: HelpCircle, type: 'tab' as const },
     { title: 'Flashcards', icon: BookOpen, type: 'tab' as const },
+    { title: 'Study Plans', icon: Calendar, type: 'tab' as const },
   ];
 
   const filteredContent = allContent.filter((item) => {
@@ -123,6 +204,7 @@ export default function MyContentPage() {
     if (activeTab === 'Summaries') return item.type === 'summary';
     if (activeTab === 'Quizzes') return item.type === 'quiz';
     if (activeTab === 'Flashcards') return item.type === 'flashcardSet';
+    if (activeTab === 'Study Plans') return item.type === 'studyPlan';
     return false;
   });
 
@@ -187,11 +269,29 @@ export default function MyContentPage() {
                         Created: {item.createdAt ? formatDistanceToNow(item.createdAt.toDate(), { addSuffix: true }) : 'Just now'}
                     </p>
                     </CardContent>
-                    <div className="p-6 pt-0">
+                    <CardFooter className="p-4 pt-0 flex flex-col gap-2">
                         <Button asChild className="w-full">
                            <Link href={linkHref}>View Content</Link>
                         </Button>
-                    </div>
+                        {item.isPublic && (
+                            <Button asChild variant="secondary" className="w-full">
+                                <Link href={`/${item.type}s/${item.publicSlug}`} target="_blank">View Public</Link>
+                            </Button>
+                        )}
+                        {(item.type === 'summary' || item.type === 'flashcardSet' || item.type === 'quiz' || item.type === 'studyPlan') && (
+                            <Button variant="outline" className="w-full" onClick={() => handleShare(item.id, item.type)} disabled={isSharing === item.id}>
+                                {isSharing === item.id ? 'Sharing...' : 'Share'}
+                            </Button>
+                        )}
+                        {item.type === 'summary' && (
+                            <Button variant="secondary" className="w-full" onClick={() => setSelectedSummary(item)}>
+                                Publish as Blog
+                            </Button>
+                        )}
+                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(item.id, item.type)}>
+                            Delete
+                        </Button>
+                    </CardFooter>
                 </Card>
                 </motion.div>
             );
@@ -238,6 +338,13 @@ export default function MyContentPage() {
             {renderContent()}
           </div>
         </div>
+        {selectedSummary && (
+            <PublishAsBlogModal
+                isOpen={!!selectedSummary}
+                onOpenChange={() => setSelectedSummary(null)}
+                summary={selectedSummary}
+            />
+        )}
       </main>
       <Footer />
     </div>

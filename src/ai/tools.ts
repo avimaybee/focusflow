@@ -1,4 +1,3 @@
-
 // src/ai/tools.ts
 /**
  * @fileOverview Defines Genkit tools that the AI can use to perform specific,
@@ -33,9 +32,49 @@ import {
   GeneratePresentationOutlineInputSchema,
   GeneratePresentationOutlineOutputSchema,
 } from '@/types/chat-types';
+import { db } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // Define the powerful model to be used for all complex tool-based tasks.
-const complexTaskModel = googleAI.model('gemini-1.5-pro');
+const liteModel = googleAI.model('gemini-2.5-flash-lite-preview-06-17');
+
+const USAGE_LIMITS = {
+    summaries: 5,
+    quizzes: 5,
+    flashcardSets: 3,
+    studyPlans: 2,
+    memoryAids: 5,
+};
+
+type UsageKey = keyof typeof USAGE_LIMITS;
+
+async function checkUsageAndIncrement(userId: string, key: UsageKey): Promise<void> {
+    if (!userId || userId === 'guest-user') {
+        throw new Error('You must be logged in to use this feature.');
+    }
+
+    const userRef = db.collection('users').doc(userId);
+    const userSnap = await userRef.get();
+    const userData = userSnap.data();
+
+    if (!userData) {
+        throw new Error('User not found.');
+    }
+
+    if (userData.isPremium) {
+        return; // Premium users have no limits
+    }
+
+    const currentUsage = userData.usage?.[key] || 0;
+    if (currentUsage >= USAGE_LIMITS[key]) {
+        throw new Error(`You have reached your monthly limit for ${key}. Please upgrade to Premium for unlimited access.`);
+    }
+
+    await userRef.update({
+        [`usage.${key}`]: FieldValue.increment(1),
+    });
+}
+
 
 export const summarizeNotesTool = ai.defineTool(
   {
@@ -46,9 +85,10 @@ export const summarizeNotesTool = ai.defineTool(
     inputSchema: SummarizeNotesInputSchema,
     outputSchema: SummarizeNotesOutputSchema,
   },
-  async input => {
+  async (input, context) => {
+    await checkUsageAndIncrement(context.auth?.uid || '', 'summaries');
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Generate a concise summary for the following notes. Also,
 provide a short, catchy title for the summary and list 3-5 relevant keywords.
 
@@ -74,9 +114,10 @@ export const createStudyPlanTool = ai.defineTool(
     inputSchema: CreateStudyPlanInputSchema,
     outputSchema: CreateStudyPlanOutputSchema,
   },
-  async input => {
+  async (input, context) => {
+    await checkUsageAndIncrement(context.auth?.uid || '', 'studyPlans');
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Create a detailed, day-by-day study plan for the topic
 "${input.topic}" to be completed over ${input.durationDays} days. The plan
 should be structured as a JSON object where each key is a "Day X" and the
@@ -102,9 +143,10 @@ export const createFlashcardsTool = ai.defineTool(
     inputSchema: CreateFlashcardsInputSchema,
     outputSchema: CreateFlashcardsOutputSchema,
   },
-  async input => {
+  async (input, context) => {
+    await checkUsageAndIncrement(context.auth?.uid || '', 'flashcardSets');
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Generate a set of ${input.count} questions suitable for flashcards for the topic
 "${input.topic}". Each flashcard should have a clear question and a
 concise, accurate answer.`,
@@ -128,9 +170,10 @@ export const createQuizTool = ai.defineTool(
     inputSchema: CreateQuizInputSchema,
     outputSchema: CreateQuizOutputSchema,
   },
-  async input => {
+  async (input, context) => {
+    await checkUsageAndIncrement(context.auth?.uid || '', 'quizzes');
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Generate a multiple-choice quiz on the topic "${input.topic}".
 The quiz should have ${input.questionCount} questions and a difficulty level of
 "${input.difficulty}". Each question must have four options, a single correct
@@ -158,7 +201,7 @@ export const explainConceptTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Explain the concept "${input.concept}" in simple,
 easy-to-understand terms. Provide a detailed explanation and a relatable
 analogy to help with understanding.`,
@@ -182,9 +225,10 @@ export const createMemoryAidTool = ai.defineTool(
     inputSchema: CreateMemoryAidInputSchema,
     outputSchema: CreateMemoryAidOutputSchema,
   },
-  async input => {
+  async (input, context) => {
+    await checkUsageAndIncrement(context.auth?.uid || '', 'memoryAids');
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Generate a creative and effective memory aid of type
 "${input.type}" for the topic "${input.topic}". Provide a title for the
 memory aid.`,
@@ -210,7 +254,7 @@ export const createDiscussionPromptsTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Generate ${input.count} thought-provoking discussion prompts
 for the topic "${input.topic}". The prompts should encourage deeper
 thinking and conversation.`,
@@ -236,7 +280,7 @@ export const highlightKeyInsightsTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Analyze the following text and identify the key insights or
 "aha" moments. Present these insights as a list of strings.
 
@@ -264,7 +308,7 @@ export const rewriteTextTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Rewrite the following text to be ${input.style}:\n\n${input.text}`,
       output: {
         schema: RewriteTextOutputSchema,
@@ -286,7 +330,7 @@ export const convertToBulletPointsTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Convert the following text into a list of key bullet points:\n\n${input.text}`,
       output: {
         schema: ConvertToBulletPointsOutputSchema,
@@ -309,7 +353,7 @@ export const generateCounterargumentsTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Generate 3 strong counterarguments to the following statement. For each, provide the counterpoint and a brief explanation:\n\n${input.text}`,
       output: {
         schema: GenerateCounterargumentsOutputSchema,
@@ -331,7 +375,7 @@ export const generatePresentationOutlineTool = ai.defineTool(
   },
   async input => {
     const {output} = await ai.generate({
-      model: complexTaskModel,
+      model: liteModel,
       prompt: `Create a ${input.slideCount}-slide presentation outline for the topic: "${input.topic}". Include a title for the presentation and for each slide, provide a slide title and 3-4 content bullet points.`,
       output: {
         schema: GeneratePresentationOutlineOutputSchema,

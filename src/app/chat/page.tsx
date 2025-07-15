@@ -20,6 +20,18 @@ import { db } from '@/lib/firebase';
 import { ChatMessageProps } from '@/components/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
 import { marked } from 'marked';
+import { deleteChat } from '@/lib/content-actions';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import Link from 'next/link';
 
 const GUEST_MESSAGE_LIMIT = 10;
 
@@ -38,6 +50,9 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [chatToDelete, setChatToDelete] = useState<string | null>(null);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   
   // State for guest users
   const [guestMessageCount, setGuestMessageCount] = useState(0);
@@ -56,11 +71,14 @@ export default function ChatPage() {
         setActiveChatId(chatIdFromUrl);
       }
     } else {
-      // If there's no chat ID in the URL, it's a new chat, so clear state.
-      if (activeChatId) handleNewChat();
+      // If there's no chat ID in the URL, it's a new chat.
+      // We check if there *was* an active chat to avoid running this on initial load.
+      if (activeChatId) {
+        handleNewChat();
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.chatId]);
+  }, [params.chatId, activeChatId]);
 
   // Effect to handle chat history for LOGGED-IN users.
   // This does NOT manage chat state, only loads history from Firestore on chat select.
@@ -139,6 +157,37 @@ export default function ChatPage() {
     setMessages([]);
     setGuestMessageCount(0);
     router.push('/chat');
+  };
+
+  const handleDeleteChat = async (chatId: string) => {
+    setChatToDelete(chatId);
+    setDialogOpen(true);
+  };
+
+  const confirmDeleteChat = async () => {
+    if (!user || !chatToDelete) return;
+
+    try {
+        await deleteChat(user.uid, chatToDelete);
+        forceRefresh();
+        if (activeChatId === chatToDelete) {
+            router.push('/chat');
+        }
+        toast({
+            title: 'Chat Deleted',
+            description: 'The chat session has been permanently deleted.',
+        });
+    } catch (error) {
+        console.error('Failed to delete chat:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Could not delete the chat session.',
+        });
+    } finally {
+        setDialogOpen(false);
+        setChatToDelete(null);
+    }
   };
 
   // Main function to handle sending a message
@@ -226,6 +275,11 @@ export default function ChatPage() {
     } catch (error: any) {
       console.error("Client-side send message error:", error);
       const description = error.result?.error || error.message || 'An unknown error occurred.';
+
+      if (description.includes('You have reached your monthly limit')) {
+        setUpgradeModalOpen(true);
+      }
+
       toast({
         variant: 'destructive',
         title: 'Message Failed',
@@ -272,6 +326,7 @@ export default function ChatPage() {
                 activeChatId={activeChatId}
                 onNewChat={handleNewChat}
                 onChatSelect={(id) => router.push(`/chat/${id}`)}
+                onDeleteChat={handleDeleteChat}
                 isLoading={isHistoryLoading}
                 isCollapsed={false}
                 onToggle={() => setSidebarOpen(false)}
@@ -287,6 +342,7 @@ export default function ChatPage() {
         activeChatId={activeChatId}
         onNewChat={handleNewChat}
         onChatSelect={(id) => router.push(`/chat/${id}`)}
+        onDeleteChat={handleDeleteChat}
         isLoading={isHistoryLoading}
         isCollapsed={isSidebarCollapsed}
         onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
@@ -342,6 +398,36 @@ export default function ChatPage() {
               />
             </div>
         </div>
+        <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the chat session.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmDeleteChat}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+        <AlertDialog open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Upgrade to Premium</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        You've reached your monthly usage limit for this feature. Please upgrade to Premium for unlimited access.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction asChild>
+                        <Link href="/premium">Upgrade</Link>
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
       </main>
     </div>
   );
