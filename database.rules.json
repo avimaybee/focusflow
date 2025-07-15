@@ -23,6 +23,10 @@
               ".read": "request.auth.uid == userId",
               ".write": "request.auth.uid == userId"
             },
+            "savedMessages/{messageId}": {
+              ".read": "request.auth.uid == userId",
+              ".write": "request.auth.uid == userId"
+            },
             "studyPlans/{planId}": {
               ".read": "request.auth.uid == userId",
               ".write": "request.auth.uid == userId"
