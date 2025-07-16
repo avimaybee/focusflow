@@ -19,7 +19,6 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react';
-import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { cn } from '@/lib/utils';
 import { GlowingCard } from '@/components/ui/glowing-card';
@@ -206,7 +205,6 @@ export default function LandingPage() {
 
   return (
     <>
-      <Header />
       <div className="flex-grow">
         {/* Hero Section */}
         <section className="relative py-24 md:py-32 text-center">

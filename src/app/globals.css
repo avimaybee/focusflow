@@ -150,6 +150,24 @@
   .announcement-message {
     @apply flex items-center gap-2 text-sm text-muted-foreground;
   }
+
+  /* Navigation Link Underline Animation */
+  .nav-link {
+    @apply relative text-muted-foreground hover:text-foreground transition-colors duration-200;
+  }
+  .nav-link::after {
+    content: '';
+    @apply absolute bottom-[-4px] left-0 block h-0.5 w-0 bg-primary transition-all duration-300;
+  }
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+  .nav-link.nav-link-active {
+    @apply text-foreground;
+  }
+  .nav-link.nav-link-active::after {
+    @apply w-full;
+  }
 }
 
 
