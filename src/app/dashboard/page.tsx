@@ -137,7 +137,10 @@ export default function DashboardPage() {
   // Fetch all study sessions for streak calculation
   // And weekly sessions for chart
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      setIsLoading(false);
+      return;
+    };
     setIsLoading(true);
     const sessionsRef = collection(db, 'users', user.uid, 'studySessions');
     const q = query(sessionsRef, orderBy('createdAt', 'desc'));
@@ -281,7 +284,7 @@ export default function DashboardPage() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );

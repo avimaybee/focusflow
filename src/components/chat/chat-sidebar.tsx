@@ -61,7 +61,7 @@ const SidebarSkeleton = ({ isCollapsed }: { isCollapsed: boolean }) => (
         key={i}
         className={cn(
           'h-8 bg-muted/50 rounded-md animate-pulse',
-          isCollapsed ? 'w-8' : `w-${[48, 32, 40, 36, 24][i]}`
+          isCollapsed ? 'w-10 h-10' : `w-${[48, 32, 40, 36, 24][i]} w-full`
         )}
       />
     ))}

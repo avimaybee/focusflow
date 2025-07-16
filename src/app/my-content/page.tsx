@@ -251,6 +251,7 @@ export default function MyContentPage() {
               const Icon = contentIcons[item.type];
               let collectionName = `${item.type}s`;
               if (item.type === 'flashcardSet') collectionName = 'flashcardSets';
+              if (item.type === 'savedMessage') collectionName = 'savedMessages';
               const linkHref = `/my-content/${collectionName}/${item.id}`;
 
               return (
@@ -357,5 +358,3 @@ export default function MyContentPage() {
     </>
   );
 }
-
-    
