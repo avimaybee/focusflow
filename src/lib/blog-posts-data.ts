@@ -1,6 +1,6 @@
 // src/lib/blog-posts-data.ts
 import { db } from '@/lib/firebase-admin';
-import { Timestamp, query, where } from 'firebase-admin/firestore';
+import { Timestamp } from 'firebase-admin/firestore';
 
 export interface BlogPost {
     id: string;
@@ -15,7 +15,7 @@ export interface BlogPost {
 
 export async function getBlogPost(slug: string): Promise<BlogPost | undefined> {
     const collectionRef = db.collection('publicBlogPosts');
-    const q = query(collectionRef, where('publicSlug', '==', slug));
+    const q = collectionRef.where('publicSlug', '==', slug);
     const snapshot = await q.get();
 
     if (snapshot.empty) {
