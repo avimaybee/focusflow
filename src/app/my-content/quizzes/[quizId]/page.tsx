@@ -1,17 +1,65 @@
 
 'use client';
 
-// Placeholder page for viewing a single quiz.
-// In the future, this will fetch quiz data and render the quiz viewer.
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/auth-context';
+import { useEffect, useState } from 'react';
+import { doc, getDoc, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { QuizViewer } from '@/components/quiz-viewer';
+
+interface Quiz {
+    title: string;
+    quiz: any;
+    createdAt: Timestamp;
+}
 
 export default function QuizDetailPage() {
+  const { user, loading: authLoading } = useAuth();
   const params = useParams();
+  const router = useRouter();
+  const quizId = params.quizId as string;
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+        router.push('/login');
+        return;
+    }
+
+    if (user && quizId) {
+        const fetchQuiz = async () => {
+            const docRef = doc(db, 'users', user.uid, 'quizzes', quizId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                setQuiz(docSnap.data() as Quiz);
+            } else {
+                setQuiz(null);
+            }
+            setIsLoading(false);
+        };
+        fetchQuiz();
+    }
+  }, [user, quizId, authLoading, router]);
+
+  if (isLoading || authLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!quiz) {
+    notFound();
+  }
 
   return (
     <>
@@ -20,18 +68,21 @@ export default function QuizDetailPage() {
             <Button variant="ghost" asChild className="mb-4">
               <Link href="/my-content">← Back to My Content</Link>
             </Button>
-          <Card>
-            <CardHeader>
-              <CardTitle>Quiz Details (WIP)</CardTitle>
-               <CardDescription>
-                This page will display your saved quiz.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading quiz: {params.quizId}</p>
-            </CardContent>
-          </Card>
+            {quiz.quiz ? (
+                <QuizViewer quiz={quiz.quiz} />
+            ) : (
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Quiz Details</CardTitle>
+                    <CardDescription>
+                        This quiz has no data.
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-center py-16">
+                        <p className="text-muted-foreground">Could not load quiz.</p>
+                    </CardContent>
+                </Card>
+            )}
         </div>
       </main>
     </>
