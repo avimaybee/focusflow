@@ -27,14 +27,12 @@ export const Header = () => {
     authModal.onOpen(view);
   };
 
-  // Define the one, consistent set of navigation links
   const baseNavLinks = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/my-content', label: 'My Content' },
     { href: '/blog', label: 'Blog' },
   ];
 
-  // Conditionally add the premium link for non-premium users
   const navLinks = user && !isPremium 
     ? [...baseNavLinks, { href: '/premium', label: 'Premium' }]
     : baseNavLinks;
@@ -45,7 +43,7 @@ export const Header = () => {
   const navContent = (
     <>
       {navLinks.map((link) => {
-        const isActive = pathname === link.href;
+        const isActive = pathname.startsWith(link.href);
         return (
           <Link
             key={link.href + link.label}
@@ -125,7 +123,7 @@ export const Header = () => {
           >
             <nav className="flex flex-col gap-4">
               {navLinks.filter(link => link.href).map((link) => {
-                const isActive = pathname === link.href;
+                const isActive = pathname.startsWith(link.href);
                 return (
                   <Link
                     key={link.href + link.label}
