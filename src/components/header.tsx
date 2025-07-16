@@ -10,9 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthModal } from '@/hooks/use-auth-modal';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
@@ -33,37 +30,24 @@ export const Header = () => {
   const pathname = usePathname();
   const router = useRouter();
   const authModal = useAuthModal();
-  const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   if (pathname.startsWith('/chat')) {
     return null;
   }
 
-  const handleOpenAuthModal = (view: 'login' | 'signup', layoutId: string) => {
-    authModal.onOpen(view, layoutId);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      toast({
-        title: 'Logged Out',
-        description: 'You have been successfully logged out.',
-      });
-      router.push('/');
-    } catch (error) {
-      console.error('Error logging out:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Logout Failed',
-        description: 'An error occurred. Please try again.',
-      });
-    }
+  const handleOpenAuthModal = (view: 'login' | 'signup') => {
+    authModal.onOpen(view);
   };
   
   const isLandingPage = pathname === '/';
-  const navLinks = isLandingPage ? landingNavLinks : appNavLinks;
+  
+  let navLinks = isLandingPage ? landingNavLinks : appNavLinks;
+
+  if (!isLandingPage && user && !isPremium) {
+    navLinks = [...navLinks, { href: '/premium', label: 'Premium' }];
+  }
+
 
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
   const initial = displayName.charAt(0).toUpperCase();
@@ -76,20 +60,17 @@ export const Header = () => {
           <Link
             key={link.href + link.label}
             href={link.href}
+            onClick={() => setIsMobileMenuOpen(false)}
             className={cn(
-              'nav-link',
-              isActive && 'nav-link-active'
+              'relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground',
+              'after:absolute after:bottom-[-4px] after:left-0 after:block after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full',
+              isActive && 'text-foreground after:w-full'
             )}
           >
             {link.label}
           </Link>
         );
       })}
-       {!isLandingPage && user && !isPremium && (
-          <Link href="/premium" className={cn('nav-link', pathname === '/premium' && 'nav-link-active')}>
-              Premium
-          </Link>
-      )}
     </>
   );
 
@@ -110,7 +91,7 @@ export const Header = () => {
         </div>
 
         {/* Center Nav */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+        <nav className="hidden md:flex items-center gap-8">
           {navContent}
         </nav>
 
@@ -132,8 +113,8 @@ export const Header = () => {
             </>
           ) : (
              <div className="hidden md:flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => handleOpenAuthModal('login', 'desktop-login')}>Sign In</Button>
-                <Button size="sm" onClick={() => handleOpenAuthModal('signup', 'desktop-signup')}>Get Started</Button>
+                <Button variant="ghost" size="sm" onClick={() => handleOpenAuthModal('login')}>Sign In</Button>
+                <Button size="sm" onClick={() => handleOpenAuthModal('signup')}>Get Started</Button>
              </div>
           )}
            <button
@@ -158,13 +139,13 @@ export const Header = () => {
             </nav>
             <div className="pt-4 border-t border-border/60">
               {user ? (
-                 <Button asChild className="w-full">
+                 <Button asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
                     <Link href="/chat">Go to Chat</Link>
                  </Button>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" className="w-full" onClick={() => handleOpenAuthModal('login', 'mobile-login')}>Sign In</Button>
-                  <Button size="sm" className="w-full" onClick={() => handleOpenAuthModal('signup', 'mobile-signup')}>Get Started</Button>
+                  <Button variant="ghost" size="sm" className="w-full" onClick={() => { handleOpenAuthModal('login'); setIsMobileMenuOpen(false); }}>Sign In</Button>
+                  <Button size="sm" className="w-full" onClick={() => { handleOpenAuthModal('signup'); setIsMobileMenuOpe(false); }}>Get Started</Button>
                 </div>
               )}
             </div>
