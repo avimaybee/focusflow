@@ -8,6 +8,7 @@ import { WelcomeScreen } from './welcome-screen';
 import { RefObject } from 'react';
 import { ChatMessageSkeleton } from './chat-message-skeleton';
 import type { SmartTool } from '@/components/smart-tools-menu';
+import { SuggestedPrompts } from './suggested-prompts';
 
 interface MessageListProps {
   messages: ChatMessageProps[];
@@ -17,6 +18,8 @@ interface MessageListProps {
   scrollAreaRef: RefObject<HTMLDivElement>;
   onSelectPrompt: (prompt: string) => void;
   onSmartToolAction: (prompt: string) => void;
+  onRegenerate: () => void;
+  suggestions: string[];
 }
 
 export function MessageList({
@@ -27,6 +30,8 @@ export function MessageList({
   scrollAreaRef,
   onSelectPrompt,
   onSmartToolAction,
+  onRegenerate,
+  suggestions,
 }: MessageListProps) {
   if (isHistoryLoading) {
     return (
@@ -50,7 +55,7 @@ export function MessageList({
         {showWelcomeScreen ? (
           <WelcomeScreen onSelectPrompt={onSelectPrompt} />
         ) : (
-          <div className="p-6 md:p-8 space-y-0 max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto">
+          <div className="p-6 md:p-8 space-y-6 max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto">
             {messages.map((msg, index) => {
               const prevMessage = messages[index - 1];
               const nextMessage = messages[index + 1];
@@ -70,6 +75,7 @@ export function MessageList({
                     isFirstInGroup={isFirstInGroup}
                     isLastInGroup={isLastInGroup}
                     onToolAction={handleToolAction}
+                    onRegenerate={onRegenerate}
                   />
                 </motion.div>
               );
@@ -82,6 +88,9 @@ export function MessageList({
                 >
                   <ChatMessageSkeleton />
                 </motion.div>
+            )}
+            {!isSending && suggestions.length > 0 && messages.at(-1)?.role === 'model' && (
+              <SuggestedPrompts suggestions={suggestions} onPromptSelect={onSelectPrompt} />
             )}
           </div>
         )}

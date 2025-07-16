@@ -183,6 +183,13 @@
     @apply mb-0;
 }
 
+.prose-styles > :first-child {
+    @apply mt-0;
+}
+.prose-styles > :last-child {
+    @apply mb-0;
+}
+
 .prose-styles table {
     @apply w-full my-6;
 }

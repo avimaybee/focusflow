@@ -1,4 +1,3 @@
-
 'use server';
 
 import { genkit, MessageData } from 'genkit/beta';
@@ -23,10 +22,6 @@ import { FirestoreSessionStore } from '@/lib/firestore-session-store';
 import { serverTimestamp } from 'firebase-admin/firestore';
 import { ai } from '@/ai/genkit';
 
-/**
- * Fetches the system prompt for a given persona from Firestore.
- * Falls back to a neutral persona if the requested one is not found.
- */
 async function getPersonaPrompt(personaId: string): Promise<string> {
   try {
     const personaRef = db.collection('personas').doc(personaId);
@@ -47,10 +42,6 @@ async function getPersonaPrompt(personaId: string): Promise<string> {
   }
 }
 
-/**
- * Saves the output of a tool call (e.g., a summary, a quiz) to Firestore
- * for the user's persistent "My Content" section.
- */
 async function saveGeneratedContent(
   userId: string,
   toolName: string,
@@ -62,7 +53,6 @@ async function saveGeneratedContent(
   let collectionName = '';
   let sourceText = '';
 
-  // Determine which collection to save to based on the tool used
   switch (toolName) {
     case 'summarizeNotesTool':
       collectionName = 'summaries';
@@ -85,7 +75,7 @@ async function saveGeneratedContent(
       sourceText = (toolInput as { text: string }).text;
       break;
     default:
-      return; // Don't save for other tools
+      return;
   }
 
   const data: Record<string, unknown> = {
@@ -94,7 +84,6 @@ async function saveGeneratedContent(
     createdAt: serverTimestamp(),
   };
 
-  // Shape the data according to the tool's output schema
   switch (toolName) {
     case 'summarizeNotesTool':
       data.title = (output as { title: string }).title || 'Summary';
@@ -130,11 +119,6 @@ async function saveGeneratedContent(
   }
 }
 
-/**
- * The main Genkit flow for handling chat interactions.
- * It uses the Genkit Beta session management API for persistent conversations.
- * This flow is optimized for fast, conversational responses.
- */
 const chatFlow = ai.defineFlow(
   {
     name: 'chatFlow',
@@ -142,36 +126,33 @@ const chatFlow = ai.defineFlow(
       userId: z.string(),
       message: z.string(),
       sessionId: z.string().optional(),
-      persona: z.string().optional(),
-      context: z.string().optional(), // For file uploads as data URIs
+      persona: z.any().optional(),
+      context: z.string().optional(),
     }),
     outputSchema: z.object({
       sessionId: z.string(),
       response: z.string(),
-      // Add fields for structured data
+      suggestions: z.array(z.string()).optional(),
+      rawResponse: z.string().optional(),
       flashcards: z.any().optional(),
       quiz: z.any().optional(),
     }),
   },
   async (input) => {
-    console.log('[DEBUG: chatFlow] Received input:', JSON.stringify(input, null, 2));
     const { userId, message, context, persona } = input;
     const isGuest = userId === 'guest-user';
     
-    // For guests, we don't use a persistent session store.
-    // For logged-in users, we use Firestore for session management.
     const store = isGuest ? undefined : new FirestoreSessionStore(userId);
     
     const session = input.sessionId
       ? await ai.loadSession(input.sessionId, { store })
       : await ai.createSession({ store });
       
-    const personaInstruction = await getPersonaPrompt(persona || 'neutral');
+    const personaInstruction = persona?.prompt || 'You are a helpful AI study assistant.';
 
-    const model = googleAI.model('gemini-2.5-flash-lite-preview-06-17');
-    console.log('Using light model for conversation/routing: gemini-2.5-flash-lite-preview-06-17');
+    const model = googleAI.model('gemini-1.5-flash');
 
-    const systemPrompt = `You are an expert AI assistant and a helpful, conversational study partner. Your primary goal is to provide comprehensive, detailed, and elegantly formatted responses to help users learn effectively.
+    const systemPrompt = `${personaInstruction}
 
 **Response Guidelines:**
 1.  **Be Thorough:** Always provide in-depth explanations. If a user asks to be taught a topic, break it down into logical sections with clear headings. Use analogies, examples, and step-by-step instructions where appropriate.
@@ -181,8 +162,12 @@ const chatFlow = ai.defineFlow(
     *   If you need information from the user to use a tool (like source text for a quiz), you must explain clearly why you need it and suggest ways the user can provide it.
     *   When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.
     *   If you use a tool like 'createFlashcardsTool' or 'createQuizTool', do not add any additional text to your response, just the tool output.
-
-Your responses should be well-structured and use markdown for formatting.`;
+**5. Suggest Follow-up Questions:**
+    *   After every single response, you MUST provide 3 to 5 relevant, interesting, and insightful follow-up questions that the user might have.
+    *   This is not optional. These suggestions should encourage deeper exploration of the topic.
+    *   You MUST format these suggestions as a valid JSON array of strings at the absolute end of your response. There should be nothing after this JSON block.
+    *   Example format:
+    *   {"suggestions": ["What is the Heisenberg Uncertainty Principle?", "How does quantum computing work?", "Who were the key scientists in developing quantum theory?"]}`;
 
     const chat = session.chat({
       model,
@@ -211,19 +196,31 @@ Your responses should be well-structured and use markdown for formatting.`;
     
     const result = await chat.send(userMessageContent);
 
+    console.log('[DEBUG: AI Response Text]', result.text);
+
+    let responseText = result.text;
+    let suggestions: string[] | undefined = undefined;
+
+    const suggestionsMatch = responseText.match(/\{"suggestions":\s*(\[.*?\])\}/);
+    if (suggestionsMatch && suggestionsMatch[1]) {
+      try {
+        suggestions = JSON.parse(suggestionsMatch[1]);
+        responseText = responseText.replace(suggestionsMatch[0], '').trim();
+      } catch (e) {
+        console.error("Failed to parse suggestions JSON:", e);
+      }
+    }
+
     let structuredOutput: { flashcards?: any; quiz?: any } = {};
 
-    // Check the last message for tool calls and extract structured data
     if (result.history && result.history.length > 0) {
       const lastMessage = result.history[result.history.length - 1];
       if (lastMessage.role === 'model' && lastMessage.toolCalls && lastMessage.toolCalls.length > 0) {
         for (const toolCall of lastMessage.toolCalls) {
           if (toolCall.output) {
-              // Save generated content for logged-in users
               if (!isGuest) {
                  await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
               }
-              // Extract structured output to return to the client
               if (toolCall.name === 'createFlashcardsTool') {
                 structuredOutput.flashcards = (toolCall.output as any).flashcards;
               }
@@ -237,7 +234,9 @@ Your responses should be well-structured and use markdown for formatting.`;
     
     return {
       sessionId: session.id,
-      response: result.text,
+      response: responseText,
+      suggestions: suggestions,
+      rawResponse: result.text,
       ...structuredOutput,
     };
   }

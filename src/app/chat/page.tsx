@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
@@ -54,8 +53,8 @@ export default function ChatPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   
-  // State for guest users
   const [guestMessageCount, setGuestMessageCount] = useState(0);
 
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
@@ -64,7 +63,6 @@ export default function ChatPage() {
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Effect to sync the active chat ID with the URL
   useEffect(() => {
     const chatIdFromUrl = params.chatId as string | undefined;
     if (chatIdFromUrl) {
@@ -72,27 +70,21 @@ export default function ChatPage() {
         setActiveChatId(chatIdFromUrl);
       }
     } else {
-      // If there's no chat ID in the URL, it's a new chat.
-      // We check if there *was* an active chat to avoid running this on initial load.
       if (activeChatId) {
         handleNewChat();
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.chatId, activeChatId]);
 
-  // Effect to handle chat history for LOGGED-IN users.
-  // This does NOT manage chat state, only loads history from Firestore on chat select.
   useEffect(() => {
     if (!user || !activeChatId) {
-        if (!user) { // If user logs out, clear any existing local messages
+        if (!user) {
             setMessages([]);
             setGuestMessageCount(0);
         }
         return;
     }
   
-    // This is a one-time read or a listener for the session document
     const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
     
     const unsubscribe = onSnapshot(chatRef, async (docSnapshot) => {
@@ -101,11 +93,10 @@ export default function ChatPage() {
         const history = sessionData.threads?.main || [];
         
         const chatMessagesPromises = history
-          .filter((msg: any) => msg.role !== 'system') // Filter out system prompts
+          .filter((msg: any) => msg.role !== 'system')
           .map(async (msg: any, index: number) => {
             const textContent = msg.content?.find((p: any) => p.text)?.text || '';
 
-            // Handle structured tool output
             let toolCallOutput: any = {};
             if (msg.role === 'model' && msg.toolCalls?.length > 0) {
               const call = msg.toolCalls[0];
@@ -134,7 +125,7 @@ export default function ChatPage() {
         const resolvedMessages = await Promise.all(chatMessagesPromises);
         setMessages(resolvedMessages);
       } else {
-        setMessages([]); // Clear messages if document doesn't exist
+        setMessages([]);
       }
     }, (error) => {
       console.error("Error fetching chat document:", error);
@@ -144,7 +135,6 @@ export default function ChatPage() {
     return () => unsubscribe();
   }, [activeChatId, user, toast]);
 
-  // Effect to scroll to the bottom of the chat when new messages arrive
   useEffect(() => {
     if (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')) {
       const scrollableView = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]')!;
@@ -152,7 +142,6 @@ export default function ChatPage() {
     }
   }, [messages]);
 
-  // Function to start a new chat
   const handleNewChat = () => {
     setActiveChatId(null);
     setMessages([]);
@@ -191,7 +180,16 @@ export default function ChatPage() {
     }
   };
 
-  // Main function to handle sending a message
+  const handleRegenerate = () => {
+    const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
+    if (lastUserMessage && lastUserMessage.rawText) {
+      setMessages(prev => prev.slice(0, -1));
+      handleSendMessage(new Event('submit') as unknown as FormEvent, lastUserMessage.rawText);
+    } else {
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not find a previous prompt to regenerate.' });
+    }
+  };
+
   const handleSendMessage = async (e: FormEvent, prompt?: string) => {
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
@@ -208,6 +206,7 @@ export default function ChatPage() {
     }
 
     setIsSending(true);
+    setSuggestions([]);
 
     const userMessage: ChatMessageProps = {
         id: `user-${Date.now()}`,
@@ -227,11 +226,9 @@ export default function ChatPage() {
     const chatInput = {
       message: messageToSend.trim(),
       sessionId: user ? activeChatId || undefined : undefined,
-      persona: selectedPersonaId,
+      personaId: selectedPersonaId,
       context: attachment?.url,
     };
-
-    console.log('[DEBUG: ChatPage] Sending chatInput:', JSON.stringify(chatInput, null, 2));
   
     setInput('');
     setAttachment(null);
@@ -251,30 +248,31 @@ export default function ChatPage() {
   
       const result = await response.json();
       
+      console.log('[DEBUG: Raw AI Response]', result.rawResponse);
+
+      if (result.suggestions) {
+        setSuggestions(result.suggestions);
+      }
+      
       if (!response.ok) {
         throw { response, result };
       }
       
       if (user && result.sessionId && !activeChatId) {
-        // Logged-in user on a new chat; redirect and let the listener handle the update
         router.push(`/chat/${result.sessionId}`);
         forceRefresh();
       } else if (!user) {
-        // GUEST USER: Manually add AI response to local state.
         const modelResponse: ChatMessageProps = {
             id: `guest-ai-${Date.now()}`,
             role: 'model',
             text: await marked.parse(result.response),
             rawText: result.response,
-            flashcards: result.flashcards, // Pass structured data
-            quiz: result.quiz,             // Pass structured data
+            flashcards: result.flashcards,
+            quiz: result.quiz,
             createdAt: Timestamp.now(),
         };
         setMessages(prev => [...prev, modelResponse]);
-      } else if (user) {
-        // LOGGED-IN USER (existing chat): Do nothing. The Firestore onSnapshot listener will handle the update.
       }
-  
     } catch (error: any) {
       console.error("Client-side send message error:", error);
       const description = error.result?.error || error.message || 'An unknown error occurred.';
@@ -380,6 +378,8 @@ export default function ChatPage() {
             const syntheticEvent = {} as FormEvent;
             handleSendMessage(syntheticEvent, prompt);
           }}
+          onRegenerate={handleRegenerate}
+          suggestions={suggestions}
         />
 
         <div className="w-full bg-background">

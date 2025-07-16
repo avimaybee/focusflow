@@ -229,9 +229,9 @@ export function ChatSidebar({
 
         <div className="flex items-center justify-center mb-4">
           <Button
-            variant="outline"
+            variant="ghost"
             className={cn(
-              'w-full mx-4',
+              'w-full mx-4 border border-dashed',
               isCollapsed && 'w-auto h-10 px-2'
             )}
             onClick={onNewChat}

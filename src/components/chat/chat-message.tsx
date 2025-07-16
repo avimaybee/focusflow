@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, Copy, RefreshCw, User, Album, HelpCircle, Save, RotateCw } from 'lucide-react';
+import { Bot, User, Album, HelpCircle, Save, RotateCw } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import { FlashcardViewer } from './flashcard-viewer';
@@ -69,18 +69,6 @@ export function ChatMessage({
   const { user } = useAuth();
   const { toast } = useToast();
   const contentRef = React.useRef<HTMLDivElement>(null);
-
-  const handleCopy = () => {
-    const textToCopy =
-      rawText || (typeof text === 'string' ? text.replace(/<[^>]*>/g, '') : '');
-    if (textToCopy) {
-      navigator.clipboard.writeText(textToCopy);
-      toast({
-        title: 'Copied to clipboard!',
-        description: 'The message content has been copied.',
-      });
-    }
-  };
 
   const handleSave = async () => {
     if (!user || !rawText) {
@@ -162,10 +150,8 @@ export function ChatMessage({
   return (
     <div
       className={cn(
-        'group flex items-start gap-3 animate-in fade-in-50 slide-in-from-bottom-2 duration-500',
-        isUser && 'justify-end',
-        !isFirstInGroup && 'mt-1',
-        isFirstInGroup && 'mt-4'
+        'group flex items-start gap-3',
+        isUser && 'justify-end'
       )}
     >
       {!isUser && avatar}
@@ -210,14 +196,6 @@ export function ChatMessage({
           {!isUser && !isError && onToolAction && rawText && (
             <TooltipProvider>
               <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
-                <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleCopy}>
-                            <Copy className="h-4 w-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>Copy</p></TooltipContent>
-                </Tooltip>
                 {isLastInGroup && (
                   <Tooltip delayDuration={300}>
                       <TooltipTrigger asChild>

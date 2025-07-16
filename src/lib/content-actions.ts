@@ -1,229 +1,35 @@
-
 'use server';
 
-import { db } from '@/lib/firebase-admin';
-import { slugify } from '@/lib/utils';
+import { db } from './firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
 /**
- * Makes a user's summary public.
- *
+ * Saves a specific chat message to a user's "Saved Messages" collection.
  * @param userId The ID of the user.
- * @param summaryId The ID of the summary to make public.
- * @returns The public slug of the summary.
+ * @param messageContent The text content of the message to save.
  */
-export async function makeSummaryPublic(userId: string, summaryId: string): Promise<string> {
-  const userSummaryRef = db.collection('users').doc(userId).collection('summaries').doc(summaryId);
-  const publicSummariesCollection = db.collection('publicSummaries');
-
-  const summaryDoc = await userSummaryRef.get();
-  if (!summaryDoc.exists) {
-    throw new Error('Summary not found.');
+export async function saveChatMessage(userId: string, messageContent: string) {
+  if (!userId || !messageContent) {
+    throw new Error('User ID and message content are required.');
   }
-
-  const summaryData = summaryDoc.data()!;
-  const title = summaryData.title || 'Untitled Summary';
-  let baseSlug = slugify(title);
-  let publicSlug = baseSlug;
-  let attempts = 0;
-
-  // Find a unique slug
-  while ((await publicSummariesCollection.where('publicSlug', '==', publicSlug).get()).size > 0) {
-    attempts++;
-    publicSlug = `${baseSlug}-${attempts}`;
-  }
-
-  const publicSummaryData = {
-    ...summaryData,
-    publicSlug,
-    originalUserId: userId,
-    publishedAt: FieldValue.serverTimestamp(),
-  };
-
-  await publicSummariesCollection.doc(publicSlug).set(publicSummaryData);
-  await userSummaryRef.update({
-    isPublic: true,
-    publicSlug: publicSlug,
+  const savedMessagesRef = db.collection('users').doc(userId).collection('savedMessages');
+  await savedMessagesRef.add({
+    content: messageContent,
+    savedAt: FieldValue.serverTimestamp(),
   });
-
-  return publicSlug;
+  return { success: true };
 }
-
-export async function makeFlashcardsPublic(userId: string, setId: string): Promise<string> {
-    const userSetRef = db.collection('users').doc(userId).collection('flashcardSets').doc(setId);
-    const publicCollection = db.collection('publicFlashcardSets');
-  
-    const doc = await userSetRef.get();
-    if (!doc.exists) throw new Error('Flashcard set not found.');
-  
-    const data = doc.data()!;
-    const title = data.title || 'Untitled Flashcards';
-    let baseSlug = slugify(title);
-    let publicSlug = baseSlug;
-    let attempts = 0;
-  
-    while ((await publicCollection.where('publicSlug', '==', publicSlug).get()).size > 0) {
-      attempts++;
-      publicSlug = `${baseSlug}-${attempts}`;
-    }
-  
-    const publicData = {
-      ...data,
-      publicSlug,
-      originalUserId: userId,
-      publishedAt: FieldValue.serverTimestamp(),
-    };
-  
-    await publicCollection.doc(publicSlug).set(publicData);
-    await userSetRef.update({ isPublic: true, publicSlug });
-  
-    return publicSlug;
-}
-
-export async function makeQuizPublic(userId: string, quizId: string): Promise<string> {
-    const userQuizRef = db.collection('users').doc(userId).collection('quizzes').doc(quizId);
-    const publicCollection = db.collection('publicQuizzes');
-
-    const doc = await userQuizRef.get();
-    if (!doc.exists) throw new Error('Quiz not found.');
-
-    const data = doc.data()!;
-    const title = data.title || 'Untitled Quiz';
-    let baseSlug = slugify(title);
-    let publicSlug = baseSlug;
-    let attempts = 0;
-
-    while ((await publicCollection.where('publicSlug', '==', publicSlug).get()).size > 0) {
-        attempts++;
-        publicSlug = `${baseSlug}-${attempts}`;
-    }
-
-    const publicData = {
-        ...data,
-        publicSlug,
-        originalUserId: userId,
-        publishedAt: FieldValue.serverTimestamp(),
-    };
-
-    await publicCollection.doc(publicSlug).set(publicData);
-    await userQuizRef.update({ isPublic: true, publicSlug });
-
-    return publicSlug;
-}
-
-export async function makeStudyPlanPublic(userId: string, planId: string): Promise<string> {
-    const userPlanRef = db.collection('users').doc(userId).collection('studyPlans').doc(planId);
-    const publicCollection = db.collection('publicStudyPlans');
-
-    const doc = await userPlanRef.get();
-    if (!doc.exists) throw new Error('Study plan not found.');
-
-    const data = doc.data()!;
-    const title = data.title || 'Untitled Study Plan';
-    let baseSlug = slugify(title);
-    let publicSlug = baseSlug;
-    let attempts = 0;
-
-    while ((await publicCollection.where('publicSlug', '==', publicSlug).get()).size > 0) {
-        attempts++;
-        publicSlug = `${baseSlug}-${attempts}`;
-    }
-
-    const publicData = {
-        ...data,
-        publicSlug,
-        originalUserId: userId,
-        publishedAt: FieldValue.serverTimestamp(),
-    };
-
-    await publicCollection.doc(publicSlug).set(publicData);
-    await userPlanRef.update({ isPublic: true, publicSlug });
-
-    return publicSlug;
-}
-
-export async function publishAsBlog(userId: string, contentId: string, contentType: 'summary' | 'savedMessage', seoData: { title: string; excerpt: string; slug: string; tags: string[] }): Promise<string> {
-    const collectionName = contentType === 'summary' ? 'summaries' : 'savedMessages';
-    const contentField = contentType === 'summary' ? 'summary' : 'content';
-    
-    const contentRef = db.collection('users').doc(userId).collection(collectionName).doc(contentId);
-    const publicBlogCollection = db.collection('publicBlogPosts');
-
-    const contentDoc = await contentRef.get();
-    if (!contentDoc.exists) {
-        throw new Error(`${contentType} not found.`);
-    }
-
-    const contentData = contentDoc.data()!;
-    const user = (await db.collection('users').doc(userId).get()).data();
-
-    const publicSlug = seoData.slug;
-    const publicBlogData = {
-        title: seoData.title,
-        excerpt: seoData.excerpt,
-        publicSlug: publicSlug,
-        tags: seoData.tags,
-        content: contentData[contentField],
-        author: user?.displayName || 'Anonymous',
-        originalUserId: userId,
-        originalContentId: contentId,
-        publishedAt: FieldValue.serverTimestamp(),
-    };
-
-    await publicBlogCollection.doc(publicSlug).set(publicBlogData);
-    await contentRef.update({
-        isPublishedAsBlog: true,
-        blogSlug: publicSlug,
-    });
-
-    return publicSlug;
-}
-
 
 /**
- * Saves a chat message to the user's content.
+ * Deletes a chat session from a user's account.
  * @param userId The ID of the user.
- * @param messageContent The raw text content of the message.
+ * @param chatId The ID of the chat to delete.
  */
-export async function saveChatMessage(userId: string, messageContent: string): Promise<void> {
-    const savedMessagesCollection = db.collection('users').doc(userId).collection('savedMessages');
-    
-    await savedMessagesCollection.add({
-        content: messageContent,
-        createdAt: FieldValue.serverTimestamp(),
-    });
+export async function deleteChat(userId: string, chatId: string) {
+  if (!userId || !chatId) {
+    throw new Error('User ID and Chat ID are required.');
+  }
+  const chatRef = db.collection('users').doc(userId).collection('chats').doc(chatId);
+  await chatRef.delete();
+  return { success: true };
 }
-
-export async function deleteContent(userId: string, contentId: string, type: string): Promise<void> {
-    const collectionName = type === 'flashcardSet' ? 'flashcardSets' : `${type}s`;
-    const contentRef = db.collection('users').doc(userId).collection(collectionName).doc(contentId);
-    
-    // Optional: Also delete the public version if it exists
-    const doc = await contentRef.get();
-    if (doc.exists && doc.data()?.isPublic) {
-        const publicSlug = doc.data()?.publicSlug;
-        if (publicSlug) {
-            const publicCollectionName = `public${collectionName.charAt(0).toUpperCase() + collectionName.slice(1)}`;
-            await db.collection(publicCollectionName).doc(publicSlug).delete();
-        }
-    }
-
-    await contentRef.delete();
-}
-
-export async function deleteChat(userId: string, chatId: string): Promise<void> {
-    const chatRef = db.collection('users').doc(userId).collection('chats').doc(chatId);
-    await chatRef.delete();
-}
-
-export async function updateContent(userId: string, contentId: string, type: 'summary' | 'savedMessage', data: Record<string, any>): Promise<void> {
-    const collectionName = type === 'summary' ? 'summaries' : 'savedMessages';
-    const contentRef = db.collection('users').doc(userId).collection(collectionName).doc(contentId);
-    
-    await contentRef.update({
-        ...data,
-        updatedAt: FieldValue.serverTimestamp(),
-    });
-}
-
-    
