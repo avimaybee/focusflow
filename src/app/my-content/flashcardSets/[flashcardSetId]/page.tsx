@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -35,6 +35,7 @@ export default function FlashcardSetDetailPage() {
 
         if (user && flashcardSetId) {
             const fetchSet = async () => {
+                setIsLoading(true);
                 const docRef = doc(db, 'users', user.uid, 'flashcardSets', flashcardSetId);
                 const docSnap = await getDoc(docRef);
 
@@ -62,14 +63,18 @@ export default function FlashcardSetDetailPage() {
     }
 
   return (
-    <>
-      <main className="flex-grow bg-secondary/30">
+    <main className="flex-grow bg-secondary/30">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
             <Button variant="ghost" asChild className="mb-4">
               <Link href="/my-content">← Back to My Content</Link>
             </Button>
             {flashcardSet.flashcards && flashcardSet.flashcards.length > 0 ? (
-                <FlashcardViewer flashcards={flashcardSet.flashcards} />
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>{flashcardSet.title}</CardTitle>
+                    </CardHeader>
+                    <FlashcardViewer flashcards={flashcardSet.flashcards} />
+                </Card>
             ) : (
                 <Card>
                     <CardHeader>
@@ -78,13 +83,9 @@ export default function FlashcardSetDetailPage() {
                         This set has no flashcards.
                     </CardDescription>
                     </CardHeader>
-                    <CardContent className="text-center py-16">
-                    <p className="text-muted-foreground">Could not load flashcards.</p>
-                    </CardContent>
                 </Card>
             )}
         </div>
-      </main>
-    </>
+    </main>
   );
 }

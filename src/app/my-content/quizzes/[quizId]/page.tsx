@@ -1,8 +1,6 @@
 
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, notFound, useRouter } from 'next/navigation';
@@ -11,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { QuizViewer } from '@/components/quiz-viewer';
+import { Button } from '@/components/ui/button';
 
 interface Quiz {
     title: string;
@@ -35,6 +34,7 @@ export default function QuizDetailPage() {
 
     if (user && quizId) {
         const fetchQuiz = async () => {
+            setIsLoading(true);
             const docRef = doc(db, 'users', user.uid, 'quizzes', quizId);
             const docSnap = await getDoc(docRef);
 
@@ -62,8 +62,7 @@ export default function QuizDetailPage() {
   }
 
   return (
-    <>
-      <main className="flex-grow bg-secondary/30">
+    <main className="flex-grow bg-secondary/30">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
             <Button variant="ghost" asChild className="mb-4">
               <Link href="/my-content">← Back to My Content</Link>
@@ -71,20 +70,9 @@ export default function QuizDetailPage() {
             {quiz.quiz ? (
                 <QuizViewer quiz={quiz.quiz} />
             ) : (
-                <Card>
-                    <CardHeader>
-                    <CardTitle>Quiz Details</CardTitle>
-                    <CardDescription>
-                        This quiz has no data.
-                    </CardDescription>
-                    </CardHeader>
-                    <CardContent className="text-center py-16">
-                        <p className="text-muted-foreground">Could not load quiz.</p>
-                    </CardContent>
-                </Card>
+                <p>This quiz could not be loaded.</p>
             )}
         </div>
-      </main>
-    </>
+    </main>
   );
 }

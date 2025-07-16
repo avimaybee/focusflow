@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 import { makeSummaryPublic } from '@/lib/content-actions';
 import { useToast } from '@/hooks/use-toast';
+import { marked } from 'marked';
 
 interface Summary {
   id: string;
@@ -34,27 +35,29 @@ export default function SummaryDetailPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
+  const [htmlContent, setHtmlContent] = useState('');
 
   useEffect(() => {
-    // Wait until auth is resolved
     if (authLoading) return;
 
-    // If no user after loading, redirect
     if (!user) {
       router.push('/login');
       return;
     }
     
-    // If we have a user and ID, fetch the data
     if (user && summaryId) {
       const fetchSummary = async () => {
+        setIsLoading(true);
         const docRef = doc(db, 'users', user.uid, 'summaries', summaryId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setSummary({ id: docSnap.id, ...docSnap.data() } as Summary);
+          const data = { id: docSnap.id, ...docSnap.data() } as Summary;
+          setSummary(data);
+          const parsedHtml = await marked.parse(data.summary);
+          setHtmlContent(parsedHtml);
         } else {
-          setSummary(null); // Explicitly set to null if not found
+          setSummary(null);
         }
         setIsLoading(false);
       };
@@ -101,8 +104,7 @@ export default function SummaryDetailPage() {
   }
 
   return (
-    <>
-      <main className="flex-grow bg-secondary/30">
+    <main className="flex-grow bg-secondary/30">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
           <Button variant="ghost" asChild className="mb-4">
               <Link href="/my-content">← Back to My Content</Link>
@@ -114,15 +116,16 @@ export default function SummaryDetailPage() {
                 Created on {format(summary.createdAt.toDate(), 'MMMM dd, yyyy')}
               </CardDescription>
               <div className="flex gap-2 pt-2">
-                {summary.keywords.map(keyword => (
+                {summary.keywords && summary.keywords.map(keyword => (
                     <Badge key={keyword} variant="secondary">{keyword}</Badge>
                 ))}
               </div>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-invert max-w-none">
-                <p>{summary.summary}</p>
-              </div>
+              <div 
+                className="prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: htmlContent }}
+              />
             </CardContent>
           </Card>
            <div className="mt-4 flex gap-2">
@@ -141,7 +144,6 @@ export default function SummaryDetailPage() {
             <Button variant="outline" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4"/> Print</Button>
           </div>
         </div>
-      </main>
-    </>
+    </main>
   );
 }

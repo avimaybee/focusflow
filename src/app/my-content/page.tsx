@@ -66,58 +66,63 @@ export default function MyContentPage() {
       setIsLoading(true);
       const contentTypes = ['summaries', 'quizzes', 'flashcardSets', 'savedMessages', 'studyPlans'];
       const promises = contentTypes.map(async (type) => {
-        const contentRef = collection(db, 'users', user.uid, type);
+        const collectionName = type === 'flashcardSet' ? 'flashcardSets' : type;
+        const contentRef = collection(db, 'users', user.uid, collectionName);
         const q = query(contentRef, orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => {
             const data = doc.data();
             let description = '';
             let title = data.title;
-            let itemType: ContentItem['type'] = 'summary';
+            let itemType: ContentItem['type'] | null = null;
 
             switch (type) {
                 case 'summaries':
-                    description = data.summary;
+                    description = data.summary || 'No summary content.';
                     itemType = 'summary';
                     break;
                 case 'quizzes':
-                    description = `A quiz on "${data.sourceText}"`;
+                    description = data.sourceText ? `A quiz on "${data.sourceText}"` : 'A quiz with multiple questions.';
                     itemType = 'quiz';
                     break;
                 case 'flashcardSets':
-                    description = `Flashcards for "${data.sourceText}"`;
+                    description = data.sourceText ? `Flashcards for "${data.sourceText}"` : 'A set of flashcards.';
                     itemType = 'flashcardSet';
                     break;
                 case 'studyPlans':
-                    description = `A study plan for "${data.sourceText}"`;
+                    description = data.sourceText ? `A study plan for "${data.sourceText}"` : 'A study plan.';
                     itemType = 'studyPlan';
                     break;
                 case 'savedMessages':
-                    description = data.content;
+                    description = data.content || 'No content.';
                     title = `Saved Message`;
                     itemType = 'savedMessage';
                     break;
             }
 
+            if (!itemType) return null;
+
             return {
                 id: doc.id,
                 type: itemType,
-                title: title,
+                title: title || 'Untitled',
                 description: description,
                 createdAt: data.createdAt as Timestamp,
                 isPublic: data.isPublic || false,
                 publicSlug: data.publicSlug || null,
             };
-        });
+        }).filter(item => item !== null);
       });
 
       const fetchedContent = (await Promise.all(promises)).flat();
-      fetchedContent.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
+      fetchedContent.sort((a, b) => b!.createdAt.toMillis() - a!.createdAt.toMillis());
       setAllContent(fetchedContent as ContentItem[]);
       setIsLoading(false);
     };
 
-    fetchContent();
+    if (!authLoading) {
+      fetchContent();
+    }
   }, [user, authLoading]);
 
 
@@ -239,7 +244,9 @@ export default function MyContentPage() {
         <AnimatePresence>
             {filteredContent.map((item) => {
             const Icon = contentIcons[item.type];
-            const linkHref = item.type === 'savedMessage' ? `/my-content/summaries/${item.id}` : `/my-content/${item.type}s/${item.id}`;
+            let collectionName = `${item.type}s`;
+            if (item.type === 'flashcardSet') collectionName = 'flashcardSets';
+            const linkHref = `/my-content/${collectionName}/${item.id}`;
 
             return (
                 <motion.div
@@ -318,31 +325,29 @@ export default function MyContentPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-grow bg-secondary/30">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col items-center text-center mb-8">
-            <h1 className="text-4xl font-bold font-heading">My Content</h1>
-            <p className="text-lg text-muted-foreground mt-1 max-w-2xl">
-              All of your generated study materials, saved in one place.
-            </p>
-            <div className="mt-6">
-              <ExpandedTabs tabs={tabs} onTabChange={setActiveTab} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {renderContent()}
+    <main className="flex-grow bg-secondary/30">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col items-center text-center mb-8">
+          <h1 className="text-4xl font-bold font-heading">My Content</h1>
+          <p className="text-lg text-muted-foreground mt-1 max-w-2xl">
+            All of your generated study materials, saved in one place.
+          </p>
+          <div className="mt-6">
+            <ExpandedTabs tabs={tabs} onTabChange={setActiveTab} />
           </div>
         </div>
-        {selectedSummary && (
-            <PublishAsBlogModal
-                isOpen={!!selectedSummary}
-                onOpenChange={() => setSelectedSummary(null)}
-                summary={selectedSummary}
-            />
-        )}
-      </main>
-    </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {renderContent()}
+        </div>
+      </div>
+      {selectedSummary && (
+          <PublishAsBlogModal
+              isOpen={!!selectedSummary}
+              onOpenChange={() => setSelectedSummary(null)}
+              summary={selectedSummary}
+          />
+      )}
+    </main>
   );
 }
