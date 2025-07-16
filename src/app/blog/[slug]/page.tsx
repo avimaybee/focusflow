@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { format } from 'date-fns';
 import { marked } from 'marked';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 type Props = {
   params: { slug: string };
@@ -57,23 +59,24 @@ export default async function BlogPostPage({ params }: Props) {
     const publishedDate = format(new Date(post.source === 'local' ? post.datePublished : post.publishedAt), 'MMMM d, yyyy');
 
     return (
-        <>
-            <div className="container mx-auto px-4 py-12 max-w-3xl">
-                <article>
-                    <header className="mb-8">
-                        <h1 className="text-4xl md:text-5xl font-bold font-heading text-center leading-tight">
-                            {post.title}
-                        </h1>
-                        <p className="mt-4 text-center text-muted-foreground">
-                            By {post.author} on {publishedDate}
-                        </p>
-                    </header>
-                    <div
-                        className="prose prose-lg prose-invert mx-auto"
-                        dangerouslySetInnerHTML={{ __html: post.content }}
-                    />
-                </article>
-            </div>
-        </>
+        <div className="container mx-auto px-4 py-12 max-w-3xl">
+            <Button variant="ghost" asChild className="mb-8">
+                <Link href="/blog">← Back to Blog</Link>
+            </Button>
+            <article>
+                <header className="mb-8">
+                    <h1 className="text-4xl md:text-5xl font-bold font-heading text-center leading-tight">
+                        {post.title}
+                    </h1>
+                    <p className="mt-4 text-center text-muted-foreground">
+                        By {post.author} on {publishedDate}
+                    </p>
+                </header>
+                <div
+                    className="prose prose-lg prose-invert mx-auto"
+                    dangerouslySetInnerHTML={{ __html: post.content }}
+                />
+            </article>
+        </div>
     );
 }
