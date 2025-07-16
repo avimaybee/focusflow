@@ -7,28 +7,15 @@ import { Logo } from './logo';
 import { useAuth } from '@/context/auth-context';
 import { MessageSquare, Menu, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
-const appNavLinks = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/my-content', label: 'My Content' },
-  { href: '/blog', label: 'Blog' },
-];
-
-const landingNavLinks = [
-  { href: '/#features', label: 'Features' },
-  { href: '/#testimonials', label: 'Testimonials' },
-  { href: '/#faq', label: 'FAQ' },
-];
-
 export const Header = () => {
   const { user, isPremium } = useAuth();
   const pathname = usePathname();
-  const router = useRouter();
   const authModal = useAuthModal();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -39,22 +26,25 @@ export const Header = () => {
   const handleOpenAuthModal = (view: 'login' | 'signup') => {
     authModal.onOpen(view);
   };
-  
-  const isLandingPage = pathname === '/';
-  
-  let navLinks = isLandingPage ? landingNavLinks : appNavLinks;
 
-  if (!isLandingPage && user && !isPremium) {
-    navLinks = [...navLinks, { href: '/premium', label: 'Premium' }];
-  }
+  // Define the one, consistent set of navigation links
+  const baseNavLinks = [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/my-content', label: 'My Content' },
+    { href: '/blog', label: 'Blog' },
+  ];
 
+  // Conditionally add the premium link for non-premium users
+  const navLinks = user && !isPremium 
+    ? [...baseNavLinks, { href: '/premium', label: 'Premium' }]
+    : baseNavLinks;
 
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
   const initial = displayName.charAt(0).toUpperCase();
 
   const navContent = (
     <>
-      {navLinks.filter(link => link.href).map((link) => {
+      {navLinks.map((link) => {
         const isActive = pathname === link.href;
         return (
           <Link
@@ -134,7 +124,22 @@ export const Header = () => {
             className="absolute top-full inset-x-0 bg-background/95 border-t border-border/80 p-4 space-y-4 md:hidden"
           >
             <nav className="flex flex-col gap-4">
-              {navContent}
+              {navLinks.filter(link => link.href).map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href + link.label}
+                    href={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'nav-link',
+                      isActive && 'nav-link-active'
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
             </nav>
             <div className="pt-4 border-t border-border/60">
               {user ? (
