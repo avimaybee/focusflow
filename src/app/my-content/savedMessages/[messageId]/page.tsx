@@ -8,12 +8,13 @@ import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { updateContent } from '@/lib/content-actions';
+import { marked } from 'marked';
 
 interface SavedMessage {
   content: string;
@@ -32,6 +33,8 @@ export default function SavedMessageDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [renderedContent, setRenderedContent] = useState('');
 
   useEffect(() => {
     if (authLoading) return;
@@ -51,6 +54,7 @@ export default function SavedMessageDetailPage() {
           const data = docSnap.data() as SavedMessage;
           setMessage(data);
           setContent(data.content);
+          setRenderedContent(await marked.parse(data.content));
         } else {
           setMessage(null);
         }
@@ -67,12 +71,17 @@ export default function SavedMessageDetailPage() {
   };
 
   const handleUpdate = async () => {
-    if (!user || !hasChanges) return;
+    if (!user || !hasChanges) {
+      setEditMode(false);
+      return;
+    };
     setIsSaving(true);
     try {
       await updateContent(user.uid, messageId, 'savedMessage', { content });
+      setRenderedContent(await marked.parse(content));
       toast({ title: 'Success!', description: 'Saved message has been updated.' });
       setHasChanges(false);
+      setEditMode(false);
     } catch (error) {
       console.error('Failed to update message:', error);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not update the message.' });
@@ -80,6 +89,14 @@ export default function SavedMessageDetailPage() {
       setIsSaving(false);
     }
   };
+  
+  const handleToggleEdit = () => {
+    if (editMode && hasChanges) {
+        handleUpdate();
+    } else {
+        setEditMode(!editMode);
+    }
+  }
 
   if (isLoading || authLoading) {
     return (
@@ -100,9 +117,13 @@ export default function SavedMessageDetailPage() {
           <Button variant="ghost" asChild>
             <Link href="/my-content">← Back to My Content</Link>
           </Button>
-          <Button onClick={handleUpdate} disabled={!hasChanges || isSaving}>
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            {hasChanges ? 'Save Changes' : 'Saved'}
+          <Button onClick={handleToggleEdit} disabled={isSaving}>
+            {editMode ? (
+                isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />
+            ) : (
+                <Pencil className="mr-2 h-4 w-4" />
+            )}
+            {editMode ? 'Save' : 'Edit'}
           </Button>
         </div>
         <Card>
@@ -113,17 +134,22 @@ export default function SavedMessageDetailPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Textarea
-              value={content}
-              onChange={handleContentChange}
-              className="w-full h-auto min-h-[400px] border-none focus-visible:ring-0 p-0 bg-transparent text-base"
-              placeholder="Start writing..."
-            />
+            {editMode ? (
+                <Textarea
+                    value={content}
+                    onChange={handleContentChange}
+                    className="w-full h-auto min-h-[400px] border rounded-md p-2 bg-transparent text-base focus-visible:ring-1"
+                    placeholder="Start writing..."
+                />
+            ) : (
+                 <div
+                    className="prose-styles min-h-[400px]"
+                    dangerouslySetInnerHTML={{ __html: renderedContent }}
+                />
+            )}
           </CardContent>
         </Card>
       </div>
     </main>
   );
 }
-
-    

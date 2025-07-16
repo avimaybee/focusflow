@@ -6,16 +6,17 @@ import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { useParams, notFound, useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Share2, Printer, Save } from 'lucide-react';
+import { Loader2, Share2, Printer, Save, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { makeSummaryPublic, updateContent } from '@/lib/content-actions';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { marked } from 'marked';
 
 interface Summary {
   id: string;
@@ -37,10 +38,12 @@ export default function SummaryDetailPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [renderedContent, setRenderedContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -61,6 +64,7 @@ export default function SummaryDetailPage() {
           setSummary(data);
           setTitle(data.title);
           setContent(data.summary);
+          setRenderedContent(await marked.parse(data.summary));
         } else {
           setSummary(null);
         }
@@ -72,13 +76,18 @@ export default function SummaryDetailPage() {
   }, [user, summaryId, authLoading, router]);
   
   const handleUpdate = async () => {
-    if (!user || !summary || !hasChanges) return;
+    if (!user || !summary || !hasChanges) {
+        setEditMode(false);
+        return;
+    }
     setIsSaving(true);
     try {
       const contentToSave = { title, summary: content };
       await updateContent(user.uid, summary.id, 'summary', contentToSave);
+      setRenderedContent(await marked.parse(content));
       toast({ title: 'Success!', description: 'Your summary has been updated.' });
       setHasChanges(false);
+      setEditMode(false);
     } catch (error) {
        console.error(error);
       toast({
@@ -88,6 +97,14 @@ export default function SummaryDetailPage() {
       });
     } finally {
         setIsSaving(false);
+    }
+  };
+
+  const handleToggleEdit = () => {
+    if (editMode && hasChanges) {
+        handleUpdate();
+    } else {
+        setEditMode(!editMode);
     }
   };
 
@@ -115,7 +132,6 @@ export default function SummaryDetailPage() {
     }
   };
 
-
   if (isLoading || authLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -136,19 +152,27 @@ export default function SummaryDetailPage() {
                   <Link href="/my-content">← Back to My Content</Link>
               </Button>
               <div className="flex gap-2">
-                <Button onClick={handleUpdate} disabled={!hasChanges || isSaving}>
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {hasChanges ? 'Save Changes' : 'Saved'}
+                <Button onClick={handleToggleEdit} disabled={isSaving}>
+                    {editMode ? (
+                        isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />
+                    ) : (
+                        <Pencil className="mr-2 h-4 w-4" />
+                    )}
+                    {editMode ? 'Save' : 'Edit'}
                 </Button>
               </div>
           </div>
           <Card>
             <CardHeader>
-              <Input 
-                value={title}
-                onChange={(e) => { setTitle(e.target.value); setHasChanges(true); }}
-                className="text-3xl font-bold border-none focus-visible:ring-0 p-0"
-              />
+              {editMode ? (
+                <Input 
+                    value={title}
+                    onChange={(e) => { setTitle(e.target.value); setHasChanges(true); }}
+                    className="text-3xl font-bold border-none focus-visible:ring-0 p-0"
+                />
+              ) : (
+                <h1 className="text-3xl font-bold">{title}</h1>
+              )}
               <CardDescription>
                 Created on {format(summary.createdAt.toDate(), 'MMMM dd, yyyy')}
               </CardDescription>
@@ -159,11 +183,18 @@ export default function SummaryDetailPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <Textarea
-                value={content}
-                onChange={(e) => { setContent(e.target.value); setHasChanges(true); }}
-                className="w-full h-auto min-h-[400px] border-none focus-visible:ring-0 p-0 bg-transparent text-base"
-              />
+              {editMode ? (
+                <Textarea
+                    value={content}
+                    onChange={(e) => { setContent(e.target.value); setHasChanges(true); }}
+                    className="w-full h-auto min-h-[400px] border rounded-md p-2 bg-transparent text-base focus-visible:ring-1"
+                />
+              ) : (
+                <div
+                    className="prose-styles min-h-[400px]"
+                    dangerouslySetInnerHTML={{ __html: renderedContent }}
+                />
+              )}
             </CardContent>
           </Card>
            <div className="mt-4 flex gap-2">
@@ -185,5 +216,3 @@ export default function SummaryDetailPage() {
     </main>
   );
 }
-
-    
