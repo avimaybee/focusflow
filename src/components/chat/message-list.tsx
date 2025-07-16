@@ -6,7 +6,7 @@ import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
 import { Loader2 } from 'lucide-react';
 import { WelcomeScreen } from './welcome-screen';
 import { RefObject } from 'react';
-import { EllipsisSpinner } from '../ui/ellipsis-spinner';
+import { ChatMessageSkeleton } from './chat-message-skeleton';
 import type { SmartTool } from '@/components/smart-tools-menu';
 
 interface MessageListProps {
@@ -75,14 +75,13 @@ export function MessageList({
               );
             })}
             {isSending && messages.at(-1)?.role === 'user' && (
-              <ChatMessage
-                role="model"
-                text={
-                  <div className="p-1">
-                    <EllipsisSpinner size="40px" dotSize="8px" />
-                  </div>
-                }
-              />
+               <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                >
+                  <ChatMessageSkeleton />
+                </motion.div>
             )}
           </div>
         )}

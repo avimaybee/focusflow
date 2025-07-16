@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -52,6 +51,8 @@ import { startOfWeek, endOfWeek, format, eachDayOfInterval } from 'date-fns';
 import { getDashboardStats } from '@/lib/dashboard-actions';
 import AnimatedNumberCountdown from '@/components/ui/animated-number-countdown';
 import Link from 'next/link';
+import { StudyStreakCard } from '@/components/dashboard/study-streak-card';
+import { AnimatedNumber } from '@/components/ui/animated-number';
 
 interface StudySession {
   id: string;
@@ -225,7 +226,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (kpiStats) {
         const newEarnedBadges = badges.filter(badge => badge.check(kpiStats, studyStreak));
-        setEarnedBadges(newEarnedBadges);
+        setEarnedBages(newEarnedBadges);
     }
   }, [kpiStats, studyStreak]);
 
@@ -300,22 +301,16 @@ export default function DashboardPage() {
           
           {/* KPI Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-6">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
-                    <Flame className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">🔥 {studyStreak} Days</div>
-                </CardContent>
-            </Card>
+            <StudyStreakCard streak={studyStreak} />
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Summaries Made</CardTitle>
                     <FileText className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{kpiStats?.summariesCount ?? <Loader2 className="h-5 w-5 animate-spin" />}</div>
+                    <div className="text-2xl font-bold">
+                        {kpiStats ? <AnimatedNumber value={kpiStats.summariesCount} /> : <Loader2 className="h-5 w-5 animate-spin" />}
+                    </div>
                 </CardContent>
             </Card>
             <Card>
@@ -324,7 +319,9 @@ export default function DashboardPage() {
                     <HelpCircle className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{kpiStats?.quizzesCount ?? <Loader2 className="h-5 w-5 animate-spin" />}</div>
+                    <div className="text-2xl font-bold">
+                        {kpiStats ? <AnimatedNumber value={kpiStats.quizzesCount} /> : <Loader2 className="h-5 w-5 animate-spin" />}
+                    </div>
                 </CardContent>
             </Card>
             <Card>
@@ -333,7 +330,9 @@ export default function DashboardPage() {
                     <BrainCircuit className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{kpiStats?.flashcardSetsCount ?? <Loader2 className="h-5 w-5 animate-spin" />}</div>
+                    <div className="text-2xl font-bold">
+                        {kpiStats ? <AnimatedNumber value={kpiStats.flashcardSetsCount} /> : <Loader2 className="h-5 w-5 animate-spin" />}
+                    </div>
                 </CardContent>
             </Card>
             <Card>
@@ -342,7 +341,9 @@ export default function DashboardPage() {
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{kpiStats?.studyPlansCount ?? <Loader2 className="h-5 w-5 animate-spin" />}</div>
+                    <div className="text-2xl font-bold">
+                        {kpiStats ? <AnimatedNumber value={kpiStats.studyPlansCount} /> : <Loader2 className="h-5 w-5 animate-spin" />}
+                    </div>
                 </CardContent>
             </Card>
           </div>

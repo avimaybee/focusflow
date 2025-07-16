@@ -1,7 +1,6 @@
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import localFont from 'next/font/local';
+import { Poppins, PT_Sans } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
@@ -9,16 +8,18 @@ import { Providers } from '@/context/providers';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { PageTransitionWrapper } from '@/components/layout/page-transition-wrapper';
 
-const fontHeading = localFont({
-  src: '../assets/fonts/Satoshi-Variable.ttf',
+const fontHeading = Poppins({
+  subsets: ['latin'],
   variable: '--font-heading',
-  weight: '400 700',
+  weight: ['400', '600', '700'],
 });
 
-const fontBody = Inter({
+const fontBody = PT_Sans({
   subsets: ['latin'],
   variable: '--font-body',
+  weight: ['400', '700'],
 });
 
 export const metadata: Metadata = {
@@ -53,7 +54,7 @@ export default function RootLayout({
         <Providers>
           <AuthModal />
           <Header />
-          <main className="flex-grow flex flex-col">{children}</main>
+          <PageTransitionWrapper>{children}</PageTransitionWrapper>
           <Footer />
           <Toaster />
         </Providers>
@@ -61,3 +62,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+
