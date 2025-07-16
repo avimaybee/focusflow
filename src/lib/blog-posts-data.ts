@@ -1,6 +1,6 @@
 // src/lib/blog-posts-data.ts
 import { db } from '@/lib/firebase-admin';
-import { Timestamp } from 'firebase-admin/firestore';
+import { Timestamp, query, where } from 'firebase-admin/firestore';
 
 export interface BlogPost {
     id: string;
