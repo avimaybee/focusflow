@@ -1,9 +1,8 @@
+
 // src/app/quizzes/[slug]/page.tsx
 import { db } from '@/lib/firebase-admin';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { QuizViewer } from '@/components/quiz-viewer';
 
 type Props = {
@@ -54,7 +53,6 @@ export default async function PublicQuizPage({ params }: Props) {
 
   return (
     <>
-      <Header />
       <main className="container mx-auto px-4 py-12">
         <script
             type="application/ld+json"
@@ -63,7 +61,6 @@ export default async function PublicQuizPage({ params }: Props) {
         <h1 className="text-3xl font-bold text-center mb-8">{quiz.title}</h1>
         <QuizViewer quiz={quiz.quiz} />
       </main>
-      <Footer />
     </>
   );
 }

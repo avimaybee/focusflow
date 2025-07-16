@@ -1,9 +1,8 @@
+
 import { getPostBySlug as getLocalPost, getBlogPosts as getLocalBlogPosts } from '@/lib/blog-data';
 import { getBlogPost, getBlogPosts as getDbBlogPosts } from '@/lib/blog-posts-data';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { format } from 'date-fns';
 
 type Props = {
@@ -56,7 +55,6 @@ export default async function BlogPostPage({ params }: Props) {
 
     return (
         <>
-            <Header />
             <div className="container mx-auto px-4 py-12 max-w-3xl">
                 <article>
                     <header className="mb-8">
@@ -73,7 +71,6 @@ export default async function BlogPostPage({ params }: Props) {
                     />
                 </article>
             </div>
-            <Footer />
         </>
     );
 }

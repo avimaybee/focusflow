@@ -6,12 +6,10 @@ import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { useParams, notFound } from 'next/navigation';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, FileText, Share2, Printer } from 'lucide-react';
+import { Loader2, Share2, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
@@ -65,7 +63,6 @@ export default function SummaryDetailPage() {
 
   return (
     <>
-      <Header />
       <main className="flex-grow bg-secondary/30">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
           <Button variant="ghost" asChild className="mb-4">
@@ -95,8 +92,6 @@ export default function SummaryDetailPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }
-

@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Providers } from '@/context/providers';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
 
 const fontHeading = localFont({
   src: '../assets/fonts/Satoshi-Variable.ttf',
@@ -53,6 +54,7 @@ export default function RootLayout({
           <AuthModal />
           <Header />
           <main className="flex-grow flex flex-col">{children}</main>
+          <Footer />
           <Toaster />
         </Providers>
       </body>

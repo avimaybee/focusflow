@@ -4,8 +4,6 @@
 // Placeholder page for viewing a single flashcard set.
 // In the future, this will fetch flashcard data and render the flashcard viewer.
 
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -17,7 +15,6 @@ export default function FlashcardSetDetailPage() {
 
   return (
     <>
-      <Header />
       <main className="flex-grow bg-secondary/30">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
             <Button variant="ghost" asChild className="mb-4">
@@ -37,8 +34,6 @@ export default function FlashcardSetDetailPage() {
           </Card>
         </div>
       </main>
-      <Footer />
     </>
   );
 }
-

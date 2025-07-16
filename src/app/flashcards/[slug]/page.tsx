@@ -1,9 +1,8 @@
+
 // src/app/flashcards/[slug]/page.tsx
 import { db } from '@/lib/firebase-admin';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { FlashcardViewer } from '@/components/flashcard-viewer';
 
 type Props = {
@@ -55,7 +54,6 @@ export default async function PublicFlashcardPage({ params }: Props) {
 
   return (
     <>
-      <Header />
       <main className="container mx-auto px-4 py-12">
         <script
             type="application/ld+json"
@@ -64,7 +62,6 @@ export default async function PublicFlashcardPage({ params }: Props) {
         <h1 className="text-3xl font-bold text-center mb-8">{set.title}</h1>
         <FlashcardViewer flashcards={set.flashcards} />
       </main>
-      <Footer />
     </>
   );
 }

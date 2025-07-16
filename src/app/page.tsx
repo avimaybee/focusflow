@@ -19,7 +19,6 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react';
-import { Footer } from '@/components/footer';
 import { cn } from '@/lib/utils';
 import { GlowingCard } from '@/components/ui/glowing-card';
 import {
@@ -326,7 +325,6 @@ export default function LandingPage() {
           </div>
         </section>
       </div>
-      <Footer />
     </>
   );
 }

@@ -1,9 +1,8 @@
+
 // src/app/summaries/[slug]/page.tsx
 import { db } from '@/lib/firebase-admin';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 
 type Props = {
   params: { slug: string };
@@ -68,7 +67,6 @@ export default async function PublicSummaryPage({ params }: Props) {
 
   return (
     <>
-      <Header />
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         <script
             type="application/ld+json"
@@ -84,7 +82,6 @@ export default async function PublicSummaryPage({ params }: Props) {
             )}
         </article>
       </main>
-      <Footer />
     </>
   );
 }

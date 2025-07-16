@@ -1,14 +1,12 @@
+
 import Link from 'next/link';
 import { posts } from '@/lib/blog-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { MoveRight } from 'lucide-react';
 
 export default function BlogIndexPage() {
   return (
     <>
-      <Header />
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <header className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold font-heading">
@@ -45,7 +43,6 @@ export default function BlogIndexPage() {
           ))}
         </div>
       </div>
-      <Footer />
     </>
   );
 }

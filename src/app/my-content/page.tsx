@@ -13,8 +13,6 @@ import {
   Save,
   Calendar,
 } from 'lucide-react';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -321,7 +319,6 @@ export default function MyContentPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
       <main className="flex-grow bg-secondary/30">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col items-center text-center mb-8">
@@ -346,7 +343,6 @@ export default function MyContentPage() {
             />
         )}
       </main>
-      <Footer />
     </div>
   );
 }

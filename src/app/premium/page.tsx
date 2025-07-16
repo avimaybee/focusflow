@@ -4,8 +4,6 @@
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import Link from 'next/link';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -35,7 +33,6 @@ const premiumFeatures = [
 export default function PremiumPage() {
   return (
     <>
-      <Header />
       <main className="flex-grow bg-secondary/30">
         <div className="container mx-auto px-4 py-12 text-center">
             <Alert className="max-w-2xl mx-auto mb-8 bg-background border-primary/50">
@@ -105,7 +102,6 @@ export default function PremiumPage() {
           </Card>
         </div>
       </main>
-      <Footer />
     </>
   );
 }
