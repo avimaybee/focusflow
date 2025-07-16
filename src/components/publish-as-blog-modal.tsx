@@ -19,22 +19,25 @@ import { publishAsBlog } from '@/lib/content-actions';
 import { useAuth } from '@/context/auth-context';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
     title: z.string().min(10, 'Title must be at least 10 characters.'),
     excerpt: z.string().min(20, 'Excerpt must be at least 20 characters.').max(200, 'Excerpt must be less than 200 characters.'),
     slug: z.string().min(5, 'Slug must be at least 5 characters.'),
-    tags: z.string(),
+    tags: z.string().optional(),
 });
 
 interface PublishAsBlogModalProps {
     isOpen: boolean;
     onOpenChange: (isOpen: boolean) => void;
     summary: { id: string; title: string; description: string; };
+    onSuccess: () => void;
 }
 
-export function PublishAsBlogModal({ isOpen, onOpenChange, summary }: PublishAsBlogModalProps) {
+export function PublishAsBlogModal({ isOpen, onOpenChange, summary, onSuccess }: PublishAsBlogModalProps) {
     const { user } = useAuth();
+    const { toast } = useToast();
     const [isPublishing, setIsPublishing] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -51,14 +54,23 @@ export function PublishAsBlogModal({ isOpen, onOpenChange, summary }: PublishAsB
         if (!user) return;
         setIsPublishing(true);
         try {
-            const tagsArray = values.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+            const tagsArray = values.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [];
             const slug = await publishAsBlog(user.uid, summary.id, { ...values, tags: tagsArray });
-            // You would typically show a success toast here and redirect
-            alert(`Successfully published! Blog post available at /blog/${slug}`);
+            
+            toast({
+                title: "Published!",
+                description: `Your blog post is now live at /blog/${slug}`,
+            });
+
+            onSuccess(); // Refresh the content on the parent page
             onOpenChange(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to publish as blog:', error);
-            // You would typically show an error toast here
+            toast({
+                variant: 'destructive',
+                title: 'Publishing Failed',
+                description: error.message || 'An unexpected error occurred.',
+            });
         } finally {
             setIsPublishing(false);
         }
@@ -121,7 +133,7 @@ export function PublishAsBlogModal({ isOpen, onOpenChange, summary }: PublishAsB
                                 <FormItem>
                                     <FormLabel>Tags (comma-separated)</FormLabel>
                                     <FormControl>
-                                        <Input {...field} />
+                                        <Input placeholder="e.g. AI, productivity, learning" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

@@ -30,6 +30,7 @@ import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { PublishAsBlogModal } from '@/components/publish-as-blog-modal';
 import { makeSummaryPublic, makeFlashcardsPublic, makeQuizPublic, makeStudyPlanPublic, deleteContent } from '@/lib/content-actions';
+import { useToast } from '@/hooks/use-toast';
 
 const contentIcons: { [key: string]: React.ElementType } = {
   summary: FileText,
@@ -51,114 +52,128 @@ interface ContentItem {
 
 export default function MyContentPage() {
   const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = React.useState('All');
   const [allContent, setAllContent] = React.useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [selectedSummary, setSelectedSummary] = React.useState<ContentItem | null>(null);
+  const [isPublishModalOpen, setIsPublishModalOpen] = React.useState(false);
+  const [selectedContent, setSelectedContent] = React.useState<ContentItem | null>(null);
 
-  React.useEffect(() => {
+  const fetchContent = React.useCallback(async () => {
     if (!user) {
-        if (!authLoading) setIsLoading(false);
-        return;
+      if (!authLoading) setIsLoading(false);
+      return;
     }
+    
+    setIsLoading(true);
+    const contentTypes = ['summaries', 'quizzes', 'flashcardSets', 'savedMessages', 'studyPlans'];
+    const promises = contentTypes.map(async (type) => {
+      const collectionName = type === 'flashcardSets' ? 'flashcardSets' : type;
+      const contentRef = collection(db, 'users', user.uid, collectionName);
+      const q = query(contentRef, orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      
+      return querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          let description = '';
+          let title = data.title;
+          let itemType: ContentItem['type'] | null = null;
 
-    const fetchContent = async () => {
-      setIsLoading(true);
-      const contentTypes = ['summaries', 'quizzes', 'flashcardSets', 'savedMessages', 'studyPlans'];
-      const promises = contentTypes.map(async (type) => {
-        const collectionName = type === 'flashcardSet' ? 'flashcardSets' : type;
-        const contentRef = collection(db, 'users', user.uid, collectionName);
-        const q = query(contentRef, orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            let description = '';
-            let title = data.title;
-            let itemType: ContentItem['type'] | null = null;
+          switch (type) {
+              case 'summaries':
+                  description = data.summary || 'No summary content.';
+                  itemType = 'summary';
+                  break;
+              case 'quizzes':
+                  description = data.sourceText ? `A quiz on "${data.sourceText}"` : 'A quiz with multiple questions.';
+                  itemType = 'quiz';
+                  break;
+              case 'flashcardSets':
+                  description = data.sourceText ? `Flashcards for "${data.sourceText}"` : 'A set of flashcards.';
+                  itemType = 'flashcardSet';
+                  break;
+              case 'studyPlans':
+                  description = data.sourceText ? `A study plan for "${data.sourceText}"` : 'A study plan.';
+                  itemType = 'studyPlan';
+                  break;
+              case 'savedMessages':
+                  description = data.content || 'No content.';
+                  title = `Saved Message`;
+                  itemType = 'savedMessage';
+                  break;
+          }
 
-            switch (type) {
-                case 'summaries':
-                    description = data.summary || 'No summary content.';
-                    itemType = 'summary';
-                    break;
-                case 'quizzes':
-                    description = data.sourceText ? `A quiz on "${data.sourceText}"` : 'A quiz with multiple questions.';
-                    itemType = 'quiz';
-                    break;
-                case 'flashcardSets':
-                    description = data.sourceText ? `Flashcards for "${data.sourceText}"` : 'A set of flashcards.';
-                    itemType = 'flashcardSet';
-                    break;
-                case 'studyPlans':
-                    description = data.sourceText ? `A study plan for "${data.sourceText}"` : 'A study plan.';
-                    itemType = 'studyPlan';
-                    break;
-                case 'savedMessages':
-                    description = data.content || 'No content.';
-                    title = `Saved Message`;
-                    itemType = 'savedMessage';
-                    break;
-            }
+          if (!itemType) return null;
 
-            if (!itemType) return null;
+          return {
+              id: doc.id,
+              type: itemType,
+              title: title || 'Untitled',
+              description: description,
+              createdAt: data.createdAt as Timestamp,
+              isPublic: data.isPublic || false,
+              publicSlug: data.publicSlug || null,
+          };
+      }).filter(item => item !== null) as ContentItem[];
+    });
 
-            return {
-                id: doc.id,
-                type: itemType,
-                title: title || 'Untitled',
-                description: description,
-                createdAt: data.createdAt as Timestamp,
-                isPublic: data.isPublic || false,
-                publicSlug: data.publicSlug || null,
-            };
-        }).filter(item => item !== null);
-      });
-
-      const fetchedContent = (await Promise.all(promises)).flat();
-      fetchedContent.sort((a, b) => b!.createdAt.toMillis() - a!.createdAt.toMillis());
-      setAllContent(fetchedContent as ContentItem[]);
-      setIsLoading(false);
-    };
-
-    if (!authLoading) {
-      fetchContent();
-    }
+    const fetchedContent = (await Promise.all(promises)).flat();
+    fetchedContent.sort((a, b) => b!.createdAt.toMillis() - a!.createdAt.toMillis());
+    setAllContent(fetchedContent);
+    setIsLoading(false);
   }, [user, authLoading]);
 
+  React.useEffect(() => {
+    fetchContent();
+  }, [fetchContent]);
 
   const [isSharing, setIsSharing] = React.useState<string | null>(null);
-  const [justShared, setJustShared] = React.useState<string | null>(null);
 
-  const handleShare = async (itemId: string, type: ContentItem['type']) => {
+  const handleShare = async (item: ContentItem) => {
     if (!user) return;
-    setIsSharing(itemId);
+    setIsSharing(item.id);
     try {
       let slug = '';
       let path = '';
-      switch (type) {
+      switch (item.type) {
         case 'summary':
-          slug = await makeSummaryPublic(user.uid, itemId);
+          slug = await makeSummaryPublic(user.uid, item.id);
           path = 'summaries';
           break;
         case 'flashcardSet':
-          slug = await makeFlashcardsPublic(user.uid, itemId);
+          slug = await makeFlashcardsPublic(user.uid, item.id);
           path = 'flashcards';
           break;
         case 'quiz':
-          slug = await makeQuizPublic(user.uid, itemId);
+          slug = await makeQuizPublic(user.uid, item.id);
           path = 'quizzes';
           break;
         case 'studyPlan':
-            slug = await makeStudyPlanPublic(user.uid, itemId);
+            slug = await makeStudyPlanPublic(user.uid, item.id);
             path = 'plans';
             break;
         default:
           throw new Error('Invalid content type for sharing.');
       }
-      setJustShared(`${window.location.origin}/${path}/${slug}`);
+      
+      const publicUrl = `${window.location.origin}/${path}/${slug}`;
+      navigator.clipboard.writeText(publicUrl);
+      
+      toast({
+        title: 'Shared Successfully!',
+        description: `The public link has been copied to your clipboard.`,
+      });
+
+      // Optimistically update UI
+      setAllContent(prev => prev.map(c => c.id === item.id ? { ...c, isPublic: true, publicSlug: slug } : c));
+
     } catch (error) {
-      console.error(`Failed to share ${type}:`, error);
-      // You would typically show a toast notification here
+      console.error(`Failed to share ${item.type}:`, error);
+      toast({
+        variant: 'destructive',
+        title: 'Sharing failed',
+        description: 'There was an error making this content public.',
+      });
     } finally {
       setIsSharing(null);
     }
@@ -170,27 +185,17 @@ export default function MyContentPage() {
     try {
         await deleteContent(user.uid, itemId, type);
         setAllContent(prev => prev.filter(item => item.id !== itemId));
-        // You would typically show a success toast here
+        toast({ title: 'Content Deleted', description: 'The item has been removed.' });
     } catch (error) {
         console.error(`Failed to delete ${type}:`, error);
-        // You would typically show an error toast here
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not delete the item.' });
     }
   };
 
-  React.useEffect(() => {
-    if (justShared) {
-      // You could show a confirmation modal here
-      alert(`Successfully shared! Public URL: ${justShared}`);
-      setJustShared(null);
-      // Refresh content to get public status
-      if (user) {
-          // This is a simplified refresh. In a real app, you might want a more elegant solution.
-          const btn = document.querySelector('button');
-          btn?.click();
-          btn?.click();
-      }
-    }
-  }, [justShared, user]);
+  const handleOpenPublishModal = (content: ContentItem) => {
+    setSelectedContent(content);
+    setIsPublishModalOpen(true);
+  };
 
   const tabs = [
     { title: 'All', icon: LayoutGrid, type: 'tab' as const },
@@ -243,63 +248,63 @@ export default function MyContentPage() {
     return (
         <AnimatePresence>
             {filteredContent.map((item) => {
-            const Icon = contentIcons[item.type];
-            let collectionName = `${item.type}s`;
-            if (item.type === 'flashcardSet') collectionName = 'flashcardSets';
-            const linkHref = `/my-content/${collectionName}/${item.id}`;
+              const Icon = contentIcons[item.type];
+              let collectionName = `${item.type}s`;
+              if (item.type === 'flashcardSet') collectionName = 'flashcardSets';
+              const linkHref = `/my-content/${collectionName}/${item.id}`;
 
-            return (
+              return (
                 <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
                 >
-                <Card className="h-full flex flex-col hover:border-primary/80 hover:bg-muted transition-all">
-                    <CardHeader>
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary/10 rounded-lg">
-                        <Icon className="h-6 w-6 text-primary" />
-                        </div>
-                        <CardTitle className="line-clamp-2">{item.title}</CardTitle>
-                    </div>
-                    </CardHeader>
-                    <CardContent className="flex-grow flex flex-col">
-                    <CardDescription className="flex-grow mb-4 line-clamp-3">
-                        {item.description}
-                    </CardDescription>
-                    <p className="text-xs text-muted-foreground">
-                        Created: {item.createdAt ? formatDistanceToNow(item.createdAt.toDate(), { addSuffix: true }) : 'Just now'}
-                    </p>
-                    </CardContent>
-                    <CardFooter className="p-4 pt-0 flex flex-col gap-2">
-                        <Button asChild className="w-full">
-                           <Link href={linkHref}>View Content</Link>
-                        </Button>
-                        {item.isPublic && (
-                            <Button asChild variant="secondary" className="w-full">
-                                <Link href={`/${item.type}s/${item.publicSlug}`} target="_blank">View Public</Link>
-                            </Button>
-                        )}
-                        {(item.type === 'summary' || item.type === 'flashcardSet' || item.type === 'quiz' || item.type === 'studyPlan') && (
-                            <Button variant="outline" className="w-full" onClick={() => handleShare(item.id, item.type)} disabled={isSharing === item.id}>
-                                {isSharing === item.id ? 'Sharing...' : 'Share'}
-                            </Button>
-                        )}
-                        {item.type === 'summary' && (
-                            <Button variant="secondary" className="w-full" onClick={() => setSelectedSummary(item)}>
-                                Publish as Blog
-                            </Button>
-                        )}
-                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(item.id, item.type)}>
-                            Delete
-                        </Button>
-                    </CardFooter>
-                </Card>
+                  <Card className="h-full flex flex-col hover:border-primary/80 hover:bg-muted transition-all">
+                      <CardHeader>
+                      <div className="flex items-center gap-4">
+                          <div className="p-3 bg-primary/10 rounded-lg">
+                          <Icon className="h-6 w-6 text-primary" />
+                          </div>
+                          <CardTitle className="line-clamp-2">{item.title}</CardTitle>
+                      </div>
+                      </CardHeader>
+                      <CardContent className="flex-grow flex flex-col">
+                      <CardDescription className="flex-grow mb-4 line-clamp-3">
+                          {item.description}
+                      </CardDescription>
+                      <p className="text-xs text-muted-foreground">
+                          Created: {item.createdAt ? formatDistanceToNow(item.createdAt.toDate(), { addSuffix: true }) : 'Just now'}
+                      </p>
+                      </CardContent>
+                      <CardFooter className="p-4 pt-0 flex flex-col gap-2">
+                          <Button asChild className="w-full">
+                            <Link href={linkHref}>View Content</Link>
+                          </Button>
+                          {item.isPublic && item.type !== 'savedMessage' && (
+                              <Button asChild variant="secondary" className="w-full">
+                                  <Link href={`/${collectionName}/${item.publicSlug}`} target="_blank">View Public</Link>
+                              </Button>
+                          )}
+                          {item.type !== 'savedMessage' && (
+                              <Button variant="outline" className="w-full" onClick={() => handleShare(item)} disabled={isSharing === item.id}>
+                                  {isSharing === item.id ? 'Sharing...' : (item.isPublic ? 'Copy Public Link' : 'Share Publicly')}
+                              </Button>
+                          )}
+                          {item.type === 'summary' && (
+                              <Button variant="secondary" className="w-full" onClick={() => handleOpenPublishModal(item)}>
+                                  Publish as Blog
+                              </Button>
+                          )}
+                          <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(item.id, item.type)}>
+                              Delete
+                          </Button>
+                      </CardFooter>
+                  </Card>
                 </motion.div>
-            );
+              );
             })}
              <motion.div
               layout
@@ -325,7 +330,7 @@ export default function MyContentPage() {
   }
 
   return (
-    <main className="flex-grow bg-secondary/30">
+    <>
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col items-center text-center mb-8">
           <h1 className="text-4xl font-bold font-heading">My Content</h1>
@@ -341,13 +346,14 @@ export default function MyContentPage() {
           {renderContent()}
         </div>
       </div>
-      {selectedSummary && (
+      {selectedContent && (
           <PublishAsBlogModal
-              isOpen={!!selectedSummary}
-              onOpenChange={() => setSelectedSummary(null)}
-              summary={selectedSummary}
+              isOpen={isPublishModalOpen}
+              onOpenChange={setIsPublishModalOpen}
+              summary={selectedContent}
+              onSuccess={fetchContent}
           />
       )}
-    </main>
+    </>
   );
 }
