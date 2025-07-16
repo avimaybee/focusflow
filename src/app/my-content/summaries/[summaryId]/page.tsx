@@ -9,12 +9,13 @@ import { useParams, notFound, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Share2, Printer } from 'lucide-react';
+import { Loader2, Share2, Printer, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
-import { makeSummaryPublic } from '@/lib/content-actions';
+import { makeSummaryPublic, updateContent } from '@/lib/content-actions';
 import { useToast } from '@/hooks/use-toast';
-import { marked } from 'marked';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Summary {
   id: string;
@@ -32,10 +33,14 @@ export default function SummaryDetailPage() {
   const router = useRouter();
   const { toast } = useToast();
   const summaryId = params.summaryId as string;
+
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
-  const [htmlContent, setHtmlContent] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -54,8 +59,8 @@ export default function SummaryDetailPage() {
         if (docSnap.exists()) {
           const data = { id: docSnap.id, ...docSnap.data() } as Summary;
           setSummary(data);
-          const parsedHtml = await marked.parse(data.summary);
-          setHtmlContent(parsedHtml);
+          setTitle(data.title);
+          setContent(data.summary);
         } else {
           setSummary(null);
         }
@@ -65,6 +70,26 @@ export default function SummaryDetailPage() {
       fetchSummary();
     }
   }, [user, summaryId, authLoading, router]);
+  
+  const handleUpdate = async () => {
+    if (!user || !summary || !hasChanges) return;
+    setIsSaving(true);
+    try {
+      const contentToSave = { title, summary: content };
+      await updateContent(user.uid, summary.id, 'summary', contentToSave);
+      toast({ title: 'Success!', description: 'Your summary has been updated.' });
+      setHasChanges(false);
+    } catch (error) {
+       console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'Update Failed',
+        description: 'Could not update the summary. Please try again.',
+      });
+    } finally {
+        setIsSaving(false);
+    }
+  };
 
   const handleShare = async () => {
     if (!user || !summary) return;
@@ -106,12 +131,24 @@ export default function SummaryDetailPage() {
   return (
     <main className="flex-grow bg-secondary/30">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
-          <Button variant="ghost" asChild className="mb-4">
-              <Link href="/my-content">← Back to My Content</Link>
-          </Button>
+          <div className="flex justify-between items-center mb-4">
+              <Button variant="ghost" asChild>
+                  <Link href="/my-content">← Back to My Content</Link>
+              </Button>
+              <div className="flex gap-2">
+                <Button onClick={handleUpdate} disabled={!hasChanges || isSaving}>
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    {hasChanges ? 'Save Changes' : 'Saved'}
+                </Button>
+              </div>
+          </div>
           <Card>
             <CardHeader>
-              <CardTitle className="text-3xl font-bold">{summary.title}</CardTitle>
+              <Input 
+                value={title}
+                onChange={(e) => { setTitle(e.target.value); setHasChanges(true); }}
+                className="text-3xl font-bold border-none focus-visible:ring-0 p-0"
+              />
               <CardDescription>
                 Created on {format(summary.createdAt.toDate(), 'MMMM dd, yyyy')}
               </CardDescription>
@@ -122,9 +159,10 @@ export default function SummaryDetailPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div 
-                className="prose prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: htmlContent }}
+              <Textarea
+                value={content}
+                onChange={(e) => { setContent(e.target.value); setHasChanges(true); }}
+                className="w-full h-auto min-h-[400px] border-none focus-visible:ring-0 p-0 bg-transparent text-base"
               />
             </CardContent>
           </Card>
@@ -147,3 +185,5 @@ export default function SummaryDetailPage() {
     </main>
   );
 }
+
+    

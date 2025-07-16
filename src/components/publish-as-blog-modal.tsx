@@ -1,3 +1,4 @@
+
 // src/components/publish-as-blog-modal.tsx
 import {
     Dialog,
@@ -17,9 +18,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { slugify } from '@/lib/utils';
 import { publishAsBlog } from '@/lib/content-actions';
 import { useAuth } from '@/context/auth-context';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import type { ContentItem } from '@/app/my-content/page';
 
 const formSchema = z.object({
     title: z.string().min(10, 'Title must be at least 10 characters.'),
@@ -31,31 +33,37 @@ const formSchema = z.object({
 interface PublishAsBlogModalProps {
     isOpen: boolean;
     onOpenChange: (isOpen: boolean) => void;
-    summary: { id: string; title: string; description: string; };
+    contentItem: ContentItem | null;
     onSuccess: () => void;
 }
 
-export function PublishAsBlogModal({ isOpen, onOpenChange, summary, onSuccess }: PublishAsBlogModalProps) {
+export function PublishAsBlogModal({ isOpen, onOpenChange, contentItem, onSuccess }: PublishAsBlogModalProps) {
     const { user } = useAuth();
     const { toast } = useToast();
     const [isPublishing, setIsPublishing] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            title: summary.title,
-            excerpt: summary.description.substring(0, 190),
-            slug: slugify(summary.title),
-            tags: '',
-        },
     });
 
+    useEffect(() => {
+        if (contentItem) {
+            form.reset({
+                title: contentItem.title.startsWith('Saved:') ? '' : contentItem.title,
+                excerpt: contentItem.description.substring(0, 190),
+                slug: slugify(contentItem.title),
+                tags: '',
+            });
+        }
+    }, [contentItem, form]);
+
+
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!user) return;
+        if (!user || !contentItem) return;
         setIsPublishing(true);
         try {
             const tagsArray = values.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [];
-            const slug = await publishAsBlog(user.uid, summary.id, { ...values, tags: tagsArray });
+            const slug = await publishAsBlog(user.uid, contentItem.id, contentItem.type, { ...values, tags: tagsArray });
             
             toast({
                 title: "Published!",
@@ -94,7 +102,7 @@ export function PublishAsBlogModal({ isOpen, onOpenChange, summary, onSuccess }:
                                 <FormItem>
                                     <FormLabel>Title</FormLabel>
                                     <FormControl>
-                                        <Input {...field} />
+                                        <Input {...field} placeholder="Enter a catchy blog title" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -152,3 +160,5 @@ export function PublishAsBlogModal({ isOpen, onOpenChange, summary, onSuccess }:
         </Dialog>
     );
 }
+
+    

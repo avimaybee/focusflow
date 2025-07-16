@@ -142,16 +142,19 @@ export async function makeStudyPlanPublic(userId: string, planId: string): Promi
     return publicSlug;
 }
 
-export async function publishAsBlog(userId: string, summaryId: string, seoData: { title: string; excerpt: string; slug: string; tags: string[] }): Promise<string> {
-    const userSummaryRef = db.collection('users').doc(userId).collection('summaries').doc(summaryId);
+export async function publishAsBlog(userId: string, contentId: string, contentType: 'summary' | 'savedMessage', seoData: { title: string; excerpt: string; slug: string; tags: string[] }): Promise<string> {
+    const collectionName = contentType === 'summary' ? 'summaries' : 'savedMessages';
+    const contentField = contentType === 'summary' ? 'summary' : 'content';
+    
+    const contentRef = db.collection('users').doc(userId).collection(collectionName).doc(contentId);
     const publicBlogCollection = db.collection('publicBlogPosts');
 
-    const summaryDoc = await userSummaryRef.get();
-    if (!summaryDoc.exists) {
-        throw new Error('Summary not found.');
+    const contentDoc = await contentRef.get();
+    if (!contentDoc.exists) {
+        throw new Error(`${contentType} not found.`);
     }
 
-    const summaryData = summaryDoc.data()!;
+    const contentData = contentDoc.data()!;
     const user = (await db.collection('users').doc(userId).get()).data();
 
     const publicSlug = seoData.slug;
@@ -160,21 +163,22 @@ export async function publishAsBlog(userId: string, summaryId: string, seoData: 
         excerpt: seoData.excerpt,
         publicSlug: publicSlug,
         tags: seoData.tags,
-        content: summaryData.summary,
+        content: contentData[contentField],
         author: user?.displayName || 'Anonymous',
         originalUserId: userId,
-        originalSummaryId: summaryId,
+        originalContentId: contentId,
         publishedAt: FieldValue.serverTimestamp(),
     };
 
     await publicBlogCollection.doc(publicSlug).set(publicBlogData);
-    await userSummaryRef.update({
+    await contentRef.update({
         isPublishedAsBlog: true,
         blogSlug: publicSlug,
     });
 
     return publicSlug;
 }
+
 
 /**
  * Saves a chat message to the user's content.
@@ -211,3 +215,15 @@ export async function deleteChat(userId: string, chatId: string): Promise<void> 
     const chatRef = db.collection('users').doc(userId).collection('chats').doc(chatId);
     await chatRef.delete();
 }
+
+export async function updateContent(userId: string, contentId: string, type: 'summary' | 'savedMessage', data: Record<string, any>): Promise<void> {
+    const collectionName = type === 'summary' ? 'summaries' : 'savedMessages';
+    const contentRef = db.collection('users').doc(userId).collection(collectionName).doc(contentId);
+    
+    await contentRef.update({
+        ...data,
+        updatedAt: FieldValue.serverTimestamp(),
+    });
+}
+
+    

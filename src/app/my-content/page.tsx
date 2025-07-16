@@ -40,7 +40,7 @@ const contentIcons: { [key: string]: React.ElementType } = {
   studyPlan: Calendar,
 };
 
-interface ContentItem {
+export interface ContentItem {
     id: string;
     type: 'summary' | 'quiz' | 'flashcardSet' | 'savedMessage' | 'studyPlan';
     title: string;
@@ -98,7 +98,7 @@ export default function MyContentPage() {
                   break;
               case 'savedMessages':
                   description = data.content || 'No content.';
-                  title = `Saved Message`;
+                  title = `Saved: "${description.substring(0, 30)}..."`;
                   itemType = 'savedMessage';
                   break;
           }
@@ -281,7 +281,7 @@ export default function MyContentPage() {
                       </CardContent>
                       <CardFooter className="p-4 pt-0 flex flex-col gap-2">
                           <Button asChild className="w-full">
-                            <Link href={linkHref}>View Content</Link>
+                            <Link href={linkHref}>View & Edit</Link>
                           </Button>
                           {item.isPublic && item.type !== 'savedMessage' && (
                               <Button asChild variant="secondary" className="w-full">
@@ -293,7 +293,7 @@ export default function MyContentPage() {
                                   {isSharing === item.id ? 'Sharing...' : (item.isPublic ? 'Copy Public Link' : 'Share Publicly')}
                               </Button>
                           )}
-                          {item.type === 'summary' && (
+                          {(item.type === 'summary' || item.type === 'savedMessage') && (
                               <Button variant="secondary" className="w-full" onClick={() => handleOpenPublishModal(item)}>
                                   Publish as Blog
                               </Button>
@@ -350,10 +350,12 @@ export default function MyContentPage() {
           <PublishAsBlogModal
               isOpen={isPublishModalOpen}
               onOpenChange={setIsPublishModalOpen}
-              summary={selectedContent}
+              contentItem={selectedContent}
               onSuccess={fetchContent}
           />
       )}
     </>
   );
 }
+
+    
