@@ -4,6 +4,7 @@ import { getBlogPost, getBlogPosts as getDbBlogPosts } from '@/lib/blog-posts-da
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { format } from 'date-fns';
+import { marked } from 'marked';
 
 type Props = {
   params: { slug: string };
@@ -14,6 +15,7 @@ async function getPost(slug: string) {
     if (localPost) {
         return {
             ...localPost,
+            content: await marked.parse(localPost.content),
             source: 'local'
         };
     }
@@ -22,6 +24,7 @@ async function getPost(slug: string) {
     if (dbPost) {
         return {
             ...dbPost,
+            content: await marked.parse(dbPost.content),
             source: 'db'
         };
     }
