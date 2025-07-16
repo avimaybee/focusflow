@@ -10,6 +10,7 @@ import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { QuizViewer } from '@/components/quiz-viewer';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 
 interface Quiz {
     title: string;
@@ -64,9 +65,7 @@ export default function QuizDetailPage() {
   return (
     <main className="flex-grow bg-secondary/30">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
-            <Button variant="ghost" asChild className="mb-4">
-              <Link href="/my-content">← Back to My Content</Link>
-            </Button>
+            <BackButton href="/my-content" label="Back to My Content" className="mb-4" />
             {quiz.quiz ? (
                 <QuizViewer quiz={quiz.quiz} />
             ) : (

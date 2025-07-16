@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { marked } from 'marked';
+import { BackButton } from '@/components/ui/back-button';
 
 interface Summary {
   id: string;
@@ -148,9 +149,7 @@ export default function SummaryDetailPage() {
     <main className="flex-grow bg-secondary/30">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
           <div className="flex justify-between items-center mb-4">
-              <Button variant="ghost" asChild>
-                  <Link href="/my-content">← Back to My Content</Link>
-              </Button>
+              <BackButton href="/my-content" label="Back to My Content" />
               <div className="flex gap-2">
                 <Button onClick={handleToggleEdit} disabled={isSaving}>
                     {editMode ? (

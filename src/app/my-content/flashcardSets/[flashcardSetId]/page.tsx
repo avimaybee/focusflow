@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { FlashcardViewer } from '@/components/flashcard-viewer';
+import { BackButton } from '@/components/ui/back-button';
 
 interface FlashcardSet {
     title: string;
@@ -65,9 +66,7 @@ export default function FlashcardSetDetailPage() {
   return (
     <main className="flex-grow bg-secondary/30">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
-            <Button variant="ghost" asChild className="mb-4">
-              <Link href="/my-content">← Back to My Content</Link>
-            </Button>
+            <BackButton href="/my-content" label="Back to My Content" className="mb-4" />
             {flashcardSet.flashcards && flashcardSet.flashcards.length > 0 ? (
                  <Card>
                     <CardHeader>

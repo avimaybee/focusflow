@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { marked } from 'marked';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { BackButton } from '@/components/ui/back-button';
 
 type Props = {
   params: { slug: string };
@@ -60,9 +61,7 @@ export default async function BlogPostPage({ params }: Props) {
 
     return (
         <div className="container mx-auto px-4 py-12 max-w-3xl">
-            <Button variant="ghost" asChild className="mb-8">
-                <Link href="/blog">← Back to Blog</Link>
-            </Button>
+            <BackButton href="/blog" label="Back to Blog" className="mb-8" />
             <article>
                 <header className="mb-8">
                     <h1 className="text-4xl md:text-5xl font-bold font-heading text-center leading-tight">
