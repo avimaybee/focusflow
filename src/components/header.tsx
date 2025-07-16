@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { Logo } from './logo';
 import { useAuth } from '@/context/auth-context';
-import { MessageSquare, Menu, X, LayoutDashboard, Library, Newspaper, Sparkles } from 'lucide-react';
+import { MessageSquare, Menu, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -54,7 +54,7 @@ export const Header = () => {
 
   const navContent = (
     <>
-      {navLinks.map((link) => {
+      {navLinks.filter(link => link.href).map((link) => {
         const isActive = pathname === link.href;
         return (
           <Link
@@ -62,9 +62,8 @@ export const Header = () => {
             href={link.href}
             onClick={() => setIsMobileMenuOpen(false)}
             className={cn(
-              'relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground',
-              'after:absolute after:bottom-[-4px] after:left-0 after:block after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full',
-              isActive && 'text-foreground after:w-full'
+              'nav-link',
+              isActive && 'nav-link-active'
             )}
           >
             {link.label}
@@ -145,7 +144,7 @@ export const Header = () => {
               ) : (
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="sm" className="w-full" onClick={() => { handleOpenAuthModal('login'); setIsMobileMenuOpen(false); }}>Sign In</Button>
-                  <Button size="sm" className="w-full" onClick={() => { handleOpenAuthModal('signup'); setIsMobileMenuOpe(false); }}>Get Started</Button>
+                  <Button size="sm" className="w-full" onClick={() => { handleOpenAuthModal('signup'); setIsMobileMenuOpen(false); }}>Get Started</Button>
                 </div>
               )}
             </div>
