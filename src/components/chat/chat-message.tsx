@@ -5,17 +5,17 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bot, User, Album, HelpCircle, Save, RotateCw, Copy } from 'lucide-react';
 import Image from 'next/image';
-import { Button } from './ui/button';
-import { FlashcardViewer } from './flashcard-viewer';
-import { QuizViewer } from './quiz-viewer';
-import { SmartToolsMenu, type SmartTool } from './smart-tools-menu';
+import { Button } from '@/components/ui/button';
+import { FlashcardViewer } from '@/components/flashcard-viewer';
+import { QuizViewer } from '@/components/quiz-viewer';
+import { SmartToolsMenu, type SmartTool } from '@/components/smart-tools-menu';
 import { useToast } from '@/hooks/use-toast';
 import type { Timestamp } from 'firebase/firestore';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/context/auth-context';
 import { saveChatMessage } from '@/lib/content-actions';
-import { TextSelectionMenu } from './notes/text-selection-menu';
-import { MarkdownRenderer } from './ui/markdown-renderer';
+import { TextSelectionMenu } from '@/components/notes/text-selection-menu';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 
 interface FlashcardData {
   question: string;
