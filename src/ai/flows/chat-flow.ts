@@ -132,7 +132,6 @@ const chatFlow = ai.defineFlow(
     outputSchema: z.object({
       sessionId: z.string(),
       response: z.string(),
-      suggestions: z.array(z.string()).optional(),
       rawResponse: z.string().optional(),
       flashcards: z.any().optional(),
       quiz: z.any().optional(),
@@ -161,13 +160,7 @@ const chatFlow = ai.defineFlow(
 4.  **Tool Interaction:**
     *   If you need information from the user to use a tool (like source text for a quiz), you must explain clearly why you need it and suggest ways the user can provide it.
     *   When you use a tool, the output will be a structured object. You should then present this information to the user in a clear, readable format.
-    *   If you use a tool like 'createFlashcardsTool' or 'createQuizTool', do not add any additional text to your response, just the tool output.
-**5. Suggest Follow-up Questions:**
-    *   After every single response, you MUST provide 3 to 5 relevant, interesting, and insightful follow-up questions that the user might have.
-    *   This is not optional. These suggestions should encourage deeper exploration of the topic.
-    *   You MUST format these suggestions as a valid JSON array of strings at the absolute end of your response. There should be nothing after this JSON block.
-    *   Example format:
-    *   {"suggestions": ["What is the Heisenberg Uncertainty Principle?", "How does quantum computing work?", "Who were the key scientists in developing quantum theory?"]}`;
+    *   If you use a tool like 'createFlashcardsTool' or 'createQuizTool', do not add any additional text to your response, just the tool output.`;
 
     const chat = session.chat({
       model,
@@ -196,21 +189,6 @@ const chatFlow = ai.defineFlow(
     
     const result = await chat.send(userMessageContent);
 
-    console.log('[DEBUG: AI Response Text]', result.text);
-
-    let responseText = result.text;
-    let suggestions: string[] | undefined = undefined;
-
-    const suggestionsMatch = responseText.match(/\{"suggestions":\s*(\[.*?\])\}/);
-    if (suggestionsMatch && suggestionsMatch[1]) {
-      try {
-        suggestions = JSON.parse(suggestionsMatch[1]);
-        responseText = responseText.replace(suggestionsMatch[0], '').trim();
-      } catch (e) {
-        console.error("Failed to parse suggestions JSON:", e);
-      }
-    }
-
     let structuredOutput: { flashcards?: any; quiz?: any } = {};
 
     if (result.history && result.history.length > 0) {
@@ -234,8 +212,7 @@ const chatFlow = ai.defineFlow(
     
     return {
       sessionId: session.id,
-      response: responseText,
-      suggestions: suggestions,
+      response: result.text,
       rawResponse: result.text,
       ...structuredOutput,
     };

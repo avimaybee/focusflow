@@ -34,27 +34,40 @@ const prompts = [
 
 export function WelcomeScreen({ onSelectPrompt }: WelcomeScreenProps) {
   return (
-    <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] px-4">
-      <div className="p-4 bg-primary/10 rounded-full mb-4 border border-primary/20">
-        <Logo className="h-10 w-10 text-primary" />
-      </div>
-      <h1 className="text-2xl font-bold mb-1 text-center text-foreground">
-        How can I help you today?
-      </h1>
-      <p className="text-muted-foreground mb-6">Select a prompt to get started or just start typing.</p>
-      <div className="flex flex-col gap-2 w-full max-w-md">
-        {prompts.map((item, index) => (
+    <div className="flex flex-col items-center justify-center h-full px-4 py-8">
+      <div className="text-center w-full max-w-2xl mx-auto">
+        <div className="inline-block p-4 bg-primary/10 rounded-full mb-6 border border-primary/20 shadow-sm">
+          <Logo className="h-12 w-12 text-primary" />
+        </div>
+        <h1 className="text-3xl md:text-4xl font-bold mb-2 text-foreground tracking-tight">
+          How can I help you today?
+        </h1>
+        <p className="text-lg text-muted-foreground mb-10">
+          Select a starting point below, or just begin typing.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {prompts.map((item, index) => (
             <Button
-                key={index}
-                variant="ghost"
-                className="h-auto p-3 justify-start group"
-                onClick={() => onSelectPrompt(item.prompt)}
+              key={index}
+              variant="outline"
+              className="h-auto p-4 justify-start items-start text-left group border-border/70 hover:border-primary/50 hover:bg-secondary/50 transition-all duration-200"
+              onClick={() => onSelectPrompt(item.prompt)}
             >
-                {item.icon}
-                <span className="font-normal text-base text-muted-foreground group-hover:text-foreground">{item.text}</span>
-                <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100" />
+              <div className="flex flex-col">
+                <div className="flex items-center mb-2">
+                  {item.icon}
+                  <span className="font-semibold text-base text-foreground ml-0">
+                    {item.text}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground font-normal">
+                  {item.prompt}
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
             </Button>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

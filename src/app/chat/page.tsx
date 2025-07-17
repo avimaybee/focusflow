@@ -53,7 +53,6 @@ export default function ChatPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
   
   const [guestMessageCount, setGuestMessageCount] = useState(0);
 
@@ -206,7 +205,6 @@ export default function ChatPage() {
     }
 
     setIsSending(true);
-    setSuggestions([]);
 
     const userMessage: ChatMessageProps = {
         id: `user-${Date.now()}`,
@@ -253,12 +251,6 @@ export default function ChatPage() {
       }
 
       const result = await response.json();
-      
-      console.log('[DEBUG: Raw AI Response]', result.rawResponse);
-
-      if (result.suggestions) {
-        setSuggestions(result.suggestions);
-      }
       
       if (!response.ok) {
         throw { response, result };
@@ -385,7 +377,6 @@ export default function ChatPage() {
             handleSendMessage(syntheticEvent, prompt);
           }}
           onRegenerate={handleRegenerate}
-          suggestions={suggestions}
         />
 
         <div className="w-full bg-background">

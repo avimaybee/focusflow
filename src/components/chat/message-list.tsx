@@ -89,9 +89,6 @@ export function MessageList({
                   <ChatMessageSkeleton />
                 </motion.div>
             )}
-            {!isSending && suggestions.length > 0 && messages.at(-1)?.role === 'model' && (
-              <SuggestedPrompts suggestions={suggestions} onPromptSelect={onSelectPrompt} />
-            )}
           </div>
         )}
       </ScrollArea>

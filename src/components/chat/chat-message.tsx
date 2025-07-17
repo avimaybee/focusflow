@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, User, Album, HelpCircle, Save, RotateCw } from 'lucide-react';
+import { Bot, User, Album, HelpCircle, Save, RotateCw, Copy } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import { FlashcardViewer } from './flashcard-viewer';
@@ -69,6 +69,15 @@ export function ChatMessage({
   const { user } = useAuth();
   const { toast } = useToast();
   const contentRef = React.useRef<HTMLDivElement>(null);
+
+  const handleCopy = () => {
+    if (rawText) {
+      navigator.clipboard.writeText(rawText);
+      toast({
+        title: 'Copied to clipboard!',
+      });
+    }
+  };
 
   const handleSave = async () => {
     if (!user || !rawText) {
@@ -165,13 +174,23 @@ export function ChatMessage({
           ref={contentRef}
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'relative max-w-2xl p-3 text-sm rounded-xl',
+            'relative max-w-2xl p-3 px-4 text-base rounded-2xl',
             isUser
-              ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
+              ? 'bg-blue-600 text-primary-foreground'
               : 'bg-secondary',
             isError && 'bg-destructive/10 border border-destructive/20'
           )}
         >
+          {!isUser && (
+             <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={handleCopy}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          )}
           {user && <TextSelectionMenu containerRef={contentRef} />}
           {renderContent()}
           {images && images.length > 0 && (
@@ -193,59 +212,65 @@ export function ChatMessage({
           )}
         </div>
         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          {!isUser && !isError && onToolAction && rawText && (
+          {!isUser && !isError && (
             <TooltipProvider>
               <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
-                {isLastInGroup && (
+                {isLastInGroup && onRegenerate && (
                   <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={onRegenerate}>
-                              <RotateCw className="h-4 w-4" />
-                          </Button>
-                      </TooltipTrigger>
-                      <TooltipContent><p>Regenerate</p></TooltipContent>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={onRegenerate}>
+                        <RotateCw className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Regenerate</p></TooltipContent>
                   </Tooltip>
                 )}
-                {user && (
+                {user && rawText && (
                   <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleSave}>
-                              <Save className="h-4 w-4" />
-                          </Button>
-                      </TooltipTrigger>
-                      <TooltipContent><p>Save to My Content</p></TooltipContent>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleSave}>
+                        <Save className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Save to My Content</p></TooltipContent>
                   </Tooltip>
                 )}
-                 <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
+                {rawText && onToolAction && (
+                  <>
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
                         <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 rounded-full"
-                            onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-full"
+                          onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`)}
                         >
-                            <Album className="h-4 w-4" />
+                          <Album className="h-4 w-4" />
                         </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>Create Flashcards</p></TooltipContent>
-                </Tooltip>
-                 <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
+                      </TooltipTrigger>
+                      <TooltipContent><p>Create Flashcards</p></TooltipContent>
+                    </Tooltip>
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
                         <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 rounded-full"
-                            onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-full"
+                          onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`)}
                         >
-                            <HelpCircle className="h-4 w-4" />
+                          <HelpCircle className="h-4 w-4" />
                         </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>Create Quiz</p></TooltipContent>
-                </Tooltip>
+                      </TooltipTrigger>
+                      <TooltipContent><p>Create Quiz</p></TooltipContent>
+                    </Tooltip>
+                  </>
+                )}
               </div>
-              <SmartToolsMenu
-                onAction={(tool) => onToolAction(tool, rawText)}
-              />
+              {rawText && onToolAction && (
+                <SmartToolsMenu
+                  onAction={(tool) => onToolAction(tool, rawText)}
+                />
+              )}
             </TooltipProvider>
           )}
         </div>
