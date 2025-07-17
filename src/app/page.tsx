@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 import { motion } from 'framer-motion';
+import { BackgroundLines } from '@/components/ui/background-lines';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { FlipHeading } from '@/components/ui/flip-heading';
 
@@ -206,8 +207,9 @@ export default function LandingPage() {
     <>
       <div className="flex-grow">
         {/* Hero Section */}
+        <BackgroundLines>
         <section className="relative py-24 md:py-32 text-center">
-          <HeroGradient />
+        <HeroGradient />
           <div className="container mx-auto px-4 relative">
             <FlipHeading
               text="Study Smarter, Not Harder"
@@ -228,6 +230,7 @@ export default function LandingPage() {
             <AppPreview />
           </div>
         </section>
+        </BackgroundLines>
 
         {/* Features Section */}
         <section id="features" className="py-20">

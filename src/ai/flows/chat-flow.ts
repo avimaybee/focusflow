@@ -126,7 +126,7 @@ const chatFlow = ai.defineFlow(
       userId: z.string(),
       message: z.string(),
       sessionId: z.string().optional(),
-      persona: z.any().optional(),
+      personaId: z.string().optional(),
       context: z.string().optional(),
     }),
     outputSchema: z.object({
@@ -139,7 +139,7 @@ const chatFlow = ai.defineFlow(
     }),
   },
   async (input) => {
-    const { userId, message, context, persona } = input;
+    const { userId, message, context, personaId } = input;
     const isGuest = userId === 'guest-user';
     
     const store = isGuest ? undefined : new FirestoreSessionStore(userId);
@@ -148,7 +148,7 @@ const chatFlow = ai.defineFlow(
       ? await ai.loadSession(input.sessionId, { store })
       : await ai.createSession({ store });
       
-    const personaInstruction = persona?.prompt || 'You are a helpful AI study assistant.';
+    const personaInstruction = await getPersonaPrompt(personaId || 'neutral');
 
     const model = googleAI.model('gemini-1.5-flash');
 

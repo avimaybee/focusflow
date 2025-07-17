@@ -246,6 +246,12 @@ export default function ChatPage() {
         body: JSON.stringify(chatInput),
       });
   
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`Received non-JSON response from server: ${text}`);
+      }
+
       const result = await response.json();
       
       console.log('[DEBUG: Raw AI Response]', result.rawResponse);

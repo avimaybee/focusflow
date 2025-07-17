@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       userId: userId || 'guest-user',
       message: body.message,
       sessionId: isGuest ? undefined : body.sessionId,
-      persona: body.persona || 'neutral',
+      personaId: body.personaId || 'neutral',
       context: body.context, // This can be a data URI for a file
     };
 
