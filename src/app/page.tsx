@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -31,6 +30,7 @@ import { motion } from 'framer-motion';
 import { BackgroundLines } from '@/components/ui/background-lines';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { FlipHeading } from '@/components/ui/flip-heading';
+import { TextFlip } from '@/components/ui/text-flip';
 
 const HeroGradient = () => (
   <div
@@ -38,46 +38,6 @@ const HeroGradient = () => (
     className="absolute inset-0 -z-10 overflow-hidden"
   >
     <div className="absolute left-[50%] top-0 h-[50rem] w-[50rem] -translate-x-[50%] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(60,130,246,0.15),rgba(255,255,255,0))]" />
-  </div>
-);
-
-const AppPreview = () => (
-  <div className="relative w-full max-w-6xl mx-auto mt-16">
-    <div className="aspect-[16/9] rounded-2xl bg-background/50 border-2 border-primary/10 shadow-2xl shadow-primary/20 flex items-center justify-center p-4">
-      <div className="w-full h-full rounded-lg bg-background/80 flex flex-col ring-1 ring-inset ring-border">
-        <div className="h-10 bg-secondary rounded-t-lg flex items-center px-4 justify-between">
-          <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-500/80" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-            <div className="w-3 h-3 rounded-full bg-green-500/80" />
-          </div>
-          <div className="w-1/2 h-4 bg-muted/50 rounded-full" />
-        </div>
-        <div className="flex-1 p-6 grid grid-cols-3 gap-6">
-          <div className="col-span-1 bg-secondary/80 rounded-lg p-4 space-y-4">
-            <div className="h-8 w-8 rounded-lg bg-primary/20" />
-            <div className="h-4 w-3/4 rounded-full bg-muted/80" />
-            <div className="h-4 w-1/2 rounded-full bg-muted/80" />
-            <div className="h-4 w-5/6 rounded-full bg-muted/80" />
-          </div>
-          <div className="col-span-2 bg-secondary/80 rounded-lg p-4 space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex-shrink-0" />
-              <div className="space-y-2 flex-1">
-                <div className="h-4 bg-muted/80 rounded-full w-3/4" />
-                <div className="h-4 bg-muted/80 rounded-full w-1/2" />
-              </div>
-            </div>
-            <div className="flex items-start gap-3 justify-end">
-              <div className="space-y-2 flex-1 text-right">
-                <div className="h-4 bg-primary/20 rounded-full w-3/4 ml-auto" />
-              </div>
-              <div className="w-8 h-8 rounded-full bg-background flex-shrink-0" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 );
 
@@ -204,33 +164,33 @@ export default function LandingPage() {
   ];
 
   return (
-    <>
-      <div className="flex-grow">
+    <div className="flex-grow bg-background">
+      <main>
         {/* Hero Section */}
-        <BackgroundLines>
-        <section className="relative py-24 md:py-32 text-center">
-        <HeroGradient />
-          <div className="container mx-auto px-4 relative">
-            <FlipHeading
-              text="Study Smarter, Not Harder"
-              className="text-4xl md:text-6xl font-bold max-w-3xl mx-auto leading-tight tracking-tighter"
-            />
-            <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              FocusFlow is your AI co-pilot for learning. Turn any document
-              into summaries, flashcards, and quizzes—in seconds.
-            </p>
-            <div className="mt-8 flex gap-4 justify-center">
-              <Button size="lg" asChild>
-                <Link href="/chat">
-                  Get Started for Free{' '}
-                  <MoveRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+        <section className="relative bg-background overflow-hidden">
+          <div className="relative h-[50vh] min-h-[400px] md:h-auto md:min-h-0 md:aspect-[2/1] lg:aspect-[2.5/1] flex items-center justify-center">
+            <BackgroundLines className="absolute inset-0 h-full w-full" />
+            <div className="relative z-10 text-center container mx-auto px-4">
+                <HeroGradient />
+                <FlipHeading
+                  text="Study Smarter, Not Harder"
+                  className="text-4xl md:text-6xl font-bold max-w-3xl mx-auto leading-tight tracking-tighter"
+                />
+                <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                  FocusFlow is your AI co-pilot for learning. Turn any document
+                  into <TextFlip words={["summaries", "flashcards", "quizzes"]} />—in seconds.
+                </p>
+                <div className="mt-8 flex gap-4 justify-center">
+                  <Button size="lg" asChild>
+                    <Link href="/chat">
+                      Get Started for Free{' '}
+                      <MoveRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </Button>
+                </div>
             </div>
-            <AppPreview />
           </div>
         </section>
-        </BackgroundLines>
 
         {/* Features Section */}
         <section id="features" className="py-20">
@@ -327,7 +287,7 @@ export default function LandingPage() {
             </Accordion>
           </div>
         </section>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }
