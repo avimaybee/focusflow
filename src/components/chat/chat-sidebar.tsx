@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
@@ -17,6 +18,7 @@ import {
   MessageSquare,
   User,
   Trash2,
+  BrainCircuit,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -41,6 +43,7 @@ import { cn } from '@/lib/utils';
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { ChatHistoryItem } from '@/hooks/use-chat-history';
 import { useAuthModal } from '@/hooks/use-auth-modal';
+import { useContextHubStore } from '@/stores/use-context-hub-store';
 
 interface ChatSidebarProps {
   user: FirebaseUser | null;
@@ -145,9 +148,12 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
               Dashboard
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-          <Settings className="mr-2 h-4 w-4" /> Settings
-        </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/preferences">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Preferences</span>
+            </Link>
+          </DropdownMenuItem>
         <DropdownMenuSeparator />
         {!isPremium && (
           <>
@@ -182,6 +188,19 @@ export function ChatSidebar({
   isCollapsed,
   onToggle,
 }: ChatSidebarProps) {
+  const { toggleContextHub, isContextHubOpen } = useContextHubStore();
+
+  const handleToggleNotesPanel = () => {
+    // If the main sidebar is collapsed, expand it first, then open the hub.
+    if (isCollapsed && !isContextHubOpen) {
+      onToggle();
+      setTimeout(() => {
+        toggleContextHub();
+      }, 150); // Delay to allow sidebar to expand
+    } else {
+      toggleContextHub();
+    }
+  };
 
   const renderUserMenu = (isInDropdown: boolean) => (
     <div className={cn(isInDropdown ? 'opacity-0 hidden' : '', isCollapsed && (isInDropdown ? '' : 'opacity-0 hidden'))}>
@@ -227,11 +246,11 @@ export function ChatSidebar({
           </Button>
         </div>
 
-        <div className="flex items-center justify-center mb-4">
+        <div className="flex items-center justify-center mb-4 gap-2 mx-4">
           <Button
             variant="ghost"
             className={cn(
-              'w-full mx-4 border border-dashed',
+              'w-full border border-dashed',
               isCollapsed && 'w-auto h-10 px-2'
             )}
             onClick={onNewChat}
@@ -241,52 +260,57 @@ export function ChatSidebar({
           </Button>
         </div>
 
-        <ScrollArea className="flex-1 -mx-4">
-          {isLoading && user ? (
-            <SidebarSkeleton isCollapsed={isCollapsed} />
-          ) : (
-            <div className="px-4 py-2 space-y-1">
-              {chatHistory.map((chat) => (
-                <Tooltip key={chat.id}>
-                  <TooltipTrigger asChild>
-                    <div
-                      role="button"
-                      className={cn(
-                        'flex items-center w-full justify-start gap-3 font-normal py-3 px-4 rounded-md cursor-pointer hover:bg-muted/50 text-foreground',
-                        activeChatId === chat.id && 'bg-secondary',
-                        isCollapsed && 'justify-center px-2'
-                      )}
-                      onClick={() => onChatSelect(chat.id)}
-                    >
-                      <MessageSquare className="h-5 w-5 shrink-0" />
-                      <span className={cn('truncate', isCollapsed && 'hidden')}>
-                        {chat.title}
-                      </span>
-                      {!isCollapsed && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 ml-auto shrink-0"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDeleteChat(chat.id);
-                            }}
+        <div className="flex-1 overflow-y-auto">
+            <ScrollArea className="h-full -mx-4">
+              {isLoading && user ? (
+                <SidebarSkeleton isCollapsed={isCollapsed} />
+              ) : (
+                <div className="px-4 py-2 space-y-1">
+                  {chatHistory.map((chat) => (
+                    <Tooltip key={chat.id}>
+                      <TooltipTrigger asChild>
+                        <div
+                          role="button"
+                          className={cn(
+                            'flex items-center w-full justify-start gap-3 font-normal py-3 px-4 rounded-md cursor-pointer hover:bg-muted/50 text-foreground',
+                            activeChatId === chat.id && 'bg-secondary',
+                            isCollapsed && 'justify-center px-2'
+                          )}
+                          onClick={() => {
+                            if (isContextHubOpen) toggleContextHub();
+                            onChatSelect(chat.id);
+                          }}
                         >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                          <MessageSquare className="h-5 w-5 shrink-0" />
+                          <span className={cn('truncate', isCollapsed && 'hidden')}>
+                            {chat.title}
+                          </span>
+                          {!isCollapsed && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 ml-auto shrink-0"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteChat(chat.id);
+                                }}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TooltipTrigger>
+                      {isCollapsed && (
+                        <TooltipContent side="right" align="center">
+                          <p>{chat.title}</p>
+                        </TooltipContent>
                       )}
-                    </div>
-                  </TooltipTrigger>
-                  {isCollapsed && (
-                    <TooltipContent side="right" align="center">
-                      <p>{chat.title}</p>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
+                    </Tooltip>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+        </div>
 
         <div className="py-2 mt-auto px-4">
             <div className={cn(isCollapsed ? 'opacity-0 hidden' : '')}>
@@ -312,3 +336,4 @@ export function ChatSidebar({
     </TooltipProvider>
   );
 }
+

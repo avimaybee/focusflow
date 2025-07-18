@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, onSnapshot, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useOnboardingModal } from '@/hooks/use-onboarding-modal';
 
 interface AuthContextType {
   user: User | null;
@@ -50,6 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isPremium, setIsPremium] = useState(false);
   const [preferredPersona, setPreferredPersona] = useState<string | null>(null);
   const [favoritePrompts, setFavoritePrompts] = useState<string[] | null>([]);
+  const { onOpen: openOnboardingModal } = useOnboardingModal();
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -67,6 +69,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setIsPremium(userData.isPremium || false);
                 setPreferredPersona(userData.preferredPersona || 'neutral');
                 setFavoritePrompts(userData.favoritePrompts || []);
+
+                // Trigger onboarding if not completed
+                if (!userData.onboardingCompleted) {
+                  openOnboardingModal();
+                }
             }
             setLoading(false);
         }, (error) => {

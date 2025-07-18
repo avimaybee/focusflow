@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNotesStore } from '@/stores/use-notes-store';
+import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { Button } from '@/components/ui/button';
 import { NotebookPen, Sparkles, Loader2 } from 'lucide-react';
 import { getExplanation } from '@/lib/ai-actions';
@@ -19,7 +19,7 @@ type ExplanationState = {
 };
 
 export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
-  const { appendToNotes, toggleNotes, isNotesOpen } = useNotesStore();
+  const { appendToNotes, toggleContextHub, isContextHubOpen } = useContextHubStore();
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const [selectedText, setSelectedText] = useState<string>('');
   const [explanation, setExplanation] = useState<ExplanationState>({ status: 'idle', content: null });
@@ -100,8 +100,8 @@ export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
         ? `> ${selectedText}\n\n${explanation.content?.replace(/<[^>]*>/g, '\n')}`
         : selectedText;
       appendToNotes(contentToAppend);
-      if (!isNotesOpen) {
-        toggleNotes();
+      if (!isContextHubOpen) {
+        toggleContextHub();
       }
       clearSelection();
     }

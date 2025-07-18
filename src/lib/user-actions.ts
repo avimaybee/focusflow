@@ -3,6 +3,30 @@
 
 import { db } from '@/lib/firebase-admin'; // Use Firebase Admin SDK
 
+export interface Persona {
+  id: string;
+  name: string;
+  description: string;
+  prompt: string;
+  isDefault?: boolean;
+}
+
+export async function getPersonas(): Promise<Persona[]> {
+  try {
+    const personasSnapshot = await db.collection('personas').get();
+    if (personasSnapshot.empty) {
+      return [];
+    }
+    return personasSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Persona[];
+  } catch (error) {
+    console.error("Error fetching personas: ", error);
+    return [];
+  }
+}
+
 export async function updateUserPersona(userId: string, persona: string) {
   if (!userId) return;
   const userRef = db.collection('users').doc(userId);

@@ -28,7 +28,7 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { motion } from 'framer-motion';
 import { BackgroundLines } from '@/components/ui/background-lines';
-import { useAuthModal } from '@/hooks/use-auth-modal';
+import { InteractiveDemo } from '@/components/ui/interactive-demo';
 import { FlipHeading } from '@/components/ui/flip-heading';
 import { TextFlip } from '@/components/ui/text-flip';
 
@@ -105,7 +105,6 @@ const BentoGrid = () => {
 };
 
 export default function LandingPage() {
-  const { onOpen } = useAuthModal();
 
   const faqs = [
     {
@@ -168,26 +167,28 @@ export default function LandingPage() {
       <main>
         {/* Hero Section */}
         <section className="relative bg-background overflow-hidden">
-          <div className="relative h-[50vh] min-h-[400px] md:h-auto md:min-h-0 md:aspect-[2/1] lg:aspect-[2.5/1] flex items-center justify-center">
+          <div className="relative py-20 md:py-24 lg:py-32 flex items-center justify-center">
             <BackgroundLines className="absolute inset-0 h-full w-full" />
-            <div className="relative z-10 text-center container mx-auto px-4">
-                <HeroGradient />
-                <FlipHeading
-                  text="Study Smarter, Not Harder"
-                  className="text-4xl md:text-6xl font-bold max-w-3xl mx-auto leading-tight tracking-tighter"
-                />
-                <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                  FocusFlow is your AI co-pilot for learning. Turn any document
-                  into <TextFlip words={["summaries", "flashcards", "quizzes"]} />—in seconds.
-                </p>
-                <div className="mt-8 flex gap-4 justify-center">
-                  <Button size="lg" asChild>
-                    <Link href="/chat">
-                      Get Started for Free{' '}
-                      <MoveRight className="ml-2 h-5 w-5" />
-                    </Link>
-                  </Button>
-                </div>
+            <div className="relative z-10 text-center container mx-auto px-4 flex flex-col items-center">
+              <HeroGradient />
+              <TextFlip
+                words={[
+                  'Generate Study Materials',
+                  'Summarize Research PDFs',
+                  'Ace Your Next Exam',
+                  'Explain Complex Concepts',
+                ]}
+                className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight tracking-tighter text-foreground"
+              />
+              <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                FocusFlow is your AI co-pilot for learning. See how it can turn any document into summaries, flashcards, and quizzes in seconds.
+              </p>
+              <div className="mt-12 w-full">
+                <InteractiveDemo />
+              </div>
+              <div className="mt-12 text-sm text-muted-foreground">
+                Trusted by students at over 20+ universities
+              </div>
             </div>
           </div>
         </section>

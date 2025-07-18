@@ -3,7 +3,7 @@
 
 import { Menu, Notebook } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNotesStore } from '@/stores/use-notes-store';
+import { useContextHubStore } from '@/stores/use-context-hub-store';
 
 interface ChatHeaderProps {
   personaName: string;
@@ -16,7 +16,7 @@ export function ChatHeader({
   onSidebarToggle,
   isLoggedIn,
 }: ChatHeaderProps) {
-  const { toggleNotes } = useNotesStore();
+  const { toggleContextHub } = useContextHubStore();
 
   return (
     <header className="sticky top-0 z-10 h-16 px-6 flex justify-between items-center w-full border-b border-border/60 bg-background/95 backdrop-blur-sm">
@@ -38,7 +38,7 @@ export function ChatHeader({
       </div>
       <div className="flex items-center gap-2">
         {isLoggedIn && (
-          <Button variant="ghost" size="icon" onClick={toggleNotes}>
+          <Button variant="ghost" size="icon" onClick={toggleContextHub}>
             <Notebook className="h-5 w-5" />
           </Button>
         )}

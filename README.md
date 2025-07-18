@@ -89,3 +89,4 @@ meow 4
 meow 5
 meow 6
 ai tools prob
+meow 7 preferences

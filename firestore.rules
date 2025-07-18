@@ -9,7 +9,7 @@ service cloud.firestore {
       allow get, create: if request.auth.uid == userId;
       allow update: if request.auth.uid == userId
                     && request.resource.data.diff(resource.data).affectedKeys()
-                       .hasOnly(['preferredPersona', 'favoritePrompts', 'lastLogin', 'usage']);
+                       .hasOnly(['preferredPersona', 'favoritePrompts', 'lastLogin', 'usage', 'onboardingCompleted']);
       allow list, delete: if false;
 
       // A user can manage their own chat sessions.
@@ -18,6 +18,11 @@ service cloud.firestore {
       match /chats/{chatId} {
         allow list, get, create, update: if request.auth.uid == userId;
         allow delete: if request.auth.uid == userId;
+      }
+
+      // A user can manage their own AI memory.
+      match /memory/{docId} {
+        allow read, write: if request.auth.uid == userId;
       }
     }
 
