@@ -16,9 +16,9 @@ This document provides a comprehensive, page-by-page breakdown of the FocusFlow 
   - **Authentication**: Firebase Authentication for secure user sign-in (Email/Password & Google).
 
 - **UI/UX Philosophy**:
-  - **Theme**: A professional, dark theme with a deep charcoal background (`#1B1F23`), a vibrant blue primary color (`#3B82F6`), and a muted purple accent.
-  - **Typography**: "Satoshi" font for headings and "Inter" for body text to create a clean, modern visual hierarchy.
-  - **Layout**: A consistent layout with a global Header and Footer for most pages, while the core Chat experience utilizes a dedicated, full-screen layout.
+  - **Theme**: A professional, dark theme with a deep charcoal background (`hsl(224, 10%, 10%)`), a vibrant blue primary color (`hsl(217, 91%, 60%)`), and a muted purple accent.
+  - **Typography**: "Poppins" for headings and "PT Sans" for body text to create a clean, modern visual hierarchy.
+  - **Layout**: A consistent layout with a global Header and Footer for most pages, while the core Chat experience utilizes a dedicated, full-screen layout. The landing page features a dynamic, full-page `Spotlight` and `BackgroundLines` effect for an immersive feel.
 
 ---
 
@@ -29,7 +29,8 @@ This document provides a comprehensive, page-by-page breakdown of the FocusFlow 
 - **File**: `src/app/page.tsx`
 - **Purpose**: To attract new users by showcasing the app's primary features and value propositions.
 - **Structure**:
-  - **Hero Section**: An engaging introduction with an animated headline (`FlipHeading`), a clear value proposition, and a prominent "Get Started for Free" call-to-action button. It features a stylized, non-interactive `AppPreview` component to give users a glimpse of the chat interface.
+  - **Hero Section**: An engaging introduction with an animated headline (`FlipHeading`), a clear value proposition with a `TextFlip` component for dynamic keywords, and a prominent "Get Started for Free" call-to-action button.
+  - **Background Effects**: The entire page is wrapped in a `Spotlight` component that creates a light-from-cursor effect and `BackgroundLines` that provide a subtle, animated backdrop across all sections.
   - **Features Section**: A "Bento Grid" layout using `GlowingCard` components that light up on hover, highlighting key features like AI Chat, customizable personas, and study material generation.
   - **Testimonials Section**: An auto-playing `Carousel` displaying positive feedback from fictional users, building social proof and trust.
   - **FAQ Section**: An `Accordion` component that neatly organizes and answers common user questions, reducing friction for potential sign-ups.
@@ -45,10 +46,16 @@ This document provides a comprehensive, page-by-page breakdown of the FocusFlow 
       - A "New Chat" button to start a fresh conversation.
       - A scrollable list of the user's past chat sessions, fetched by the `useChatHistory` hook. The active chat is highlighted.
       - A user menu at the bottom, showing the user's avatar, name, and plan status (Free/Premium). This menu provides links to the Dashboard and a Logout button.
-      - The sidebar is collapsible to maximize screen real-estate.
+      - The sidebar is collapsible to maximize screen real-estate, with a clean show/hide animation.
   - **Main Chat Area (Center)**:
     - **Welcome Screen**: For new chats, a `WelcomeScreen` component displays prompt suggestions to help users get started.
-    - **Message List**: A scrollable area (`MessageList`) that renders the conversation history. User and AI messages are styled distinctly for clarity. AI messages include interactive elements like a "Copy" button and a "Smart Tools" menu for follow-up actions (e.g., create flashcards, summarize).
+    - **Message List**: A scrollable area (`MessageList`) that renders the conversation history. User and AI messages are styled distinctly for clarity.
+    - **Interactive AI Messages**: Each AI message (`ChatMessage`) has on-hover tools:
+        - **Copy**: Copies the message text.
+        - **Save**: Saves the message to "My Content".
+        - **Regenerate**: Asks the AI to generate a new response.
+        - **Quick Tools**: Buttons to instantly generate flashcards or a quiz from the message content.
+        - **Smart Tools Menu**: A pop-out menu with advanced actions like "Rewrite Text," "Find Counterarguments," and "Create Presentation Outline."
     - **Chat Input**: A sophisticated `ChatInputArea` at the bottom, which includes:
       - A prompt library (`PromptLibrary`) for using pre-made templates.
       - An AI persona selector popover (`usePersonaManager`).
@@ -66,7 +73,7 @@ This document provides a comprehensive, page-by-page breakdown of the FocusFlow 
 - **Structure**:
   - **Tabs**: A tabbed interface (`ExpandedTabs`) allows users to filter content by type (All, Summaries, Quizzes, Flashcards, etc.).
   - **Content Grid**: A responsive grid of `Card` components, where each card represents a piece of saved content.
-  - **Card Actions**: Each card includes buttons to "View & Edit," "Share Publicly," and "Delete."
+  - **Card Actions**: Each card includes buttons to "View & Edit," "Share Publicly" (or copy link if already public), and "Delete."
   - **Publish as Blog**: For summaries and saved messages, a "Publish as Blog" button opens a modal (`PublishAsBlogModal`) where the user can edit SEO details and publish the content to the public blog.
 
 ### d. Content Detail Pages (`/my-content/...`)
@@ -79,7 +86,7 @@ This document provides a comprehensive, page-by-page breakdown of the FocusFlow 
 - **Purpose**: To display and interact with a single piece of saved content.
 - **Features**:
   - Each page fetches its specific content from Firestore.
-  - A "Back" button allows for easy navigation to the main "My Content" page.
+  - A reusable `BackButton` component allows for easy navigation to the main "My Content" page.
   - **Summaries/Saved Messages**: Feature an "Edit" mode that allows users to modify the title and content directly in the browser. Changes are saved back to Firestore via the `updateContent` server action.
   - **Quizzes**: Render an interactive `QuizViewer` component.
   - **Flashcards**: Render an interactive `FlashcardViewer` component.
@@ -89,7 +96,8 @@ This document provides a comprehensive, page-by-page breakdown of the FocusFlow 
 - **File**: `src/app/dashboard/page.tsx`
 - **Purpose**: To provide users with a personalized overview of their activity and progress, incorporating gamification elements.
 - **Structure**:
-  - **KPI Cards**: A row of cards at the top displaying key metrics like "Current Streak," "Summaries Made," and "Quizzes Taken."
+  - **KPI Cards**: A row of cards at the top displaying key metrics like "Summaries Made" and "Quizzes Taken," using an `AnimatedNumber` component for effect.
+  - **Study Streak Card**: A dedicated card that visualizes the user's current study streak with a glowing flame icon that changes color based on streak length.
   - **Weekly Progress Chart**: A bar chart (`Recharts`) that visualizes the user's logged study hours against their weekly goal.
   - **Actions & Stats Panel**:
     - A component for setting or updating a weekly study goal.
