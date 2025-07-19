@@ -151,7 +151,7 @@ const chatFlow = ai.defineFlow(
 
     let memoryInstruction = '';
 
-    const model = googleAI.model('gemini-1.5-flash');
+    const model = googleAI.model('gemini-2.5-flash-lite-preview-06-17');
 
     const systemPrompt = `${personaInstruction}${memoryInstruction}
 

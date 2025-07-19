@@ -95,5 +95,13 @@ service cloud.firestore {
         allow get, list: if true;
         allow write: if false; // Only backend/console should write
     }
+
+    // Rules for guest (anonymous) user chat sessions.
+    // Guests can only access their own documents in the guestChats collection.
+    match /guestChats/{uid}/{document=**} {
+      allow read, write: if request.auth != null && 
+                          request.auth.token.firebase.sign_in_provider == 'anonymous' && 
+                          request.auth.uid == uid;
+    }
   }
 }

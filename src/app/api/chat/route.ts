@@ -86,10 +86,13 @@ export async function POST(request: NextRequest) {
       console.error('[DEBUG] Could not fetch service account metadata. Not in a standard GCP environment or metadata server is blocked.');
     }
 
+    // Provide the specific error message in the response for debugging
+    const errorMessage = error.cause?.message || error.message || 'No further details available.';
+
     return NextResponse.json(
       { 
         error: 'An internal server error occurred.',
-        details: error.message || 'No further details available.'
+        details: errorMessage
       },
       { status: 500 }
     );

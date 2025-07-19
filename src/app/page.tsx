@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,10 +14,11 @@ import {
   BrainCircuit,
   ClipboardList,
   Library,
-  MoveRight,
+  MessageCircle,
   Quote,
   Sparkles,
   Users,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GlowingCard } from '@/components/ui/glowing-card';
@@ -26,10 +28,10 @@ import {
   CarouselItem,
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { BackgroundLines } from '@/components/ui/background-lines';
-import { FlipHeading } from '@/components/ui/flip-heading';
 import { TextFlip } from '@/components/ui/text-flip';
+import { PreviewChatWidget } from '@/components/ui/preview-chat-widget';
 
 const HeroGradient = () => (
   <div
@@ -103,7 +105,36 @@ const BentoGrid = () => {
   );
 };
 
+const FloatingWidgetButton = ({ onClick, isOpen }: { onClick: () => void; isOpen: boolean }) => (
+    <motion.div
+        initial={{ scale: 0, y: 50 }}
+        animate={{ scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 1 }}
+        className="fixed bottom-5 right-5 z-50"
+    >
+        <Button
+            size="icon"
+            className="rounded-full h-14 w-14 shadow-lg bg-primary hover:bg-primary/90"
+            onClick={onClick}
+        >
+            <AnimatePresence mode="wait">
+                {isOpen ? (
+                    <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
+                        <X className="h-7 w-7" />
+                    </motion.div>
+                ) : (
+                    <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
+                        <MessageCircle className="h-7 w-7" />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </Button>
+    </motion.div>
+);
+
+
 export default function LandingPage() {
+  const [isWidgetOpen, setIsWidgetOpen] = useState(false);
 
   const faqs = [
     {
@@ -183,7 +214,9 @@ export default function LandingPage() {
                 FocusFlow is your AI co-pilot for learning. See how it can turn any document into summaries, flashcards, and quizzes in seconds.
               </p>
               <div className="mt-12 w-full">
-                
+                <Button asChild size="lg">
+                    <Link href="/chat">Get Started for Free</Link>
+                </Button>
               </div>
               <div className="mt-12 text-sm text-muted-foreground">
                 Trusted by students at over 20+ universities
@@ -288,6 +321,10 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
+      <AnimatePresence>
+        {isWidgetOpen && <PreviewChatWidget onClose={() => setIsWidgetOpen(false)} />}
+      </AnimatePresence>
+      <FloatingWidgetButton isOpen={isWidgetOpen} onClick={() => setIsWidgetOpen(!isWidgetOpen)} />
     </div>
   );
 }
