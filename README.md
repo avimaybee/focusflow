@@ -92,3 +92,4 @@ ai tools prob
 meow 7 preferences
 chat working fine now with preferences
 added model chat
+meow 8, improved landing page

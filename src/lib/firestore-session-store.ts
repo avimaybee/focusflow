@@ -42,14 +42,18 @@ function convertDatesToTimestamps(data: any): any {
 
 
 export class FirestoreSessionStore<S = any> implements SessionStore<S> {
-  private userId: string;
+  private collection: FirebaseFirestore.CollectionReference;
 
-  constructor(userId: string) {
-    this.userId = userId;
+  constructor(userId: string, options?: { isGuest?: boolean }) {
+    if (options?.isGuest) {
+      this.collection = db.collection('guestChats').doc(userId).collection('chats');
+    } else {
+      this.collection = db.collection('users').doc(userId).collection('chats');
+    }
   }
 
   private getSessionRef(sessionId: string) {
-    return db.collection('users').doc(this.userId).collection('chats').doc(sessionId);
+    return this.collection.doc(sessionId);
   }
 
   async get(sessionId: string): Promise<SessionData<S> | undefined> {

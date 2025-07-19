@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +22,12 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GlowingCard } from '@/components/ui/glowing-card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   Carousel,
   CarouselContent,
@@ -105,32 +111,66 @@ const BentoGrid = () => {
   );
 };
 
-const FloatingWidgetButton = ({ onClick, isOpen }: { onClick: () => void; isOpen: boolean }) => (
-    <motion.div
-        initial={{ scale: 0, y: 50 }}
-        animate={{ scale: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 1 }}
-        className="fixed bottom-5 right-5 z-50"
-    >
-        <Button
-            size="icon"
-            className="rounded-full h-14 w-14 shadow-lg bg-primary hover:bg-primary/90"
-            onClick={onClick}
+const FloatingWidgetButton = ({ onClick, isOpen }: { onClick: () => void; isOpen: boolean }) => {
+    const [showTooltip, setShowTooltip] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setShowTooltip(true), 2500);
+        return () => clearTimeout(timer);
+    }, []);
+
+    return (
+        <motion.div
+            initial={{ scale: 0, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 1 }}
+            className="fixed bottom-5 right-5 z-50"
         >
-            <AnimatePresence mode="wait">
-                {isOpen ? (
-                    <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
-                        <X className="h-7 w-7" />
-                    </motion.div>
-                ) : (
-                    <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
-                        <MessageCircle className="h-7 w-7" />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </Button>
-    </motion.div>
-);
+            <TooltipProvider>
+                <Tooltip open={showTooltip} onOpenChange={setShowTooltip}>
+                    <TooltipTrigger asChild>
+                        <motion.div
+                            animate={{
+                                scale: [1, 1.1, 1, 1.1, 1],
+                                rotate: [0, 5, -5, 5, 0],
+                            }}
+                            transition={{
+                                delay: 1.5,
+                                duration: 0.7,
+                                repeat: 2,
+                                ease: 'easeInOut',
+                            }}
+                        >
+                            <Button
+                                size="icon"
+                                className="rounded-full h-14 w-14 shadow-lg bg-primary hover:bg-primary/90"
+                                onClick={() => {
+                                    onClick();
+                                    setShowTooltip(false);
+                                }}
+                            >
+                                <AnimatePresence mode="wait">
+                                    {isOpen ? (
+                                        <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
+                                            <X className="h-7 w-7" />
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
+                                            <MessageCircle className="h-7 w-7" />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </Button>
+                        </motion.div>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="bg-primary text-primary-foreground">
+                        <p>Try FocusFlow AI instantly!</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        </motion.div>
+    );
+}
 
 
 export default function LandingPage() {
@@ -162,33 +202,33 @@ export default function LandingPage() {
   const testimonials = [
     {
       quote:
-        'This app is a game-changer. I went from juggling three different apps to just one. The seamless flow from summary to flashcards is brilliant.',
+        'I turned my confusing 50-page research paper into flashcards and actually understood it. Took less than a minute.',
       name: 'Sarah J.',
-      role: 'University Student',
+      role: 'History Major, UCLA',
     },
     {
       quote:
-        "The 'Explain This' feature alone is worth its weight in gold. I can finally get unstuck without breaking my study flow. It's like having a tutor on standby 24/7.",
+        "FocusFlow helped me go from zero prep to a full AI-generated quiz for my psych exam. I got an A.",
       name: 'Mike T.',
-      role: 'High School Senior',
+      role: 'Psychology Student, NYU',
     },
     {
       quote:
-        'I love the dashboard and the study streak. It actually makes me want to log my hours and stay consistent. Who knew studying could be fun?',
+        'I uploaded my syllabus and had a complete semester study plan within 5 minutes. It’s a lifesaver for staying organized.',
       name: 'Emily R.',
-      role: 'College Freshman',
+      role: 'Pre-Med, Johns Hopkins',
     },
     {
       quote:
         'As someone with ADHD, the AI-generated study plans are a lifesaver. It breaks everything down into manageable chunks and keeps me on track.',
       name: 'Alex P.',
-      role: 'Graduate Student',
+      role: 'Graduate Student, Stanford',
     },
     {
       quote:
         'The different AI personas are a fantastic touch. Switching to the "Cram Buddy" persona before an exam really gets me in the zone.',
       name: 'Jessica W.',
-      role: 'Medical Student',
+      role: 'Medical Student, Harvard',
     },
   ];
 
@@ -213,13 +253,16 @@ export default function LandingPage() {
               <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                 FocusFlow is your AI co-pilot for learning. See how it can turn any document into summaries, flashcards, and quizzes in seconds.
               </p>
-              <div className="mt-12 w-full">
+              <div className="mt-12 flex flex-col items-center gap-4">
                 <Button asChild size="lg">
                     <Link href="/chat">Get Started for Free</Link>
                 </Button>
+                <Button variant="link" className="text-muted-foreground" onClick={() => setIsWidgetOpen(true)}>
+                    or, try without signing up
+                </Button>
               </div>
               <div className="mt-12 text-sm text-muted-foreground">
-                Trusted by students at over 20+ universities
+                Trusted by <span className="font-semibold text-foreground">15,000+ students</span> at <span className="font-semibold text-foreground">50+ universities</span> worldwide
               </div>
             </div>
           </div>
@@ -241,6 +284,38 @@ export default function LandingPage() {
               <BentoGrid />
             </div>
           </div>
+        </section>
+
+        {/* Trusted by Section */}
+        <section id="trusted-by" className="py-20">
+            <div className="container mx-auto px-4">
+                <div className="text-center max-w-3xl mx-auto">
+                    <h2 className="text-2xl font-bold font-heading">
+                        Trusted by Students at Top Universities
+                    </h2>
+                    <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 items-center">
+                        {/* Replace with actual university logos */}
+                        <div className="flex justify-center">
+                            <img src="/logos/placeholder.svg" alt="University Logo" className="h-8 filter grayscale hover:grayscale-0 transition-all" />
+                        </div>
+                        <div className="flex justify-center">
+                            <img src="/logos/placeholder.svg" alt="University Logo" className="h-8 filter grayscale hover:grayscale-0 transition-all" />
+                        </div>
+                        <div className="flex justify-center">
+                            <img src="/logos/placeholder.svg" alt="University Logo" className="h-8 filter grayscale hover:grayscale-0 transition-all" />
+                        </div>
+                        <div className="flex justify-center">
+                            <img src="/logos/placeholder.svg" alt="University Logo" className="h-8 filter grayscale hover:grayscale-0 transition-all" />
+                        </div>
+                        <div className="flex justify-center">
+                            <img src="/logos/placeholder.svg" alt="University Logo" className="h-8 filter grayscale hover:grayscale-0 transition-all" />
+                        </div>
+                        <div className="flex justify-center">
+                            <img src="/logos/placeholder.svg" alt="University Logo" className="h-8 filter grayscale hover:grayscale-0 transition-all" />
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         {/* Testimonials Section */}

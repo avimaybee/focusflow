@@ -124,6 +124,7 @@ const chatFlow = ai.defineFlow(
     name: 'chatFlow',
     inputSchema: z.object({
       userId: z.string(),
+      isGuest: z.boolean().optional(),
       message: z.string(),
       sessionId: z.string().optional(),
       personaId: z.string().optional(),
@@ -138,10 +139,9 @@ const chatFlow = ai.defineFlow(
     }),
   },
   async (input) => {
-    const { userId, message, context, personaId } = input;
-    const isGuest = userId === 'guest-user';
+    const { userId, isGuest, message, context, personaId } = input;
     
-    const store = isGuest ? undefined : new FirestoreSessionStore(userId);
+    const store = new FirestoreSessionStore(userId, { isGuest });
     
     const session = input.sessionId
       ? await ai.loadSession(input.sessionId, { store })

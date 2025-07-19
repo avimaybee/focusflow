@@ -5,38 +5,34 @@ import { chatFlow } from '@/ai/flows/chat-flow';
 import { getAuth } from 'firebase-admin/auth';
 import { app } from '@/lib/firebase-admin';
 
-// This is a server-side helper function to get the user's ID from the request headers.
-async function getUserIdFromRequest(req: NextRequest): Promise<string | null> {
+// This helper function now returns the user's ID and their authentication status (full user or anonymous).
+async function getUserFromRequest(req: NextRequest): Promise<{ uid: string | null; isAnonymous: boolean }> {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-        // This is a guest user if there's no auth header.
-        return null;
+        return { uid: null, isAnonymous: true };
     }
 
     const idToken = authHeader.split('Bearer ')[1];
     if (!idToken) {
         console.error('API ROUTE ERROR: Bearer token not found in Authorization header.');
-        return null;
+        return { uid: null, isAnonymous: true };
     }
     
     try {
         const decodedToken = await getAuth(app).verifyIdToken(idToken);
-        return decodedToken.uid;
+        const isAnonymous = decodedToken.firebase.sign_in_provider === 'anonymous';
+        return { uid: decodedToken.uid, isAnonymous };
     } catch (error) {
         console.error('API ROUTE ERROR: Error verifying auth token:', error);
-        return null;
+        return { uid: null, isAnonymous: true };
     }
 }
 
 export async function POST(request: NextRequest) {
   console.log('=== NEW CHAT REQUEST ===');
   try {
-    const userId = await getUserIdFromRequest(request);
-    console.log(`[DEBUG] Authenticated User ID: ${userId || 'Guest'}`);
-
-    // If there's no userId, it's a guest request.
-    // In a production app, you might add rate-limiting here.
-    const isGuest = !userId;
+    const { uid, isAnonymous } = await getUserFromRequest(request);
+    console.log(`[DEBUG] Authenticated User ID: ${uid || 'Guest'}, Is Anonymous: ${isAnonymous}`);
 
     const body = await request.json();
     console.log("[DEBUG] Request Body:", JSON.stringify(body, null, 2));
@@ -46,19 +42,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required field: message' }, { status: 400 });
     }
 
-    // This is the input that will be passed to our main AI flow.
     const input = {
-      // Use a placeholder for guest users or the actual user ID.
-      userId: userId || 'guest-user',
+      userId: uid || 'guest-user',
+      isGuest: isAnonymous, // Pass the guest status to the flow
       message: body.message,
-      sessionId: isGuest ? undefined : body.sessionId,
+      sessionId: body.sessionId,
       personaId: body.personaId || 'neutral',
-      context: body.context, // This can be a data URI for a file
+      context: body.context,
     };
 
     console.log("[DEBUG] Calling chatFlow with input:", input);
     
-    // We call the main chat flow and await its result.
     const result = await chatFlow(input);
 
     console.log("[DEBUG] Received result from flow:", result);
@@ -73,7 +67,6 @@ export async function POST(request: NextRequest) {
     console.error('Error Details:', error.details);
     console.error('Error Stack:', error.stack);
     
-    // Attempt to get the service account email if running in a Google Cloud environment
     try {
       const response = await fetch('http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/email', {
         headers: { 'Metadata-Flavor': 'Google' },
@@ -83,10 +76,9 @@ export async function POST(request: NextRequest) {
         console.error(`[DEBUG] Running as service account: ${email}`);
       }
     } catch (metaError) {
-      console.error('[DEBUG] Could not fetch service account metadata. Not in a standard GCP environment or metadata server is blocked.');
+      console.error('[DEBUG] Could not fetch service account metadata.');
     }
 
-    // Provide the specific error message in the response for debugging
     const errorMessage = error.cause?.message || error.message || 'No further details available.';
 
     return NextResponse.json(

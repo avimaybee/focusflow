@@ -18,7 +18,7 @@ const WidgetHeader = ({ onClose }: { onClose: () => void }) => (
   <div className="flex items-center justify-between p-3 border-b border-primary/20">
     <div className="flex items-center gap-2">
       <Sparkles className="h-5 w-5 text-primary" />
-      <h3 className="font-semibold text-sm">FocusFlow AI Preview</h3>
+      <h3 className="font-semibold text-sm">AI Study Preview: No Signup Needed</h3>
     </div>
     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
       <X className="h-4 w-4" />
@@ -44,6 +44,23 @@ const MessageBubble = ({ message }: { message: { role: 'user' | 'assistant'; con
     </div>
   );
 };
+
+const TypingIndicator = () => (
+    <div className="flex justify-start">
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className="max-w-[80%] rounded-lg px-3 py-2 text-sm bg-[#232b3b] text-gray-100 flex items-center gap-2"
+        >
+            <div className="flex gap-1">
+                <motion.div animate={{ y: [0, -2, 0] }} transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }} className="h-1.5 w-1.5 bg-primary rounded-full" />
+                <motion.div animate={{ y: [0, -2, 0] }} transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0.1 }} className="h-1.5 w-1.5 bg-primary rounded-full" />
+                <motion.div animate={{ y: [0, -2, 0] }} transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0.2 }} className="h-1.5 w-1.5 bg-primary rounded-full" />
+            </div>
+        </motion.div>
+    </div>
+);
 
 const SuggestionPill = ({ text, onClick }: { text: string; onClick: (prompt: string) => void }) => (
   <button
@@ -81,17 +98,16 @@ export function PreviewChatWidget({ onClose }: { onClose: () => void }) {
   ];
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-            setGuestUser(user);
-        } else {
-            signInAnonymously(auth).catch((error) => {
-                console.error("Anonymous sign-in failed:", error);
-                toast({ variant: 'destructive', title: 'Preview Error', description: 'Could not start a preview session.' });
-            });
-        }
-    });
-    return () => unsubscribe();
+    // Unconditionally sign in as an anonymous user for the widget's lifecycle.
+    // This sandboxes the preview from any logged-in user state.
+    signInAnonymously(auth)
+      .then((userCredential) => {
+        setGuestUser(userCredential.user);
+      })
+      .catch((error) => {
+        console.error("Anonymous sign-in failed:", error);
+        toast({ variant: 'destructive', title: 'Preview Error', description: 'Could not start a preview session.' });
+      });
   }, [toast]);
 
   useEffect(() => {
@@ -166,6 +182,7 @@ export function PreviewChatWidget({ onClose }: { onClose: () => void }) {
               <MessageBubble key={index} message={msg} />
             ))}
           </AnimatePresence>
+          {isSending && <TypingIndicator />}
         </div>
 
         <div className="p-3 border-t border-primary/20">
