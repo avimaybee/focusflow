@@ -148,13 +148,13 @@ export function ChatMessage({
   const ConfidenceIndicator = () => {
       if (!confidence) return null;
       const confidenceMap = {
-          high: { text: 'High confidence', icon: <CheckCircle className="h-3.5 w-3.5 text-green-500" /> },
-          medium: { text: 'Medium confidence', icon: <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" /> },
-          low: { text: 'Low confidence - Please verify', icon: <AlertTriangle className="h-3.5 w-3.5 text-red-500" /> },
+          high: { text: 'High confidence', icon: <CheckCircle className="h-3.5 w-3.5 text-green-500" />, className: 'text-green-500' },
+          medium: { text: 'Medium confidence', icon: <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" />, className: 'text-yellow-500' },
+          low: { text: 'Low confidence - Please verify', icon: <AlertTriangle className="h-3.5 w-3.5 text-red-500" />, className: 'text-red-500' },
       }
-      const { text, icon } = confidenceMap[confidence];
+      const { text, icon, className } = confidenceMap[confidence];
       return (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
+          <div className={cn("flex items-center gap-1.5 text-xs", className)}>
               {icon}
               <span>{text}</span>
           </div>
@@ -164,9 +164,9 @@ export function ChatMessage({
   const SourceIndicator = () => {
       if (!source) return null;
       return (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2 border-t border-border/50 pt-2">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <FileText className="h-3.5 w-3.5" />
-              <span>Source: {source.name}</span>
+              <span>Based on: {source.name}</span>
           </div>
       )
   }
@@ -211,6 +211,9 @@ export function ChatMessage({
           isUser ? 'items-end' : 'items-start'
         )}
       >
+        {!isUser && isFirstInGroup && (
+            <p className="text-xs text-muted-foreground font-medium ml-2">{persona?.name || 'AI Assistant'}</p>
+        )}
         <div
           ref={contentRef}
           style={{ lineHeight: 1.5 }}
@@ -251,8 +254,12 @@ export function ChatMessage({
               )}
             </div>
           )}
-          <SourceIndicator />
-          <ConfidenceIndicator />
+          {(source || confidence) && (
+            <div className="mt-3 pt-2 border-t border-border/50 flex items-center justify-between">
+                <SourceIndicator />
+                <ConfidenceIndicator />
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           {!isUser && !isError && (

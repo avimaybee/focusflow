@@ -22,23 +22,32 @@ import { FirestoreSessionStore } from '@/lib/firestore-session-store';
 import { serverTimestamp } from 'firebase-admin/firestore';
 import { ai } from '@/ai/genkit';
 
-async function getPersonaPrompt(personaId: string): Promise<string> {
+interface Persona {
+    id: string;
+    name: string;
+    avatarUrl?: string;
+    prompt: string;
+}
+
+async function getPersona(personaId: string): Promise<Persona> {
   try {
     const personaRef = db.collection('personas').doc(personaId);
     const personaSnap = await personaRef.get();
     if (personaSnap.exists) {
-      return personaSnap.data()!.prompt;
+      const data = personaSnap.data();
+      return { id: personaSnap.id, ...data } as Persona;
     }
     console.warn(`Persona '${personaId}' not found, falling back to neutral.`);
     const fallbackRef = db.collection('personas').doc('neutral');
     const fallbackSnap = await fallbackRef.get();
     if (fallbackSnap.exists) {
-      return fallbackSnap.data()!.prompt;
+        const data = fallbackSnap.data();
+        return { id: fallbackSnap.id, ...data } as Persona;
     }
-    return 'You are a helpful AI study assistant.';
+    return { id: 'neutral', name: 'AI Assistant', avatarUrl: '', prompt: 'You are a helpful AI study assistant.' };
   } catch (error) {
-    console.error('Error fetching persona prompt:', error);
-    return 'You are a helpful AI study assistant.';
+    console.error('Error fetching persona:', error);
+    return { id: 'neutral', name: 'AI Assistant', avatarUrl: '', prompt: 'You are a helpful AI study assistant.' };
   }
 }
 
@@ -139,6 +148,12 @@ const chatFlow = ai.defineFlow(
       rawResponse: z.string().optional(),
       flashcards: z.any().optional(),
       quiz: z.any().optional(),
+      persona: z.object({
+          id: z.string(),
+          name: z.string(),
+          avatarUrl: z.string().optional(),
+          prompt: z.string(),
+      }).optional(),
       source: z.object({
           type: z.enum(['file', 'text']),
           name: z.string(),
@@ -155,13 +170,13 @@ const chatFlow = ai.defineFlow(
       ? await ai.loadSession(input.sessionId, { store })
       : await ai.createSession({ store });
       
-    const personaInstruction = await getPersonaPrompt(personaId || 'neutral');
+    const persona = await getPersona(personaId || 'neutral');
 
     let memoryInstruction = '';
 
     const model = googleAI.model('gemini-2.5-flash-lite-preview-06-17');
 
-    const systemPrompt = `${personaInstruction}${memoryInstruction}
+    const systemPrompt = `${persona.prompt}${memoryInstruction}
 
 **Response Guidelines:**
 1.  **Be Thorough:** Always provide in-depth explanations. If a user asks to be taught a topic, break it down into logical sections with clear headings. Use analogies, examples, and step-by-step instructions where appropriate.
@@ -236,6 +251,7 @@ const chatFlow = ai.defineFlow(
                 ...lastModelMessage.data,
                 source,
                 confidence,
+                persona,
             };
         }
     }
@@ -246,6 +262,7 @@ const chatFlow = ai.defineFlow(
       rawResponse: result.text,
       source,
       confidence,
+      persona,
       ...structuredOutput,
     };
   }

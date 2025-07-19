@@ -94,3 +94,4 @@ chat working fine now with preferences
 added model chat
 meow 8, improved landing page
 fixed the sign in issues
+meow 9

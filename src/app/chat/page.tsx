@@ -270,6 +270,7 @@ export default function ChatPage() {
             quiz: result.quiz,
             source: result.source,
             confidence: result.confidence,
+            persona: selectedPersona || undefined,
             createdAt: Timestamp.now(),
         };
         setMessages(prev => [...prev, modelResponse]);
