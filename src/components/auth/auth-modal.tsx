@@ -51,7 +51,7 @@ const GoogleIcon = () => (
 
 export function AuthModal() {
   const { isOpen, view, layoutId, setView, onClose } = useAuthModal();
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -67,14 +67,15 @@ export function AuthModal() {
   });
 
   useEffect(() => {
-    if (user && isOpen) {
+    // Only trigger success redirect if a REAL user is logged in.
+    if (user && !isGuest && isOpen) {
       setFormState('success');
       setTimeout(() => {
         onClose();
         router.push('/chat');
       }, 1500);
     }
-  }, [user, isOpen, onClose, router]);
+  }, [user, isGuest, isOpen, onClose, router]);
   
   useEffect(() => {
     if (!isOpen) {
@@ -198,6 +199,7 @@ export function AuthModal() {
           onClick={onClose}
         >
           <motion.div
+            layoutId={layoutId}
             className="bg-secondary rounded-lg shadow-xl w-full max-w-sm"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}

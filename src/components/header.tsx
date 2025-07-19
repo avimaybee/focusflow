@@ -10,11 +10,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthModal } from '@/hooks/use-auth-modal';
+import { UserNav } from './auth/user-nav';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 export const Header = () => {
-  const { user, isPremium } = useAuth();
+  const { user, isPremium, isGuest } = useAuth();
   const pathname = usePathname();
   const authModal = useAuthModal();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -23,8 +24,8 @@ export const Header = () => {
     return null;
   }
 
-  const handleOpenAuthModal = (view: 'login' | 'signup') => {
-    authModal.onOpen(view);
+  const handleOpenAuthModal = (view: 'login' | 'signup', layoutId: string) => {
+    authModal.onOpen(view, layoutId);
   };
 
   const baseNavLinks = [
@@ -33,12 +34,9 @@ export const Header = () => {
     { href: '/blog', label: 'Blog' },
   ];
 
-  const navLinks = user && !isPremium 
+  const navLinks = user && !isGuest && !isPremium 
     ? [...baseNavLinks, { href: '/premium', label: 'Premium' }]
     : baseNavLinks;
-
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
-  const initial = displayName.charAt(0).toUpperCase();
 
   const navContent = (
     <>
@@ -84,25 +82,20 @@ export const Header = () => {
 
         {/* Right Side */}
         <div className="flex items-center gap-4">
-          {user ? (
+          {user && !isGuest ? (
             <>
                <Button asChild variant="ghost" size="sm" className="hidden sm:flex items-center gap-1.5">
                   <Link href="/chat">
                       <MessageSquare className="h-4 w-4" /> Go to Chat
                   </Link>
                 </Button>
-               <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center font-medium border border-border">
-                  <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.photoURL || undefined} alt={displayName} />
-                      <AvatarFallback>{initial}</AvatarFallback>
-                  </Avatar>
-               </div>
+               <UserNav />
             </>
           ) : (
-             <div className="hidden md:flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => handleOpenAuthModal('login')}>Sign In</Button>
-                <Button size="sm" onClick={() => handleOpenAuthModal('signup')}>Get Started</Button>
-             </div>
+             <motion.div layoutId="auth-modal-trigger" className="hidden md:flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => handleOpenAuthModal('login', 'auth-modal-trigger')}>Log In</Button>
+                <Button size="sm" onClick={() => handleOpenAuthModal('signup', 'auth-modal-trigger')}>Sign Up</Button>
+             </motion.div>
           )}
            <button
             className="md:hidden text-foreground"
@@ -140,14 +133,14 @@ export const Header = () => {
               })}
             </nav>
             <div className="pt-4 border-t border-border/60">
-              {user ? (
+              {user && !isGuest ? (
                  <Button asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
                     <Link href="/chat">Go to Chat</Link>
                  </Button>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" className="w-full" onClick={() => { handleOpenAuthModal('login'); setIsMobileMenuOpen(false); }}>Sign In</Button>
-                  <Button size="sm" className="w-full" onClick={() => { handleOpenAuthModal('signup'); setIsMobileMenuOpen(false); }}>Get Started</Button>
+                  <Button variant="ghost" size="sm" className="w-full" onClick={() => { handleOpenAuthModal('login', 'auth-modal-trigger-mobile'); setIsMobileMenuOpen(false); }}>Log In</Button>
+                  <Button size="sm" className="w-full" onClick={() => { handleOpenAuthModal('signup', 'auth-modal-trigger-mobile'); setIsMobileMenuOpen(false); }}>Sign Up</Button>
                 </div>
               )}
             </div>

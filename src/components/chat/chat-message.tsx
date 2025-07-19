@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, User, Album, HelpCircle, Save, RotateCw, Copy } from 'lucide-react';
+import { Bot, User, Album, HelpCircle, Save, RotateCw, Copy, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { FlashcardViewer } from '@/components/flashcard-viewer';
@@ -31,6 +31,12 @@ interface QuizData {
   }[];
 }
 
+interface Persona {
+    id: string;
+    name: string;
+    avatarUrl: string;
+}
+
 export type ChatMessageProps = {
   id?: string;
   role: 'user' | 'model';
@@ -41,6 +47,9 @@ export type ChatMessageProps = {
   quiz?: QuizData;
   userAvatar?: string | null;
   userName?: string;
+  persona?: Persona;
+  source?: { type: 'file' | 'text'; name: string };
+  confidence?: 'high' | 'medium' | 'low';
   createdAt?: Timestamp;
   isError?: boolean;
   isFirstInGroup?: boolean;
@@ -59,6 +68,9 @@ export function ChatMessage({
   quiz,
   userAvatar,
   userName,
+  persona,
+  source,
+  confidence,
   isError = false,
   isFirstInGroup = true,
   isLastInGroup = true,
@@ -133,6 +145,32 @@ export function ChatMessage({
     return text;
   };
 
+  const ConfidenceIndicator = () => {
+      if (!confidence) return null;
+      const confidenceMap = {
+          high: { text: 'High confidence', icon: <CheckCircle className="h-3.5 w-3.5 text-green-500" /> },
+          medium: { text: 'Medium confidence', icon: <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" /> },
+          low: { text: 'Low confidence - Please verify', icon: <AlertTriangle className="h-3.5 w-3.5 text-red-500" /> },
+      }
+      const { text, icon } = confidenceMap[confidence];
+      return (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
+              {icon}
+              <span>{text}</span>
+          </div>
+      )
+  }
+
+  const SourceIndicator = () => {
+      if (!source) return null;
+      return (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2 border-t border-border/50 pt-2">
+              <FileText className="h-3.5 w-3.5" />
+              <span>Source: {source.name}</span>
+          </div>
+      )
+  }
+
   const avatar = (
     <Avatar
       className={cn(
@@ -149,9 +187,12 @@ export function ChatMessage({
           </AvatarFallback>
         </>
       ) : (
-        <AvatarFallback className="bg-transparent">
-          <Bot className="h-5 w-5" />
-        </AvatarFallback>
+        <>
+          <AvatarImage src={persona?.avatarUrl} alt={persona?.name} />
+          <AvatarFallback className="bg-transparent">
+            <Bot className="h-5 w-5" />
+          </AvatarFallback>
+        </>
       )}
     </Avatar>
   );
@@ -210,6 +251,8 @@ export function ChatMessage({
               )}
             </div>
           )}
+          <SourceIndicator />
+          <ConfidenceIndicator />
         </div>
         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           {!isUser && !isError && (

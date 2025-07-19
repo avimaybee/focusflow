@@ -113,6 +113,8 @@ export default function ChatPage() {
             role: msg.role,
             text: await marked.parse(textContent),
             rawText: textContent,
+            source: msg.data?.source,
+            confidence: msg.data?.confidence,
             createdAt: sessionData.updatedAt || Timestamp.now(),
             userName: msg.role === 'user' ? user.displayName : undefined,
             userAvatar: msg.role === 'user' ? user.photoURL : undefined,
@@ -266,6 +268,8 @@ export default function ChatPage() {
             rawText: result.response,
             flashcards: result.flashcards,
             quiz: result.quiz,
+            source: result.source,
+            confidence: result.confidence,
             createdAt: Timestamp.now(),
         };
         setMessages(prev => [...prev, modelResponse]);
@@ -369,6 +373,7 @@ export default function ChatPage() {
           isSending={isSending}
           isHistoryLoading={isHistoryLoading && !!activeChatId}
           activeChatId={activeChatId}
+          activePersona={selectedPersona}
           scrollAreaRef={scrollAreaRef}
           onSelectPrompt={setInput}
           onSmartToolAction={(prompt) => {

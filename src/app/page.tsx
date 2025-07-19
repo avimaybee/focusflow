@@ -28,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useAuthModal } from '@/hooks/use-auth-modal';
 import {
   Carousel,
   CarouselContent,
@@ -175,6 +176,7 @@ const FloatingWidgetButton = ({ onClick, isOpen }: { onClick: () => void; isOpen
 
 export default function LandingPage() {
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
+  const authModal = useAuthModal();
 
   const faqs = [
     {
@@ -254,8 +256,8 @@ export default function LandingPage() {
                 FocusFlow is your AI co-pilot for learning. See how it can turn any document into summaries, flashcards, and quizzes in seconds.
               </p>
               <div className="mt-12 flex flex-col items-center gap-4">
-                <Button asChild size="lg">
-                    <Link href="/chat">Get Started for Free</Link>
+                <Button size="lg" onClick={() => authModal.onOpen('signup')}>
+                    Get Started for Free
                 </Button>
                 <Button variant="link" className="text-muted-foreground" onClick={() => setIsWidgetOpen(true)}>
                     or, try without signing up

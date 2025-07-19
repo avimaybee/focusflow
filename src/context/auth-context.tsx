@@ -10,6 +10,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isPremium: boolean;
+  isGuest: boolean;
   preferredPersona: string | null;
   favoritePrompts: string[] | null;
   setFavoritePrompts: React.Dispatch<React.SetStateAction<string[] | null>>;
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // This function creates the user document if it doesn't exist.
 // It's the centralized logic to prevent race conditions.
 const createUserDocumentIfNeeded = async (user: User) => {
+  if (user.isAnonymous) return; // Do not create documents for guest users
   const userRef = doc(db, 'users', user.uid);
   const userSnap = await getDoc(userRef);
 
@@ -29,7 +31,7 @@ const createUserDocumentIfNeeded = async (user: User) => {
       await setDoc(userRef, {
         uid: user.uid,
         email: user.email || null,
-        displayName: user.displayName || user.email?.split('@')[0] || 'Anonymous User',
+        displayName: user.displayName || user.email?.split('@')[0] || 'New User',
         photoURL: user.photoURL || null,
         createdAt: serverTimestamp(),
         isPremium: false,
@@ -48,6 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
+  const [isGuest, setIsGuest] = useState(true);
   const [preferredPersona, setPreferredPersona] = useState<string | null>(null);
   const [favoritePrompts, setFavoritePrompts] = useState<string[] | null>([]);
 
@@ -56,7 +59,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(true);
       if (user) {
         setUser(user);
+        setIsGuest(user.isAnonymous);
         
+        if (user.isAnonymous) {
+            setIsPremium(false);
+            setPreferredPersona('neutral');
+            setFavoritePrompts([]);
+            setLoading(false);
+            return;
+        }
+
         // Ensure user document exists before setting up the listener
         await createUserDocumentIfNeeded(user);
 
@@ -67,11 +79,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setIsPremium(userData.isPremium || false);
                 setPreferredPersona(userData.preferredPersona || 'neutral');
                 setFavoritePrompts(userData.favoritePrompts || []);
-
-                // Trigger onboarding if not completed
-                if (!userData.onboardingCompleted) {
-                  // openOnboardingModal();
-                }
             }
             setLoading(false);
         }, (error) => {
@@ -86,6 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // User is signed out
         setUser(null);
         setIsPremium(false);
+        setIsGuest(true);
         setPreferredPersona(null);
         setFavoritePrompts(null);
         setLoading(false);
@@ -96,9 +104,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribeAuth();
   }, []);
 
-  const value = { user, loading, isPremium, preferredPersona, favoritePrompts, setFavoritePrompts };
+  const value = { user, loading, isPremium, isGuest, preferredPersona, favoritePrompts, setFavoritePrompts };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

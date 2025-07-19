@@ -10,11 +10,18 @@ import { ChatMessageSkeleton } from './chat-message-skeleton';
 import type { SmartTool } from '@/components/smart-tools-menu';
 import { SuggestedPrompts } from './suggested-prompts';
 
+interface Persona {
+    id: string;
+    name: string;
+    avatarUrl: string;
+}
+
 interface MessageListProps {
   messages: ChatMessageProps[];
   isSending: boolean;
   isHistoryLoading: boolean;
   activeChatId: string | null;
+  activePersona: Persona | null;
   scrollAreaRef: RefObject<HTMLDivElement>;
   onSelectPrompt: (prompt: string) => void;
   onSmartToolAction: (prompt: string) => void;
@@ -27,6 +34,7 @@ export function MessageList({
   isSending,
   isHistoryLoading,
   activeChatId,
+  activePersona,
   scrollAreaRef,
   onSelectPrompt,
   onSmartToolAction,
@@ -72,6 +80,7 @@ export function MessageList({
                 >
                   <ChatMessage
                     {...msg}
+                    persona={activePersona || undefined}
                     isFirstInGroup={isFirstInGroup}
                     isLastInGroup={isLastInGroup}
                     onToolAction={handleToolAction}
@@ -86,7 +95,7 @@ export function MessageList({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
                 >
-                  <ChatMessageSkeleton />
+                  <ChatMessageSkeleton persona={activePersona || undefined} />
                 </motion.div>
             )}
           </div>

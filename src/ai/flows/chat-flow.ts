@@ -128,7 +128,10 @@ const chatFlow = ai.defineFlow(
       message: z.string(),
       sessionId: z.string().optional(),
       personaId: z.string().optional(),
-      context: z.string().optional(),
+      context: z.object({
+          url: z.string(),
+          filename: z.string(),
+      }).optional(),
     }),
     outputSchema: z.object({
       sessionId: z.string(),
@@ -136,6 +139,11 @@ const chatFlow = ai.defineFlow(
       rawResponse: z.string().optional(),
       flashcards: z.any().optional(),
       quiz: z.any().optional(),
+      source: z.object({
+          type: z.enum(['file', 'text']),
+          name: z.string(),
+      }).optional(),
+      confidence: z.enum(['high', 'medium', 'low']).optional(),
     }),
   },
   async (input) => {
@@ -186,16 +194,24 @@ const chatFlow = ai.defineFlow(
     
     const userMessageContent: (string | { media: { url: string } })[] = [message];
     if (context) {
-      userMessageContent.push({ media: { url: context } });
+      userMessageContent.push({ media: { url: context.url } });
     }
     
     const result = await chat.send(userMessageContent);
 
     let structuredOutput: { flashcards?: any; quiz?: any } = {};
+    let confidence: 'high' | 'medium' | 'low' = 'medium';
+    let source: { type: 'file' | 'text'; name: string } | undefined = undefined;
+
+    if (context) {
+        confidence = 'high';
+        source = { type: 'file', name: context.filename };
+    }
 
     if (result.history && result.history.length > 0) {
       const lastMessage = result.history[result.history.length - 1];
       if (lastMessage.role === 'model' && lastMessage.toolCalls && lastMessage.toolCalls.length > 0) {
+        confidence = 'high';
         for (const toolCall of lastMessage.toolCalls) {
           if (toolCall.output) {
               if (!isGuest) {
@@ -211,11 +227,25 @@ const chatFlow = ai.defineFlow(
         }
       }
     }
+
+    // Add source and confidence to the last model message
+    if (result.history) {
+        const lastModelMessage = result.history.slice().reverse().find(m => m.role === 'model');
+        if (lastModelMessage) {
+            lastModelMessage.data = {
+                ...lastModelMessage.data,
+                source,
+                confidence,
+            };
+        }
+    }
     
     return {
       sessionId: session.id,
       response: result.text,
       rawResponse: result.text,
+      source,
+      confidence,
       ...structuredOutput,
     };
   }
