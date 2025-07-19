@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, onSnapshot, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useOnboardingModal } from '@/hooks/use-onboarding-modal';
 
 interface AuthContextType {
   user: User | null;
@@ -37,6 +38,7 @@ const createUserDocumentIfNeeded = async (user: User) => {
         isPremium: false,
         preferredPersona: 'neutral',
         favoritePrompts: [],
+        onboardingCompleted: false, // Set initial onboarding status
       });
       console.log(`Created user document for UID: ${user.uid}`);
     } catch (error) {
@@ -53,6 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isGuest, setIsGuest] = useState(true);
   const [preferredPersona, setPreferredPersona] = useState<string | null>(null);
   const [favoritePrompts, setFavoritePrompts] = useState<string[] | null>([]);
+  const { onOpen: openOnboardingModal } = useOnboardingModal();
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -79,6 +82,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setIsPremium(userData.isPremium || false);
                 setPreferredPersona(userData.preferredPersona || 'neutral');
                 setFavoritePrompts(userData.favoritePrompts || []);
+
+                // Trigger onboarding if not completed
+                if (!userData.onboardingCompleted) {
+                  openOnboardingModal();
+                }
             }
             setLoading(false);
         }, (error) => {
@@ -102,7 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Cleanup auth subscription on component unmount
     return () => unsubscribeAuth();
-  }, []);
+  }, [openOnboardingModal]);
 
   const value = { user, loading, isPremium, isGuest, preferredPersona, favoritePrompts, setFavoritePrompts };
 

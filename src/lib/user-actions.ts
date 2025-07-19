@@ -1,57 +1,25 @@
-
-'use server';
-
-import { db } from '@/lib/firebase-admin'; // Use Firebase Admin SDK
+import { doc, updateDoc, getDocs, collection } from 'firebase/firestore';
+import { db } from './firebase';
 
 export interface Persona {
-  id: string;
-  name: string;
-  description: string;
-  prompt: string;
-  isDefault?: boolean;
+    id: string;
+    name: string;
+    description: string;
+    prompt: string;
 }
 
-export async function getPersonas(): Promise<Persona[]> {
-  try {
-    const personasSnapshot = await db.collection('personas').get();
-    if (personasSnapshot.empty) {
-      return [];
-    }
-    return personasSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Persona[];
-  } catch (error) {
-    console.error("Error fetching personas: ", error);
-    return [];
-  }
-}
+export const getPersonas = async (): Promise<Persona[]> => {
+    const personasCollection = collection(db, 'personas');
+    const snapshot = await getDocs(personasCollection);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Persona));
+};
 
-export async function updateUserPersona(userId: string, persona: string) {
-  if (!userId) return;
-  const userRef = db.collection('users').doc(userId);
-  try {
-    // Ensure the document exists before updating, though updateDoc would fail anyway
-    const userSnap = await userRef.get();
-    if (userSnap.exists) {
-      await userRef.update({
-        preferredPersona: persona,
-      });
-    }
-  } catch (error) {
-    console.error("Error updating user persona: ", error);
-    // Optionally, re-throw or handle the error as needed
-  }
-}
+export const updateUserPersona = async (userId: string, personaId: string) => {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, { preferredPersona: personaId });
+};
 
-export async function updateUserFavoritePrompts(userId: string, favoriteIds: string[]) {
-    if (!userId) return;
-    const userRef = db.collection('users').doc(userId);
-    try {
-        await userRef.update({
-            favoritePrompts: favoriteIds,
-        });
-    } catch (error) {
-        console.error("Error updating user favorite prompts: ", error);
-    }
-}
+export const updateUserOnboardingData = async (userId: string, data: { subject: string; learningStyle: string; preferredPersona: string; onboardingCompleted: boolean }) => {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, data);
+};

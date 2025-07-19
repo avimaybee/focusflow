@@ -4,46 +4,40 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { useOnboardingModal } from '@/hooks/use-onboarding-modal';
-import { saveMemory, AiMemory } from '@/lib/memory-actions';
-import { getPersonas, updateUserPersona, Persona } from '@/lib/user-actions';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { X, ArrowRight, Check, Loader2, Sparkles } from 'lucide-react';
+import {
+  BookOpen,
+  BrainCircuit,
+  FlaskConical,
+  Globe,
+  Palette,
+  MessageSquare,
+  ListChecks,
+  Pencil,
+  X,
+  ArrowRight,
+  Check,
+  Loader2,
+  Sparkles,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
+import { updateUserOnboardingData, getPersonas, Persona } from '@/lib/user-actions';
+
+const subjects = [
+    { name: 'Biology', icon: <FlaskConical className="h-5 w-5" /> },
+    { name: 'History', icon: <Globe className="h-5 w-5" /> },
+    { name: 'Mathematics', icon: <BrainCircuit className="h-5 w-5" /> },
+    { name: 'Literature', icon: <BookOpen className="h-5 w-5" /> },
+    { name: 'Art', icon: <Palette className="h-5 w-5" /> },
+    { name: 'Other', icon: <Pencil className="h-5 w-5" /> },
+];
 
 const learningStyles = [
-  // Foundational
-  'Explain concepts simply',
-  'Be detailed and thorough',
-  'Keep responses concise',
-  'Provide real-world examples',
-  'Use analogies and metaphors',
-
-  // Structure & Format
-  'Use bullet points and lists',
-  'Provide structured outlines',
-  'Use headings and subheadings',
-  'Present information in tables',
-  'End with a summary of key points',
-
-  // Interaction & Engagement
-  'Ask me questions to check understanding',
-  'Use a friendly and encouraging tone',
-  'Adopt a formal and academic tone',
-  'Challenge my assumptions',
-  'Recommend further reading or resources',
-
-  // Content & Media
-  'Incorporate historical context',
-  'Provide code examples (for technical topics)',
-  'Explain the "why" not just the "what"',
-  'Focus on practical applications',
-  'Use visual descriptions and imagery',
+    { name: 'Visual', description: 'Diagrams, charts, and maps', icon: <Palette className="h-6 w-6" /> },
+    { name: 'Text', description: 'Summaries and explanations', icon: <MessageSquare className="h-6 w-6" /> },
+    { name: 'Interactive', description: 'Quizzes and flashcards', icon: <ListChecks className="h-6 w-6" /> },
 ];
 
 export const OnboardingModal = () => {
@@ -52,9 +46,8 @@ export const OnboardingModal = () => {
   const [step, setStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [topics, setTopics] = useState<string[]>([]);
-  const [currentTopic, setCurrentTopic] = useState('');
-  const [preferences, setPreferences] = useState<string[]>([]);
+  const [subject, setSubject] = useState<string>('');
+  const [learningStyle, setLearningStyle] = useState<string>('');
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [selectedPersona, setSelectedPersona] = useState<string>('neutral');
 
@@ -66,42 +59,32 @@ export const OnboardingModal = () => {
     }
   }, [isOpen]);
 
-  const handleTogglePreference = (pref: string) => {
-    setPreferences((prev) =>
-      prev.includes(pref) ? prev.filter((p) => p !== pref) : [...prev, pref]
-    );
-  };
-
-  const handleAddTopic = () => {
-    if (currentTopic.trim() && !topics.includes(currentTopic.trim())) {
-      setTopics([...topics, currentTopic.trim()]);
-      setCurrentTopic('');
-    }
-  };
-
-  const handleRemoveTopic = (topicToRemove: string) => {
-    setTopics(topics.filter((t) => t !== topicToRemove));
-  };
-
   const handleFinish = async () => {
-    if (!user) return;
+    if (!user || !subject || !learningStyle || !selectedPersona) {
+        toast({
+            variant: 'destructive',
+            title: 'Selection Required',
+            description: 'Please make a selection for each step.',
+        });
+        return;
+    }
     setIsSaving(true);
     try {
-      const memory: AiMemory = { topics, preferences };
-      await Promise.all([
-        saveMemory(user.uid, memory),
-        updateUserPersona(user.uid, selectedPersona),
-        updateDoc(doc(db, 'users', user.uid), { onboardingCompleted: true })
-      ]);
-      setStep(4); 
+      await updateUserOnboardingData(user.uid, {
+          subject,
+          learningStyle,
+          preferredPersona: selectedPersona,
+          onboardingCompleted: true,
+      });
+      setStep(4); // Move to success step
       setTimeout(() => {
         onClose();
         // Reset state for next time
         setStep(1);
-        setTopics([]);
-        setPreferences([]);
+        setSubject('');
+        setLearningStyle('');
         setSelectedPersona('neutral');
-      }, 2000); // Close after 2 seconds
+      }, 2000);
     } catch (error) {
       console.error("Failed to save onboarding data:", error);
       toast({
@@ -116,26 +99,26 @@ export const OnboardingModal = () => {
 
   const renderStep = () => {
     switch (step) {
-      case 1: // Welcome & Topics
+      case 1: // Subject Selection
         return (
           <div>
-            <h2 className="text-2xl font-bold mb-2">Welcome to FocusFlow AI!</h2>
-            <p className="text-muted-foreground mb-6">Let's personalize your experience. First, what topics are you studying right now?</p>
-            <div className="flex gap-2 mb-4">
-              <Input
-                placeholder="e.g., Quantum Physics, The Roman Empire..."
-                value={currentTopic}
-                onChange={(e) => setCurrentTopic(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddTopic()}
-              />
-              <Button onClick={handleAddTopic}>Add</Button>
-            </div>
-            <div className="flex flex-wrap gap-2 min-h-[40px]">
-              {topics.map((topic) => (
-                <Badge key={topic} variant="secondary" className="text-sm">
-                  {topic}
-                  <X className="h-3 w-3 ml-2 cursor-pointer" onClick={() => handleRemoveTopic(topic)} />
-                </Badge>
+            <h2 className="text-2xl font-bold mb-2">What are you studying?</h2>
+            <p className="text-muted-foreground mb-6">This will help personalize your experience.</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {subjects.map((item) => (
+                <button
+                  key={item.name}
+                  onClick={() => setSubject(item.name)}
+                  className={cn(
+                    'flex flex-col items-center justify-center gap-3 p-4 border rounded-lg transition-all',
+                    subject === item.name
+                      ? 'border-primary ring-2 ring-primary'
+                      : 'hover:border-primary/50'
+                  )}
+                >
+                  {item.icon}
+                  <span className="font-medium text-sm">{item.name}</span>
+                </button>
               ))}
             </div>
           </div>
@@ -143,23 +126,26 @@ export const OnboardingModal = () => {
       case 2: // Learning Style
         return (
           <div>
-            <h2 className="text-2xl font-bold mb-2">How do you like to learn?</h2>
-            <p className="text-muted-foreground mb-6">Select your preferences. The AI will adapt to your style.</p>
-            <div className="flex flex-wrap gap-3">
+            <h2 className="text-2xl font-bold mb-2">How do you learn best?</h2>
+            <p className="text-muted-foreground mb-6">Select your style to get a smarter study plan.</p>
+            <div className="space-y-4">
               {learningStyles.map((style) => (
-                <button
-                  key={style}
-                  onClick={() => handleTogglePreference(style)}
+                <div
+                  key={style.name}
+                  onClick={() => setLearningStyle(style.name)}
                   className={cn(
-                    'px-4 py-2 border rounded-full text-sm transition-colors flex items-center gap-2',
-                    preferences.includes(style)
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'hover:bg-muted/50'
+                    'flex items-center gap-4 p-4 border rounded-lg cursor-pointer transition-all',
+                    learningStyle === style.name
+                      ? 'border-primary ring-2 ring-primary'
+                      : 'hover:border-primary/50'
                   )}
                 >
-                  {preferences.includes(style) && <Check className="h-4 w-4" />}
-                  {style}
-                </button>
+                  <div className="text-primary">{style.icon}</div>
+                  <div>
+                    <h3 className="font-semibold">{style.name}</h3>
+                    <p className="text-xs text-muted-foreground">{style.description}</p>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -168,7 +154,7 @@ export const OnboardingModal = () => {
         return (
             <div>
               <h2 className="text-2xl font-bold mb-2">Choose Your AI Partner</h2>
-              <p className="text-muted-foreground mb-6">Select a default persona for your new chats. You can always change this later.</p>
+              <p className="text-muted-foreground mb-6">Select a default persona. You can always change this later.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[300px] overflow-y-auto pr-2">
                 {personas.map((persona) => (
                   <div
@@ -202,7 +188,7 @@ export const OnboardingModal = () => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="max-w-2xl" showCloseButton={step < 4}>
+    <Modal isOpen={isOpen} onClose={onClose} className="max-w-lg" showCloseButton={step < 4}>
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
@@ -224,7 +210,8 @@ export const OnboardingModal = () => {
         </div>
         <div className="flex justify-end gap-4">
           {step > 1 && step < 4 && <Button variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>}
-          {step < 3 && <Button onClick={() => setStep(step + 1)}>Next <ArrowRight className="h-4 w-4 ml-2" /></Button>}
+          {step === 1 && <Button onClick={() => setStep(step + 1)} disabled={!subject}>Next <ArrowRight className="h-4 w-4 ml-2" /></Button>}
+          {step === 2 && <Button onClick={() => setStep(step + 1)} disabled={!learningStyle}>Next <ArrowRight className="h-4 w-4 ml-2" /></Button>}
           {step === 3 && (
             <Button onClick={handleFinish} disabled={isSaving}>
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Finish Setup'}
