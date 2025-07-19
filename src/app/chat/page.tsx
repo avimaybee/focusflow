@@ -30,7 +30,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ContextHubSidebar } from '@/components/chat/context-hub-sidebar';
 import Link from 'next/link';
 
 const GUEST_MESSAGE_LIMIT = 10;
@@ -429,7 +428,6 @@ export default function ChatPage() {
             </AlertDialogContent>
         </AlertDialog>
       </main>
-      <ContextHubSidebar />
     </div>
   );
 }

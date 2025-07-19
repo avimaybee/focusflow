@@ -18,7 +18,6 @@ import {
   generateCounterargumentsTool,
   generatePresentationOutlineTool,
 } from '@/ai/tools';
-import { getMemory } from '@/lib/memory-actions';
 import { FirestoreSessionStore } from '@/lib/firestore-session-store';
 import { serverTimestamp } from 'firebase-admin/firestore';
 import { ai } from '@/ai/genkit';
@@ -148,21 +147,9 @@ const chatFlow = ai.defineFlow(
       ? await ai.loadSession(input.sessionId, { store })
       : await ai.createSession({ store });
       
-    const [personaInstruction, memory] = await Promise.all([
-      getPersonaPrompt(personaId || 'neutral'),
-      isGuest ? Promise.resolve(null) : getMemory(userId),
-    ]);
+    const personaInstruction = await getPersonaPrompt(personaId || 'neutral');
 
     let memoryInstruction = '';
-    if (memory && (memory.topics.length > 0 || memory.preferences.length > 0)) {
-      memoryInstruction = `
-
-**AI Memory Context:**
-The user has provided the following topics and preferences for you to remember. Use them to tailor your responses.
-- Key Topics: ${memory.topics.join(', ')}
-- User Preferences: ${memory.preferences.join(', ')}
-`;
-    }
 
     const model = googleAI.model('gemini-1.5-flash');
 

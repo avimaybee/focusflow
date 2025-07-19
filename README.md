@@ -90,3 +90,4 @@ meow 5
 meow 6
 ai tools prob
 meow 7 preferences
+chat working fine now with preferences

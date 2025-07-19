@@ -43,7 +43,6 @@ import { cn } from '@/lib/utils';
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { ChatHistoryItem } from '@/hooks/use-chat-history';
 import { useAuthModal } from '@/hooks/use-auth-modal';
-import { useContextHubStore } from '@/stores/use-context-hub-store';
 
 interface ChatSidebarProps {
   user: FirebaseUser | null;
@@ -188,19 +187,6 @@ export function ChatSidebar({
   isCollapsed,
   onToggle,
 }: ChatSidebarProps) {
-  const { toggleContextHub, isContextHubOpen } = useContextHubStore();
-
-  const handleToggleNotesPanel = () => {
-    // If the main sidebar is collapsed, expand it first, then open the hub.
-    if (isCollapsed && !isContextHubOpen) {
-      onToggle();
-      setTimeout(() => {
-        toggleContextHub();
-      }, 150); // Delay to allow sidebar to expand
-    } else {
-      toggleContextHub();
-    }
-  };
 
   const renderUserMenu = (isInDropdown: boolean) => (
     <div className={cn(isInDropdown ? 'opacity-0 hidden' : '', isCollapsed && (isInDropdown ? '' : 'opacity-0 hidden'))}>
@@ -277,7 +263,6 @@ export function ChatSidebar({
                             isCollapsed && 'justify-center px-2'
                           )}
                           onClick={() => {
-                            if (isContextHubOpen) toggleContextHub();
                             onChatSelect(chat.id);
                           }}
                         >

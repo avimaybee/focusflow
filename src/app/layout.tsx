@@ -5,8 +5,6 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from '@/context/providers';
-import { AuthModal } from '@/components/auth/auth-modal';
-import { OnboardingModal } from '@/components/auth/onboarding-modal';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { PageTransitionWrapper } from '@/components/layout/page-transition-wrapper';
@@ -53,8 +51,6 @@ export default function RootLayout({
         )}
       >
         <Providers>
-          <AuthModal />
-          <OnboardingModal />
           <Header />
           <PageTransitionWrapper>{children}</PageTransitionWrapper>
           <Footer />

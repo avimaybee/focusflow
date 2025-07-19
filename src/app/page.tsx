@@ -28,7 +28,6 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { motion } from 'framer-motion';
 import { BackgroundLines } from '@/components/ui/background-lines';
-import { InteractiveDemo } from '@/components/ui/interactive-demo';
 import { FlipHeading } from '@/components/ui/flip-heading';
 import { TextFlip } from '@/components/ui/text-flip';
 
@@ -184,7 +183,7 @@ export default function LandingPage() {
                 FocusFlow is your AI co-pilot for learning. See how it can turn any document into summaries, flashcards, and quizzes in seconds.
               </p>
               <div className="mt-12 w-full">
-                <InteractiveDemo />
+                
               </div>
               <div className="mt-12 text-sm text-muted-foreground">
                 Trusted by students at over 20+ universities

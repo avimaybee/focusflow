@@ -29,17 +29,20 @@ async function getUserIdFromRequest(req: NextRequest): Promise<string | null> {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('=== NEW CHAT REQUEST ===');
   try {
     const userId = await getUserIdFromRequest(request);
+    console.log(`[DEBUG] Authenticated User ID: ${userId || 'Guest'}`);
 
     // If there's no userId, it's a guest request.
     // In a production app, you might add rate-limiting here.
     const isGuest = !userId;
 
     const body = await request.json();
-    console.log("[DEBUG: API Route] Received request body:", JSON.stringify(body, null, 2));
+    console.log("[DEBUG] Request Body:", JSON.stringify(body, null, 2));
 
     if (!body.message) {
+      console.error("[ERROR] Missing required field: message");
       return NextResponse.json({ error: 'Missing required field: message' }, { status: 400 });
     }
 
@@ -53,24 +56,40 @@ export async function POST(request: NextRequest) {
       context: body.context, // This can be a data URI for a file
     };
 
-    console.log("API ROUTE: Calling chatFlow with input:", input);
+    console.log("[DEBUG] Calling chatFlow with input:", input);
     
     // We call the main chat flow and await its result.
     const result = await chatFlow(input);
 
-    console.log("API ROUTE: Received result from flow:", result);
+    console.log("[DEBUG] Received result from flow:", result);
     
     return NextResponse.json(result);
 
   } catch (error: any) {
     console.error('=== FATAL API ROUTE ERROR ===');
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
+    console.error('Error Name:', error.name);
+    console.error('Error Message:', error.message);
+    console.error('Error Code:', error.code);
+    console.error('Error Details:', error.details);
+    console.error('Error Stack:', error.stack);
     
+    // Attempt to get the service account email if running in a Google Cloud environment
+    try {
+      const response = await fetch('http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/email', {
+        headers: { 'Metadata-Flavor': 'Google' },
+      });
+      if (response.ok) {
+        const email = await response.text();
+        console.error(`[DEBUG] Running as service account: ${email}`);
+      }
+    } catch (metaError) {
+      console.error('[DEBUG] Could not fetch service account metadata. Not in a standard GCP environment or metadata server is blocked.');
+    }
+
     return NextResponse.json(
       { 
         error: 'An internal server error occurred.',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details: error.message || 'No further details available.'
       },
       { status: 500 }
     );
