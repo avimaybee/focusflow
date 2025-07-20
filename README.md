@@ -101,3 +101,4 @@ fixed harcoded persona
 removed footer from chat page
 add persona perma fix to readme
 notes feature
+dashboard and profile and seo oevrhaul
