@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+      "context7": {
+        "httpUrl": "https://mcp.context7.com/mcp"
+      },
+      "firebase": {
+       "command": "npx",
+        "args": ["-y", "firebase-tools@latest", "experimental:mcp"]
+      }
+    }
+  }
