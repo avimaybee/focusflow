@@ -68,7 +68,6 @@ interface ChatInputAreaProps {
   setInput: (value: string) => void;
   handleSendMessage: (e: FormEvent, prompt?: string) => void;
   handleFileSelect: (file: File) => void;
-  onSelectPrompt: (prompt: string) => void;
   isSending: boolean;
   isHistoryLoading: boolean;
   personas: any[];
@@ -103,7 +102,6 @@ export function ChatInputArea({
   setInput,
   handleSendMessage,
   handleFileSelect,
-  onSelectPrompt,
   isSending,
   isHistoryLoading,
   personas,
@@ -184,17 +182,7 @@ export function ChatInputArea({
           
           <div className="flex items-end gap-2 p-3">
             <div className="flex items-center gap-1">
-               <PromptLibrary onSelectPrompt={onSelectPrompt}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted"
-                >
-                  <Plus className="h-5 w-5" />
-                </Button>
-              </PromptLibrary>
-
-              <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
+               <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="ghost"

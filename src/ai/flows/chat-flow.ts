@@ -154,11 +154,6 @@ const chatFlow = ai.defineFlow(
           avatarUrl: z.string().optional(),
           prompt: z.string(),
       }).optional(),
-      source: z.object({
-          type: z.enum(['file', 'text']),
-          name: z.string(),
-      }).optional(),
-      confidence: z.enum(['high', 'medium', 'low']).optional(),
     }),
   },
   async (input) => {
@@ -212,18 +207,10 @@ const chatFlow = ai.defineFlow(
     const result = await chat.send(userMessageContent);
 
     let structuredOutput: { flashcards?: any; quiz?: any } = {};
-    let confidence: 'high' | 'medium' | 'low' = 'medium';
-    let source: { type: 'file' | 'text'; name: string } | undefined = undefined;
-
-    if (context) {
-        confidence = 'high';
-        source = { type: 'file', name: context.filename };
-    }
 
     if (result.history && result.history.length > 0) {
       const lastMessage = result.history[result.history.length - 1];
       if (lastMessage.role === 'model' && lastMessage.toolCalls && lastMessage.toolCalls.length > 0) {
-        confidence = 'high';
         for (const toolCall of lastMessage.toolCalls) {
           if (toolCall.output) {
               if (!isGuest) {
@@ -246,8 +233,6 @@ const chatFlow = ai.defineFlow(
         if (lastModelMessage) {
             lastModelMessage.data = {
                 ...lastModelMessage.data,
-                source,
-                confidence,
                 persona,
             };
         }
@@ -257,8 +242,6 @@ const chatFlow = ai.defineFlow(
       sessionId: session.id,
       response: result.text,
       rawResponse: result.text,
-      source,
-      confidence,
       persona,
       ...structuredOutput,
     };

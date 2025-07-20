@@ -236,3 +236,39 @@ INFO: Websocket client disconnected
 [debug] [2025-07-13T11:55:08.709Z] Jul 13, 2025 11:55:08 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler channelClosed
 INFO: Websocket client disconnected
  {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 13, 2025 11:55:08 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler channelClosed\nINFO: Websocket client disconnected\n"}}
+[debug] [2025-07-20T07:43:10.927Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.930Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.930Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.931Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.931Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.931Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.931Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.932Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.932Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.932Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.933Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.933Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.933Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.933Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.934Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.934Z] No OAuth tokens found
+[debug] [2025-07-20T07:43:10.989Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-07-20T07:43:10.989Z] > authorizing via signed-in user (firebase-adminsdk-fbsvc@focusflow-ai-w1jt3.iam.gserviceaccount.com)
+[debug] [2025-07-20T07:57:04.713Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.716Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.717Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.717Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.717Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.718Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.718Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.718Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.718Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.719Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.720Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.720Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.721Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.722Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.722Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.723Z] No OAuth tokens found
+[debug] [2025-07-20T07:57:04.766Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-07-20T07:57:04.767Z] > authorizing via signed-in user (firebase-adminsdk-fbsvc@focusflow-ai-w1jt3.iam.gserviceaccount.com)

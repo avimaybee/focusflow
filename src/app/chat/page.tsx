@@ -376,7 +376,6 @@ export default function ChatPage() {
           activeChatId={activeChatId}
           activePersona={selectedPersona}
           scrollAreaRef={scrollAreaRef}
-          onSelectPrompt={setInput}
           onSmartToolAction={(prompt) => {
             const syntheticEvent = {} as FormEvent;
             handleSendMessage(syntheticEvent, prompt);
@@ -391,7 +390,6 @@ export default function ChatPage() {
                 setInput={setInput}
                 handleSendMessage={handleSendMessage}
                 handleFileSelect={handleFileSelect}
-                onSelectPrompt={setInput}
                 isSending={isSending}
                 isHistoryLoading={isHistoryLoading}
                 personas={personas}

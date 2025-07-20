@@ -48,8 +48,6 @@ export type ChatMessageProps = {
   userAvatar?: string | null;
   userName?: string;
   persona?: Persona;
-  source?: { type: 'file' | 'text'; name: string };
-  confidence?: 'high' | 'medium' | 'low';
   createdAt?: Timestamp;
   isError?: boolean;
   isFirstInGroup?: boolean;
@@ -69,8 +67,6 @@ export function ChatMessage({
   userAvatar,
   userName,
   persona,
-  source,
-  confidence,
   isError = false,
   isFirstInGroup = true,
   isLastInGroup = true,
@@ -144,32 +140,6 @@ export function ChatMessage({
     }
     return text;
   };
-
-  const ConfidenceIndicator = () => {
-      if (!confidence) return null;
-      const confidenceMap = {
-          high: { text: 'High confidence', icon: <CheckCircle className="h-3.5 w-3.5 text-green-500" />, className: 'text-green-500' },
-          medium: { text: 'Medium confidence', icon: <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" />, className: 'text-yellow-500' },
-          low: { text: 'Low confidence - Please verify', icon: <AlertTriangle className="h-3.5 w-3.5 text-red-500" />, className: 'text-red-500' },
-      }
-      const { text, icon, className } = confidenceMap[confidence];
-      return (
-          <div className={cn("flex items-center gap-1.5 text-xs", className)}>
-              {icon}
-              <span>{text}</span>
-          </div>
-      )
-  }
-
-  const SourceIndicator = () => {
-      if (!source) return null;
-      return (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <FileText className="h-3.5 w-3.5" />
-              <span>Based on: {source.name}</span>
-          </div>
-      )
-  }
 
   const avatar = (
     <Avatar
@@ -252,12 +222,6 @@ export function ChatMessage({
                     </div>
                   )
               )}
-            </div>
-          )}
-          {(source || confidence) && (
-            <div className="mt-3 pt-2 border-t border-border/50 flex items-center justify-between">
-                <SourceIndicator />
-                <ConfidenceIndicator />
             </div>
           )}
         </div>
