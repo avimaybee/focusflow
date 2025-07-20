@@ -204,8 +204,8 @@ export function ChatInputArea({
                             <CommandItem
                               key={p.id}
                               value={p.id}
-                              onSelect={(currentValue) => {
-                                setSelectedPersonaId(currentValue);
+                              onSelect={() => {
+                                setSelectedPersonaId(p.id);
                                 setPersonaMenuOpen(false);
                               }}
                               className="group flex items-start gap-3 cursor-pointer py-2.5"

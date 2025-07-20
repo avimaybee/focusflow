@@ -272,3 +272,21 @@ INFO: Websocket client disconnected
 [debug] [2025-07-20T07:57:04.723Z] No OAuth tokens found
 [debug] [2025-07-20T07:57:04.766Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
 [debug] [2025-07-20T07:57:04.767Z] > authorizing via signed-in user (firebase-adminsdk-fbsvc@focusflow-ai-w1jt3.iam.gserviceaccount.com)
+[debug] [2025-07-20T08:44:27.794Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.796Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.797Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.797Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.798Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.798Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.798Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.798Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.799Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.799Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.799Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.799Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.800Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.800Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.800Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.801Z] No OAuth tokens found
+[debug] [2025-07-20T08:44:27.821Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-07-20T08:44:27.935Z] Running auto auth
