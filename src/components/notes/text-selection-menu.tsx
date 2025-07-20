@@ -3,6 +3,9 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/context/auth-context';
+import { appendToNotes } from '@/lib/notes-actions';
+import { useToast } from '@/hooks/use-toast';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { Button } from '@/components/ui/button';
 import { NotebookPen, Sparkles, Loader2 } from 'lucide-react';
@@ -19,7 +22,9 @@ type ExplanationState = {
 };
 
 export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
-  const { appendToNotes, toggleContextHub, isContextHubOpen } = useContextHubStore();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { toggleContextHub, isContextHubOpen } = useContextHubStore();
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const [selectedText, setSelectedText] = useState<string>('');
   const [explanation, setExplanation] = useState<ExplanationState>({ status: 'idle', content: null });
@@ -93,19 +98,42 @@ export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
     });
   };
 
-  const handleSendToNotes = (e: React.MouseEvent) => {
+  const handleSendToNotes = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (selectedText) {
-      const contentToAppend = explanation.status === 'success'
-        ? `> ${selectedText}\n\n${explanation.content?.replace(/<[^>]*>/g, '\n')}`
-        : selectedText;
-      appendToNotes(contentToAppend);
-      if (!isContextHubOpen) {
-        toggleContextHub();
-      }
-      clearSelection();
+    if (!user || !selectedText) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'You must be logged in to save notes.',
+        });
+        return;
+    }
+
+    try {
+        const contentToAppend = explanation.status === 'success'
+            ? `> ${selectedText}\n\n${explanation.content?.replace(/<[^>]*>/g, '\n')}`
+            : selectedText;
+        
+        await appendToNotes(user.uid, contentToAppend);
+        
+        toast({
+            title: 'Sent to Notes',
+            description: 'The selected text has been added to your notes.',
+        });
+
+        if (!isContextHubOpen) {
+            toggleContextHub();
+        }
+        clearSelection();
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Failed to save to your notes.',
+        });
     }
   };
+
 
   return (
     <AnimatePresence>

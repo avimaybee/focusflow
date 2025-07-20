@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useAuth } from '@/context/auth-context';
-import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { getNotes, saveNotes } from '@/lib/notes-actions';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
@@ -14,26 +13,26 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 export function NotesTab() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { notesContent, setNotesContent } = useContextHubStore();
-  
-  const [initialContent, setInitialContent] = useState<string | null>(null);
+  const [content, setContent] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
-  const [debouncedContent] = useDebounce(notesContent, 2000);
+  const [debouncedContent] = useDebounce(content, 1500);
 
+  // Effect to fetch initial notes
   useEffect(() => {
     if (user && !isLoaded) {
-      getNotes(user.uid).then((content) => {
-        setNotesContent(content);
-        setInitialContent(content);
+      getNotes(user.uid).then((initialContent) => {
+        setContent(initialContent);
         setIsLoaded(true);
       });
     }
-  }, [user, isLoaded, setNotesContent]);
+  }, [user, isLoaded]);
 
+  // Effect to save notes when debounced content changes
   useEffect(() => {
-    if (!isLoaded || !user || debouncedContent === initialContent) {
+    // Do not save initial content fetched from DB
+    if (!isLoaded || !user) {
       return;
     }
 
@@ -41,7 +40,6 @@ export function NotesTab() {
     saveNotes(user.uid, debouncedContent)
       .then(() => {
         setSaveStatus('saved');
-        setInitialContent(debouncedContent);
         setTimeout(() => setSaveStatus('idle'), 2000);
       })
       .catch(() => {
@@ -53,19 +51,22 @@ export function NotesTab() {
         });
         setTimeout(() => setSaveStatus('idle'), 2000);
       });
-  }, [debouncedContent, user, isLoaded, initialContent, toast]);
+  }, [debouncedContent, user, isLoaded, toast]);
 
   const SaveStatusIndicator = () => {
-    switch (saveStatus) {
-      case 'saving':
-        return <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>;
-      case 'saved':
-        return <><CheckCircle className="h-4 w-4 text-green-500" /> Saved</>;
-      case 'error':
-        return <><AlertTriangle className="h-4 w-4 text-destructive" /> Error</>;
-      default:
-        return null;
-    }
+    if (saveStatus === 'idle') return null;
+    
+    const messages = {
+        saving: <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>,
+        saved: <><CheckCircle className="h-4 w-4 text-green-500" /> Saved</>,
+        error: <><AlertTriangle className="h-4 w-4 text-destructive" /> Error</>
+    };
+
+    return (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {messages[saveStatus]}
+        </div>
+    );
   };
 
   if (!isLoaded) {
@@ -78,15 +79,18 @@ export function NotesTab() {
 
   return (
     <div className="h-full flex flex-col">
-      <Textarea
-        placeholder="Start typing your notes here..."
-        className="w-full flex-grow resize-none border-none focus-visible:ring-0 p-0 bg-transparent text-base"
-        value={notesContent}
-        onChange={(e) => setNotesContent(e.target.value)}
-      />
-      <div className="h-6 mt-2 text-xs text-muted-foreground flex items-center gap-2">
-        <SaveStatusIndicator />
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">My Notes</h3>
+        <div className="h-6">
+            <SaveStatusIndicator />
+        </div>
       </div>
+      <Textarea
+        placeholder="Start typing your notes here... they will be saved automatically."
+        className="w-full flex-grow resize-none border rounded-md p-2 bg-transparent text-base focus-visible:ring-1"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+      />
     </div>
   );
 }

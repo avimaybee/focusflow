@@ -1,3 +1,4 @@
+
 # FocusFlow AI: Project Overview
 
 This document provides a comprehensive overview of the FocusFlow AI application, detailing its features, technical implementation, design philosophy, and key development challenges.
@@ -99,3 +100,4 @@ fixed personas and chat
 fixed harcoded persona
 removed footer from chat page
 add persona perma fix to readme
+notes feature

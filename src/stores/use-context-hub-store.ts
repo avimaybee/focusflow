@@ -5,8 +5,6 @@ interface ContextHubStore {
   toggleContextHub: () => void;
   openContextHub: () => void;
   closeContextHub: () => void;
-  notesContent: string;
-  setNotesContent: (content: string) => void;
 }
 
 export const useContextHubStore = create<ContextHubStore>((set) => ({
@@ -14,6 +12,4 @@ export const useContextHubStore = create<ContextHubStore>((set) => ({
   toggleContextHub: () => set((state) => ({ isContextHubOpen: !state.isContextHubOpen })),
   openContextHub: () => set({ isContextHubOpen: true }),
   closeContextHub: () => set({ isContextHubOpen: false }),
-  notesContent: '',
-  setNotesContent: (content) => set({ notesContent: content }),
 }));

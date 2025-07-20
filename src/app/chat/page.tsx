@@ -9,10 +9,12 @@ import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
 import { useFileUpload, Attachment } from '@/hooks/use-file-upload';
+import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { ChatInputArea } from '@/components/chat/chat-input-area';
+import { ContextHub } from '@/components/chat/context-hub';
 import { UploadCloud } from 'lucide-react';
 import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -58,6 +60,7 @@ export default function ChatPage() {
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
   const { chatHistory, isLoading: isHistoryLoading, forceRefresh } = useChatHistory();
   const { isDraggingOver, handleFileSelect, fileUploadHandlers } = useFileUpload(setAttachment);
+  const { isContextHubOpen, closeContextHub } = useContextHubStore();
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -432,6 +435,30 @@ export default function ChatPage() {
             </AlertDialogContent>
         </AlertDialog>
       </main>
+
+      <AnimatePresence>
+        {isContextHubOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-30 bg-black/50"
+              onClick={closeContextHub}
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="fixed right-0 top-0 z-40 h-full w-full max-w-md bg-background border-l"
+            >
+              <ContextHub />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
