@@ -7,15 +7,15 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, MessageCircle, X } from 'lucide-react';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BackgroundLines } from '@/components/ui/background-lines';
+import { DotBackground } from '@/components/ui/dot-background';
+import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
+import { FlipWords } from '@/components/ui/flip-words';
 import { PreviewChatWidget } from '@/components/ui/preview-chat-widget';
 import { FeaturesSection } from '@/components/landing/features-section';
 import { TestimonialsSection } from '@/components/landing/testimonials-section';
 import { FaqSection } from '@/components/landing/faq-section';
 import { InteractiveDemo } from '@/components/ui/interactive-demo';
 import { faqs, testimonials } from '@/lib/landing-page-data';
-
-
 
 const FloatingWidgetButton = ({ onClick, isOpen }: { onClick: () => void; isOpen: boolean }) => {
     const [showTooltip, setShowTooltip] = useState(false);
@@ -72,48 +72,59 @@ const FloatingWidgetButton = ({ onClick, isOpen }: { onClick: () => void; isOpen
 export default function LandingPage() {
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
   const authModal = useAuthModal();
+  const words = ["summaries", "flashcards", "quizzes", "study plans"];
 
   return (
-    <div className="flex-grow bg-background">
-      <main>
-        {/* Hero Section */}
-        <section className="relative">
-          <BackgroundLines className="py-20 md:py-24 lg:py-32">
+    <DotBackground>
+      <div className="flex-grow">
+        <main>
+          {/* Hero Section */}
+          <section className="relative py-20 md:py-24 lg:py-32">
             <div className="relative z-10 text-center container mx-auto px-4 flex flex-col items-center">
-                 <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight tracking-tighter text-foreground">
-                    Your AI Co-Pilot for Learning
-                </h1>
-              <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                FocusFlow is your all-in-one toolkit. Turn any document into summaries, flashcards, and quizzes in seconds.
-              </p>
-              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button size="lg" onClick={() => authModal.onOpen('signup')}>
+                   <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight tracking-tighter text-foreground">
+                      Your AI Co-Pilot for Learning
+                  </h1>
+                <div className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                  FocusFlow is your all-in-one toolkit. Turn any document into
+                  <FlipWords words={words} /> in seconds.
+                </div>
+                <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <HoverBorderGradient
+                    containerClassName="rounded-full"
+                    as="button"
+                    className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2"
+                    onClick={() => authModal.onOpen('signup')}
+                  >
                     Get Started for Free
-                </Button>
-                <Link href="#features">
-                    <Button size="lg" variant="outline">
+                  </HoverBorderGradient>
+                  <Link href="#features">
+                    <HoverBorderGradient
+                      containerClassName="rounded-full"
+                      as="button"
+                      className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2"
+                    >
                         Learn More <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                </Link>
+                    </HoverBorderGradient>
+                  </Link>
+                </div>
               </div>
-            </div>
-          </BackgroundLines>
-        </section>
+          </section>
 
-        <section className="py-20">
-            <InteractiveDemo />
-        </section>
+          <section className="py-20">
+              <InteractiveDemo />
+          </section>
 
-        <FeaturesSection />
+          <FeaturesSection />
 
-        <TestimonialsSection testimonials={testimonials} />
+          <TestimonialsSection testimonials={testimonials} />
 
-        <FaqSection faqs={faqs} />
-      </main>
-      <AnimatePresence>
-        {isWidgetOpen && <PreviewChatWidget onClose={() => setIsWidgetOpen(false)} />}
-      </AnimatePresence>
-      <FloatingWidgetButton isOpen={isWidgetOpen} onClick={() => setIsWidgetOpen(!isWidgetOpen)} />
-    </div>
+          <FaqSection faqs={faqs} />
+        </main>
+        <AnimatePresence>
+          {isWidgetOpen && <PreviewChatWidget onClose={() => setIsWidgetOpen(false)} />}
+        </AnimatePresence>
+        <FloatingWidgetButton isOpen={isWidgetOpen} onClick={() => setIsWidgetOpen(!isWidgetOpen)} />
+      </div>
+    </DotBackground>
   );
 }

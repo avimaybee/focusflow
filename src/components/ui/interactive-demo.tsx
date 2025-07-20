@@ -32,7 +32,7 @@ const DemoMessage = ({ author, children, icon: Icon, isAction = false }: { autho
         'relative px-4 py-3 rounded-lg max-w-[80%]',
         author === 'user'
           ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-          : 'bg-background border'
+          : 'bg-transparent border'
       )}
     >
       {children}
@@ -115,7 +115,7 @@ export const InteractiveDemo = () => {
   const isTyping = demoScript[scriptIndex]?.type === 'ai_typing';
 
   return (
-    <Card className="w-full max-w-2xl mx-auto bg-background/50 backdrop-blur-sm shadow-2xl shadow-primary/10 border-border/20">
+    <Card className="w-full max-w-2xl mx-auto bg-transparent shadow-2xl shadow-primary/10 border-border/20">
       <CardContent className="p-4 md:p-6">
         <div className="h-[400px] overflow-y-auto flex flex-col-reverse pr-2">
           <AnimatePresence>

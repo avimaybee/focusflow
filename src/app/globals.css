@@ -28,6 +28,7 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 224 10% 20%; /* Border color */
+    --dot-background: 224 10% 25%;
     --input: 224 10% 15%;
     --ring: 217 91% 60%; /* Ring color to match primary */
     --radius: 0.5rem;
@@ -51,6 +52,7 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 224 10% 20%; /* Border color */
+    --dot-background: 224 10% 25%;
     --input: 224 10% 15%;
     --ring: 217 91% 60%; /* Ring color to match primary */
   }
