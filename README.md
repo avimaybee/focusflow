@@ -96,3 +96,4 @@ meow 8, improved landing page
 fixed the sign in issues
 meow 9
 fixed personas and chat
+fixed harcoded persona
