@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, MessageCircle, X } from 'lucide-react';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { AnimatePresence, motion } from 'framer-motion';
+import { BackgroundLines } from '@/components/ui/background-lines';
 import { PreviewChatWidget } from '@/components/ui/preview-chat-widget';
 import { FeaturesSection } from '@/components/landing/features-section';
 import { TestimonialsSection } from '@/components/landing/testimonials-section';
@@ -14,14 +15,7 @@ import { FaqSection } from '@/components/landing/faq-section';
 import { InteractiveDemo } from '@/components/ui/interactive-demo';
 import { faqs, testimonials } from '@/lib/landing-page-data';
 
-const HeroGradient = () => (
-  <div
-    aria-hidden="true"
-    className="absolute inset-0 -z-10 overflow-hidden"
-  >
-    <div className="absolute left-[50%] top-0 h-[50rem] w-[50rem] -translate-x-[50%] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(60,130,246,0.15),rgba(255,255,255,0))]" />
-  </div>
-);
+
 
 const FloatingWidgetButton = ({ onClick, isOpen }: { onClick: () => void; isOpen: boolean }) => {
     const [showTooltip, setShowTooltip] = useState(false);
@@ -83,9 +77,8 @@ export default function LandingPage() {
     <div className="flex-grow bg-background">
       <main>
         {/* Hero Section */}
-        <section className="relative bg-background">
-          <div className="relative py-20 md:py-24 lg:py-32 flex items-center justify-center">
-            <HeroGradient />
+        <section className="relative">
+          <BackgroundLines className="py-20 md:py-24 lg:py-32">
             <div className="relative z-10 text-center container mx-auto px-4 flex flex-col items-center">
                  <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight tracking-tighter text-foreground">
                     Your AI Co-Pilot for Learning
@@ -104,7 +97,7 @@ export default function LandingPage() {
                 </Link>
               </div>
             </div>
-          </div>
+          </BackgroundLines>
         </section>
 
         <section className="py-20">

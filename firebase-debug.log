@@ -308,3 +308,39 @@ INFO: Websocket client disconnected
 [debug] [2025-07-20T12:47:36.848Z] No OAuth tokens found
 [debug] [2025-07-20T12:47:36.930Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
 [debug] [2025-07-20T12:47:37.371Z] Running auto auth
+[debug] [2025-07-20T13:25:38.257Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.260Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.261Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.261Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.262Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.262Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.263Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.263Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.263Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.264Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.264Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.264Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.265Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.265Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.265Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.266Z] No OAuth tokens found
+[debug] [2025-07-20T13:25:38.293Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-07-20T13:25:38.294Z] > authorizing via signed-in user (firebase-adminsdk-fbsvc@focusflow-ai-w1jt3.iam.gserviceaccount.com)
+[debug] [2025-07-20T14:33:29.483Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.486Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.487Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.487Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.487Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.488Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.488Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.489Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.489Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.490Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.490Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.490Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.491Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.491Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.491Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.492Z] No OAuth tokens found
+[debug] [2025-07-20T14:33:29.517Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-07-20T14:33:29.657Z] Running auto auth
