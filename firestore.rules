@@ -9,7 +9,7 @@ service cloud.firestore {
       allow get, create: if request.auth.uid == userId;
       allow update: if request.auth.uid == userId
                     && request.resource.data.diff(resource.data).affectedKeys()
-                       .hasOnly(['preferredPersona', 'favoritePrompts', 'lastLogin', 'usage', 'onboardingCompleted']);
+                       .hasOnly(['preferredPersona', 'learningGoals', 'favoritePrompts', 'lastLogin', 'usage', 'onboardingCompleted']);
       allow list, delete: if false;
 
       // A user can manage their own chat sessions.

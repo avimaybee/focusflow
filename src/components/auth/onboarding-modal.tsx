@@ -6,39 +6,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useOnboardingModal } from '@/hooks/use-onboarding-modal';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import {
-  BookOpen,
-  BrainCircuit,
-  FlaskConical,
-  Globe,
-  Palette,
-  MessageSquare,
-  ListChecks,
-  Pencil,
-  X,
-  ArrowRight,
   Check,
   Loader2,
   Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { updateUserOnboardingData, getPersonas, Persona } from '@/lib/user-actions';
-
-const subjects = [
-    { name: 'Biology', icon: <FlaskConical className="h-5 w-5" /> },
-    { name: 'History', icon: <Globe className="h-5 w-5" /> },
-    { name: 'Mathematics', icon: <BrainCircuit className="h-5 w-5" /> },
-    { name: 'Literature', icon: <BookOpen className="h-5 w-5" /> },
-    { name: 'Art', icon: <Palette className="h-5 w-5" /> },
-    { name: 'Other', icon: <Pencil className="h-5 w-5" /> },
-];
-
-const learningStyles = [
-    { name: 'Visual', description: 'Diagrams, charts, and maps', icon: <Palette className="h-6 w-6" /> },
-    { name: 'Text', description: 'Summaries and explanations', icon: <MessageSquare className="h-6 w-6" /> },
-    { name: 'Interactive', description: 'Quizzes and flashcards', icon: <ListChecks className="h-6 w-6" /> },
-];
+import { updateUserProfile, getPersonas, Persona } from '@/lib/user-actions';
 
 export const OnboardingModal = () => {
   const { user } = useAuth();
@@ -46,8 +23,7 @@ export const OnboardingModal = () => {
   const [step, setStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [subject, setSubject] = useState<string>('');
-  const [learningStyle, setLearningStyle] = useState<string>('');
+  const [learningGoals, setLearningGoals] = useState('');
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [selectedPersona, setSelectedPersona] = useState<string>('neutral');
 
@@ -60,29 +36,34 @@ export const OnboardingModal = () => {
   }, [isOpen]);
 
   const handleFinish = async () => {
-    if (!user || !subject || !learningStyle || !selectedPersona) {
+    if (!user) {
+        toast({
+            variant: 'destructive',
+            title: 'Not Logged In',
+            description: 'You must be logged in to save your preferences.',
+        });
+        return;
+    }
+    if (!learningGoals || !selectedPersona) {
         toast({
             variant: 'destructive',
             title: 'Selection Required',
-            description: 'Please make a selection for each step.',
+            description: 'Please fill out your learning goals and select a persona.',
         });
         return;
     }
     setIsSaving(true);
     try {
-      await updateUserOnboardingData(user.uid, {
-          subject,
-          learningStyle,
+      await updateUserProfile(user.uid, {
+          learningGoals,
           preferredPersona: selectedPersona,
-          onboardingCompleted: true,
       });
-      setStep(4); // Move to success step
+      setStep(3); // Move to success step
       setTimeout(() => {
         onClose();
         // Reset state for next time
         setStep(1);
-        setSubject('');
-        setLearningStyle('');
+        setLearningGoals('');
         setSelectedPersona('neutral');
       }, 2000);
     } catch (error) {
@@ -99,58 +80,20 @@ export const OnboardingModal = () => {
 
   const renderStep = () => {
     switch (step) {
-      case 1: // Subject Selection
+      case 1: // Learning Goals
         return (
           <div>
-            <h2 className="text-2xl font-bold mb-2">What are you studying?</h2>
-            <p className="text-muted-foreground mb-6">This will help personalize your experience.</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {subjects.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => setSubject(item.name)}
-                  className={cn(
-                    'flex flex-col items-center justify-center gap-3 p-4 border rounded-lg transition-all',
-                    subject === item.name
-                      ? 'border-primary ring-2 ring-primary'
-                      : 'hover:border-primary/50'
-                  )}
-                >
-                  {item.icon}
-                  <span className="font-medium text-sm">{item.name}</span>
-                </button>
-              ))}
-            </div>
+            <h2 className="text-2xl font-bold mb-2">What are your learning goals?</h2>
+            <p className="text-muted-foreground mb-6">This will help us personalize your experience.</p>
+            <Textarea
+              value={learningGoals}
+              onChange={(e) => setLearningGoals(e.target.value)}
+              placeholder="e.g., 'Master calculus', 'Learn to code in Python', 'Prepare for my history exam'"
+              className="min-h-[100px]"
+            />
           </div>
         );
-      case 2: // Learning Style
-        return (
-          <div>
-            <h2 className="text-2xl font-bold mb-2">How do you learn best?</h2>
-            <p className="text-muted-foreground mb-6">Select your style to get a smarter study plan.</p>
-            <div className="space-y-4">
-              {learningStyles.map((style) => (
-                <div
-                  key={style.name}
-                  onClick={() => setLearningStyle(style.name)}
-                  className={cn(
-                    'flex items-center gap-4 p-4 border rounded-lg cursor-pointer transition-all',
-                    learningStyle === style.name
-                      ? 'border-primary ring-2 ring-primary'
-                      : 'hover:border-primary/50'
-                  )}
-                >
-                  <div className="text-primary">{style.icon}</div>
-                  <div>
-                    <h3 className="font-semibold">{style.name}</h3>
-                    <p className="text-xs text-muted-foreground">{style.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      case 3: // Persona Selection
+      case 2: // Persona Selection
         return (
             <div>
               <h2 className="text-2xl font-bold mb-2">Choose Your AI Partner</h2>
@@ -172,7 +115,7 @@ export const OnboardingModal = () => {
               </div>
             </div>
           );
-      case 4: // Success
+      case 3: // Success
         return (
             <div className="text-center py-8">
                 <div className="inline-block p-4 bg-green-500/20 rounded-full mb-4">
@@ -188,7 +131,7 @@ export const OnboardingModal = () => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="max-w-lg" showCloseButton={step < 4}>
+    <Modal isOpen={isOpen} onClose={onClose} className="max-w-lg" showCloseButton={step < 3}>
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
@@ -204,20 +147,19 @@ export const OnboardingModal = () => {
       
       <div className="flex justify-between items-center p-6 bg-muted/50 border-t">
         <div className="flex gap-2">
-            {[1,2,3].map(i => (
+            {[1,2].map(i => (
                 <div key={i} className={cn("h-2 w-2 rounded-full", step >= i ? 'bg-primary' : 'bg-border')} />
             ))}
         </div>
         <div className="flex justify-end gap-4">
-          {step > 1 && step < 4 && <Button variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>}
-          {step === 1 && <Button onClick={() => setStep(step + 1)} disabled={!subject}>Next <ArrowRight className="h-4 w-4 ml-2" /></Button>}
-          {step === 2 && <Button onClick={() => setStep(step + 1)} disabled={!learningStyle}>Next <ArrowRight className="h-4 w-4 ml-2" /></Button>}
-          {step === 3 && (
+          {step > 1 && step < 3 && <Button variant="ghost" onClick={() => setStep(step - 1)}>Back</Button>}
+          {step === 1 && <Button onClick={() => setStep(step + 1)} disabled={!learningGoals}>Next <ArrowRight className="h-4 w-4 ml-2" /></Button>}
+          {step === 2 && (
             <Button onClick={handleFinish} disabled={isSaving}>
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Finish Setup'}
             </Button>
           )}
-          {step === 4 && <Button onClick={onClose}>Get Started <Sparkles className="h-4 w-4 ml-2" /></Button>}
+          {step === 3 && <Button onClick={onClose}>Get Started <Sparkles className="h-4 w-4 ml-2" /></Button>}
         </div>
       </div>
     </Modal>

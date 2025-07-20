@@ -1,5 +1,11 @@
-import { doc, updateDoc, getDocs, collection } from 'firebase/firestore';
+import { doc, updateDoc, getDocs, collection, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
+
+export interface UserProfile {
+    learningGoals?: string;
+    preferredPersona?: string;
+    onboardingCompleted?: boolean;
+}
 
 export interface Persona {
     id: string;
@@ -14,12 +20,19 @@ export const getPersonas = async (): Promise<Persona[]> => {
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Persona));
 };
 
-export const updateUserPersona = async (userId: string, personaId: string) => {
+export const getUserProfile = async (userId: string): Promise<UserProfile> => {
     const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, { preferredPersona: personaId });
+    const snapshot = await getDoc(userRef);
+    if (snapshot.exists()) {
+        return snapshot.data() as UserProfile;
+    }
+    return {};
 };
 
-export const updateUserOnboardingData = async (userId: string, data: { subject: string; learningStyle: string; preferredPersona: string; onboardingCompleted: boolean }) => {
+export const updateUserProfile = async (userId: string, profileData: UserProfile) => {
     const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, data);
+    await updateDoc(userRef, {
+        ...profileData,
+        onboardingCompleted: true,
+    });
 };
