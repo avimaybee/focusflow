@@ -1,27 +1,34 @@
 'use server';
 
-import { explainConceptTool } from '@/ai/tools';
-import { ExplainConceptInputSchema } from '@/types/chat-types';
 import { marked } from 'marked';
+import { chatFlow } from '@/ai/flows/chat-flow';
+import { ExplainConceptInputSchema } from '@/types/chat-types';
 
 /**
- * Gets a detailed explanation for a given concept using an AI tool.
+ * Gets a detailed explanation for a given concept using the main chat flow.
  * @param concept The concept to explain.
  * @returns An HTML string with the formatted explanation and analogy.
  */
 export async function getExplanation(concept: string): Promise<string> {
   try {
-    // Validate the input against the schema.
+    // Validate the input to ensure it's a non-empty string.
     const input = ExplainConceptInputSchema.parse({ concept });
     
-    // The tool is already defined and imported from `src/ai/tools.ts`.
-    // We just need to call it with the validated input.
-    const result = await explainConceptTool(input);
+    // Construct a specific message to send to the chat flow.
+    // This instructs the AI to use the 'explainConceptTool'.
+    const message = `Please explain the concept: "${input.concept}"`;
+
+    // Call the main chatFlow, simulating a user request.
+    // We use a guest user here as this is a stateless, informational query.
+    const result = await chatFlow({
+      userId: 'guest-user-for-explanation',
+      isGuest: true,
+      message: message,
+      personaId: 'neutral', // Use a neutral persona for a straightforward explanation
+    });
     
-    // The tool returns an object: { explanation: string, analogy: string }.
-    // We format this into a nice Markdown string and then parse it to HTML.
-    const markdown = `### Explanation\n${result.explanation}\n\n**Analogy:** ${result.analogy}`;
-    const html = await marked.parse(markdown);
+    // The flow's response will contain the formatted text.
+    const html = await marked.parse(result.response);
 
     return html;
   } catch (error) {
