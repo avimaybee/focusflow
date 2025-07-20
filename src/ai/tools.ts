@@ -32,6 +32,8 @@ import {
   GenerateCounterargumentsOutputSchema,
   GeneratePresentationOutlineInputSchema,
   GeneratePresentationOutlineOutputSchema,
+  CreatePracticeExamInputSchema,
+  CreatePracticeExamOutputSchema,
 } from '@/types/chat-types';
 import { db } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -110,20 +112,23 @@ export const createStudyPlanTool = ai.defineTool(
   {
     name: 'createStudyPlanTool',
     description:
-      'Generates a structured study plan based on a topic and duration. ' +
+      'Generates a structured study plan based on a topic, duration, and optional syllabus. ' +
       'Use this when the user asks to create a study plan or schedule.',
     inputSchema: CreateStudyPlanInputSchema,
     outputSchema: CreateStudyPlanOutputSchema,
   },
   async (input, context) => {
     await checkUsageAndIncrement(context.auth?.uid || '', 'studyPlans');
+    
+    const prompt = `Create a detailed, day-by-day study plan for the topic "${input.topic}" to be completed over ${input.durationDays} days.
+${input.examDate ? `The exam is on ${input.examDate}.` : ''}
+${input.syllabus ? `Base the plan on the following syllabus:\n${input.syllabus}` : ''}
+The plan should be structured as an array of objects, where each object represents a day and contains the day number, the main topic for that day, and an array of specific tasks.
+Also provide a suitable title for the study plan.`;
+
     const {output} = await ai.generate({
       model: liteModel,
-      prompt: `Create a detailed, day-by-day study plan for the topic
-"${input.topic}" to be completed over ${input.durationDays} days. The plan
-should be structured as a JSON object where each key is a "Day X" and the
-value is an array of tasks for that day. Also provide a suitable title for the
-study plan.`,
+      prompt,
       output: {
         schema: CreateStudyPlanOutputSchema,
       },
@@ -134,6 +139,7 @@ study plan.`,
     return output;
   }
 );
+
 
 export const createFlashcardsTool = ai.defineTool(
   {
@@ -422,6 +428,36 @@ Return only a JSON object with a "tags" array.`,
     // Ensure the content type is always included as a tag
     if (!output.tags.includes(input.contentType)) {
       output.tags.push(input.contentType);
+    }
+    return output;
+  }
+);
+
+export const createPracticeExamTool = ai.defineTool(
+  {
+    name: 'createPracticeExamTool',
+    description: 'Generates a full-length practice exam with various question types.',
+    inputSchema: CreatePracticeExamInputSchema,
+    outputSchema: CreatePracticeExamOutputSchema,
+  },
+  async (input, context) => {
+    // In a real app, you might have a separate usage limit for exams
+    // await checkUsageAndIncrement(context.auth?.uid || '', 'exams');
+    
+    const { output } = await ai.generate({
+      model: liteModel,
+      prompt: `Generate a practice exam on the topic "${input.topic}".
+The exam should have ${input.questionCount} questions with a difficulty level of "${input.difficulty}".
+The question types should be a mix of: ${input.questionTypes.join(', ')}.
+For each question, provide the question text, the question type, the correct answer, and a brief explanation.
+For multiple-choice questions, provide four options.
+Provide a suitable title for the exam.`,
+      output: {
+        schema: CreatePracticeExamOutputSchema,
+      },
+    });
+    if (!output) {
+      throw new Error('Failed to generate a practice exam.');
     }
     return output;
   }

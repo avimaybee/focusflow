@@ -3,36 +3,7 @@
 
 import * as React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  FileText,
-  HelpCircle,
-  BookOpen,
-  LayoutGrid,
-  Plus,
-  Loader2,
-  Save,
-  Calendar,
-  Star,
-  Search,
-  FolderPlus,
-  Folder,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { ExpandedTabs } from '@/components/ui/expanded-tabs';
-import { useAuth } from '@/context/auth-context';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
-import { formatDistanceToNow } from 'date-fns';
-import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import Fuse from 'fuse.js';
 import { PublishAsBlogModal } from '@/components/publish-as-blog-modal';
 import { AddToCollectionModal } from '@/components/add-to-collection-modal';
@@ -62,9 +33,10 @@ export interface ContentItem {
     lastViewed: Timestamp;
 }
 
-export default function MyContentPage() {
+function MyContentPageContent() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = React.useState('All');
   const [allContent, setAllContent] = React.useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -75,6 +47,13 @@ export default function MyContentPage() {
   const [collections, setCollections] = React.useState<any[]>([]);
   const [selectedCollectionId, setSelectedCollectionId] = React.useState<string | null>(null);
 
+  React.useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+  
   const recentContent = React.useMemo(() => {
     return [...allContent]
       .sort((a, b) => (b.lastViewed?.toMillis() || 0) - (a.lastViewed?.toMillis() || 0))
@@ -157,7 +136,7 @@ export default function MyContentPage() {
     fetchedContent.sort((a, b) => b!.createdAt.toMillis() - a!.createdAt.toMillis());
     setAllContent(fetchedContent);
     setIsLoading(false);
-  }, [user, authLoading]);
+  }, [user, authLoading, fetchCollections, toast]);
 
   React.useEffect(() => {
     fetchContent();
@@ -545,4 +524,12 @@ export default function MyContentPage() {
       )}
     </>
   );
+}
+
+export default function MyContentPage() {
+    return (
+        <React.Suspense fallback={<div>Loading...</div>}>
+            <MyContentPageContent />
+        </React.Suspense>
+    )
 }

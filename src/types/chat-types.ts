@@ -52,11 +52,17 @@ export const SummarizeNotesOutputSchema = z.object({
 
 export const CreateStudyPlanInputSchema = z.object({
   topic: z.string(),
+  examDate: z.string().optional(),
+  syllabus: z.string().optional(),
   durationDays: z.number().positive(),
 });
 export const CreateStudyPlanOutputSchema = z.object({
   title: z.string(),
-  plan: z.record(z.array(z.string())), // e.g., { "Day 1": ["Topic A", "Topic B"] }
+  plan: z.array(z.object({
+    day: z.number(),
+    topic: z.string(),
+    tasks: z.array(z.string()),
+  })),
 });
 
 export const CreateFlashcardsInputSchema = z.object({
@@ -172,3 +178,26 @@ export type GenerateBulletPointsInput = {
 export type GenerateCounterargumentsInput = {
   statementToChallenge: string;
 };
+
+// Schemas for Advanced Study Tools
+export const CreatePracticeExamInputSchema = z.object({
+  topic: z.string(),
+  questionCount: z.number().min(5).max(50),
+  difficulty: z.enum(['easy', 'medium', 'hard']),
+  questionTypes: z.array(z.enum(['multiple-choice', 'short-answer', 'essay'])),
+});
+
+export const CreatePracticeExamOutputSchema = z.object({
+  title: z.string(),
+  exam: z.object({
+    questions: z.array(
+      z.object({
+        questionText: z.string(),
+        questionType: z.enum(['multiple-choice', 'short-answer', 'essay']),
+        options: z.array(z.string()).optional(),
+        correctAnswer: z.string(),
+        explanation: z.string(),
+      })
+    ),
+  }),
+});

@@ -61,11 +61,14 @@ export async function setGoal(userId: string, goalData: { subject: string; targe
  * Logs a study activity and updates user stats.
  * This is the central function for tracking progress.
  * @param userId The ID of the user.
- * @param activityType The type of activity (e.g., 'quiz_completed', 'summary_created').
- * @param subject The subject of the activity.
- * @param durationMinutes The duration of the activity in minutes.
+ * @param activityData The data for the activity.
  */
-export async function logStudyActivity(userId: string, activityType: string, subject: string, durationMinutes: number) {
+export async function logStudyActivity(userId: string, activityData: {
+    activityType: string;
+    subject: string;
+    durationMinutes: number;
+    score?: number; // e.g., 85 for 85%
+}) {
     if (!userId) return;
 
     const userRef = db.collection('users').doc(userId);
@@ -74,16 +77,14 @@ export async function logStudyActivity(userId: string, activityType: string, sub
     const batch = db.batch();
 
     // 1. Log the specific activity
-    batch.add(activityLogRef, {
-        activityType,
-        subject,
-        durationMinutes,
+    batch.set(activityLogRef.doc(), {
+        ...activityData,
         createdAt: FieldValue.serverTimestamp(),
     });
 
     // 2. Update total study time for the subject
     batch.update(userRef, {
-        [`studyTime.${subject}`]: FieldValue.increment(durationMinutes),
+        [`studyTime.${activityData.subject}`]: FieldValue.increment(activityData.durationMinutes),
         lastStudyDate: FieldValue.serverTimestamp(),
     });
 
