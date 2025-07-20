@@ -9,7 +9,9 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "script:migrate-users": "ts-node --project scripts/tsconfig.scripts.json scripts/migrate-users.ts",
+    "script:migrate-profiles": "ts-node --project scripts/tsconfig.scripts.json scripts/migrate-public-profiles.ts"
   },
   "dependencies": {
     "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
@@ -89,6 +91,7 @@
     "jsdom": "^26.1.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"

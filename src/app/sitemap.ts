@@ -1,10 +1,19 @@
 import { getBlogPosts as getLocalBlogPosts } from '@/lib/blog-data';
 import { getBlogPosts as getDbBlogPosts } from '@/lib/blog-posts-data';
-import { getPublicSummaries, getPublicFlashcardSets, getPublicQuizzes, getPublicStudyPlans } from '@/lib/public-content-data';
+import { getPublicSummaries, getPublicFlashcardSets, getPublicQuizzes, getPublicStudyPlans, getAllUsernames } from '@/lib/public-content-data';
 import { MetadataRoute } from 'next';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://focusflow.ai';
+
+  // Get all usernames for public profiles
+  const usernames = await getAllUsernames();
+  const profileUrls = usernames.map(username => ({
+    url: `${baseUrl}/student/${username}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.6,
+  }));
 
   // Get all blog posts
   const localBlogPosts = getLocalBlogPosts();
@@ -97,5 +106,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...flashcardUrls,
     ...quizUrls,
     ...studyPlanUrls,
+    ...profileUrls,
   ];
 }

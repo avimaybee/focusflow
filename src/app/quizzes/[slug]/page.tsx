@@ -1,9 +1,8 @@
-
-// src/app/quizzes/[slug]/page.tsx
 import { db } from '@/lib/firebase-admin';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { QuizViewer } from '@/components/quiz-viewer';
+import { incrementViews } from '@/lib/profile-actions';
 
 type Props = {
   params: { slug: string };
@@ -23,17 +22,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const quiz = await getQuiz(params.slug);
 
   if (!quiz) {
-    return {
-      title: 'Quiz Not Found',
-    };
+    return { title: 'Quiz Not Found' };
   }
 
-  const description = `A ${quiz.quiz.questions.length}-question quiz on the topic of ${quiz.title}.`;
+  const description = `A quiz on "${quiz.sourceText}" created with FocusFlow AI.`;
 
   return {
-    title: `${quiz.title} | FocusFlow AI Quiz`,
-    description: description,
-    keywords: ['quiz', 'practice test', quiz.title],
+    title: `${quiz.title} | FocusFlow AI`,
+    description,
+    openGraph: {
+      title: quiz.title,
+      description,
+      type: 'article',
+      url: `${process.env.NEXT_PUBLIC_BASE_URL}/quizzes/${params.slug}`,
+      images: [{ url: `${process.env.NEXT_PUBLIC_BASE_URL}/og-image.png`, width: 1200, height: 630, alt: 'FocusFlow AI' }],
+    },
   };
 }
 
@@ -43,24 +46,15 @@ export default async function PublicQuizPage({ params }: Props) {
   if (!quiz) {
     notFound();
   }
-  
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Quiz',
-    'name': quiz.title,
-    'description': `A ${quiz.quiz.questions.length}-question quiz on the topic of ${quiz.title}.`,
-  };
+
+  // Increment views - fire and forget
+  if (quiz.authorId && quiz.id) {
+    incrementViews(quiz.authorId, quiz.id, 'quiz');
+  }
 
   return (
-    <>
-      <main className="container mx-auto px-4 py-12">
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        <h1 className="text-3xl font-bold text-center mb-8">{quiz.title}</h1>
-        <QuizViewer quiz={quiz.quiz} />
-      </main>
-    </>
+    <main className="container mx-auto px-4 py-12 max-w-4xl">
+      <QuizViewer quiz={quiz.quiz} />
+    </main>
   );
 }

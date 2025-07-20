@@ -22,6 +22,7 @@ import {
 import { FirestoreSessionStore } from '@/lib/firestore-session-store';
 import { serverTimestamp } from 'firebase-admin/firestore';
 import { ai } from '@/ai/genkit';
+import { logStudyActivity } from '@/lib/dashboard-actions';
 
 interface Persona {
     id: string;
@@ -96,6 +97,9 @@ async function saveGeneratedContent(
     tags: [], // To be populated by the auto-tagging tool later
     isFavorited: false,
     lastViewed: serverTimestamp(),
+    // New fields for public profiles
+    helpfulCount: 0,
+    views: 0,
   };
 
   switch (toolName) {
@@ -157,6 +161,12 @@ async function saveGeneratedContent(
         
         await docRef.update({ tags });
         console.log(`Updated tags for ${docRef.id}:`, tags);
+
+        // Log the study activity for dashboard stats
+        const activityType = `${toolName.replace('Tool', '')}_created`;
+        const subject = tags.find(t => !['Beginner', 'Intermediate', 'Advanced', 'Summary', 'Quiz', 'Flashcard Set'].includes(t)) || 'General';
+        await logStudyActivity(userId, activityType, subject, 5); // Assume 5 minutes per activity for now
+
       } catch (taggingError) {
         console.error(`Failed to generate tags for ${docRef.id}:`, taggingError);
       }

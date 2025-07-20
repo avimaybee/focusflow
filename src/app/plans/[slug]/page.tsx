@@ -1,8 +1,7 @@
-
-// src/app/plans/[slug]/page.tsx
 import { db } from '@/lib/firebase-admin';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { incrementViews } from '@/lib/profile-actions';
 
 type Props = {
   params: { slug: string };
@@ -22,15 +21,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const plan = await getStudyPlan(params.slug);
 
   if (!plan) {
-    return {
-      title: 'Study Plan Not Found',
-    };
+    return { title: 'Study Plan Not Found' };
   }
 
+  const description = `A study plan for "${plan.sourceText}" created with FocusFlow AI.`;
+
   return {
-    title: `${plan.title} | FocusFlow AI Study Plan`,
-    description: `A study plan for ${plan.title}.`,
-    keywords: ['study plan', 'learning schedule', plan.title],
+    title: `${plan.title} | FocusFlow AI`,
+    description,
+    openGraph: {
+      title: plan.title,
+      description,
+      type: 'article',
+      url: `${process.env.NEXT_PUBLIC_BASE_URL}/plans/${params.slug}`,
+      images: [{ url: `${process.env.NEXT_PUBLIC_BASE_URL}/og-image.png`, width: 1200, height: 630, alt: 'FocusFlow AI' }],
+    },
   };
 }
 
@@ -41,41 +46,25 @@ export default async function PublicStudyPlanPage({ params }: Props) {
     notFound();
   }
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'HowTo',
-    'name': plan.title,
-    'step': Object.entries(plan.plan).map(([day, tasks]) => ({
-        '@type': 'HowToStep',
-        'name': day,
-        'itemListElement': (tasks as string[]).map(task => ({
-            '@type': 'HowToDirection',
-            'text': task,
-        }))
-    }))
-  };
+  if (plan.authorId && plan.id) {
+    incrementViews(plan.authorId, plan.id, 'studyPlan');
+  }
 
   return (
-    <>
-      <main className="container mx-auto px-4 py-12 max-w-4xl">
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        <article className="prose dark:prose-invert lg:prose-xl mx-auto">
-            <h1>{plan.title}</h1>
-            {Object.entries(plan.plan).map(([day, tasks]) => (
-                <div key={day}>
-                    <h2>{day}</h2>
-                    <ul>
-                        {(tasks as string[]).map((task, index) => (
-                            <li key={index}>{task}</li>
-                        ))}
-                    </ul>
-                </div>
-            ))}
-        </article>
-      </main>
-    </>
+    <main className="container mx-auto px-4 py-12 max-w-4xl">
+      <div className="prose dark:prose-invert lg:prose-xl mx-auto">
+        <h1>{plan.title}</h1>
+        {Object.entries(plan.plan).map(([day, tasks]) => (
+          <div key={day}>
+            <h2 className="text-2xl font-semibold mt-8 mb-4">{day}</h2>
+            <ul className="list-disc pl-6 space-y-2">
+              {(tasks as string[]).map((task, index) => (
+                <li key={index}>{task}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </main>
   );
 }

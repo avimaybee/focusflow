@@ -41,6 +41,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description: description,
         type: 'article',
         url: `${process.env.NEXT_PUBLIC_BASE_URL}/summaries/${params.slug}`,
+        images: [
+            {
+                url: `${process.env.NEXT_PUBLIC_BASE_URL}/og-image.png`,
+                width: 1200,
+                height: 630,
+                alt: 'FocusFlow AI',
+            },
+        ],
     },
   };
 }

@@ -57,28 +57,84 @@ export async function deleteContent(userId: string, itemId: string, type: string
 
 export async function makeSummaryPublic(userId: string, summaryId: string) {
     const docRef = db.collection('users').doc(userId).collection('summaries').doc(summaryId);
+    const docSnap = await docRef.get();
+    if (!docSnap.exists) throw new Error('Summary not found.');
+    
+    const data = docSnap.data();
     const slug = generateSlug();
+
+    await db.collection('publicSummaries').doc(slug).set({
+        ...data,
+        authorId: userId,
+        id: summaryId,
+        isPublic: true,
+        publicSlug: slug,
+        publishedAt: FieldValue.serverTimestamp(),
+    });
+
     await docRef.update({ isPublic: true, publicSlug: slug });
     return slug;
 }
 
 export async function makeFlashcardsPublic(userId: string, flashcardsId: string) {
     const docRef = db.collection('users').doc(userId).collection('flashcardSets').doc(flashcardsId);
+    const docSnap = await docRef.get();
+    if (!docSnap.exists) throw new Error('Flashcard set not found.');
+
+    const data = docSnap.data();
     const slug = generateSlug();
+
+    await db.collection('publicFlashcardSets').doc(slug).set({
+        ...data,
+        authorId: userId,
+        id: flashcardsId,
+        isPublic: true,
+        publicSlug: slug,
+        publishedAt: FieldValue.serverTimestamp(),
+    });
+
     await docRef.update({ isPublic: true, publicSlug: slug });
     return slug;
 }
 
 export async function makeQuizPublic(userId: string, quizId: string) {
     const docRef = db.collection('users').doc(userId).collection('quizzes').doc(quizId);
+    const docSnap = await docRef.get();
+    if (!docSnap.exists) throw new Error('Quiz not found.');
+
+    const data = docSnap.data();
     const slug = generateSlug();
+
+    await db.collection('publicQuizzes').doc(slug).set({
+        ...data,
+        authorId: userId,
+        id: quizId,
+        isPublic: true,
+        publicSlug: slug,
+        publishedAt: FieldValue.serverTimestamp(),
+    });
+
     await docRef.update({ isPublic: true, publicSlug: slug });
     return slug;
 }
 
 export async function makeStudyPlanPublic(userId: string, planId: string) {
     const docRef = db.collection('users').doc(userId).collection('studyPlans').doc(planId);
+    const docSnap = await docRef.get();
+    if (!docSnap.exists) throw new Error('Study plan not found.');
+
+    const data = docSnap.data();
     const slug = generateSlug();
+
+    await db.collection('publicStudyPlans').doc(slug).set({
+        ...data,
+        authorId: userId,
+        id: planId,
+        isPublic: true,
+        publicSlug: slug,
+        publishedAt: FieldValue.serverTimestamp(),
+    });
+
     await docRef.update({ isPublic: true, publicSlug: slug });
     return slug;
 }
