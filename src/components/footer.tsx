@@ -1,127 +1,90 @@
-
 'use client';
 
+import { Logo } from '@/components/logo';
 import Link from 'next/link';
-import { Logo } from './logo';
 
-export const Footer = () => {
-  const currentYear = new Date().getFullYear();
+const footerLinks = {
+  product: [
+    { name: 'Features', href: '#features' },
+    { name: 'Pricing', href: '/premium' },
+    { name: 'FAQ', href: '#faq' },
+  ],
+  company: [
+    { name: 'About Us', href: '/about' },
+    { name: 'Contact', href: '/contact' },
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Terms of Service', href: '/terms' },
+  ],
+  social: [
+    { name: 'Twitter', href: '#' },
+    { name: 'LinkedIn', href: '#' },
+    { name: 'GitHub', href: '#' },
+  ],
+};
 
-  const footerLinks = {
-    product: [
-      { href: '#features', label: 'Features' },
-      { href: '/premium', label: 'Premium' },
-      { href: '#testimonials', label: 'Testimonials' },
-      { href: '/login', label: 'Sign In' },
-    ],
-    resources: [
-      { href: '/blog', label: 'Blog' },
-      { href: '#faq', label: 'FAQ' },
-    ],
-    company: [
-      { href: '#', label: 'About Us' },
-      { href: '#', label: 'Contact' },
-    ],
-    legal: [
-      { href: '#', label: 'Privacy Policy' },
-      { href: '#', label: 'Terms of Service' },
-    ],
-  };
-
+export function Footer() {
   return (
-    <footer className="w-full shrink-0 bg-secondary/30 border-t border-border/60">
+    <footer className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-2 flex flex-col items-start">
-            <Link href="/" className="flex items-center gap-2 mb-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {/* Column 1: Logo and Branding */}
+          <div className="col-span-2 md:col-span-1">
+            <Link href="/" className="flex items-center gap-2">
               <Logo className="h-8 w-8" />
-              <span className="font-bold text-lg">FocusFlow AI</span>
+              <span className="text-lg font-semibold">FocusFlow AI</span>
             </Link>
-            <p className="text-sm text-muted-foreground max-w-xs">
-              Your AI-powered co-pilot for smarter, faster learning.
+            <p className="mt-4 text-sm text-muted-foreground">
+              Your personal AI study partner.
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:col-span-3 gap-8">
-            <div>
-              <h3 className="font-semibold text-sm tracking-wider uppercase mb-4">
-                Product
-              </h3>
-              <ul className="space-y-2">
-                {footerLinks.product.map((link) => (
-                  <li key={link.href + link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold text-sm tracking-wider uppercase mb-4">
-                Resources
-              </h3>
-              <ul className="space-y-2">
-                {footerLinks.resources.map((link) => (
-                  <li key={link.href + link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold text-sm tracking-wider uppercase mb-4">
-                Company
-              </h3>
-              <ul className="space-y-2">
-                {footerLinks.company.map((link) => (
-                  <li key={link.href + link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold text-sm tracking-wider uppercase mb-4">
-                Legal
-              </h3>
-              <ul className="space-y-2">
-                {footerLinks.legal.map((link) => (
-                  <li key={link.href + link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+
+          {/* Column 2: Product Links */}
+          <div>
+            <h3 className="font-semibold">Product</h3>
+            <ul className="mt-4 space-y-2">
+              {footerLinks.product.map(link => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 3: Company Links */}
+          <div>
+            <h3 className="font-semibold">Company</h3>
+            <ul className="mt-4 space-y-2">
+              {footerLinks.company.map(link => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 4: Social Links */}
+          <div>
+            <h3 className="font-semibold">Connect</h3>
+            <ul className="mt-4 space-y-2">
+              {footerLinks.social.map(link => (
+                <li key={link.name}>
+                  <a href={link.href} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground">
+                    {link.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-        <div className="mt-12 pt-8 border-t border-border/60 flex flex-col md:flex-row items-center justify-between text-xs text-muted-foreground">
-          <p className="text-center md:text-left mb-2 md:mb-0">
-            &copy; {currentYear} FocusFlow. All rights reserved.
-          </p>
-          <p className="text-center md:text-right">
-            Disclaimer: FocusFlow AI can make mistakes. Please verify important
-            information.
-          </p>
+
+        <div className="mt-12 border-t pt-8 text-center text-sm text-muted-foreground">
+          <p>&copy; {new Date().getFullYear()} FocusFlow AI. All rights reserved.</p>
         </div>
       </div>
     </footer>
   );
-};
+}

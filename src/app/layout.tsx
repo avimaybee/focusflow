@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from '@/context/providers';
 import { Header } from '@/components/header';
-import { ConditionalFooter } from '@/components/conditional-footer';
+import { Footer } from '@/components/footer';
 import { PageTransitionWrapper } from '@/components/layout/page-transition-wrapper';
 
 const fontHeading = Poppins({
@@ -53,7 +53,7 @@ export default function RootLayout({
         <Providers>
           <Header />
           <PageTransitionWrapper>{children}</PageTransitionWrapper>
-          <ConditionalFooter />
+          <Footer />
           <Toaster />
         </Providers>
       </body>
