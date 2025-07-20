@@ -6,6 +6,10 @@
 @import "../styles/ellipsis-spinner.css";
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   :root {
     --background: 224 10% 10%; /* #1B1F23 - Deep Charcoal */
     --foreground: 210 40% 98%; /* Off-white for text */
