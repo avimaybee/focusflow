@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { QuizViewer } from '@/components/quiz-viewer';
 import { incrementViews } from '@/lib/profile-actions';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Link from 'next/link';
 
 type Props = {
   params: { slug: string };
@@ -15,15 +17,27 @@ async function getQuiz(slug: string) {
   if (!quizSnap.exists) {
     return null;
   }
-  return quizSnap.data();
+  
+  const quizData = quizSnap.data();
+  if (!quizData?.authorId) {
+    return { quiz: quizData, author: null };
+  }
+
+  const authorRef = db.collection('users').doc(quizData.authorId);
+  const authorSnap = await authorRef.get();
+  
+  const authorData = authorSnap.exists() ? authorSnap.data()?.publicProfile : null;
+
+  return { quiz: quizData, author: authorData };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const quiz = await getQuiz(params.slug);
+  const data = await getQuiz(params.slug);
 
-  if (!quiz) {
+  if (!data?.quiz) {
     return { title: 'Quiz Not Found' };
   }
+  const { quiz } = data;
 
   const description = `A quiz on "${quiz.sourceText}" created with FocusFlow AI.`;
 
@@ -41,11 +55,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PublicQuizPage({ params }: Props) {
-  const quiz = await getQuiz(params.slug);
+  const data = await getQuiz(params.slug);
 
-  if (!quiz) {
+  if (!data?.quiz) {
     notFound();
   }
+
+  const { quiz, author } = data;
 
   // Increment views - fire and forget
   if (quiz.authorId && quiz.id) {
@@ -54,6 +70,21 @@ export default async function PublicQuizPage({ params }: Props) {
 
   return (
     <main className="container mx-auto px-4 py-12 max-w-4xl">
+      <h1 className="text-3xl font-bold mb-4 text-center">{quiz.title}</h1>
+      {author && (
+        <Link href={`/student/${author.username}`}>
+            <div className="flex items-center justify-center gap-4 mb-8">
+                <Avatar>
+                    <AvatarImage src={author.avatarUrl} />
+                    <AvatarFallback>{author.displayName?.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className="font-semibold">{author.displayName}</p>
+                    <p className="text-sm text-muted-foreground">View Profile</p>
+                </div>
+            </div>
+        </Link>
+      )}
       <QuizViewer quiz={quiz.quiz} />
     </main>
   );

@@ -2,8 +2,9 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Share2 } from 'lucide-react';
+import { Share2, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 interface PublicHeaderProps {
   profile: {
@@ -13,9 +14,10 @@ interface PublicHeaderProps {
     avatarUrl: string;
   };
   username: string;
+  isOwner: boolean;
 }
 
-export function PublicHeader({ profile, username }: PublicHeaderProps) {
+export function PublicHeader({ profile, username, isOwner }: PublicHeaderProps) {
   const { toast } = useToast();
 
   const handleShare = () => {
@@ -35,10 +37,20 @@ export function PublicHeader({ profile, username }: PublicHeaderProps) {
         <p className="text-lg text-muted-foreground">{profile.school}</p>
         <p className="mt-2 max-w-prose">{profile.bio}</p>
       </div>
-      <Button onClick={handleShare} variant="outline">
-        <Share2 className="h-4 w-4 mr-2" />
-        Share Profile
-      </Button>
+      <div className="flex items-center gap-2">
+        {isOwner && (
+          <Link href="/preferences/profile">
+            <Button>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Button>
+          </Link>
+        )}
+        <Button onClick={handleShare} variant="outline">
+          <Share2 className="h-4 w-4 mr-2" />
+          Share Profile
+        </Button>
+      </div>
     </header>
   );
 }

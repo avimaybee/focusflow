@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getPersonas, Persona, updateUserProfile, getUserProfile } from '@/lib/user-actions';
 
@@ -87,6 +87,22 @@ export default function PreferencesPage() {
         <h1 className="text-3xl font-bold">AI Preferences</h1>
       </div>
       <div className="space-y-8">
+        <Card>
+            <CardHeader>
+                <CardTitle>Public Profile</CardTitle>
+                <CardDescription>
+                    Manage your public-facing profile and username.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Link href="/preferences/profile">
+                    <Button variant="outline">
+                        <UserCircle className="mr-2 h-4 w-4" />
+                        Edit Your Public Profile
+                    </Button>
+                </Link>
+            </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle>Learning Goals</CardTitle>

@@ -3,6 +3,8 @@
 import { db } from '@/lib/firebase-admin';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Link from 'next/link';
 
 type Props = {
   params: { slug: string };
@@ -16,18 +18,30 @@ async function getSummary(slug: string) {
   if (!summarySnap.exists) {
     return null;
   }
-  return summarySnap.data();
+  
+  const summaryData = summarySnap.data();
+  if (!summaryData?.authorId) {
+    return { summary: summaryData, author: null };
+  }
+
+  const authorRef = db.collection('users').doc(summaryData.authorId);
+  const authorSnap = await authorRef.get();
+  
+  const authorData = authorSnap.exists() ? authorSnap.data()?.publicProfile : null;
+
+  return { summary: summaryData, author: authorData };
 }
 
 // This generates the dynamic metadata for the page.
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const summary = await getSummary(params.slug);
+  const data = await getSummary(params.slug);
 
-  if (!summary) {
+  if (!data?.summary) {
     return {
       title: 'Summary Not Found',
     };
   }
+  const { summary } = data;
 
   const description = summary.summary.substring(0, 160);
   const keywords = summary.keywords || [];
@@ -54,19 +68,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PublicSummaryPage({ params }: Props) {
-  const summary = await getSummary(params.slug);
+  const data = await getSummary(params.slug);
 
-  if (!summary) {
+  if (!data?.summary) {
     notFound();
   }
+  
+  const { summary, author } = data;
   
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     'headline': summary.title,
     'author': {
-        '@type': 'Organization',
-        'name': 'FocusFlow AI'
+        '@type': 'Person',
+        'name': author?.displayName || 'FocusFlow AI User'
     },
     'datePublished': summary.publishedAt ? new Date(summary.publishedAt._seconds * 1000).toISOString() : new Date().toISOString(),
     'description': summary.summary.substring(0, 250),
@@ -82,6 +98,20 @@ export default async function PublicSummaryPage({ params }: Props) {
         />
         <article className="prose dark:prose-invert lg:prose-xl mx-auto">
             <h1>{summary.title}</h1>
+            {author && (
+                <Link href={`/student/${author.username}`}>
+                    <div className="flex items-center gap-4 mb-8 not-prose">
+                        <Avatar>
+                            <AvatarImage src={author.avatarUrl} />
+                            <AvatarFallback>{author.displayName?.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-semibold">{author.displayName}</p>
+                            <p className="text-sm text-muted-foreground">View Profile</p>
+                        </div>
+                    </div>
+                </Link>
+            )}
             <div dangerouslySetInnerHTML={{ __html: summary.summary.replace(/\n/g, '<br />') }} />
             {summary.keywords && (
                 <div className="mt-8">

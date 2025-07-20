@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { FlashcardViewer } from '@/components/flashcard-viewer';
 import { incrementViews } from '@/lib/profile-actions';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Link from 'next/link';
 
 type Props = {
   params: { slug: string };
@@ -15,15 +17,27 @@ async function getFlashcardSet(slug: string) {
   if (!setSnap.exists) {
     return null;
   }
-  return setSnap.data();
+  
+  const setData = setSnap.data();
+  if (!setData?.authorId) {
+    return { set: setData, author: null };
+  }
+
+  const authorRef = db.collection('users').doc(setData.authorId);
+  const authorSnap = await authorRef.get();
+  
+  const authorData = authorSnap.exists() ? authorSnap.data()?.publicProfile : null;
+
+  return { set: setData, author: authorData };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const set = await getFlashcardSet(params.slug);
+  const data = await getFlashcardSet(params.slug);
 
-  if (!set) {
+  if (!data?.set) {
     return { title: 'Flashcard Set Not Found' };
   }
+  const { set } = data;
 
   const description = `A set of flashcards on "${set.sourceText}" created with FocusFlow AI.`;
 
@@ -41,11 +55,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PublicFlashcardSetPage({ params }: Props) {
-  const set = await getFlashcardSet(params.slug);
+  const data = await getFlashcardSet(params.slug);
 
-  if (!set) {
+  if (!data?.set) {
     notFound();
   }
+
+  const { set, author } = data;
 
   if (set.authorId && set.id) {
     incrementViews(set.authorId, set.id, 'flashcardSet');
@@ -53,7 +69,21 @@ export default async function PublicFlashcardSetPage({ params }: Props) {
 
   return (
     <main className="container mx-auto px-4 py-12 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8 text-center">{set.title}</h1>
+      <h1 className="text-3xl font-bold mb-4 text-center">{set.title}</h1>
+      {author && (
+        <Link href={`/student/${author.username}`}>
+            <div className="flex items-center justify-center gap-4 mb-8">
+                <Avatar>
+                    <AvatarImage src={author.avatarUrl} />
+                    <AvatarFallback>{author.displayName?.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className="font-semibold">{author.displayName}</p>
+                    <p className="text-sm text-muted-foreground">View Profile</p>
+                </div>
+            </div>
+        </Link>
+      )}
       <FlashcardViewer flashcards={set.flashcards} />
     </main>
   );

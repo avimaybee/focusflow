@@ -78,7 +78,7 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
   const router = useRouter();
   const { toast } = useToast();
   const authModal = useAuthModal();
-  const { isPremium } = useAuth(); // Use the auth context
+  const { isPremium, username } = useAuth(); // Use the auth context
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
   const initial = displayName.charAt(0).toUpperCase();
 
@@ -147,6 +147,14 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
               Dashboard
             </Link>
           </DropdownMenuItem>
+          {username && (
+            <DropdownMenuItem asChild>
+                <Link href={`/student/${username}`}>
+                    <User className="mr-2 h-4 w-4" />
+                    My Public Profile
+                </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem asChild>
             <Link href="/preferences">
               <Settings className="mr-2 h-4 w-4" />
