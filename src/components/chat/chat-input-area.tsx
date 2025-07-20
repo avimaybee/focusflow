@@ -48,6 +48,7 @@ import { PromptLibrary } from '@/components/prompt-library';
 import { cn } from '@/lib/utils';
 import type { Attachment } from '@/hooks/use-file-upload';
 import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
+import { RainbowBorder } from '@/components/ui/rainbow-border';
 
 // Mapping persona IDs to icons
 const personaIcons: { [key: string]: React.ElementType } = {
@@ -113,6 +114,7 @@ export function ChatInputArea({
 }: ChatInputAreaProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 24, // Matches the leading-normal (1.5rem)
@@ -152,10 +154,11 @@ export function ChatInputArea({
   return (
     <div className="w-full p-4">
       <div className="relative max-w-4xl mx-auto">
-        <form
-          onSubmit={handleSubmit}
-          className="relative rounded-2xl bg-background shadow-lg border border-border/20"
-        >
+        <RainbowBorder isActive={isFocused}>
+          <form
+            onSubmit={handleSubmit}
+            className="relative rounded-xl bg-background shadow-lg"
+          >
           <AnimatePresence>
             {chatContext && (
               <motion.div
@@ -254,27 +257,31 @@ export function ChatInputArea({
               </Button>
             </div>
             
-            <div className="relative flex-1 min-h-[2.25rem] flex items-center">
-               <Textarea
-                ref={textareaRef}
-                value={input}
-                placeholder=""
-                rows={1}
-                className="w-full bg-transparent border-none text-base text-foreground resize-none focus-visible:ring-0 p-0 leading-normal"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    handleSubmit(e);
-                  }
-                }}
-                onChange={handleTextareaChange}
-                disabled={isHistoryLoading}
-              />
-              {!input && !chatContext && (
-                <div className="absolute inset-0 flex items-center pointer-events-none">
-                   <AnimatedPlaceholder activeChatId={activeChatId} />
-                </div>
-              )}
-            </div>
+            <RainbowBorder isActive={isFocused}>
+              <div className="relative flex-1 min-h-[2.25rem] flex items-center">
+                 <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  placeholder=""
+                  rows={1}
+                  className="w-full bg-transparent border-none text-base text-foreground resize-none focus-visible:ring-0 p-0 leading-normal"
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      handleSubmit(e);
+                    }
+                  }}
+                  onChange={handleTextareaChange}
+                  disabled={isHistoryLoading}
+                />
+                {!input && !chatContext && (
+                  <div className="absolute inset-0 flex items-center pointer-events-none">
+                     <AnimatedPlaceholder activeChatId={activeChatId} />
+                  </div>
+                )}
+              </div>
+            </RainbowBorder>
             
             <div className="flex items-center">
               <Button
@@ -292,6 +299,7 @@ export function ChatInputArea({
             </div>
           </div>
         </form>
+        </RainbowBorder>
       </div>
     </div>
   );

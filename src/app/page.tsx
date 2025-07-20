@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, MessageCircle, X } from 'lucide-react';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { AnimatePresence, motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 import { DotBackground } from '@/components/ui/dot-background';
 import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
 import { FlipWords } from '@/components/ui/flip-words';
@@ -15,6 +16,7 @@ import { FeaturesSection } from '@/components/landing/features-section';
 import { TestimonialsSection } from '@/components/landing/testimonials-section';
 import { FaqSection } from '@/components/landing/faq-section';
 import { InteractiveDemo } from '@/components/ui/interactive-demo';
+import { ScrollReveal } from '@/components/ui/scroll-reveal';
 import { faqs, testimonials } from '@/lib/landing-page-data';
 
 const FloatingWidgetButton = ({ onClick, isOpen }: { onClick: () => void; isOpen: boolean }) => {
@@ -110,15 +112,23 @@ export default function LandingPage() {
               </div>
           </section>
 
-          <section className="py-20">
-              <InteractiveDemo />
-          </section>
+          <ScrollReveal>
+            <section className="py-20">
+                <InteractiveDemo />
+            </section>
+          </ScrollReveal>
 
-          <FeaturesSection />
+          <ScrollReveal yOffset={50}>
+            <FeaturesSection />
+          </ScrollReveal>
 
-          <TestimonialsSection testimonials={testimonials} />
+          <ScrollReveal yOffset={50} delay={0.2}>
+            <TestimonialsSection testimonials={testimonials} />
+          </ScrollReveal>
 
-          <FaqSection faqs={faqs} />
+          <ScrollReveal yOffset={50} delay={0.4}>
+            <FaqSection faqs={faqs} />
+          </ScrollReveal>
         </main>
         <AnimatePresence>
           {isWidgetOpen && <PreviewChatWidget onClose={() => setIsWidgetOpen(false)} />}

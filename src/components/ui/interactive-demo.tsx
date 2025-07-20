@@ -115,7 +115,7 @@ export const InteractiveDemo = () => {
   const isTyping = demoScript[scriptIndex]?.type === 'ai_typing';
 
   return (
-    <Card className="w-full max-w-2xl mx-auto bg-transparent shadow-2xl shadow-primary/10 border-border/20">
+    <Card className="w-full max-w-2xl mx-auto bg-transparent shadow-2xl border-border/20">
       <CardContent className="p-4 md:p-6">
         <div className="h-[400px] overflow-y-auto flex flex-col-reverse pr-2">
           <AnimatePresence>
