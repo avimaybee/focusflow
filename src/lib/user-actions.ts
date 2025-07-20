@@ -1,7 +1,9 @@
-import { doc, updateDoc, getDocs, collection, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDocs, collection, getDoc, writeBatch } from 'firebase/firestore';
 import { db } from './firebase';
+import { isUsernameAvailable } from './profile-actions';
 
 export interface UserProfile {
+    username?: string;
     learningGoals?: string;
     preferredPersona?: string;
     onboardingCompleted?: boolean;
@@ -31,8 +33,24 @@ export const getUserProfile = async (userId: string): Promise<UserProfile> => {
 
 export const updateUserProfile = async (userId: string, profileData: UserProfile) => {
     const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, {
-        ...profileData,
+    const batch = writeBatch(db);
+
+    const { username, ...restOfProfile } = profileData;
+
+    if (username) {
+        const isAvailable = await isUsernameAvailable(username);
+        if (!isAvailable) {
+            throw new Error('Username is already taken.');
+        }
+        const usernameRef = doc(db, 'usernames', username);
+        batch.set(usernameRef, { userId });
+        batch.update(userRef, { username });
+    }
+
+    batch.update(userRef, {
+        ...restOfProfile,
         onboardingCompleted: true,
     });
+
+    await batch.commit();
 };
