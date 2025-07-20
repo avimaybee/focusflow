@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,7 +9,7 @@ import { Sparkles, ArrowRight, FileText, Layers, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-const DemoMessage = ({ author, children, icon: Icon, isAction = false }) => (
+const DemoMessage = ({ author, children, icon: Icon, isAction = false }: { author: string, children: React.ReactNode, icon: React.ElementType, isAction?: boolean }) => (
   <motion.div
     className={cn(
       'flex items-start gap-3 mb-4',
@@ -89,14 +90,14 @@ const demoScript = [
 ];
 
 export const InteractiveDemo = () => {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [scriptIndex, setScriptIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(true);
 
   useEffect(() => {
     if (scriptIndex < demoScript.length && isAnimating) {
       const currentStep = demoScript[scriptIndex];
-      const delay = currentStep.duration || (currentStep.type.includes('action') ? 1500 : (currentStep.text ? currentStep.text.length * 40 : 2000));
+      const delay = currentStep.duration || (currentStep.type.includes('action') ? 1500 : ((currentStep as any).text ? (currentStep as any).text.length * 40 : 2000));
 
       const timer = setTimeout(() => {
         if (currentStep.type !== 'ai_typing') {
@@ -124,7 +125,7 @@ export const InteractiveDemo = () => {
                   <DemoMessage key={index} author="ai" icon={msg.icon}>
                     <p className="font-semibold mb-3">Here are your flashcards:</p>
                     <div className="space-y-2">
-                      {msg.cards.map((card, i) => (
+                      {msg.cards.map((card: any, i: number) => (
                         <div key={i} className="p-3 bg-primary/10 rounded-md border border-primary/20 text-sm">
                           <p><strong>Front:</strong> {card.front}</p>
                           <p className="mt-1"><strong>Back:</strong> {card.back}</p>
