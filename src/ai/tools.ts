@@ -6,6 +6,7 @@
  */
 import {ai} from './genkit';
 import { googleAI } from '@genkit-ai/googleai';
+import { z } from 'zod';
 import {
   SummarizeNotesInputSchema,
   CreateStudyPlanInputSchema,
@@ -381,6 +382,46 @@ export const generatePresentationOutlineTool = ai.defineTool(
     });
     if (!output) {
       throw new Error('Failed to generate a presentation outline.');
+    }
+    return output;
+  }
+);
+
+export const getSmartTagsTool = ai.defineTool(
+  {
+    name: 'getSmartTagsTool',
+    description: 'Analyzes a piece of content and generates relevant metadata tags.',
+    inputSchema: z.object({
+      content: z.string(),
+      contentType: z.enum(['Summary', 'Quiz', 'Flashcard Set', 'Note']),
+    }),
+    outputSchema: z.object({
+      tags: z.array(z.string()),
+    }),
+  },
+  async (input) => {
+    const { output } = await ai.generate({
+      model: liteModel,
+      prompt: `Analyze the following content and generate 3-5 relevant tags. The tags should include the main subject, a difficulty level (Beginner, Intermediate, or Advanced), and the content type.
+
+Content Type: ${input.contentType}
+
+Content:
+${input.content}
+
+Return only a JSON object with a "tags" array.`,
+      output: {
+        schema: z.object({
+          tags: z.array(z.string()),
+        }),
+      },
+    });
+    if (!output) {
+      return { tags: [input.contentType] }; // Fallback
+    }
+    // Ensure the content type is always included as a tag
+    if (!output.tags.includes(input.contentType)) {
+      output.tags.push(input.contentType);
     }
     return output;
   }

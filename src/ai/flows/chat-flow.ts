@@ -17,6 +17,7 @@ import {
   convertToBulletPointsTool,
   generateCounterargumentsTool,
   generatePresentationOutlineTool,
+  getSmartTagsTool,
 } from '@/ai/tools';
 import { FirestoreSessionStore } from '@/lib/firestore-session-store';
 import { serverTimestamp } from 'firebase-admin/firestore';
@@ -91,6 +92,10 @@ async function saveGeneratedContent(
     userId,
     sourceText: sourceText,
     createdAt: serverTimestamp(),
+    // New fields for organization and discovery
+    tags: [], // To be populated by the auto-tagging tool later
+    isFavorited: false,
+    lastViewed: serverTimestamp(),
   };
 
   switch (toolName) {
@@ -121,8 +126,42 @@ async function saveGeneratedContent(
 
   try {
     const contentCollection = db.collection('users').doc(userId).collection(collectionName);
-    await contentCollection.add(data);
-    console.log(`Saved ${collectionName} for user ${userId}`);
+    const docRef = await contentCollection.add(data);
+    console.log(`Saved ${collectionName} for user ${userId} with doc ID ${docRef.id}`);
+
+    // Asynchronously generate and update tags
+    // This does not block the chat response.
+    (async () => {
+      try {
+        let contentForTagging = '';
+        let contentType: 'Summary' | 'Quiz' | 'Flashcard Set' | 'Note' = 'Note';
+
+        switch (toolName) {
+          case 'summarizeNotesTool':
+            contentForTagging = (output as { summary: string }).summary;
+            contentType = 'Summary';
+            break;
+          case 'createFlashcardsTool':
+            contentForTagging = JSON.stringify((output as { flashcards: unknown[] }).flashcards);
+            contentType = 'Flashcard Set';
+            break;
+          case 'createQuizTool':
+            contentForTagging = JSON.stringify((output as { quiz: unknown }).quiz);
+            contentType = 'Quiz';
+            break;
+          default:
+            contentForTagging = sourceText;
+        }
+        
+        const { tags } = await getSmartTagsTool({ content: contentForTagging, contentType });
+        
+        await docRef.update({ tags });
+        console.log(`Updated tags for ${docRef.id}:`, tags);
+      } catch (taggingError) {
+        console.error(`Failed to generate tags for ${docRef.id}:`, taggingError);
+      }
+    })();
+
   } catch (error) {
     console.error(`Error saving ${collectionName} to Firestore:`, error);
   }

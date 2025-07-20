@@ -12,6 +12,10 @@ import {
   Loader2,
   Save,
   Calendar,
+  Star,
+  Search,
+  FolderPlus,
+  Folder,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,15 +26,20 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { ExpandedTabs } from '@/components/ui/expanded-tabs';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
+import Fuse from 'fuse.js';
 import { PublishAsBlogModal } from '@/components/publish-as-blog-modal';
-import { makeSummaryPublic, makeFlashcardsPublic, makeQuizPublic, makeStudyPlanPublic, deleteContent } from '@/lib/content-actions';
+import { AddToCollectionModal } from '@/components/add-to-collection-modal';
+import { makeSummaryPublic, makeFlashcardsPublic, makeQuizPublic, makeStudyPlanPublic, deleteContent, toggleFavoriteStatus } from '@/lib/content-actions';
+import { getCollections } from '@/lib/collections-actions';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const contentIcons: { [key: string]: React.ElementType } = {
   summary: FileText,
@@ -48,6 +57,9 @@ export interface ContentItem {
     createdAt: Timestamp;
     isPublic: boolean;
     publicSlug: string | null;
+    tags: string[];
+    isFavorited: boolean;
+    lastViewed: Timestamp;
 }
 
 export default function MyContentPage() {
@@ -58,6 +70,26 @@ export default function MyContentPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isPublishModalOpen, setIsPublishModalOpen] = React.useState(false);
   const [selectedContent, setSelectedContent] = React.useState<ContentItem | null>(null);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = React.useState(false);
+  const [collections, setCollections] = React.useState<any[]>([]);
+  const [selectedCollectionId, setSelectedCollectionId] = React.useState<string | null>(null);
+
+  const recentContent = React.useMemo(() => {
+    return [...allContent]
+      .sort((a, b) => (b.lastViewed?.toMillis() || 0) - (a.lastViewed?.toMillis() || 0))
+      .slice(0, 5);
+  }, [allContent]);
+
+  const fetchCollections = React.useCallback(async () => {
+    if (!user) return;
+    try {
+      const userCollections = await getCollections(user.uid);
+      setCollections(userCollections);
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch collections.' });
+    }
+  }, [user, toast]);
 
   const fetchContent = React.useCallback(async () => {
     if (!user) {
@@ -66,6 +98,7 @@ export default function MyContentPage() {
     }
     
     setIsLoading(true);
+    fetchCollections(); // Fetch collections alongside content
     const contentTypes = ['summaries', 'quizzes', 'flashcardSets', 'savedMessages', 'studyPlans'];
     const promises = contentTypes.map(async (type) => {
       const collectionName = type === 'flashcardSets' ? 'flashcardSets' : type;
@@ -113,6 +146,9 @@ export default function MyContentPage() {
               createdAt: data.createdAt as Timestamp,
               isPublic: data.isPublic || false,
               publicSlug: data.publicSlug || null,
+              tags: data.tags || [],
+              isFavorited: data.isFavorited || false,
+              lastViewed: data.lastViewed as Timestamp,
           };
       }).filter(item => item !== null) as ContentItem[];
     });
@@ -179,6 +215,29 @@ export default function MyContentPage() {
     }
   };
 
+  const handleToggleFavorite = async (item: ContentItem) => {
+    if (!user) return;
+    
+    // Optimistically update the UI
+    setAllContent(prev => prev.map(c => 
+      c.id === item.id ? { ...c, isFavorited: !c.isFavorited } : c
+    ));
+
+    try {
+      await toggleFavoriteStatus(user.uid, item.id, item.type, item.isFavorited);
+    } catch (error) {
+      // Revert the UI change on error
+      setAllContent(prev => prev.map(c => 
+        c.id === item.id ? { ...c, isFavorited: item.isFavorited } : c
+      ));
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not update favorite status.',
+      });
+    }
+  };
+
   const handleDelete = async (itemId: string, type: ContentItem['type']) => {
     if (!user || !window.confirm('Are you sure you want to delete this item?')) return;
     
@@ -199,6 +258,8 @@ export default function MyContentPage() {
 
   const tabs = [
     { title: 'All', icon: LayoutGrid, type: 'tab' as const },
+    { title: 'Collections', icon: Folder, type: 'tab' as const },
+    { title: 'Favorites', icon: Star, type: 'tab' as const },
     { title: 'Saved', icon: Save, type: 'tab' as const },
     { title: 'Summaries', icon: FileText, type: 'tab' as const },
     { title: 'Quizzes', icon: HelpCircle, type: 'tab' as const },
@@ -206,8 +267,13 @@ export default function MyContentPage() {
     { title: 'Study Plans', icon: Calendar, type: 'tab' as const },
   ];
 
-  const filteredContent = allContent.filter((item) => {
+  const tabFilteredContent = allContent.filter((item) => {
+    if (selectedCollectionId) {
+      const collection = collections.find(c => c.id === selectedCollectionId);
+      return collection?.contentIds.includes(item.id);
+    }
     if (activeTab === 'All') return true;
+    if (activeTab === 'Favorites') return item.isFavorited;
     if (activeTab === 'Saved') return item.type === 'savedMessage';
     if (activeTab === 'Summaries') return item.type === 'summary';
     if (activeTab === 'Quizzes') return item.type === 'quiz';
@@ -215,6 +281,15 @@ export default function MyContentPage() {
     if (activeTab === 'Study Plans') return item.type === 'studyPlan';
     return false;
   });
+
+  const fuse = new Fuse(tabFilteredContent, {
+    keys: ['title', 'description', 'tags'],
+    threshold: 0.3,
+  });
+
+  const searchFilteredContent = searchQuery
+    ? fuse.search(searchQuery).map(result => result.item)
+    : tabFilteredContent;
 
   const renderContent = () => {
     if (isLoading || authLoading) {
@@ -245,9 +320,45 @@ export default function MyContentPage() {
         )
     }
 
+    if (activeTab === 'Collections') {
+      return (
+        <AnimatePresence>
+          {collections.map(collection => (
+            <motion.div
+              key={collection.id}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => {
+                setActiveTab('All'); // Switch view to all to see the filtered content
+                setSelectedCollectionId(collection.id);
+              }}
+              className="cursor-pointer"
+            >
+              <Card className="h-full flex flex-col hover:border-primary/80 hover:bg-muted transition-all">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                      <Folder className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>{collection.title}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{collection.contentIds?.length || 0} items</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      )
+    }
+
     return (
         <AnimatePresence>
-            {filteredContent.map((item) => {
+            {searchFilteredContent.map((item) => {
               const Icon = contentIcons[item.type];
               let collectionName = `${item.type}s`;
               if (item.type === 'flashcardSet') collectionName = 'flashcardSets';
@@ -265,18 +376,30 @@ export default function MyContentPage() {
                 >
                   <Card className="h-full flex flex-col hover:border-primary/80 hover:bg-muted transition-all">
                       <CardHeader>
-                      <div className="flex items-center gap-4">
-                          <div className="p-3 bg-primary/10 rounded-lg">
-                          <Icon className="h-6 w-6 text-primary" />
+                      <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-primary/10 rounded-lg">
+                            <Icon className="h-6 w-6 text-primary" />
+                            </div>
+                            <CardTitle className="line-clamp-2">{item.title}</CardTitle>
                           </div>
-                          <CardTitle className="line-clamp-2">{item.title}</CardTitle>
+                          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => handleToggleFavorite(item)}>
+                            <Star className={cn("h-5 w-5", item.isFavorited ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
+                          </Button>
                       </div>
                       </CardHeader>
                       <CardContent className="flex-grow flex flex-col">
                       <CardDescription className="flex-grow mb-4 line-clamp-3">
                           {item.description}
                       </CardDescription>
-                      <p className="text-xs text-muted-foreground">
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {item.tags.map(tag => (
+                          <div key={tag} className="px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs font-medium">
+                            {tag}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-auto">
                           Created: {item.createdAt ? formatDistanceToNow(item.createdAt.toDate(), { addSuffix: true }) : 'Just now'}
                       </p>
                       </CardContent>
@@ -301,6 +424,13 @@ export default function MyContentPage() {
                           )}
                           <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(item.id, item.type)}>
                               Delete
+                          </Button>
+                          <Button variant="outline" size="sm" className="w-full" onClick={() => {
+                            setSelectedContent(item);
+                            setIsCollectionModalOpen(true);
+                          }}>
+                            <FolderPlus className="h-4 w-4 mr-2" />
+                            Add to Collection
                           </Button>
                       </CardFooter>
                   </Card>
@@ -338,10 +468,60 @@ export default function MyContentPage() {
           <p className="text-lg text-muted-foreground mt-1 max-w-2xl">
             All of your generated study materials, saved in one place.
           </p>
-          <div className="mt-6">
-            <ExpandedTabs tabs={tabs} onTabChange={setActiveTab} />
-          </div>
         </div>
+
+        <div className="mb-8 flex flex-col md:flex-row items-center gap-4">
+            <div className="relative w-full md:w-1/2 lg:w-1/3">
+                <Input 
+                    placeholder="Search your materials..."
+                    className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="flex-grow">
+                <ExpandedTabs tabs={tabs} onTabChange={(tab) => {
+                    setActiveTab(tab);
+                    setSelectedCollectionId(null); // Clear collection filter when changing tabs
+                }} />
+            </div>
+        </div>
+
+        {selectedCollectionId && (
+            <div className="mb-4 flex items-center gap-4">
+                <h2 className="text-xl font-bold">
+                    In Collection: {collections.find(c => c.id === selectedCollectionId)?.title}
+                </h2>
+                <Button variant="outline" onClick={() => setSelectedCollectionId(null)}>
+                    Clear Filter
+                </Button>
+            </div>
+        )}
+
+        {recentContent.length > 0 && !selectedCollectionId && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold font-heading mb-4">Recently Viewed</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {recentContent.map(item => {
+                const Icon = contentIcons[item.type];
+                return (
+                <Link href={`/my-content/${item.type}s/${item.id}`} key={item.id} className="block">
+                  <Card className="hover:border-primary/80 hover:bg-muted transition-all">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          <Icon className="h-5 w-5 text-primary" />
+                        </div>
+                        <CardTitle className="text-base line-clamp-2">{item.title}</CardTitle>
+                      </div>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              )})}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {renderContent()}
@@ -354,6 +534,14 @@ export default function MyContentPage() {
               contentItem={selectedContent}
               onSuccess={fetchContent}
           />
+      )}
+      {selectedContent && (
+        <AddToCollectionModal
+          isOpen={isCollectionModalOpen}
+          onOpenChange={setIsCollectionModalOpen}
+          contentItem={selectedContent}
+          onSuccess={fetchContent}
+        />
       )}
     </>
   );
