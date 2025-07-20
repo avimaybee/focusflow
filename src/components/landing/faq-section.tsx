@@ -7,26 +7,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-const faqs = [
-  {
-    question: 'Is FocusFlow AI free to use?',
-    answer: 'Yes! FocusFlow AI offers a generous free tier that includes access to all our core tools, including the summarizer, planner, and quiz generator. For advanced features like the AI Tutor, we offer a Premium plan.',
-  },
-  {
-    question: 'What makes FocusFlow AI different from other study tools?',
-    answer: "FocusFlow AI is an all-in-one, integrated toolkit. Instead of using separate apps for summarizing, planning, and quizzing, you can do it all in a seamless workflow. Our conversational interface and deep, contextual learning features like 'Explain This Concept' provide a unique, interactive experience.",
-  },
-  {
-    question: 'What technology powers the AI?',
-    answer: "Our AI features are powered by Google's state-of-the-art Gemini models, orchestrated through Genkit. This ensures high-quality, relevant, and safe responses tailored for educational purposes.",
-  },
-  {
-    question: 'Can I use my own notes or documents?',
-    answer: 'Absolutely. You can paste text directly into the chat or upload documents like PDFs. The AI will use your material as the source for generating summaries, flashcards, and quizzes.',
-  },
-];
-
-export function FaqSection() {
+export function FaqSection({ faqs }) {
   return (
     <section id="faq" className="py-20">
       <div className="container mx-auto px-4 max-w-3xl">

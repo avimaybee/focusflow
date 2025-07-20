@@ -3,28 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-const testimonials = [
-  {
-    quote: "I turned my confusing 50-page research paper into flashcards and actually understood it. Took less than a minute.",
-    name: 'Sarah J.',
-    role: 'History Major, UCLA',
-    avatar: '/avatars/sarah.png',
-  },
-  {
-    quote: "FocusFlow helped me go from zero prep to a full AI-generated quiz for my psych exam. I got an A.",
-    name: 'Mike T.',
-    role: 'Psychology Student, NYU',
-    avatar: '/avatars/mike.png',
-  },
-  {
-    quote: "I uploaded my syllabus and had a complete semester study plan within 5 minutes. It’s a lifesaver for staying organized.",
-    name: 'Emily R.',
-    role: 'Pre-Med, Johns Hopkins',
-    avatar: '/avatars/emily.png',
-  },
-];
-
-export function TestimonialsSection() {
+export function TestimonialsSection({ testimonials }) {
   return (
     <section id="testimonials" className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
@@ -43,7 +22,6 @@ export function TestimonialsSection() {
                 <p className="italic">"{testimonial.quote}"</p>
                 <div className="flex items-center mt-6">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={testimonial.avatar} />
                     <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="ml-4">

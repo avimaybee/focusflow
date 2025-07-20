@@ -12,6 +12,7 @@ import { FeaturesSection } from '@/components/landing/features-section';
 import { TestimonialsSection } from '@/components/landing/testimonials-section';
 import { FaqSection } from '@/components/landing/faq-section';
 import { InteractiveDemo } from '@/components/ui/interactive-demo';
+import { faqs, testimonials } from '@/lib/landing-page-data';
 
 const HeroGradient = () => (
   <div
@@ -112,9 +113,9 @@ export default function LandingPage() {
 
         <FeaturesSection />
 
-        <TestimonialsSection />
+        <TestimonialsSection testimonials={testimonials} />
 
-        <FaqSection />
+        <FaqSection faqs={faqs} />
       </main>
       <AnimatePresence>
         {isWidgetOpen && <PreviewChatWidget onClose={() => setIsWidgetOpen(false)} />}

@@ -38,7 +38,7 @@ export function SocialProofSection() {
           <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 items-center">
             {logos.map((logo, index) => (
               <div key={index} className="flex justify-center">
-                <img src={logo.src} alt={`${logo.name} logo`} className="h-8 filter grayscale hover:grayscale-0 transition-all" />
+                <span className="text-lg font-semibold text-muted-foreground grayscale hover:grayscale-0 transition-all">{logo.name}</span>
               </div>
             ))}
           </div>
