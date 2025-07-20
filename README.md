@@ -98,3 +98,4 @@ meow 9
 fixed personas and chat
 fixed harcoded persona
 removed footer from chat page
+add persona perma fix to readme
