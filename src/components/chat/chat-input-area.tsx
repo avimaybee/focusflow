@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -48,7 +47,6 @@ import { PromptLibrary } from '@/components/prompt-library';
 import { cn } from '@/lib/utils';
 import type { Attachment } from '@/hooks/use-file-upload';
 import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
-import { RainbowBorder } from '@/components/ui/rainbow-border';
 
 // Mapping persona IDs to icons
 const personaIcons: { [key: string]: React.ElementType } = {
@@ -116,7 +114,6 @@ export function ChatInputArea({
 }: ChatInputAreaProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
 
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 24, // Matches the leading-normal (1.5rem)
@@ -156,151 +153,136 @@ export function ChatInputArea({
   const placeholderText = placeholder ?? (activeChatId ? 'Ask a follow-up...' : 'Start a new conversation...');
 
   return (
-    <RainbowBorder isActive={isFocused} className="w-full">
-        <form
-        onSubmit={handleSubmit}
-        className="relative rounded-xl bg-background shadow-lg"
-        >
-        <AnimatePresence>
-            {chatContext && (
-            <motion.div
-                initial={{ opacity: 0, height: 0, paddingBottom: 0 }}
-                animate={{ opacity: 1, height: 'auto', paddingBottom: '0.75rem' }}
-                exit={{ opacity: 0, height: 0, paddingBottom: 0 }}
-                className="px-4 pt-3"
-            >
-                <div className="inline-flex items-center gap-2 rounded-full bg-secondary border border-border py-1 pl-2 pr-1 text-sm">
-                <File className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">{chatContext.name}</span>
-                <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={handleClearAttachment}
-                    className="h-6 w-6 rounded-full"
-                >
-                    <X className="w-4 h-4" />
-                </Button>
-                </div>
-            </motion.div>
-            )}
-        </AnimatePresence>
-        
-        <div className="flex items-end gap-2 p-3">
-            <div className="flex items-center gap-1">
-                <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
-                <PopoverTrigger asChild>
-                    <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted"
-                    >
-                    <Users className="h-5 w-5" />
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-[340px] p-0 mb-2">
-                    <Command>
-                    <CommandInput placeholder="Select a persona..." />
-                    <CommandList>
-                        <CommandEmpty>No persona found.</CommandEmpty>
-                        <CommandGroup>
-                        {personas.map((p) => {
-                            const Icon = personaIcons[p.id] || Bot;
-                            return (
-                            <CommandItem
-                                key={p.id}
-                                value={p.id}
-                                onSelect={() => {
-                                setSelectedPersonaId(p.id);
-                                setPersonaMenuOpen(false);
-                                }}
-                                className="group flex items-start gap-3 cursor-pointer py-2.5"
-                            >
-                                <Icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
-                                <div className="text-left flex-1">
-                                <p className="font-semibold text-sm text-foreground">
-                                    {p.name}
-                                </p>
-                                <p className="text-xs text-muted-foreground group-hover:text-foreground/80">
-                                    {p.description}
-                                </p>
-                                </div>
-                                <Check
-                                className={cn(
-                                    'h-4 w-4 mr-2',
-                                    selectedPersonaId === p.id
-                                    ? 'opacity-100'
-                                    : 'opacity-0'
-                                )}
-                                />
-                            </CommandItem>
-                            );
-                        })}
-                        </CommandGroup>
-                    </CommandList>
-                    </Command>
-                </PopoverContent>
-                </Popover>
-                <Button
-                asChild
+    <form
+      onSubmit={handleSubmit}
+      className="relative flex flex-col rounded-xl border bg-background shadow-lg"
+    >
+      <AnimatePresence>
+        {chatContext && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, paddingBottom: 0 }}
+            animate={{ opacity: 1, height: 'auto', paddingBottom: '0.75rem' }}
+            exit={{ opacity: 0, height: 0, paddingBottom: 0 }}
+            className="px-4 pt-3"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full bg-secondary border border-border py-1 pl-2 pr-1 text-sm">
+              <File className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{chatContext.name}</span>
+              <Button
+                size="icon"
                 variant="ghost"
-                size="icon"
-                className="h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:bg-muted"
-                >
-                <label>
-                    <Paperclip className="w-5 h-5" />
-                    <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept="image/*,application/pdf,text/*"
-                    />
-                </label>
-                </Button>
+                onClick={handleClearAttachment}
+                className="h-6 w-6 rounded-full"
+              >
+                <X className="w-4 h-4" />
+              </Button>
             </div>
-            
-            <RainbowBorder isActive={isFocused}>
-                <div className="relative flex-1 min-h-[2.25rem] flex items-center">
-                    <Textarea
-                    ref={textareaRef}
-                    value={input}
-                    placeholder=""
-                    rows={1}
-                    className="w-full bg-transparent border-none text-base text-foreground resize-none focus-visible:ring-0 p-0 leading-normal"
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        handleSubmit(e);
-                    }
-                    }}
-                    onChange={handleTextareaChange}
-                    disabled={isHistoryLoading}
-                />
-                {!input && !chatContext && (
-                    <div className="absolute inset-0 flex items-center pointer-events-none">
-                        <AnimatedPlaceholder text={placeholderText} />
-                    </div>
-                )}
-                </div>
-            </RainbowBorder>
-            
-            <div className="flex items-center">
-                <Button
-                type="submit"
-                disabled={isSending || (!input.trim() && !chatContext)}
-                size="icon"
-                className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
-                >
-                {isSending ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                    <Send className="h-5 w-5" />
-                )}
-                </Button>
-            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      <div className="flex items-end gap-2 p-3">
+        <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted"
+            >
+              <Users className="h-5 w-5" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-[340px] p-0 mb-2">
+            <Command>
+              <CommandInput placeholder="Select a persona..." />
+              <CommandList>
+                <CommandEmpty>No persona found.</CommandEmpty>
+                <CommandGroup>
+                  {personas.map((p) => {
+                    const Icon = personaIcons[p.id] || Bot;
+                    return (
+                      <CommandItem
+                        key={p.id}
+                        value={p.id}
+                        onSelect={() => {
+                          setSelectedPersonaId(p.id);
+                          setPersonaMenuOpen(false);
+                        }}
+                        className="group flex items-start gap-3 cursor-pointer py-2.5"
+                      >
+                        <Icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
+                        <div className="text-left flex-1">
+                          <p className="font-semibold text-sm text-foreground">
+                            {p.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground group-hover:text-foreground/80">
+                            {p.description}
+                          </p>
+                        </div>
+                        <Check
+                          className={cn(
+                            'h-4 w-4 mr-2',
+                            selectedPersonaId === p.id
+                              ? 'opacity-100'
+                              : 'opacity-0'
+                          )}
+                        />
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+
+        <Button
+          asChild
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:bg-muted"
+        >
+          <label>
+            <Paperclip className="w-5 h-5" />
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              accept="image/*,application/pdf,text/*"
+            />
+          </label>
+        </Button>
+        
+        <div className="relative flex-1 min-h-[2.25rem]">
+          <Textarea
+            ref={textareaRef}
+            value={input}
+            placeholder={placeholderText}
+            rows={1}
+            className="w-full resize-none border-none bg-transparent pr-10 text-base text-foreground focus-visible:ring-0"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                handleSubmit(e);
+              }
+            }}
+            onChange={handleTextareaChange}
+            disabled={isHistoryLoading}
+          />
+          <Button
+            type="submit"
+            disabled={isSending || (!input.trim() && !chatContext)}
+            size="icon"
+            className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+          >
+            {isSending ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
+          </Button>
         </div>
-        </form>
-    </RainbowBorder>
+      </div>
+    </form>
   );
 }
