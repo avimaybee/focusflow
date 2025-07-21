@@ -52,8 +52,6 @@ export type ChatMessageProps = {
   persona?: Persona;
   createdAt?: Timestamp;
   isError?: boolean;
-  isFirstInGroup?: boolean;
-  isLastInGroup?: boolean;
   onToolAction?: (tool: SmartTool, text?: string) => void;
   onRegenerate?: () => void;
   attachments?: { url: string; name: string; contentType: string; size: number; }[];
@@ -71,8 +69,6 @@ export function ChatMessage({
   userName,
   persona,
   isError = false,
-  isFirstInGroup = true,
-  isLastInGroup = true,
   onToolAction,
   onRegenerate,
   attachments,
@@ -192,7 +188,6 @@ export function ChatMessage({
     <Avatar
       className={cn(
         'h-8 w-8',
-        !isFirstInGroup && 'opacity-0',
         isUser ? '' : 'bg-accent/50 text-accent-foreground border border-accent'
       )}
     >
@@ -221,9 +216,7 @@ export function ChatMessage({
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={cn(
         'group flex items-start gap-3',
-        isUser && 'justify-end',
-        !isFirstInGroup && 'mt-1',
-        isFirstInGroup && 'mt-4'
+        isUser && 'justify-end'
       )}
     >
       {!isUser && avatar}
@@ -237,12 +230,11 @@ export function ChatMessage({
           ref={contentRef}
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'relative max-w-2xl p-3 text-sm',
+            'relative max-w-2xl p-3 text-sm rounded-2xl',
             isUser
               ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
               : 'bg-secondary',
-            isError && 'bg-destructive/20 border border-destructive text-destructive-foreground',
-            isUser ? (isLastInGroup ? 'rounded-2xl rounded-br-md' : 'rounded-2xl') : (isLastInGroup ? 'rounded-2xl rounded-bl-md' : 'rounded-2xl')
+            isError && 'bg-destructive/20 border border-destructive text-destructive-foreground'
           )}
         >
           {user && <TextSelectionMenu containerRef={contentRef} />}
@@ -287,7 +279,7 @@ export function ChatMessage({
                         </TooltipTrigger>
                         <TooltipContent><p>Copy</p></TooltipContent>
                     </Tooltip>
-                    {isLastInGroup && onRegenerate && (
+                    {onRegenerate && (
                       <Tooltip delayDuration={300}>
                           <TooltipTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={onRegenerate}>

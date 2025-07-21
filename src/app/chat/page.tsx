@@ -112,9 +112,6 @@ export default function ChatPage() {
                 }
               }
             }
-          
-          const prevMessage = history[index - 1];
-          const nextMessage = history[index + 1];
 
           return { 
             id: `${docSnapshot.id}-${index}`,
@@ -124,10 +121,9 @@ export default function ChatPage() {
             source: msg.data?.source,
             confidence: msg.data?.confidence,
             createdAt: sessionData.updatedAt || Timestamp.now(),
-            userName: msg.role === 'user' ? user.displayName : (selectedPersona?.name || 'AI'),
-            userAvatar: msg.role === 'user' ? user.photoURL : (selectedPersona?.avatarUrl || null),
-            isFirstInGroup: !prevMessage || prevMessage.role !== msg.role,
-            isLastInGroup: !nextMessage || nextMessage.role !== msg.role,
+            userName: user.displayName || 'User',
+            userAvatar: user.photoURL,
+            persona: selectedPersona || undefined,
             ...toolCallOutput,
           } as ChatMessageProps;
         });

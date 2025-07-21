@@ -3,7 +3,7 @@
 
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChatMessage, ChatMessageProps } from '@/components/chat-message';
+import { ChatMessage, ChatMessageProps } from '../chat-message';
 import { Loader2 } from 'lucide-react';
 import { WelcomeScreen } from './welcome-screen';
 import { RefObject } from 'react';
@@ -64,7 +64,6 @@ export function MessageList({
               <ChatMessage
                 key={msg.id || index}
                 {...msg}
-                persona={activePersona || undefined}
                 onToolAction={handleToolAction}
                 onRegenerate={onRegenerate}
               />
