@@ -388,20 +388,22 @@ export default function ChatPage() {
 
         <div className="w-full bg-background">
             <div className="w-full sm:max-w-3xl lg:max-w-4xl mx-auto p-2">
-              <ChatInputArea
-                input={input}
-                setInput={setInput}
-                handleSendMessage={handleSendMessage}
-                handleFileSelect={handleFileSelect}
-                isSending={isSending}
-                isHistoryLoading={isHistoryLoading}
-                personas={personas}
-                selectedPersonaId={selectedPersonaId}
-                setSelectedPersonaId={setSelectedPersonaId}
-                activeChatId={activeChatId}
-                chatContext={attachment}
-                clearChatContext={() => setAttachment(null)}
-              />
+              <div className="relative">
+                <ChatInputArea
+                    input={input}
+                    setInput={setInput}
+                    handleSendMessage={handleSendMessage}
+                    handleFileSelect={handleFileSelect}
+                    isSending={isSending}
+                    isHistoryLoading={isHistoryLoading}
+                    personas={personas}
+                    selectedPersonaId={selectedPersonaId}
+                    setSelectedPersonaId={setSelectedPersonaId}
+                    activeChatId={activeChatId}
+                    chatContext={attachment}
+                    clearChatContext={() => setAttachment(null)}
+                />
+              </div>
             </div>
         </div>
         <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>

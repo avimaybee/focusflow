@@ -77,23 +77,24 @@ interface ChatInputAreaProps {
   activeChatId: string | null;
   chatContext: Attachment | null;
   clearChatContext: () => void;
+  placeholder?: string;
 }
 
 const AnimatedPlaceholder = ({
-  activeChatId,
+  text,
 }: {
-  activeChatId: string | null;
+  text: string;
 }) => (
   <AnimatePresence mode="wait">
     <motion.p
-      key={activeChatId ? 'follow-up' : 'new-chat'}
+      key={text}
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -5 }}
       transition={{ duration: 0.15 }}
       className="pointer-events-none text-base text-muted-foreground whitespace-nowrap"
     >
-      {activeChatId ? 'Ask a follow-up...' : 'Start a new conversation...'}
+      {text}
     </motion.p>
   </AnimatePresence>
 );
@@ -111,6 +112,7 @@ export function ChatInputArea({
   activeChatId,
   chatContext,
   clearChatContext,
+  placeholder,
 }: ChatInputAreaProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
@@ -151,156 +153,154 @@ export function ChatInputArea({
     clearChatContext();
   };
 
+  const placeholderText = placeholder ?? (activeChatId ? 'Ask a follow-up...' : 'Start a new conversation...');
+
   return (
-    <div className="w-full p-4">
-      <div className="relative max-w-4xl mx-auto">
-        <RainbowBorder isActive={isFocused}>
-          <form
-            onSubmit={handleSubmit}
-            className="relative rounded-xl bg-background shadow-lg"
-          >
-          <AnimatePresence>
+    <RainbowBorder isActive={isFocused} className="w-full">
+        <form
+        onSubmit={handleSubmit}
+        className="relative rounded-xl bg-background shadow-lg"
+        >
+        <AnimatePresence>
             {chatContext && (
-              <motion.div
+            <motion.div
                 initial={{ opacity: 0, height: 0, paddingBottom: 0 }}
                 animate={{ opacity: 1, height: 'auto', paddingBottom: '0.75rem' }}
                 exit={{ opacity: 0, height: 0, paddingBottom: 0 }}
                 className="px-4 pt-3"
-              >
+            >
                 <div className="inline-flex items-center gap-2 rounded-full bg-secondary border border-border py-1 pl-2 pr-1 text-sm">
-                  <File className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{chatContext.name}</span>
-                  <Button
+                <File className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{chatContext.name}</span>
+                <Button
                     size="icon"
                     variant="ghost"
                     onClick={handleClearAttachment}
                     className="h-6 w-6 rounded-full"
-                  >
+                >
                     <X className="w-4 h-4" />
-                  </Button>
+                </Button>
                 </div>
-              </motion.div>
+            </motion.div>
             )}
-          </AnimatePresence>
-          
-          <div className="flex items-end gap-2 p-3">
+        </AnimatePresence>
+        
+        <div className="flex items-end gap-2 p-3">
             <div className="flex items-center gap-1">
-               <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
+                <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
                 <PopoverTrigger asChild>
-                  <Button
+                    <Button
                     variant="ghost"
                     size="icon"
                     className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted"
-                  >
+                    >
                     <Users className="h-5 w-5" />
-                  </Button>
+                    </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-[340px] p-0 mb-2">
-                  <Command>
+                    <Command>
                     <CommandInput placeholder="Select a persona..." />
                     <CommandList>
-                      <CommandEmpty>No persona found.</CommandEmpty>
-                      <CommandGroup>
+                        <CommandEmpty>No persona found.</CommandEmpty>
+                        <CommandGroup>
                         {personas.map((p) => {
-                          const Icon = personaIcons[p.id] || Bot;
-                          return (
+                            const Icon = personaIcons[p.id] || Bot;
+                            return (
                             <CommandItem
-                              key={p.id}
-                              value={p.id}
-                              onSelect={() => {
+                                key={p.id}
+                                value={p.id}
+                                onSelect={() => {
                                 setSelectedPersonaId(p.id);
                                 setPersonaMenuOpen(false);
-                              }}
-                              className="group flex items-start gap-3 cursor-pointer py-2.5"
+                                }}
+                                className="group flex items-start gap-3 cursor-pointer py-2.5"
                             >
-                              <Icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
-                              <div className="text-left flex-1">
+                                <Icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
+                                <div className="text-left flex-1">
                                 <p className="font-semibold text-sm text-foreground">
-                                  {p.name}
+                                    {p.name}
                                 </p>
                                 <p className="text-xs text-muted-foreground group-hover:text-foreground/80">
-                                  {p.description}
+                                    {p.description}
                                 </p>
-                              </div>
-                              <Check
+                                </div>
+                                <Check
                                 className={cn(
-                                  'h-4 w-4 mr-2',
-                                  selectedPersonaId === p.id
+                                    'h-4 w-4 mr-2',
+                                    selectedPersonaId === p.id
                                     ? 'opacity-100'
                                     : 'opacity-0'
                                 )}
-                              />
+                                />
                             </CommandItem>
-                          );
+                            );
                         })}
-                      </CommandGroup>
+                        </CommandGroup>
                     </CommandList>
-                  </Command>
+                    </Command>
                 </PopoverContent>
-              </Popover>
-              <Button
+                </Popover>
+                <Button
                 asChild
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:bg-muted"
-              >
+                >
                 <label>
-                  <Paperclip className="w-5 h-5" />
-                  <input
+                    <Paperclip className="w-5 h-5" />
+                    <input
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     className="hidden"
                     accept="image/*,application/pdf,text/*"
-                  />
+                    />
                 </label>
-              </Button>
+                </Button>
             </div>
             
             <RainbowBorder isActive={isFocused}>
-              <div className="relative flex-1 min-h-[2.25rem] flex items-center">
-                 <Textarea
-                  ref={textareaRef}
-                  value={input}
-                  placeholder=""
-                  rows={1}
-                  className="w-full bg-transparent border-none text-base text-foreground resize-none focus-visible:ring-0 p-0 leading-normal"
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
-                  onKeyDown={(e) => {
+                <div className="relative flex-1 min-h-[2.25rem] flex items-center">
+                    <Textarea
+                    ref={textareaRef}
+                    value={input}
+                    placeholder=""
+                    rows={1}
+                    className="w-full bg-transparent border-none text-base text-foreground resize-none focus-visible:ring-0 p-0 leading-normal"
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
-                      handleSubmit(e);
+                        handleSubmit(e);
                     }
-                  }}
-                  onChange={handleTextareaChange}
-                  disabled={isHistoryLoading}
+                    }}
+                    onChange={handleTextareaChange}
+                    disabled={isHistoryLoading}
                 />
                 {!input && !chatContext && (
-                  <div className="absolute inset-0 flex items-center pointer-events-none">
-                     <AnimatedPlaceholder activeChatId={activeChatId} />
-                  </div>
+                    <div className="absolute inset-0 flex items-center pointer-events-none">
+                        <AnimatedPlaceholder text={placeholderText} />
+                    </div>
                 )}
-              </div>
+                </div>
             </RainbowBorder>
             
             <div className="flex items-center">
-              <Button
+                <Button
                 type="submit"
                 disabled={isSending || (!input.trim() && !chatContext)}
                 size="icon"
                 className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
-              >
+                >
                 {isSending ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <Send className="h-5 w-5" />
+                    <Send className="h-5 w-5" />
                 )}
-              </Button>
+                </Button>
             </div>
-          </div>
+        </div>
         </form>
-        </RainbowBorder>
-      </div>
-    </div>
+    </RainbowBorder>
   );
 }

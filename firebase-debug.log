@@ -362,3 +362,21 @@ INFO: Websocket client disconnected
 [debug] [2025-07-21T07:57:38.917Z] No OAuth tokens found
 [debug] [2025-07-21T07:57:38.960Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
 [debug] [2025-07-21T07:57:39.103Z] Running auto auth
+[debug] [2025-07-21T09:16:13.145Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.176Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.179Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.179Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.180Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.180Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.180Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.181Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.181Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.182Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.182Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.183Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.183Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.184Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.184Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.185Z] No OAuth tokens found
+[debug] [2025-07-21T09:16:13.242Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-07-21T09:16:13.426Z] Running auto auth

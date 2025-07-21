@@ -11,7 +11,7 @@ import { FlipWords } from '@/components/ui/flip-words';
 import { FeaturesSection } from '@/components/landing/features-section';
 import { TestimonialsSection } from '@/components/landing/testimonials-section';
 import { FaqSection } from '@/components/landing/faq-section';
-import { LandingPageChat } from '@/components/landing/landing-page-chat';
+import { LandingPageChatV2 } from '@/components/landing/landing-page-chat-v2';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 import { faqs, testimonials } from '@/lib/landing-page-data';
 
@@ -67,7 +67,7 @@ export default function LandingPage() {
 
           <ScrollReveal>
             <section className="py-20">
-                <LandingPageChat />
+                <LandingPageChatV2 />
             </section>
           </ScrollReveal>
 
