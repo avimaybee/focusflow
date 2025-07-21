@@ -113,6 +113,9 @@ export default function ChatPage() {
               }
             }
           
+          const prevMessage = history[index - 1];
+          const nextMessage = history[index + 1];
+
           return { 
             id: `${docSnapshot.id}-${index}`,
             role: msg.role,
@@ -123,6 +126,8 @@ export default function ChatPage() {
             createdAt: sessionData.updatedAt || Timestamp.now(),
             userName: msg.role === 'user' ? user.displayName : undefined,
             userAvatar: msg.role === 'user' ? user.photoURL : undefined,
+            isFirstInGroup: !prevMessage || prevMessage.role !== msg.role,
+            isLastInGroup: !nextMessage || nextMessage.role !== msg.role,
             ...toolCallOutput,
           } as ChatMessageProps;
         });
@@ -414,7 +419,7 @@ export default function ChatPage() {
       
       {/* Desktop Notes Sidebar */}
       <AnimatePresence>
-        {isContextHubOpen && (
+        {!isMobile && isContextHubOpen && (
           <motion.aside
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 320, opacity: 1 }}

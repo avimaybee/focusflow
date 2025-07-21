@@ -60,31 +60,15 @@ export function MessageList({
           <WelcomeScreen onSelectPrompt={onSmartToolAction} />
         ) : (
           <div className="p-4 md:p-6 space-y-6 max-w-3xl mx-auto">
-            {messages.map((msg, index) => {
-              const prevMessage = messages[index - 1];
-              const nextMessage = messages[index + 1];
-
-              const isFirstInGroup = !prevMessage || prevMessage.role !== msg.role;
-              const isLastInGroup = !nextMessage || nextMessage.role !== msg.role;
-
-              return (
-                <motion.div
-                  key={msg.id || index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-                >
-                  <ChatMessage
-                    {...msg}
-                    persona={activePersona || undefined}
-                    isFirstInGroup={isFirstInGroup}
-                    isLastInGroup={isLastInGroup}
-                    onToolAction={handleToolAction}
-                    onRegenerate={onRegenerate}
-                  />
-                </motion.div>
-              );
-            })}
+            {messages.map((msg, index) => (
+              <ChatMessage
+                key={msg.id || index}
+                {...msg}
+                persona={activePersona || undefined}
+                onToolAction={handleToolAction}
+                onRegenerate={onRegenerate}
+              />
+            ))}
             {isSending && messages.at(-1)?.role === 'user' && (
                <motion.div
                   initial={{ opacity: 0, y: 10 }}

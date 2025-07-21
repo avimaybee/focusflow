@@ -17,6 +17,7 @@ import { useAuth } from '@/context/auth-context';
 import { saveChatMessage } from '@/lib/content-actions';
 import { TextSelectionMenu } from '@/components/notes/text-selection-menu';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import { motion } from 'framer-motion';
 
 interface FlashcardData {
   question: string;
@@ -214,9 +215,12 @@ export function ChatMessage({
   );
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
       className={cn(
-        'group flex items-start gap-3 animate-in fade-in-50 slide-in-from-bottom-2 duration-500',
+        'group flex items-start gap-3',
         isUser && 'justify-end',
         !isFirstInGroup && 'mt-1',
         isFirstInGroup && 'mt-4'
@@ -233,11 +237,12 @@ export function ChatMessage({
           ref={contentRef}
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'relative max-w-2xl p-3 text-sm rounded-2xl',
+            'relative max-w-2xl p-3 text-sm',
             isUser
               ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
               : 'bg-secondary',
-            isError && 'bg-destructive/20 border border-destructive text-destructive-foreground'
+            isError && 'bg-destructive/20 border border-destructive text-destructive-foreground',
+            isUser ? (isLastInGroup ? 'rounded-2xl rounded-br-md' : 'rounded-2xl') : (isLastInGroup ? 'rounded-2xl rounded-bl-md' : 'rounded-2xl')
           )}
         >
           {user && <TextSelectionMenu containerRef={contentRef} />}
@@ -339,6 +344,6 @@ export function ChatMessage({
         )}
       </div>
       {isUser && avatar}
-    </div>
+    </motion.div>
   );
 }
