@@ -8,10 +8,10 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PersonaIDs } from '@/lib/constants';
 
-export function usePersonaManager() {
+export function usePersonaManager(initialPersonaId?: string) {
   const { preferredPersona } = useAuth();
   const [personas, setPersonas] = useState<any[]>([]);
-  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(PersonaIDs.NEUTRAL);
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(initialPersonaId || PersonaIDs.NEUTRAL);
 
   const [isInitialPersonaSet, setIsInitialPersonaSet] = useState(false);
 
@@ -26,6 +26,9 @@ export function usePersonaManager() {
   }, []);
 
   useEffect(() => {
+    // Do not override the initial persona if one was provided.
+    if (initialPersonaId) return;
+
     // This effect should only run once when the component mounts and the necessary data is available.
     // It sets the initial persona based on the user's saved preference.
     // It will not run again to override a user's active selection in the same session.
@@ -36,7 +39,7 @@ export function usePersonaManager() {
     }
   // We only want this to run when the user's preferredPersona is first loaded.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [preferredPersona, personas]);
+  }, [preferredPersona, personas, initialPersonaId]);
   
   const selectedPersona = personas.find(p => p.id === selectedPersonaId);
 
