@@ -255,8 +255,8 @@ export function ChatSidebar({
         </div>
 
         <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full px-2">
-              <div className="py-2 space-y-1">
+            <ScrollArea className="h-full">
+              <div className="py-2 px-2 space-y-1">
                 {isLoading && user ? (
                   <SidebarSkeleton isCollapsed={isCollapsed} />
                 ) : (
@@ -267,9 +267,9 @@ export function ChatSidebar({
                           <div
                             role="button"
                             className={cn(
-                              'flex items-center w-full justify-between gap-3 font-normal py-3 px-2 rounded-xl cursor-pointer hover:bg-muted/50 text-foreground',
-                              'group/item', // Add a group name for the item
-                              activeChatId === chat.id && 'bg-secondary',
+                              'flex w-full justify-between gap-3 font-normal py-2.5 px-3 rounded-xl cursor-pointer hover:bg-muted/80 text-foreground transition-all duration-200 transform hover:scale-[1.02]',
+                              'group/item',
+                              activeChatId === chat.id && 'bg-primary/10 shadow-lg shadow-primary/30',
                               isCollapsed && 'justify-center'
                             )}
                             onClick={() => {
@@ -278,9 +278,10 @@ export function ChatSidebar({
                           >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                                 <MessageSquare className="h-5 w-5 shrink-0" />
-                                <span className={cn('flex-1 truncate', isCollapsed && 'hidden')}>
-                                  {chat.title}
-                                </span>
+                                <div className={cn('flex-1 min-w-0', isCollapsed && 'hidden')}>
+                                    <p className="truncate font-medium text-sm">{chat.title}</p>
+                                    <p className="truncate text-xs text-muted-foreground">{chat.lastMessagePreview}</p>
+                                </div>
                             </div>
                             {!isCollapsed && (
                               <Button
@@ -299,7 +300,8 @@ export function ChatSidebar({
                         </TooltipTrigger>
                         {isCollapsed && (
                           <TooltipContent side="right" align="center">
-                            <p>{chat.title}</p>
+                            <p className="font-medium">{chat.title}</p>
+                            <p className="text-sm text-muted-foreground">{chat.lastMessagePreview}</p>
                           </TooltipContent>
                         )}
                       </Tooltip>

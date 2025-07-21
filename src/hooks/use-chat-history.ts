@@ -9,6 +9,7 @@ import { useAuth } from '@/context/auth-context';
 export interface ChatHistoryItem {
   id: string;
   title: string;
+  lastMessagePreview?: string;
   createdAt: Timestamp;
 }
 
@@ -36,9 +37,10 @@ export function useChatHistory() {
           const data = doc.data();
           // Find the first user message to use as a title
           const firstUserMessage = data.history?.find((m: any) => m.role === 'user');
+          const lastMessage = data.history?.[data.history.length - 1];
           
-          let title = 'New Chat';
-          if (firstUserMessage?.content) {
+          let title = data.title || 'New Chat';
+          if (!data.title && firstUserMessage?.content) {
             const textPart = firstUserMessage.content.find((p: any) => p.text);
             if (textPart?.text) {
               title = textPart.text;
@@ -50,9 +52,23 @@ export function useChatHistory() {
             }
           }
 
+          let lastMessagePreview = '';
+          if (lastMessage?.content) {
+            const textPart = lastMessage.content.find((p: any) => p.text);
+            if (textPart?.text) {
+              lastMessagePreview = textPart.text;
+            } else if (lastMessage.role === 'user') {
+              lastMessagePreview = 'Context item sent';
+            } else {
+              lastMessagePreview = 'AI response';
+            }
+          }
+
+
           return {
             id: doc.id,
             title: title.substring(0, 50),
+            lastMessagePreview: lastMessagePreview.substring(0, 70),
             createdAt: data.updatedAt || Timestamp.now(),
           } as ChatHistoryItem;
         });
