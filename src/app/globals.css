@@ -29,7 +29,7 @@
     --muted: 224 10% 15%;
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 265 60% 75%; /* #B788E6 - Muted Purple */
-    --accent-foreground: 210 40% 98%;
+    --accent-foreground: 224 10% 10%; /* Dark charcoal for high contrast */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 224 10% 20%; /* Border color */
@@ -53,7 +53,7 @@
     --muted: 224 10% 15%;
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 265 60% 75%; /* #B788E6 - Muted Purple */
-    --accent-foreground: 210 40% 98%;
+    --accent-foreground: 224 10% 10%; /* Dark charcoal for high contrast */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 224 10% 20%; /* Border color */
