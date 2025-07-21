@@ -124,8 +124,8 @@ export default function ChatPage() {
             source: msg.data?.source,
             confidence: msg.data?.confidence,
             createdAt: sessionData.updatedAt || Timestamp.now(),
-            userName: msg.role === 'user' ? user.displayName : undefined,
-            userAvatar: msg.role === 'user' ? user.photoURL : undefined,
+            userName: msg.role === 'user' ? user.displayName : (selectedPersona?.name || 'AI'),
+            userAvatar: msg.role === 'user' ? user.photoURL : (selectedPersona?.avatarUrl || null),
             isFirstInGroup: !prevMessage || prevMessage.role !== msg.role,
             isLastInGroup: !nextMessage || nextMessage.role !== msg.role,
             ...toolCallOutput,
@@ -143,7 +143,7 @@ export default function ChatPage() {
     });
     
     return () => unsubscribe();
-  }, [activeChatId, user, toast]);
+  }, [activeChatId, user, toast, selectedPersona]);
 
   useEffect(() => {
     if (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')) {

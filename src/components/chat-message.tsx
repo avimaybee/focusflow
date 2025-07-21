@@ -198,7 +198,7 @@ export function ChatMessage({
     >
       {isUser ? (
         <>
-          <AvatarImage src={userAvatar || undefined} data-ai-hint="person" />
+          <AvatarImage src={userAvatar || undefined} alt={userName} data-ai-hint="person" />
           <AvatarFallback>
             {userName === 'Guest' ? <User className="h-5 w-5" /> : userName?.charAt(0).toUpperCase() || 'U'}
           </AvatarFallback>
