@@ -254,12 +254,12 @@ export function ChatSidebar({
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-            <ScrollArea className="h-full -mx-4">
+        <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full px-4">
               {isLoading && user ? (
                 <SidebarSkeleton isCollapsed={isCollapsed} />
               ) : (
-                <div className="px-4 py-2 space-y-1">
+                <div className="py-2 space-y-1">
                   {chatHistory.map((chat) => (
                     <Tooltip key={chat.id}>
                       <TooltipTrigger asChild>
