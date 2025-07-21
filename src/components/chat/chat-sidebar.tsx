@@ -267,6 +267,7 @@ export function ChatSidebar({
                           role="button"
                           className={cn(
                             'flex items-center w-full justify-start gap-3 font-normal py-3 px-4 rounded-xl cursor-pointer hover:bg-muted/50 text-foreground',
+                            'group/item', // Add a group name for the item
                             activeChatId === chat.id && 'bg-secondary',
                             isCollapsed && 'justify-center px-2'
                           )}
@@ -275,14 +276,14 @@ export function ChatSidebar({
                           }}
                         >
                           <MessageSquare className="h-5 w-5 shrink-0" />
-                          <span className={cn('truncate', isCollapsed && 'hidden')}>
+                          <span className={cn('flex-1 truncate', isCollapsed && 'hidden')}>
                             {chat.title}
                           </span>
                           {!isCollapsed && (
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-6 w-6 ml-auto shrink-0"
+                                className="h-6 w-6 shrink-0 opacity-0 group-hover/item:opacity-100" // Use group-hover
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onDeleteChat(chat.id);
@@ -329,4 +330,3 @@ export function ChatSidebar({
     </TooltipProvider>
   );
 }
-
