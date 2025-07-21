@@ -47,6 +47,7 @@ export type ChatMessageProps = {
   isLastInGroup?: boolean;
   onToolAction?: (tool: SmartTool, text?: string) => void;
   onRegenerate?: () => void;
+  attachments?: { url: string; name: string; contentType: string; size: number; }[];
 };
 
 export function ChatMessage({
@@ -64,6 +65,7 @@ export function ChatMessage({
   isLastInGroup = true,
   onToolAction,
   onRegenerate,
+  attachments,
 }: ChatMessageProps) {
   const isUser = role === 'user';
   const { user } = useAuth();
@@ -125,15 +127,55 @@ export function ChatMessage({
     if (quiz) {
       return <QuizViewer quiz={quiz} />;
     }
-    if (typeof text === 'string') {
-      return (
-        <MarkdownRenderer
-          className={cn('prose-styles', isError && 'text-destructive')}
-          content={text}
-        />
-      );
-    }
-    return text;
+    return (
+      <>
+        {typeof text === 'string' ? (
+          <MarkdownRenderer
+            className={cn('prose-styles', isError && 'text-destructive')}
+            content={text}
+          />
+        ) : (
+          text
+        )}
+        {attachments && attachments.length > 0 && (
+          <div className="mt-2 grid gap-2 grid-cols-2">
+            {attachments.map((att, index) => (
+              <div key={att.url || index} className="relative h-48 w-48">
+                {att.contentType.startsWith('image/') ? (
+                  <Image
+                    src={att.url}
+                    alt={att.name || 'Attached image'}
+                    layout="fill"
+                    className="rounded-md object-contain"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full w-full bg-muted rounded-md text-muted-foreground text-center p-2">
+                    <p className="break-all text-xs">{att.name}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        {images && images.length > 0 && (
+          <div className="mt-2 grid gap-2 grid-cols-2">
+            {images.map(
+              (img, index) =>
+                img && (
+                  <div key={index} className="relative h-48 w-48">
+                    <Image
+                      src={img}
+                      alt="User upload"
+                      layout="fill"
+                      className="rounded-md object-contain"
+                    />
+                  </div>
+                )
+            )}
+          </div>
+        )}
+      </>
+    );
   };
 
   const avatar = (

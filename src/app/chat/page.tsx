@@ -13,7 +13,7 @@ import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
-import { ChatInputArea } from '@/components/chat/chat-input-area';
+import { MultimodalInput } from '@/components/chat/multimodal-input';
 import { ContextHub } from '@/components/chat/context-hub';
 import { UploadCloud } from 'lucide-react';
 import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
@@ -49,7 +49,7 @@ export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [input, setInput] = useState('');
-  const [attachment, setAttachment] = useState<Attachment | null>(null);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
@@ -59,7 +59,6 @@ export default function ChatPage() {
 
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
   const { chatHistory, isLoading: isHistoryLoading, forceRefresh } = useChatHistory();
-  const { isDraggingOver, handleFileSelect, fileUploadHandlers } = useFileUpload(setAttachment);
   const { isContextHubOpen, closeContextHub } = useContextHubStore();
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -187,18 +186,14 @@ export default function ChatPage() {
     const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
     if (lastUserMessage && lastUserMessage.rawText) {
       setMessages(prev => prev.slice(0, -1));
-      handleSendMessage(new Event('submit') as unknown as FormEvent, lastUserMessage.rawText);
+      handleSendMessage({ input: lastUserMessage.rawText, attachments: lastUserMessage.attachments || [] });
     } else {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not find a previous prompt to regenerate.' });
     }
   };
 
-  const handleSendMessage = async (e: FormEvent, prompt?: string) => {
-    if (e && typeof e.preventDefault === 'function') {
-      e.preventDefault();
-    }
-    const messageToSend = prompt || input;
-    if (!messageToSend.trim() && !attachment || isSending || authLoading ) return;
+  const handleSendMessage = async ({ input, attachments }: { input: string; attachments: Attachment[] }) => {
+    if (!input.trim() && attachments.length === 0 || isSending || authLoading ) return;
 
     if (!user) {
         if (guestMessageCount >= GUEST_MESSAGE_LIMIT) {
@@ -213,11 +208,12 @@ export default function ChatPage() {
     const userMessage: ChatMessageProps = {
         id: `user-${Date.now()}`,
         role: 'user',
-        text: await marked.parse(messageToSend.trim()),
-        rawText: messageToSend.trim(),
+        text: await marked.parse(input.trim()),
+        rawText: input.trim(),
         userName: user?.displayName || 'Guest',
         userAvatar: user?.photoURL || null,
         createdAt: Timestamp.now(),
+        attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.contentType, size: att.size }))
     };
     setMessages(prev => [...prev, userMessage]);
 
@@ -226,14 +222,14 @@ export default function ChatPage() {
     }
   
     const chatInput = {
-      message: messageToSend.trim(),
+      message: input.trim(),
       sessionId: user ? activeChatId || undefined : undefined,
       personaId: selectedPersonaId,
-      context: attachment?.url,
+      context: attachments.length > 0 ? attachments[0].url : undefined, // Assuming only one attachment for context
     };
   
     setInput('');
-    setAttachment(null);
+    setAttachments([]);
   
     try {
       const idToken = await user?.getIdToken();
@@ -354,15 +350,8 @@ export default function ChatPage() {
         onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
       />
 
-      <main className="flex-1 flex flex-col h-screen overflow-hidden" {...fileUploadHandlers}>
-        {isDraggingOver && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-4 text-white p-8 border-2 border-dashed border-white rounded-lg">
-              <UploadCloud className="h-16 w-16" />
-              <p className="text-lg font-semibold">Drop your file here</p>
-            </div>
-          </div>
-        )}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+        
 
         <ChatHeader
           personaName={selectedPersona?.name || 'Default'}
@@ -380,30 +369,27 @@ export default function ChatPage() {
           activePersona={selectedPersona}
           scrollAreaRef={scrollAreaRef}
           onSmartToolAction={(prompt) => {
-            const syntheticEvent = {} as FormEvent;
-            handleSendMessage(syntheticEvent, prompt);
+            handleSendMessage({ input: prompt, attachments: [] });
           }}
           onRegenerate={handleRegenerate}
         />
 
         <div className="w-full bg-background">
             <div className="w-full sm:max-w-3xl lg:max-w-4xl mx-auto p-2">
-              <div className="relative">
-                <ChatInputArea
-                    input={input}
-                    setInput={setInput}
-                    handleSendMessage={handleSendMessage}
-                    handleFileSelect={handleFileSelect}
-                    isSending={isSending}
-                    isHistoryLoading={isHistoryLoading}
-                    personas={personas}
-                    selectedPersonaId={selectedPersonaId}
-                    setSelectedPersonaId={setSelectedPersonaId}
-                    activeChatId={activeChatId}
-                    chatContext={attachment}
-                    clearChatContext={() => setAttachment(null)}
-                />
-              </div>
+              <MultimodalInput
+                chatId={activeChatId || 'new'}
+                messages={messages.map(msg => ({ id: msg.id, content: msg.rawText || '', role: msg.role }))}
+                attachments={attachments}
+                setAttachments={setAttachments}
+                onSendMessage={handleSendMessage}
+                onStopGenerating={() => setIsSending(false)} // Assuming a stop generating function might be needed
+                isGenerating={isSending}
+                canSend={!isSending && !authLoading}
+                selectedVisibilityType="private" // Or determine based on user settings
+                personas={personas}
+                selectedPersonaId={selectedPersonaId}
+                setSelectedPersonaId={setSelectedPersonaId}
+              />
             </div>
         </div>
         <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
