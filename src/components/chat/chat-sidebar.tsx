@@ -159,7 +159,7 @@ const UserMenu = ({ user, isCollapsed }: { user: FirebaseUser | null, isCollapse
 
   if (!user) {
     return (
-      <Button variant="ghost" className="w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50" onClick={() => authModal.onOpen('login')}>
+      <Button variant="ghost" className={cn("w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50", isCollapsed && "w-10 h-10 p-0 justify-center")} onClick={() => authModal.onOpen('login')}>
         <Avatar className="h-8 w-8">
             <AvatarFallback><User /></AvatarFallback>
         </Avatar>
@@ -176,7 +176,7 @@ const UserMenu = ({ user, isCollapsed }: { user: FirebaseUser | null, isCollapse
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50"
+            className={cn("w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50", isCollapsed && "w-10 h-10 p-0 justify-center")}
           >
             <div className="relative">
               <Avatar className="h-8 w-8">
@@ -227,7 +227,7 @@ export function ChatSidebar({
       >
         <div
           className={cn(
-            'flex items-center mb-4 mt-2 h-12 px-4',
+            'flex items-center h-16 px-4',
             isCollapsed ? 'justify-center' : 'justify-between'
           )}
         >
@@ -255,12 +255,12 @@ export function ChatSidebar({
           </Button>
         </div>
 
-        <div className="flex items-center justify-center mb-4 gap-2 mx-4">
+        <div className="flex items-center justify-center px-4 mb-2">
           <Button
             variant="outline"
             className={cn(
-              'w-full rounded-xl',
-              isCollapsed && 'w-10 h-10 p-0'
+              'w-full rounded-md',
+              isCollapsed ? 'w-10 h-10 p-0' : ''
             )}
             onClick={onNewChat}
           >
@@ -281,7 +281,7 @@ export function ChatSidebar({
                       <div
                         role="button"
                         className={cn(
-                          'flex w-full items-center font-normal py-2.5 px-3 rounded-lg cursor-pointer text-foreground transition-all duration-200 transform group/item',
+                          'flex w-full items-center font-normal py-2 px-3 rounded-lg cursor-pointer text-foreground transition-all duration-200 transform group/item',
                           activeChatId === chat.id 
                             ? 'bg-muted ring-1 ring-primary/20' 
                             : 'hover:bg-muted/80 hover:scale-[1.02]',
@@ -326,9 +326,9 @@ export function ChatSidebar({
           </div>
         </ScrollArea>
 
-        <div className="py-2 mt-auto px-4">
+        <div className="py-2 mt-auto px-4 border-t">
             <div className={cn(isCollapsed ? 'opacity-0 hidden' : 'opacity-100 transition-opacity duration-200')}>
-                 <UserMenu user={user} isCollapsed={isCollapsed} />
+                 <UserMenu user={user} isCollapsed={false} />
             </div>
             {isCollapsed && (
                 <DropdownMenu>
