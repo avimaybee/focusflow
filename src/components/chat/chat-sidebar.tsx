@@ -254,63 +254,63 @@ export function ChatSidebar({
           </Button>
         </div>
 
-        <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full">
-              <div className="py-2 px-2 space-y-1">
-                {isLoading && user ? (
-                  <SidebarSkeleton isCollapsed={isCollapsed} />
-                ) : (
-                  <div className="space-y-1">
-                    {chatHistory.map((chat) => (
-                      <Tooltip key={chat.id}>
-                        <TooltipTrigger asChild>
-                          <div
-                            role="button"
-                            className={cn(
-                              'flex w-full justify-between gap-3 font-normal py-2.5 px-3 rounded-xl cursor-pointer hover:bg-muted text-foreground transition-all duration-200 transform hover:scale-[1.02]',
-                              'group/item',
-                              activeChatId === chat.id && 'bg-muted',
-                              isCollapsed && 'justify-center'
-                            )}
-                            onClick={() => {
-                              onChatSelect(chat.id);
-                            }}
-                          >
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <MessageSquare className="h-5 w-5 shrink-0" />
-                                <div className={cn('flex-1 min-w-0', isCollapsed && 'hidden')}>
-                                    <p className="truncate font-medium text-sm">{chat.title}</p>
-                                    <p className="truncate text-xs text-muted-foreground">{chat.lastMessagePreview}</p>
-                                </div>
-                            </div>
-                            {!isCollapsed && (
-                              <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 shrink-0 opacity-0 group-hover/item:opacity-100" // Use group-hover
-                                  onClick={(e) => {
-                                      e.stopPropagation();
-                                      onDeleteChat(chat.id);
-                                  }}
-                              >
-                                  <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </TooltipTrigger>
-                        {isCollapsed && (
-                          <TooltipContent side="right" align="center">
-                            <p className="font-medium">{chat.title}</p>
-                            <p className="text-sm text-muted-foreground">{chat.lastMessagePreview}</p>
-                          </TooltipContent>
+        <ScrollArea className="flex-1 overflow-hidden -mx-4 px-4">
+          <div className="py-2 space-y-1">
+            {isLoading && user ? (
+              <SidebarSkeleton isCollapsed={isCollapsed} />
+            ) : (
+              <div className="space-y-1">
+                {chatHistory.map((chat) => (
+                  <Tooltip key={chat.id}>
+                    <TooltipTrigger asChild>
+                      <div
+                        role="button"
+                        className={cn(
+                          'flex w-full justify-between gap-3 font-normal py-2.5 px-3 rounded-xl cursor-pointer text-foreground transition-all duration-200 transform',
+                          'group/item',
+                          activeChatId === chat.id 
+                            ? 'bg-muted ring-1 ring-primary/20' 
+                            : 'hover:bg-muted/80 hover:scale-[1.02]',
+                          isCollapsed && 'justify-center'
                         )}
-                      </Tooltip>
-                    ))}
-                  </div>
-                )}
+                        onClick={() => {
+                          onChatSelect(chat.id);
+                        }}
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <MessageSquare className="h-5 w-5 shrink-0" />
+                            <div className={cn('flex-1 min-w-0', isCollapsed && 'hidden')}>
+                                <p className="truncate font-medium text-sm">{chat.title}</p>
+                                <p className="truncate text-xs text-muted-foreground">{chat.lastMessagePreview}</p>
+                            </div>
+                        </div>
+                        {!isCollapsed && (
+                          <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 shrink-0 opacity-0 group-hover/item:opacity-100" // Use group-hover
+                              onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeleteChat(chat.id);
+                              }}
+                          >
+                              <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    {isCollapsed && (
+                      <TooltipContent side="right" align="center">
+                        <p className="font-medium">{chat.title}</p>
+                        <p className="text-sm text-muted-foreground">{chat.lastMessagePreview}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                ))}
               </div>
-            </ScrollArea>
-        </div>
+            )}
+          </div>
+        </ScrollArea>
 
         <div className="py-2 mt-auto px-4">
             <div className={cn(isCollapsed ? 'opacity-0 hidden' : '')}>
