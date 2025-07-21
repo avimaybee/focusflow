@@ -287,7 +287,7 @@ export function ChatMessage({
                         </TooltipTrigger>
                         <TooltipContent><p>Copy</p></TooltipContent>
                     </Tooltip>
-                    {isLastInGroup && (
+                    {isLastInGroup && onRegenerate && (
                       <Tooltip delayDuration={300}>
                           <TooltipTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={onRegenerate}>
