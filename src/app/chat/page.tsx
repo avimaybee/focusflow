@@ -214,7 +214,7 @@ export default function ChatPage() {
         userName: user?.displayName || 'Guest',
         userAvatar: user?.photoURL || null,
         createdAt: Timestamp.now(),
-        attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.contentType, size: att.size }))
+        attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.type, size: att.size }))
     };
     setMessages(prev => [...prev, userMessage]);
 
@@ -304,9 +304,9 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
+    <div className="flex h-screen bg-gradient-to-br from-background via-background to-secondary/30 text-foreground">
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-80">
+        <SheetContent side="left" className="p-0 w-80 md:hidden">
           <ChatSidebar
             user={user}
             chatHistory={chatHistory}
@@ -324,17 +324,19 @@ export default function ChatPage() {
         </SheetContent>
       </Sheet>
       
-      <ChatSidebar
-        user={user}
-        chatHistory={chatHistory}
-        activeChatId={activeChatId}
-        onNewChat={handleNewChat}
-        onChatSelect={(id) => router.push(`/chat/${id}`)}
-        onDeleteChat={handleDeleteChat}
-        isLoading={isHistoryLoading}
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
-      />
+      <div className="hidden md:flex">
+        <ChatSidebar
+            user={user}
+            chatHistory={chatHistory}
+            activeChatId={activeChatId}
+            onNewChat={handleNewChat}
+            onChatSelect={(id) => router.push(`/chat/${id}`)}
+            onDeleteChat={handleDeleteChat}
+            isLoading={isHistoryLoading}
+            isCollapsed={isSidebarCollapsed}
+            onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
+        />
+      </div>
 
       <main className="flex-1 flex flex-col h-screen min-w-0">
         <ChatHeader
@@ -358,7 +360,7 @@ export default function ChatPage() {
           onRegenerate={handleRegenerate}
         />
 
-        <div className="w-full bg-background">
+        <div className="w-full bg-background/50 backdrop-blur-sm">
             <div className="w-full sm:max-w-3xl mx-auto px-4 pb-4">
               <MultimodalInput
                 chatId={activeChatId || 'new'}
@@ -416,7 +418,7 @@ export default function ChatPage() {
             animate={{ width: 320, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="hidden lg:flex flex-col bg-secondary/30 border-l border-border/60 h-screen overflow-hidden"
+            className="hidden lg:flex flex-col bg-secondary/30 border-l border-border/50 h-screen overflow-hidden"
           >
             <ContextHub />
           </motion.aside>
@@ -424,7 +426,7 @@ export default function ChatPage() {
       </AnimatePresence>
 
       {/* Mobile Notes Bottom Sheet */}
-      <Sheet open={isContextHubOpen} onOpenChange={toggleContextHub}>
+      <Sheet open={isContextHubOpen && !!user} onOpenChange={toggleContextHub}>
         <SheetContent side="bottom" className="lg:hidden h-[60dvh] flex flex-col p-0">
           <ContextHub />
         </SheetContent>

@@ -206,7 +206,7 @@ export function ChatSidebar({
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          'flex-col bg-secondary/30 border-r border-border/60 hidden md:flex group/sidebar transition-all duration-300 ease-in-out',
+          'flex-col bg-secondary/30 border-r border-border/50 hidden md:flex group/sidebar transition-all duration-300 ease-in-out',
           isCollapsed ? 'w-20 min-w-[80px]' : 'w-80'
         )}
       >
@@ -255,8 +255,8 @@ export function ChatSidebar({
         </div>
 
         <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full">
-              <div className="py-2 space-y-1 px-4">
+            <ScrollArea className="h-full px-2">
+              <div className="py-2 space-y-1">
                 {isLoading && user ? (
                   <SidebarSkeleton isCollapsed={isCollapsed} />
                 ) : (
@@ -267,19 +267,21 @@ export function ChatSidebar({
                           <div
                             role="button"
                             className={cn(
-                              'flex items-center w-full justify-start gap-3 font-normal py-3 px-4 rounded-xl cursor-pointer hover:bg-muted/50 text-foreground',
+                              'flex items-center w-full justify-between gap-3 font-normal py-3 px-2 rounded-xl cursor-pointer hover:bg-muted/50 text-foreground',
                               'group/item', // Add a group name for the item
                               activeChatId === chat.id && 'bg-secondary',
-                              isCollapsed && 'justify-center px-0'
+                              isCollapsed && 'justify-center'
                             )}
                             onClick={() => {
                               onChatSelect(chat.id);
                             }}
                           >
-                            <MessageSquare className="h-5 w-5 shrink-0" />
-                            <span className={cn('flex-1 truncate', isCollapsed && 'hidden')}>
-                              {chat.title}
-                            </span>
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <MessageSquare className="h-5 w-5 shrink-0" />
+                                <span className={cn('flex-1 truncate', isCollapsed && 'hidden')}>
+                                  {chat.title}
+                                </span>
+                            </div>
                             {!isCollapsed && (
                               <Button
                                   variant="ghost"
