@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Providers } from '@/context/providers';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { usePathname } from 'next/navigation';
 import { PageTransitionWrapper } from '@/components/layout/page-transition-wrapper';
 
 const fontHeading = Poppins({
@@ -41,6 +42,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isLandingPage = pathname === '/';
+
   return (
     <html lang="en" className="dark">
       <body
@@ -53,7 +57,7 @@ export default function RootLayout({
         <Providers>
           <Header />
           <PageTransitionWrapper>{children}</PageTransitionWrapper>
-          <Footer />
+          {isLandingPage && <Footer />}
           <Toaster />
         </Providers>
       </body>
