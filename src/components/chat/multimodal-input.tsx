@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, {
@@ -573,7 +574,7 @@ function PureMultimodalInput({
       ]);
 
     },
-    [setAttachments, uploadFile],
+    [setAttachments],
   );
 
   const handleRemoveAttachment = useCallback(
@@ -732,10 +733,10 @@ function PureMultimodalInput({
                       >
                         <Icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
                         <div className="text-left flex-1">
-                          <p className="font-semibold text-sm text-foreground">
+                          <p className="font-semibold text-sm">
                             {p.name}
                           </p>
-                          <p className="text-xs text-muted-foreground group-hover:text-foreground/80">
+                          <p className="text-xs text-muted-foreground group-hover:text-accent-foreground/80">
                             {p.description}
                           </p>
                         </div>
