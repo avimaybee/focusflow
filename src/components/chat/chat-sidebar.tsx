@@ -71,31 +71,91 @@ const SidebarSkeleton = ({ isCollapsed }: { isCollapsed: boolean }) => (
   </div>
 );
 
+const UserMenuItems = () => {
+    const router = useRouter();
+    const { toast } = useToast();
+    const { user, isPremium, username } = useAuth();
+  
+    const handleLogout = async () => {
+      try {
+        await signOut(auth);
+        toast({
+          title: 'Logged Out',
+          description: 'You have been successfully logged out.',
+        });
+        router.push('/');
+      } catch (error) {
+        console.error('Error logging out:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Logout Failed',
+          description: 'An error occurred while logging out. Please try again.',
+        });
+      }
+    };
+  
+    if (!user) return null;
+  
+    const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+  
+    return (
+      <>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">{displayName}</p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user.email}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard">
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            Dashboard
+          </Link>
+        </DropdownMenuItem>
+        {username && (
+          <DropdownMenuItem asChild>
+            <Link href={`/student/${username}`}>
+              <User className="mr-2 h-4 w-4" />
+              My Public Profile
+            </Link>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem asChild>
+          <Link href="/preferences">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Preferences</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        {!isPremium && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link
+                href="/premium"
+                className="premium-gradient w-full flex items-center justify-center text-primary-foreground rounded-md py-1.5 focus:ring-0"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Upgrade to Premium
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        <DropdownMenuItem onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" /> Logout
+        </DropdownMenuItem>
+      </>
+    );
+};
+
 const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
-  const router = useRouter();
-  const { toast } = useToast();
   const authModal = useAuthModal();
-  const { isPremium, username } = useAuth();
+  const { isPremium } = useAuth();
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
   const initial = displayName.charAt(0).toUpperCase();
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      toast({
-        title: 'Logged Out',
-        description: 'You have been successfully logged out.',
-      });
-      router.push('/');
-    } catch (error) {
-      console.error('Error logging out:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Logout Failed',
-        description: 'An error occurred while logging out. Please try again.',
-      });
-    }
-  };
 
   if (!user) {
     return (
@@ -139,46 +199,7 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[280px]" side="top" align="start">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href="/dashboard">
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              Dashboard
-            </Link>
-          </DropdownMenuItem>
-          {username && (
-            <DropdownMenuItem asChild>
-                <Link href={`/student/${username}`}>
-                    <User className="mr-2 h-4 w-4" />
-                    My Public Profile
-                </Link>
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem asChild>
-            <Link href="/preferences">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Preferences</span>
-            </Link>
-          </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        {!isPremium && (
-          <>
-            <DropdownMenuItem asChild>
-              <Link
-                href="/premium"
-                className="premium-gradient w-full flex items-center justify-center text-primary-foreground rounded-md py-1.5 focus:ring-0"
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                Upgrade to Premium
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </>
-        )}
-        <DropdownMenuItem onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" /> Logout
-        </DropdownMenuItem>
+          <UserMenuItems />
         </DropdownMenuContent>
       </DropdownMenu>
   );
@@ -306,7 +327,7 @@ export function ChatSidebar({
         </ScrollArea>
 
         <div className="py-2 mt-auto px-4">
-            <div className={cn(isCollapsed ? 'opacity-0 hidden' : '')}>
+            <div className={cn(isCollapsed ? 'opacity-0 hidden' : 'transition-opacity duration-200')}>
                  <UserMenu user={user} />
             </div>
             {isCollapsed && (
@@ -319,8 +340,13 @@ export function ChatSidebar({
                             </Avatar>
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-64" side="top" align="start">
-                        <UserMenu user={user} />
+                    <DropdownMenuContent className="w-64 mb-2" side="top" align="start">
+                        {user ? <UserMenuItems /> : (
+                            <DropdownMenuItem onClick={() => useAuthModal.getState().onOpen('login')}>
+                                <LogIn className="mr-2 h-4 w-4" />
+                                Log In
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             )}
