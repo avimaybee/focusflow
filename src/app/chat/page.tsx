@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import Link from 'next/link';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const GUEST_MESSAGE_LIMIT = 10;
 
@@ -43,6 +44,7 @@ export default function ChatPage() {
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
+  const isMobile = useIsMobile();
 
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -426,11 +428,13 @@ export default function ChatPage() {
       </AnimatePresence>
 
       {/* Mobile Notes Bottom Sheet */}
-      <Sheet open={isContextHubOpen && !!user} onOpenChange={toggleContextHub}>
-        <SheetContent side="bottom" className="lg:hidden h-[60dvh] flex flex-col p-0">
-          <ContextHub />
-        </SheetContent>
-      </Sheet>
+      {isMobile && (
+        <Sheet open={isContextHubOpen && !!user} onOpenChange={toggleContextHub}>
+            <SheetContent side="bottom" className="h-[60dvh] flex flex-col p-0">
+                <ContextHub />
+            </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
