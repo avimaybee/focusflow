@@ -270,7 +270,7 @@ export function ChatSidebar({
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="px-4 py-2 space-y-1">
+          <div className="py-2 px-4 space-y-1">
             {isLoading && user ? (
               <SidebarSkeleton isCollapsed={isCollapsed} />
             ) : (
@@ -333,7 +333,7 @@ export function ChatSidebar({
             {isCollapsed && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-center text-sm h-auto p-0">
+                        <Button variant="ghost" className="w-full justify-center text-sm h-auto p-0 hover:bg-transparent">
                              <Avatar className="h-10 w-10">
                                 <AvatarImage src={user?.photoURL || undefined} data-ai-hint="person" />
                                 <AvatarFallback>{user ? (user.displayName || 'U').charAt(0).toUpperCase() : <User />}</AvatarFallback>
