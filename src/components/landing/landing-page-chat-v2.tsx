@@ -149,78 +149,22 @@ export function LandingPageChatV2() {
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [guestMessageCount, setGuestMessageCount] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [guestId, setGuestId] = useState<string | null>(null);
+  // Generate new sessionId and guestId for each page load (ephemeral guest chat)
+  const [sessionId] = useState<string>(uuidv4());
+  const [guestId] = useState<string>(uuidv4());
   const { toast } = useToast();
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager(PersonaIDs.CASUAL);
   const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
   const authModal = useAuthModal();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize sessionId and guestId from localStorage or generate new ones
-  useEffect(() => {
-    let currentSessionId = localStorage.getItem('focusflow-guest-sessionId');
-    let currentGuestId = localStorage.getItem('focusflow-guest-id');
-
-    if (!currentSessionId) {
-      currentSessionId = uuidv4();
-      localStorage.setItem('focusflow-guest-sessionId', currentSessionId);
-    }
-    if (!currentGuestId) {
-      currentGuestId = uuidv4();
-      localStorage.setItem('focusflow-guest-id', currentGuestId);
-    }
-    setSessionId(currentSessionId);
-    setGuestId(currentGuestId);
-  }, []);
-
-  // Scroll to bottom on new messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Load chat history on component mount
-  useEffect(() => {
-    const loadChatHistory = async () => {
-      if (!sessionId || !guestId) return;
-
-      try {
-        // Assuming a new API endpoint for fetching chat history
-        const response = await fetch('/api/chat/history', {
-          method: 'POST', // Using POST to send sessionId and guestId in body
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId, guestId }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to load chat history.');
-        }
-
-        const { history } = await response.json();
-        if (history && history.length > 0) {
-          // Filter out welcome message if history exists
-          setMessages(history.map((msg: any) => ({
-            id: msg.id,
-            role: msg.role,
-            content: marked.parse(msg.content),
-          })));
-          setGuestMessageCount(history.filter((msg: any) => msg.role === 'user').length);
-          setShowSuggestions(false); // Hide suggestions if history is loaded
-        }
-      } catch (error) {
-        console.error('Error loading chat history:', error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Failed to load previous chat.' });
-      }
-    };
-
-    loadChatHistory();
-  }, [sessionId, guestId, toast]); // Depend on sessionId and guestId
+  // Removed auto-scrolling behavior as per user request.
 
   const handleSendMessage = async (e: FormEvent, prompt?: string) => {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
     
     const messageToSend = prompt || input;
-    if (!messageToSend.trim() || isSending || limitReached || !sessionId || !guestId) return;
+    if (!messageToSend.trim() || isSending || limitReached) return;
 
     if (guestMessageCount >= 5) {
         setMessages(prev => [...prev, limitMessage]);
