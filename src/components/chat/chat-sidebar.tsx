@@ -151,7 +151,7 @@ const UserMenuItems = () => {
     );
 };
 
-const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
+const UserMenu = ({ user, isCollapsed }: { user: FirebaseUser | null, isCollapsed: boolean }) => {
   const authModal = useAuthModal();
   const { isPremium } = useAuth();
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
@@ -163,7 +163,7 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
         <Avatar className="h-8 w-8">
             <AvatarFallback><User /></AvatarFallback>
         </Avatar>
-        <div className="text-left">
+        <div className={cn("text-left", isCollapsed && "hidden")}>
             <p className="font-semibold">Guest</p>
             <p className="text-xs text-muted-foreground">Log in to save</p>
         </div>
@@ -189,7 +189,7 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
               <span className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-500 ring-2 ring-secondary" />
             </div>
             <div
-              className={'text-left transition-opacity duration-200'}
+              className={cn('text-left transition-opacity duration-200', isCollapsed && "opacity-0 hidden")}
             >
               <p className="font-semibold truncate">{displayName}</p>
               <p className="text-xs text-muted-foreground">
@@ -221,7 +221,7 @@ export function ChatSidebar({
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          'flex-col bg-secondary/30 border-r border-border/50 hidden md:flex transition-all duration-300 ease-in-out',
+          'flex-col bg-secondary/30 border-r border-border/50 flex transition-all duration-300 ease-in-out',
           isCollapsed ? 'w-20' : 'w-80'
         )}
       >
@@ -327,8 +327,8 @@ export function ChatSidebar({
         </ScrollArea>
 
         <div className="py-2 mt-auto px-4">
-            <div className={cn(isCollapsed ? 'opacity-0 hidden' : 'transition-opacity duration-200')}>
-                 <UserMenu user={user} />
+            <div className={cn(isCollapsed ? 'opacity-0 hidden' : 'opacity-100 transition-opacity duration-200')}>
+                 <UserMenu user={user} isCollapsed={isCollapsed} />
             </div>
             {isCollapsed && (
                 <DropdownMenu>
