@@ -58,7 +58,7 @@ export function MessageList({
         {showWelcomeScreen ? (
           <WelcomeScreen onSelectPrompt={onSmartToolAction} />
         ) : (
-          <div className="p-6 md:p-8 space-y-6 max-w-full sm:max-w-3xl lg:max-w-4xl mx-auto">
+          <div className="p-4 md:p-6 space-y-6 max-w-[800px] mx-auto">
             {messages.map((msg, index) => {
               const prevMessage = messages[index - 1];
               const nextMessage = messages[index + 1];

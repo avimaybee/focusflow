@@ -269,7 +269,7 @@ function PureSuggestedActions({
           <Button
             variant="outline"
             onClick={() => onSelectAction(suggestedAction.action)}
-            className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start
+            className="text-left border rounded-2xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start
                        border-border bg-background hover:bg-muted text-foreground hover:text-foreground"
           >
             <span className="font-medium">{suggestedAction.title}</span>
@@ -306,7 +306,7 @@ const PreviewAttachment = ({
 
   return (
     <div data-testid="input-attachment-preview" className="flex flex-col gap-1">
-      <div className="w-20 h-16 aspect-video bg-muted rounded-md relative flex flex-col items-center justify-center overflow-hidden border border-border">
+      <div className="w-20 h-16 aspect-video bg-muted rounded-lg relative flex flex-col items-center justify-center overflow-hidden border border-border">
         {contentType?.startsWith('image/') && url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -700,7 +700,7 @@ function PureMultimodalInput({
         </div>
       )}
 
-      <div className="relative flex items-end rounded-xl border border-input bg-background shadow-lg p-3">
+      <div className="relative flex items-end rounded-2xl border border-input bg-background shadow-lg p-3">
         {/* Persona Selector */}
         <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
           <PopoverTrigger asChild>

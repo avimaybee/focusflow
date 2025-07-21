@@ -1,21 +1,22 @@
+
 'use client';
 
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, Copy, RefreshCw, User, Album, HelpCircle, Save, RotateCw } from 'lucide-react';
+import { Bot, User, Album, HelpCircle, Save, RotateCw, Copy, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
-import { Button } from './ui/button';
-import { FlashcardViewer } from './flashcard-viewer';
-import { QuizViewer } from './quiz-viewer';
-import { SmartToolsMenu, type SmartTool } from './smart-tools-menu';
+import { Button } from '@/components/ui/button';
+import { FlashcardViewer } from '@/components/flashcard-viewer';
+import { QuizViewer } from '@/components/quiz-viewer';
+import { SmartToolsMenu, type SmartTool } from '@/components/smart-tools-menu';
 import { useToast } from '@/hooks/use-toast';
 import type { Timestamp } from 'firebase/firestore';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/context/auth-context';
 import { saveChatMessage } from '@/lib/content-actions';
-import { TextSelectionMenu } from './notes/text-selection-menu';
-import { MarkdownRenderer } from './ui/markdown-renderer';
+import { TextSelectionMenu } from '@/components/notes/text-selection-menu';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 
 interface FlashcardData {
   question: string;
@@ -31,6 +32,12 @@ interface QuizData {
   }[];
 }
 
+interface Persona {
+    id: string;
+    name: string;
+    avatarUrl: string;
+}
+
 export type ChatMessageProps = {
   id?: string;
   role: 'user' | 'model';
@@ -41,6 +48,7 @@ export type ChatMessageProps = {
   quiz?: QuizData;
   userAvatar?: string | null;
   userName?: string;
+  persona?: Persona;
   createdAt?: Timestamp;
   isError?: boolean;
   isFirstInGroup?: boolean;
@@ -60,6 +68,7 @@ export function ChatMessage({
   quiz,
   userAvatar,
   userName,
+  persona,
   isError = false,
   isFirstInGroup = true,
   isLastInGroup = true,
@@ -194,9 +203,12 @@ export function ChatMessage({
           </AvatarFallback>
         </>
       ) : (
-        <AvatarFallback className="bg-transparent">
-          <Bot className="h-5 w-5" />
-        </AvatarFallback>
+        <>
+          <AvatarImage src={persona?.avatarUrl} alt={persona?.name} />
+          <AvatarFallback className="bg-transparent">
+            <Bot className="h-5 w-5" />
+          </AvatarFallback>
+        </>
       )}
     </Avatar>
   );
@@ -221,14 +233,19 @@ export function ChatMessage({
           ref={contentRef}
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'relative max-w-2xl p-3 text-sm rounded-xl',
+            'relative max-w-2xl p-3 text-sm rounded-2xl',
             isUser
               ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
               : 'bg-secondary',
-            isError && 'bg-destructive/10 border border-destructive/20'
+            isError && 'bg-destructive/20 border border-destructive text-destructive-foreground'
           )}
         >
           {user && <TextSelectionMenu containerRef={contentRef} />}
+          {isError && (
+            <div className="absolute -top-2 -left-2 p-1 bg-destructive rounded-full text-destructive-foreground">
+              <AlertTriangle className="h-4 w-4" />
+            </div>
+          )}
           {renderContent()}
           {images && images.length > 0 && (
             <div className="mt-2 grid gap-2 grid-cols-2">
@@ -248,71 +265,78 @@ export function ChatMessage({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          {!isUser && !isError && onToolAction && rawText && (
-            <TooltipProvider>
-              <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
-                <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleCopy}>
-                            <Copy className="h-4 w-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>Copy</p></TooltipContent>
-                </Tooltip>
-                {isLastInGroup && (
-                  <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={onRegenerate}>
-                              <RotateCw className="h-4 w-4" />
-                          </Button>
-                      </TooltipTrigger>
-                      <TooltipContent><p>Regenerate</p></TooltipContent>
-                  </Tooltip>
-                )}
-                {user && (
-                  <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleSave}>
-                              <Save className="h-4 w-4" />
-                          </Button>
-                      </TooltipTrigger>
-                      <TooltipContent><p>Save to My Content</p></TooltipContent>
-                  </Tooltip>
-                )}
-                 <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 rounded-full"
-                            onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`)}
-                        >
-                            <Album className="h-4 w-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>Create Flashcards</p></TooltipContent>
-                </Tooltip>
-                 <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 rounded-full"
-                            onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`)}
-                        >
-                            <HelpCircle className="h-4 w-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>Create Quiz</p></TooltipContent>
-                </Tooltip>
-              </div>
-              <SmartToolsMenu
-                onAction={(tool) => onToolAction(tool, rawText)}
-              />
-            </TooltipProvider>
-          )}
-        </div>
+        {!isUser && (
+          <div className={cn(
+            "flex items-center gap-1.5 transition-opacity duration-200",
+            !isError && onToolAction && rawText ? 'opacity-20 group-hover:opacity-100' : 'opacity-0'
+          )}>
+            {!isError && onToolAction && rawText && (
+              <TooltipProvider>
+                <>
+                  <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
+                    <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleCopy}>
+                                <Copy className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Copy</p></TooltipContent>
+                    </Tooltip>
+                    {isLastInGroup && (
+                      <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={onRegenerate}>
+                                  <RotateCw className="h-4 w-4" />
+                              </Button>
+                          </TooltipTrigger>
+                          <TooltipContent><p>Regenerate</p></TooltipContent>
+                      </Tooltip>
+                    )}
+                    {user && (
+                      <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleSave}>
+                                  <Save className="h-4 w-4" />
+                              </Button>
+                          </TooltipTrigger>
+                          <TooltipContent><p>Save to My Content</p></TooltipContent>
+                      </Tooltip>
+                    )}
+                     <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 rounded-full"
+                                onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`)}
+                            >
+                                <Album className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Create Flashcards</p></TooltipContent>
+                    </Tooltip>
+                     <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 rounded-full"
+                                onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`)}
+                            >
+                                <HelpCircle className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Create Quiz</p></TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <SmartToolsMenu
+                    onAction={(tool) => onToolAction(tool, rawText)}
+                  />
+                </>
+              </TooltipProvider>
+            )}
+          </div>
+        )}
       </div>
       {isUser && avatar}
     </div>

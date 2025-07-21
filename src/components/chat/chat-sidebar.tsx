@@ -102,7 +102,7 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
 
   if (!user) {
     return (
-      <Button variant="ghost" className="w-full justify-start gap-3 text-sm h-auto py-2 px-2 hover:bg-muted/50" onClick={() => authModal.onOpen('login')}>
+      <Button variant="ghost" className="w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50" onClick={() => authModal.onOpen('login')}>
         <Avatar className="h-8 w-8">
             <AvatarFallback><User /></AvatarFallback>
         </Avatar>
@@ -119,7 +119,7 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3 text-sm h-auto py-2 px-2 hover:bg-muted/50"
+            className="w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50"
           >
             <Avatar className="h-8 w-8">
               <AvatarImage
@@ -138,7 +138,7 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
             </div>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-64" side="top" align="start">
+        <DropdownMenuContent className="w-[280px]" side="top" align="start">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
@@ -207,7 +207,7 @@ export function ChatSidebar({
       <aside
         className={cn(
           'flex-col bg-secondary/30 border-r border-border/60 hidden md:flex group/sidebar transition-all duration-300 ease-in-out',
-          isCollapsed ? 'w-20' : 'w-80'
+          isCollapsed ? 'w-[72px]' : 'w-80'
         )}
       >
         <div
@@ -244,8 +244,8 @@ export function ChatSidebar({
           <Button
             variant="ghost"
             className={cn(
-              'w-full border border-dashed',
-              isCollapsed && 'w-auto h-10 px-2'
+              'w-full border border-dashed rounded-xl',
+              isCollapsed && 'w-auto h-10 px-2.5'
             )}
             onClick={onNewChat}
           >
@@ -266,7 +266,7 @@ export function ChatSidebar({
                         <div
                           role="button"
                           className={cn(
-                            'flex items-center w-full justify-start gap-3 font-normal py-3 px-4 rounded-md cursor-pointer hover:bg-muted/50 text-foreground',
+                            'flex items-center w-full justify-start gap-3 font-normal py-3 px-4 rounded-xl cursor-pointer hover:bg-muted/50 text-foreground',
                             activeChatId === chat.id && 'bg-secondary',
                             isCollapsed && 'justify-center px-2'
                           )}
