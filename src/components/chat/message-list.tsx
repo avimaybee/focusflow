@@ -1,3 +1,4 @@
+
 'use client';
 
 import { motion } from 'framer-motion';
@@ -58,7 +59,7 @@ export function MessageList({
         {showWelcomeScreen ? (
           <WelcomeScreen onSelectPrompt={onSmartToolAction} />
         ) : (
-          <div className="p-4 md:p-6 space-y-6 max-w-[800px] mx-auto">
+          <div className="p-4 md:p-6 space-y-6 max-w-3xl mx-auto">
             {messages.map((msg, index) => {
               const prevMessage = messages[index - 1];
               const nextMessage = messages[index + 1];

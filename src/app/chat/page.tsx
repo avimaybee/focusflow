@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
@@ -8,14 +9,13 @@ import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
-import { useFileUpload, Attachment } from '@/hooks/use-file-upload';
+import { Attachment } from '@/hooks/use-file-upload';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { MultimodalInput } from '@/components/chat/multimodal-input';
 import { ContextHub } from '@/components/chat/context-hub';
-import { UploadCloud } from 'lucide-react';
 import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ChatMessageProps } from '@/components/chat-message';
@@ -32,6 +32,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import Link from 'next/link';
 
 const GUEST_MESSAGE_LIMIT = 10;
@@ -47,7 +48,7 @@ export default function ChatPage() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isSending, setIsSending] = useState(false);
@@ -59,7 +60,7 @@ export default function ChatPage() {
 
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
   const { chatHistory, isLoading: isHistoryLoading, forceRefresh } = useChatHistory();
-  const { isContextHubOpen, closeContextHub } = useContextHubStore();
+  const { isContextHubOpen, toggleContextHub, closeContextHub } = useContextHubStore();
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -225,7 +226,7 @@ export default function ChatPage() {
       message: input.trim(),
       sessionId: user ? activeChatId || undefined : undefined,
       personaId: selectedPersonaId,
-      context: attachments.length > 0 ? attachments[0].url : undefined, // Assuming only one attachment for context
+      context: attachments.length > 0 ? { url: attachments[0].url, filename: attachments[0].name } : undefined,
     };
   
     setInput('');
@@ -304,39 +305,24 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-background text-foreground">
-      <AnimatePresence>
-        {sidebarOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-30 bg-black/50 md:hidden"
-              onClick={() => setSidebarOpen(false)}
-            />
-            <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="fixed z-40 h-full md:hidden"
-            >
-              <ChatSidebar
-                user={user}
-                chatHistory={chatHistory}
-                activeChatId={activeChatId}
-                onNewChat={handleNewChat}
-                onChatSelect={(id) => router.push(`/chat/${id}`)}
-                onDeleteChat={handleDeleteChat}
-                isLoading={isHistoryLoading}
-                isCollapsed={false}
-                onToggle={() => setSidebarOpen(false)}
-              />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-80">
+          <ChatSidebar
+            user={user}
+            chatHistory={chatHistory}
+            activeChatId={activeChatId}
+            onNewChat={handleNewChat}
+            onChatSelect={(id) => {
+              router.push(`/chat/${id}`);
+              setSidebarOpen(false);
+            }}
+            onDeleteChat={handleDeleteChat}
+            isLoading={isHistoryLoading}
+            isCollapsed={false}
+            onToggle={() => setSidebarOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
       
       <ChatSidebar
         user={user}
@@ -350,12 +336,10 @@ export default function ChatPage() {
         onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
       />
 
-      <main className="flex-1 flex flex-col h-screen">
-        
-
+      <main className="flex-1 flex flex-col h-screen min-w-0">
         <ChatHeader
           personaName={selectedPersona?.name || 'Default'}
-          onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
+          onSidebarToggle={() => setSidebarOpen(true)}
           isLoggedIn={!!user}
         />
         
@@ -375,10 +359,10 @@ export default function ChatPage() {
         />
 
         <div className="w-full bg-background">
-            <div className="w-full sm:max-w-[800px] mx-auto p-4">
+            <div className="w-full sm:max-w-3xl mx-auto px-4 pb-4">
               <MultimodalInput
                 chatId={activeChatId || 'new'}
-                messages={messages.map(msg => ({ id: msg.id, content: msg.rawText || '', role: msg.role }))}
+                messages={messages.map(msg => ({ id: msg.id || '', content: msg.rawText || '', role: msg.role }))}
                 attachments={attachments}
                 setAttachments={setAttachments}
                 onSendMessage={handleSendMessage}
@@ -423,30 +407,28 @@ export default function ChatPage() {
             </AlertDialogContent>
         </AlertDialog>
       </main>
-
+      
+      {/* Desktop Notes Sidebar */}
       <AnimatePresence>
         {isContextHubOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-30 bg-black/50"
-              onClick={closeContextHub}
-            />
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="fixed right-0 top-0 z-40 h-full w-full max-w-[360px] bg-background border-l"
-            >
-              <ContextHub />
-            </motion.div>
-          </>
+          <motion.aside
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 320, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="hidden lg:flex flex-col bg-secondary/30 border-l border-border/60 h-screen overflow-hidden"
+          >
+            <ContextHub />
+          </motion.aside>
         )}
       </AnimatePresence>
+
+      {/* Mobile Notes Bottom Sheet */}
+      <Sheet open={isContextHubOpen} onOpenChange={toggleContextHub}>
+        <SheetContent side="bottom" className="lg:hidden h-[60dvh] flex flex-col p-0">
+          <ContextHub />
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
