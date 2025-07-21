@@ -43,6 +43,7 @@ import { cn } from '@/lib/utils';
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { ChatHistoryItem } from '@/hooks/use-chat-history';
 import { useAuthModal } from '@/hooks/use-auth-modal';
+import { useAuth } from '@/context/auth-context';
 
 interface ChatSidebarProps {
   user: FirebaseUser | null;
@@ -63,22 +64,18 @@ const SidebarSkeleton = ({ isCollapsed }: { isCollapsed: boolean }) => (
         key={i}
         className={cn(
           'h-8 bg-muted/50 rounded-md animate-pulse',
-          isCollapsed ? 'w-10 h-10' : `w-${[48, 32, 40, 36, 24][i]} w-full`
+          isCollapsed ? 'w-10 h-10' : `w-full`
         )}
       />
     ))}
   </div>
 );
 
-import { useAuth } from '@/context/auth-context';
-
-// ... (imports)
-
 const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
   const router = useRouter();
   const { toast } = useToast();
   const authModal = useAuthModal();
-  const { isPremium, username } = useAuth(); // Use the auth context
+  const { isPremium, username } = useAuth();
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
   const initial = displayName.charAt(0).toUpperCase();
 
@@ -121,13 +118,16 @@ const UserMenu = ({ user }: { user: FirebaseUser | null }) => {
             variant="ghost"
             className="w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50"
           >
-            <Avatar className="h-8 w-8">
-              <AvatarImage
-                src={user?.photoURL || undefined}
-                data-ai-hint="person"
-              />
-              <AvatarFallback>{initial}</AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-8 w-8">
+                <AvatarImage
+                  src={user?.photoURL || undefined}
+                  data-ai-hint="person"
+                />
+                <AvatarFallback>{initial}</AvatarFallback>
+              </Avatar>
+              <span className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-500 ring-2 ring-secondary" />
+            </div>
             <div
               className={'text-left transition-opacity duration-200'}
             >
@@ -196,18 +196,12 @@ export function ChatSidebar({
   onToggle,
 }: ChatSidebarProps) {
 
-  const renderUserMenu = (isInDropdown: boolean) => (
-    <div className={cn(isInDropdown ? 'opacity-0 hidden' : '', isCollapsed && (isInDropdown ? '' : 'opacity-0 hidden'))}>
-        <UserMenu user={user} />
-    </div>
-  );
-
   return (
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          'flex-col bg-secondary/30 border-r border-border/50 hidden md:flex group/sidebar transition-all duration-300 ease-in-out',
-          isCollapsed ? 'w-20 min-w-[80px]' : 'w-80'
+          'flex-col bg-secondary/30 border-r border-border/50 hidden md:flex transition-all duration-300 ease-in-out',
+          isCollapsed ? 'w-20' : 'w-80'
         )}
       >
         <div
@@ -242,10 +236,10 @@ export function ChatSidebar({
 
         <div className="flex items-center justify-center mb-4 gap-2 mx-4">
           <Button
-            variant="ghost"
+            variant="outline"
             className={cn(
-              'w-full border border-dashed rounded-xl',
-              isCollapsed && 'w-auto h-10 px-2.5'
+              'w-full rounded-xl',
+              isCollapsed && 'w-10 h-10 p-0'
             )}
             onClick={onNewChat}
           >
@@ -254,8 +248,8 @@ export function ChatSidebar({
           </Button>
         </div>
 
-        <ScrollArea className="flex-1 overflow-hidden -mx-4 px-4">
-          <div className="py-2 space-y-1">
+        <ScrollArea className="flex-1">
+          <div className="px-4 py-2 space-y-1">
             {isLoading && user ? (
               <SidebarSkeleton isCollapsed={isCollapsed} />
             ) : (
@@ -266,18 +260,17 @@ export function ChatSidebar({
                       <div
                         role="button"
                         className={cn(
-                          'flex w-full justify-between gap-3 font-normal py-2.5 px-3 rounded-xl cursor-pointer text-foreground transition-all duration-200 transform',
-                          'group/item',
+                          'flex w-full items-center font-normal py-2.5 px-3 rounded-lg cursor-pointer text-foreground transition-all duration-200 transform group/item',
                           activeChatId === chat.id 
                             ? 'bg-muted ring-1 ring-primary/20' 
                             : 'hover:bg-muted/80 hover:scale-[1.02]',
-                          isCollapsed && 'justify-center'
+                          isCollapsed ? 'justify-center h-10 w-10 p-0' : 'justify-between gap-3'
                         )}
                         onClick={() => {
                           onChatSelect(chat.id);
                         }}
                       >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className={cn('flex items-center gap-3 flex-1 min-w-0', isCollapsed && 'justify-center')}>
                             <MessageSquare className="h-5 w-5 shrink-0" />
                             <div className={cn('flex-1 min-w-0', isCollapsed && 'hidden')}>
                                 <p className="truncate font-medium text-sm">{chat.title}</p>
@@ -288,7 +281,7 @@ export function ChatSidebar({
                           <Button
                               variant="ghost"
                               size="icon"
-                              className="h-6 w-6 shrink-0 opacity-0 group-hover/item:opacity-100" // Use group-hover
+                              className="h-6 w-6 shrink-0 opacity-0 group-hover/item:opacity-100"
                               onClick={(e) => {
                                   e.stopPropagation();
                                   onDeleteChat(chat.id);
@@ -319,8 +312,8 @@ export function ChatSidebar({
             {isCollapsed && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-center gap-3 text-sm h-auto py-2 px-2 hover:bg-muted/50">
-                             <Avatar className="h-8 w-8">
+                        <Button variant="ghost" className="w-full justify-center text-sm h-auto p-0">
+                             <Avatar className="h-10 w-10">
                                 <AvatarImage src={user?.photoURL || undefined} data-ai-hint="person" />
                                 <AvatarFallback>{user ? (user.displayName || 'U').charAt(0).toUpperCase() : <User />}</AvatarFallback>
                             </Avatar>
