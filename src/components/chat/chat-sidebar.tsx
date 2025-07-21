@@ -267,9 +267,9 @@ export function ChatSidebar({
                           <div
                             role="button"
                             className={cn(
-                              'flex w-full justify-between gap-3 font-normal py-2.5 px-3 rounded-xl cursor-pointer hover:bg-muted/80 text-foreground transition-all duration-200 transform hover:scale-[1.02]',
+                              'flex w-full justify-between gap-3 font-normal py-2.5 px-3 rounded-xl cursor-pointer hover:bg-muted text-foreground transition-all duration-200 transform hover:scale-[1.02]',
                               'group/item',
-                              activeChatId === chat.id && 'bg-primary/10 shadow-lg shadow-primary/30',
+                              activeChatId === chat.id && 'bg-muted',
                               isCollapsed && 'justify-center'
                             )}
                             onClick={() => {
