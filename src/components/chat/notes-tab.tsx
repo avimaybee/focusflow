@@ -80,7 +80,7 @@ export function NotesTab() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-4 pr-8">
         <h3 className="text-lg font-semibold">My Notes</h3>
         <div className="h-6">
             <SaveStatusIndicator />
