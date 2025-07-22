@@ -234,7 +234,6 @@ export function ChatMessage({
       >
         <div
           ref={contentRef}
-          style={{ lineHeight: 1.5 }}
           className={cn(
             'relative max-w-2xl p-3 text-sm shadow-sm',
             'rounded-2xl',
