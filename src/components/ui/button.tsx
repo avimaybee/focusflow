@@ -44,12 +44,12 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? motion.create(Slot) : motion.button;
+    const Comp = asChild ? motion(Slot) : motion.button;
     return (
       <Comp
         whileHover={{ scale: 1.03, filter: 'brightness(1.1)' }}
         whileTap={{ scale: 0.98, filter: 'brightness(0.9)' }}
-        transition={{ duration: 0.15, ease: 'easeOut' }}
+        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
@@ -60,4 +60,3 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 
 export { Button, buttonVariants };
-

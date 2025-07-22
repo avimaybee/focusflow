@@ -44,6 +44,7 @@ import type { User as FirebaseUser } from 'firebase/auth';
 import type { ChatHistoryItem } from '@/hooks/use-chat-history';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useAuth } from '@/context/auth-context';
+import { motion } from 'framer-motion';
 
 interface ChatSidebarProps {
   user: FirebaseUser | null;
@@ -219,15 +220,14 @@ export function ChatSidebar({
 
   return (
     <TooltipProvider delayDuration={0}>
-      <aside
-        className={cn(
-          'flex-col bg-secondary/30 border-r border-border/50 flex transition-all duration-300 ease-in-out',
-          isCollapsed ? 'w-20' : 'w-80'
-        )}
+      <motion.aside
+        animate={{ width: isCollapsed ? 80 : 320 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+        className='flex-col bg-secondary/30 border-r border-border/50 flex'
       >
         <div
           className={cn(
-            'flex items-center h-16 px-4',
+            'flex items-center h-16 px-4 shrink-0',
             isCollapsed ? 'justify-center' : 'justify-between'
           )}
         >
@@ -354,7 +354,7 @@ export function ChatSidebar({
                 </DropdownMenu>
             )}
         </div>
-      </aside>
+      </motion.aside>
     </TooltipProvider>
   );
 }

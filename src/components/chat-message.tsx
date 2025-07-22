@@ -219,7 +219,7 @@ export function ChatMessage({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className={cn(
         'group flex items-start gap-3',
         isUser && 'justify-end'
