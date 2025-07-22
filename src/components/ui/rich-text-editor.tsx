@@ -74,6 +74,12 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
     },
   });
 
+  // Update editor content when the external `content` prop changes
+  // This is important for when notes are loaded asynchronously
+  if (editor && content !== editor.getHTML()) {
+    editor.commands.setContent(content, false);
+  }
+
   return (
     <div className="flex flex-col h-full">
       <EditorToolbar editor={editor} />

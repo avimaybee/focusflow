@@ -36,6 +36,11 @@ export function NotesTab() {
       return;
     }
 
+    // Don't trigger save on initial load
+    if (saveStatus === 'idle' && isLoaded && content === debouncedContent) {
+        return;
+    }
+
     setSaveStatus('saving');
     saveNotes(user.uid, debouncedContent)
       .then(() => {
@@ -51,6 +56,7 @@ export function NotesTab() {
         });
         setTimeout(() => setSaveStatus('idle'), 2000);
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedContent, user, isLoaded, toast]);
 
   const SaveStatusIndicator = () => {
@@ -88,7 +94,10 @@ export function NotesTab() {
       <div className="flex-grow rounded-md border border-input bg-transparent text-base focus-visible:ring-1">
         <RichTextEditor
             content={content}
-            onChange={setContent}
+            onChange={(newContent) => {
+                setContent(newContent);
+                setSaveStatus('saving');
+            }}
             placeholder="Start typing your notes here..."
         />
       </div>
