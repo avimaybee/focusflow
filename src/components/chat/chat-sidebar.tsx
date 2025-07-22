@@ -285,7 +285,7 @@ export function ChatSidebar({
                           activeChatId === chat.id 
                             ? 'bg-muted ring-1 ring-primary/20' 
                             : 'hover:bg-muted/80 hover:scale-[1.02]',
-                          isCollapsed ? 'justify-center h-10 w-10 p-0' : 'justify-between gap-3'
+                          isCollapsed ? 'justify-center items-center h-10 w-10 p-0' : 'justify-between gap-3'
                         )}
                         onClick={() => {
                           onChatSelect(chat.id);
