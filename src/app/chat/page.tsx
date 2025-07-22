@@ -97,7 +97,7 @@ export default function ChatPage() {
         
         const chatMessagesPromises = history
           .filter((msg: any) => msg.role !== 'system')
-          .map(async (msg: any, index: number) => {
+          .map(async (msg: any, index: number, arr: any[]) => {
             const textContent = msg.content?.find((p: any) => p.text)?.text || '';
 
             let toolCallOutput: any = {};
@@ -113,6 +113,11 @@ export default function ChatPage() {
               }
             }
 
+            const prevMessage = arr[index - 1];
+            const nextMessage = arr[index + 1];
+            const isFirstInGroup = !prevMessage || prevMessage.role !== msg.role;
+            const isLastInGroup = !nextMessage || nextMessage.role !== msg.role;
+
           return { 
             id: `${docSnapshot.id}-${index}`,
             role: msg.role,
@@ -124,6 +129,8 @@ export default function ChatPage() {
             userName: user.displayName || 'User',
             userAvatar: user.photoURL,
             persona: selectedPersona || undefined,
+            isFirstInGroup,
+            isLastInGroup,
             ...toolCallOutput,
           } as ChatMessageProps;
         });

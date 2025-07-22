@@ -12,6 +12,7 @@ import { QuizViewer } from '@/components/quiz-viewer';
 import { SmartToolsMenu, type SmartTool } from '@/components/smart-tools-menu';
 import { useToast } from '@/hooks/use-toast';
 import type { Timestamp } from 'firebase/firestore';
+import { format } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/context/auth-context';
 import { saveChatMessage } from '@/lib/content-actions';
@@ -52,6 +53,8 @@ export type ChatMessageProps = {
   persona?: Persona;
   createdAt?: Timestamp;
   isError?: boolean;
+  isFirstInGroup?: boolean;
+  isLastInGroup?: boolean;
   onToolAction?: (tool: SmartTool, text?: string) => void;
   onRegenerate?: () => void;
   attachments?: { url: string; name: string; contentType: string; size: number; }[];
@@ -68,7 +71,10 @@ export function ChatMessage({
   userAvatar,
   userName,
   persona,
+  createdAt,
   isError = false,
+  isFirstInGroup = true,
+  isLastInGroup = true,
   onToolAction,
   onRegenerate,
   attachments,
@@ -187,7 +193,8 @@ export function ChatMessage({
   const avatar = (
     <Avatar
       className={cn(
-        'h-8 w-8',
+        'h-8 w-8 transition-opacity duration-300',
+        !isFirstInGroup && 'opacity-0',
         isUser ? '' : 'bg-accent/50 text-accent-foreground border border-accent'
       )}
     >
@@ -216,6 +223,7 @@ export function ChatMessage({
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={cn(
         'group flex items-start gap-3',
+        !isLastInGroup && 'mb-1',
         isUser && 'justify-end'
       )}
     >
@@ -230,10 +238,11 @@ export function ChatMessage({
           ref={contentRef}
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'relative max-w-2xl p-3 text-sm rounded-2xl',
-            isUser
-              ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
-              : 'bg-secondary',
+            'relative max-w-2xl p-3 text-sm shadow-sm',
+            'rounded-2xl',
+            isUser ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground' : 'bg-secondary',
+            isUser ? (isFirstInGroup ? 'rounded-tr-2xl' : 'rounded-tr-md') : (isFirstInGroup ? 'rounded-tl-2xl' : 'rounded-tl-md'),
+            isUser ? (isLastInGroup ? 'rounded-br-2xl' : 'rounded-br-md') : (isLastInGroup ? 'rounded-bl-2xl' : 'rounded-bl-md'),
             isError && 'bg-destructive/20 border border-destructive text-destructive-foreground'
           )}
         >
@@ -244,28 +253,10 @@ export function ChatMessage({
             </div>
           )}
           {renderContent()}
-          {images && images.length > 0 && (
-            <div className="mt-2 grid gap-2 grid-cols-2">
-              {images.map(
-                (img, index) =>
-                  img && (
-                    <div key={index} className="relative h-48 w-48">
-                      <Image
-                        src={img}
-                        alt="User upload"
-                        layout="fill"
-                        className="rounded-md object-contain"
-                      />
-                    </div>
-                  )
-              )}
-            </div>
-          )}
         </div>
-        {!isUser && (
+        {!isUser && isLastInGroup && (
           <div className={cn(
-            "flex items-center gap-1.5 transition-opacity duration-200",
-            !isError && onToolAction && rawText ? 'opacity-20 group-hover:opacity-100' : 'opacity-0'
+            "flex items-center gap-1.5 transition-opacity duration-200 opacity-0 group-hover:opacity-100"
           )}>
             {!isError && onToolAction && rawText && (
               <TooltipProvider>
@@ -334,8 +325,14 @@ export function ChatMessage({
             )}
           </div>
         )}
+        {isUser && isLastInGroup && createdAt && (
+          <div className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+            {format(createdAt.toDate(), 'p')}
+          </div>
+        )}
       </div>
       {isUser && avatar}
     </motion.div>
   );
 }
+
