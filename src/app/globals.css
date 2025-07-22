@@ -87,6 +87,15 @@
   ::-webkit-scrollbar-thumb { 
     @apply bg-muted-foreground/30 rounded-full;
   }
+
+  /* Tiptap editor placeholder styles */
+  .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: hsl(var(--muted-foreground));
+    pointer-events: none;
+    height: 0;
+  }
 }
 
 @layer components {

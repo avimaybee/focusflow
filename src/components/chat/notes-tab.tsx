@@ -5,9 +5,9 @@ import { useEffect, useState, useRef } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useAuth } from '@/context/auth-context';
 import { getNotes, saveNotes } from '@/lib/notes-actions';
-import { Textarea } from '@/components/ui/textarea';
 import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -17,8 +17,7 @@ export function NotesTab() {
   const [content, setContent] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+  
   const [debouncedContent] = useDebounce(content, 1500);
 
   // Effect to fetch initial notes
@@ -33,7 +32,6 @@ export function NotesTab() {
 
   // Effect to save notes when debounced content changes
   useEffect(() => {
-    // Do not save initial content fetched from DB
     if (!isLoaded || !user) {
       return;
     }
@@ -87,13 +85,13 @@ export function NotesTab() {
             <SaveStatusIndicator />
         </div>
       </div>
-      <Textarea
-        ref={textareaRef}
-        placeholder="Start typing your notes here... they will be saved automatically."
-        className="w-full flex-grow resize-none border rounded-md p-2 bg-transparent text-base focus-visible:ring-1"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-      />
+      <div className="flex-grow rounded-md border border-input bg-transparent text-base focus-visible:ring-1">
+        <RichTextEditor
+            content={content}
+            onChange={setContent}
+            placeholder="Start typing your notes here..."
+        />
+      </div>
     </div>
   );
 }

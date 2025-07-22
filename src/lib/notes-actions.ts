@@ -1,3 +1,4 @@
+
 'use server';
 
 import { db } from '@/lib/firebase-admin';
@@ -8,7 +9,7 @@ const NOTES_DOC_PATH = 'main_notes'; // A single document for all notes
 /**
  * Retrieves the user's notes content from Firestore.
  * @param userId The ID of the user.
- * @returns The content of the user's notes or an empty string.
+ * @returns The HTML content of the user's notes or an empty string.
  */
 export async function getNotes(userId: string): Promise<string> {
   if (!userId) return '';
@@ -16,12 +17,12 @@ export async function getNotes(userId: string): Promise<string> {
     const notesRef = db.collection('users').doc(userId).collection('notes').doc(NOTES_DOC_PATH);
     const doc = await notesRef.get();
     if (doc.exists) {
+      // Content is stored as HTML from the rich text editor
       return doc.data()?.content || '';
     }
     return '';
   } catch (error) {
     console.error(`Error getting notes for user ${userId}:`, error);
-    // In case of error, return empty string to not block the user.
     return '';
   }
 }
@@ -29,7 +30,7 @@ export async function getNotes(userId: string): Promise<string> {
 /**
  * Appends a snippet of text to the user's main notes document.
  * @param userId The ID of the user.
- * @param snippet The text snippet to append.
+ * @param snippet The text snippet to append (can be plain text).
  */
 export async function appendToNotes(userId: string, snippet: string): Promise<void> {
   if (!userId || !snippet) return;
@@ -38,7 +39,8 @@ export async function appendToNotes(userId: string, snippet: string): Promise<vo
     const doc = await notesRef.get();
     
     const currentContent = doc.exists ? doc.data()?.content || '' : '';
-    const newContent = `${currentContent}\n\n---\n\n${snippet}`;
+    // Append the plain text snippet into a new paragraph in the HTML content
+    const newContent = `${currentContent}<p>${snippet.replace(/\n/g, '<br>')}</p>`;
 
     await notesRef.set({
       content: newContent,
@@ -54,7 +56,7 @@ export async function appendToNotes(userId: string, snippet: string): Promise<vo
 /**
  * Saves the user's notes content to Firestore.
  * @param userId The ID of the user.
- * @param content The new content to save.
+ * @param content The new HTML content to save from the editor.
  */
 export async function saveNotes(userId: string, content: string): Promise<void> {
   if (!userId) return;
@@ -66,7 +68,6 @@ export async function saveNotes(userId: string, content: string): Promise<void> 
     }, { merge: true });
   } catch (error) {
     console.error(`Error saving notes for user ${userId}:`, error);
-    // Re-throw the error to be caught by the front-end for user feedback.
     throw new Error('Failed to save notes.');
   }
 }
