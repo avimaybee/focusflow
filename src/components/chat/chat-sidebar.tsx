@@ -159,7 +159,7 @@ const UserMenu = ({ user, isCollapsed }: { user: FirebaseUser | null, isCollapse
 
   if (!user) {
     return (
-      <Button variant="ghost" className={cn("w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50", isCollapsed && "w-10 h-10 p-0 justify-center")} onClick={() => authModal.onOpen('login')}>
+      <Button variant="ghost" className={cn("w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50", isCollapsed && "w-10 h-10 p-0 flex items-center justify-center")} onClick={() => authModal.onOpen('login')}>
         <Avatar className="h-8 w-8">
             <AvatarFallback><User /></AvatarFallback>
         </Avatar>
@@ -176,7 +176,7 @@ const UserMenu = ({ user, isCollapsed }: { user: FirebaseUser | null, isCollapse
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className={cn("w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50", isCollapsed && "w-10 h-10 p-0 justify-center")}
+            className={cn("w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50", isCollapsed && "w-10 h-10 p-0 flex items-center justify-center")}
           >
             <div className="relative">
               <Avatar className="h-8 w-8">
@@ -285,7 +285,7 @@ export function ChatSidebar({
                           activeChatId === chat.id 
                             ? 'bg-muted ring-1 ring-primary/20' 
                             : 'hover:bg-muted/80 hover:scale-[1.02]',
-                          isCollapsed ? 'justify-center items-center h-10 w-10 p-0' : 'justify-between gap-3'
+                          isCollapsed ? 'justify-center items-center h-10 w-10 p-0 flex items-center justify-center' : 'justify-between gap-3'
                         )}
                         onClick={() => {
                           onChatSelect(chat.id);
@@ -334,10 +334,13 @@ export function ChatSidebar({
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="w-full justify-center text-sm h-auto p-0 hover:bg-transparent">
-                             <Avatar className="h-10 w-10">
-                                <AvatarImage src={user?.photoURL || undefined} data-ai-hint="person" />
-                                <AvatarFallback>{user ? (user.displayName || 'U').charAt(0).toUpperCase() : <User />}</AvatarFallback>
-                            </Avatar>
+                            <div className="relative">
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={user?.photoURL || undefined} data-ai-hint="person" />
+                                    <AvatarFallback>{user ? (user.displayName || 'U').charAt(0).toUpperCase() : <User />}</AvatarFallback>
+                                </Avatar>
+                                {user && <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-secondary" />}
+                            </div>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-64 mb-2" side="top" align="start">
