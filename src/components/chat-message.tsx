@@ -194,7 +194,6 @@ export function ChatMessage({
     <Avatar
       className={cn(
         'h-8 w-8 transition-opacity duration-300',
-        !isFirstInGroup && 'opacity-0',
         isUser ? '' : 'bg-accent/50 text-accent-foreground border border-accent'
       )}
     >
@@ -223,7 +222,6 @@ export function ChatMessage({
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={cn(
         'group flex items-start gap-3',
-        !isLastInGroup && 'mb-1',
         isUser && 'justify-end'
       )}
     >
@@ -256,7 +254,7 @@ export function ChatMessage({
         </div>
         {!isUser && isLastInGroup && (
           <div className={cn(
-            "flex items-center gap-1.5 transition-opacity duration-200 opacity-0 group-hover:opacity-100"
+            "flex items-center gap-1.5 h-8 transition-opacity duration-200 opacity-0 group-hover:opacity-100"
           )}>
             {!isError && onToolAction && rawText && (
               <TooltipProvider>
