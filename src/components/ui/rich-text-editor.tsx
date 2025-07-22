@@ -7,6 +7,7 @@ import { Bold, Italic, List } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 import { cn } from '@/lib/utils';
 import Placeholder from '@tiptap/extension-placeholder';
+import { useEffect } from 'react';
 
 interface RichTextEditorProps {
   content: string;
@@ -76,9 +77,11 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
 
   // Update editor content when the external `content` prop changes
   // This is important for when notes are loaded asynchronously
-  if (editor && content !== editor.getHTML()) {
-    editor.commands.setContent(content, false);
-  }
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content, false);
+    }
+  }, [content, editor]);
 
   return (
     <div className="flex flex-col h-full">
