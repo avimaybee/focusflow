@@ -219,7 +219,7 @@ export function ChatMessage({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
       className={cn(
         'group flex items-start gap-3',
         isUser && 'justify-end'
@@ -235,11 +235,11 @@ export function ChatMessage({
         <div
           ref={contentRef}
           className={cn(
-            'relative max-w-2xl p-3 text-sm shadow-sm',
-            'rounded-2xl',
+            'relative max-w-xl p-2 text-sm shadow-sm',
+            'rounded-xl',
             isUser ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground' : 'bg-secondary',
-            isUser ? (isFirstInGroup ? 'rounded-tr-2xl' : 'rounded-tr-md') : (isFirstInGroup ? 'rounded-tl-2xl' : 'rounded-tl-md'),
-            isUser ? (isLastInGroup ? 'rounded-br-2xl' : 'rounded-br-md') : (isLastInGroup ? 'rounded-bl-2xl' : 'rounded-bl-md'),
+            isUser ? (isFirstInGroup ? 'rounded-tr-xl' : 'rounded-tr-md') : (isFirstInGroup ? 'rounded-tl-xl' : 'rounded-tl-md'),
+            isUser ? (isLastInGroup ? 'rounded-br-xl' : 'rounded-br-md') : (isLastInGroup ? 'rounded-bl-xl' : 'rounded-bl-md'),
             isError && 'bg-destructive/20 border border-destructive text-destructive-foreground'
           )}
         >
