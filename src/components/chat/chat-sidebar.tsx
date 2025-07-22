@@ -259,8 +259,8 @@ export function ChatSidebar({
           <Button
             variant="outline"
             className={cn(
-              'w-full rounded-md',
-              isCollapsed ? 'w-10 h-10 p-0' : ''
+              'w-full rounded-xl h-10',
+              isCollapsed && 'w-10 h-10 p-0 flex items-center justify-center'
             )}
             onClick={onNewChat}
           >
