@@ -17,6 +17,7 @@ import { useAuth } from '@/context/auth-context';
 import { saveChatMessage } from '@/lib/content-actions';
 import { TextSelectionMenu } from '@/components/notes/text-selection-menu';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import { motion } from 'framer-motion';
 
 interface FlashcardData {
   question: string;
@@ -55,6 +56,7 @@ export type ChatMessageProps = {
   isLastInGroup?: boolean;
   onToolAction?: (tool: SmartTool, text?: string) => void;
   onRegenerate?: () => void;
+  attachments?: { url: string; name: string; contentType: string; size: number; }[];
 };
 
 export function ChatMessage({
@@ -73,6 +75,7 @@ export function ChatMessage({
   isLastInGroup = true,
   onToolAction,
   onRegenerate,
+  attachments,
 }: ChatMessageProps) {
   const isUser = role === 'user';
   const { user } = useAuth();
@@ -80,8 +83,10 @@ export function ChatMessage({
   const contentRef = React.useRef<HTMLDivElement>(null);
 
   const handleCopy = () => {
-    if (rawText) {
-      navigator.clipboard.writeText(rawText);
+    const textToCopy =
+      rawText || (typeof text === 'string' ? text.replace(/<[^>]*>/g, '') : '');
+    if (textToCopy) {
+      navigator.clipboard.writeText(textToCopy);
       toast({
         title: 'Copied to clipboard!',
       });
@@ -131,15 +136,55 @@ export function ChatMessage({
     if (quiz) {
       return <QuizViewer quiz={quiz} />;
     }
-    if (typeof text === 'string') {
-      return (
-        <MarkdownRenderer
-          className={cn('prose-styles', isError && 'text-destructive')}
-          content={text}
-        />
-      );
-    }
-    return text;
+    return (
+      <>
+        {typeof text === 'string' ? (
+          <MarkdownRenderer
+            className={cn('prose-styles', isError && 'text-destructive')}
+            content={text}
+          />
+        ) : (
+          text
+        )}
+        {attachments && attachments.length > 0 && (
+          <div className="mt-2 grid gap-2 grid-cols-2">
+            {attachments.map((att, index) => (
+              <div key={att.url || index} className="relative h-48 w-48">
+                {att.contentType.startsWith('image/') ? (
+                  <Image
+                    src={att.url}
+                    alt={att.name || 'Attached image'}
+                    layout="fill"
+                    className="rounded-md object-contain"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full w-full bg-muted rounded-md text-muted-foreground text-center p-2">
+                    <p className="break-all text-xs">{att.name}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        {images && images.length > 0 && (
+          <div className="mt-2 grid gap-2 grid-cols-2">
+            {images.map(
+              (img, index) =>
+                img && (
+                  <div key={index} className="relative h-48 w-48">
+                    <Image
+                      src={img}
+                      alt="User upload"
+                      layout="fill"
+                      className="rounded-md object-contain"
+                    />
+                  </div>
+                )
+            )}
+          </div>
+        )}
+      </>
+    );
   };
 
   const avatar = (
@@ -169,7 +214,12 @@ export function ChatMessage({
   );
 
   return (
-    <div
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
       className={cn(
         'group flex items-start gap-3',
         isUser && 'justify-end'
@@ -189,108 +239,92 @@ export function ChatMessage({
           ref={contentRef}
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'relative max-w-2xl p-3 px-4 text-base rounded-2xl',
+            'relative max-w-xl p-2 text-sm shadow-sm prose-styles',
+            'rounded-xl',
             isUser
-              ? 'bg-blue-600 text-primary-foreground'
+              ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
               : 'bg-secondary',
-            isError && 'bg-destructive/10 border border-destructive/20'
+            isUser ? (isFirstInGroup ? 'rounded-tr-xl' : 'rounded-tr-md') : (isFirstInGroup ? 'rounded-tl-xl' : 'rounded-tl-md'),
+            isUser ? (isLastInGroup ? 'rounded-br-xl' : 'rounded-br-md') : (isLastInGroup ? 'rounded-bl-xl' : 'rounded-bl-md'),
+            isError && 'bg-destructive/20 border border-destructive text-destructive-foreground'
           )}
         >
-          {!isUser && (
-             <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={handleCopy}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          )}
           {user && <TextSelectionMenu containerRef={contentRef} />}
           {renderContent()}
-          {images && images.length > 0 && (
-            <div className="mt-2 grid gap-2 grid-cols-2">
-              {images.map(
-                (img, index) =>
-                  img && (
-                    <div key={index} className="relative h-48 w-48">
-                      <Image
-                        src={img}
-                        alt="User upload"
-                        layout="fill"
-                        className="rounded-md object-contain"
-                      />
-                    </div>
-                  )
-              )}
-            </div>
-          )}
         </div>
-        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          {!isUser && !isError && (
-            <TooltipProvider>
-              <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
-                {isLastInGroup && onRegenerate && (
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={onRegenerate}>
-                        <RotateCw className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>Regenerate</p></TooltipContent>
-                  </Tooltip>
-                )}
-                {user && rawText && (
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleSave}>
-                        <Save className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>Save to My Content</p></TooltipContent>
-                  </Tooltip>
-                )}
+        {!isUser && !isError && (
+            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <TooltipProvider>
+                <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
+                    <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleCopy}>
+                                <Copy className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Copy</p></TooltipContent>
+                    </Tooltip>
+                    {isLastInGroup && onRegenerate && (
+                    <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={onRegenerate}>
+                            <RotateCw className="h-4 w-4" />
+                        </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Regenerate</p></TooltipContent>
+                    </Tooltip>
+                    )}
+                    {user && rawText && (
+                    <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleSave}>
+                            <Save className="h-4 w-4" />
+                        </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Save to My Content</p></TooltipContent>
+                    </Tooltip>
+                    )}
+                    {rawText && onToolAction && (
+                    <>
+                        <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                            <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`)}
+                            >
+                            <Album className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Create Flashcards</p></TooltipContent>
+                        </Tooltip>
+                        <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                            <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`)}
+                            >
+                            <HelpCircle className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Create Quiz</p></TooltipContent>
+                        </Tooltip>
+                    </>
+                    )}
+                </div>
                 {rawText && onToolAction && (
-                  <>
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-full"
-                          onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`)}
-                        >
-                          <Album className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent><p>Create Flashcards</p></TooltipContent>
-                    </Tooltip>
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-full"
-                          onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`)}
-                        >
-                          <HelpCircle className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent><p>Create Quiz</p></TooltipContent>
-                    </Tooltip>
-                  </>
+                    <SmartToolsMenu
+                    onAction={(tool) => onToolAction(tool, rawText)}
+                    />
                 )}
-              </div>
-              {rawText && onToolAction && (
-                <SmartToolsMenu
-                  onAction={(tool) => onToolAction(tool, rawText)}
-                />
-              )}
-            </TooltipProvider>
-          )}
-        </div>
+                </TooltipProvider>
+            </div>
+        )}
       </div>
       {isUser && avatar}
-    </div>
+    </motion.div>
   );
 }

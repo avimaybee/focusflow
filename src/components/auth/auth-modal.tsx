@@ -199,12 +199,12 @@ export function AuthModal() {
           onClick={onClose}
         >
           <motion.div
-            layoutId={layoutId}
+            layoutId={layoutId || 'auth-modal-fallback'}
             className="bg-secondary rounded-lg shadow-xl w-full max-w-sm"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
@@ -216,9 +216,13 @@ export function AuthModal() {
                     animate={{ opacity: 1, scale: 1, transition: { delay: 0.2 } }}
                     className="flex flex-col items-center justify-center p-8 h-[370px]"
                   >
-                    <div className="h-16 w-16 bg-green-500/20 rounded-full flex items-center justify-center">
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1, transition: { type: 'spring', stiffness: 300, damping: 20, delay: 0.3 } }}
+                        className="h-16 w-16 bg-green-500/20 rounded-full flex items-center justify-center"
+                    >
                       <Check className="h-8 w-8 text-green-500" />
-                    </div>
+                    </motion.div>
                     <p className="mt-4 text-lg font-medium">Success!</p>
                     <p className="text-sm text-muted-foreground">Redirecting you now...</p>
                   </motion.div>
