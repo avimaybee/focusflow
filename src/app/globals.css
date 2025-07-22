@@ -193,20 +193,3 @@
 .prose-styles > :last-child {
     @apply mb-0;
 }
-
-.prose-styles > :first-child {
-    @apply mt-0;
-}
-.prose-styles > :last-child {
-    @apply mb-0;
-}
-
-.prose-styles table {
-    @apply w-full my-6;
-}
-.prose-styles th {
-    @apply border px-4 py-2 text-left font-bold;
-}
-.prose-styles td {
-    @apply border px-4 py-2 text-left;
-}

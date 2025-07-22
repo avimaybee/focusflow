@@ -235,7 +235,7 @@ export function ChatMessage({
         <div
           ref={contentRef}
           className={cn(
-            'relative max-w-xl p-2 text-sm shadow-sm',
+            'relative max-w-xl p-3 text-sm shadow-sm prose-styles',
             'rounded-xl',
             isUser ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground' : 'bg-secondary',
             isUser ? (isFirstInGroup ? 'rounded-tr-xl' : 'rounded-tr-md') : (isFirstInGroup ? 'rounded-tl-xl' : 'rounded-tl-md'),
