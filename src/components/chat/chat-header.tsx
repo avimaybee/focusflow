@@ -9,14 +9,15 @@ interface ChatHeaderProps {
   personaName: string;
   onSidebarToggle: () => void;
   isLoggedIn: boolean;
+  onNotesToggle: () => void; // Added prop
 }
 
 export function ChatHeader({
   personaName,
   onSidebarToggle,
   isLoggedIn,
+  onNotesToggle, // Added prop
 }: ChatHeaderProps) {
-  const { toggleContextHub } = useContextHubStore();
 
   return (
     <header className="sticky top-0 z-10 h-16 px-4 md:px-6 flex justify-between items-center w-full border-b border-border/60 bg-background/95 backdrop-blur-sm">
@@ -38,7 +39,7 @@ export function ChatHeader({
       </div>
       <div className="flex items-center gap-2">
         {isLoggedIn && (
-          <Button variant="ghost" size="icon" onClick={toggleContextHub}>
+          <Button variant="ghost" size="icon" onClick={onNotesToggle}>
             <Notebook className="h-5 w-5" />
           </Button>
         )}

@@ -13,11 +13,13 @@ export function useIsMobile() {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     };
 
-    checkIsMobile(); // Initial check
+    // Set the initial state on the client
+    checkIsMobile(); 
 
     window.addEventListener('resize', checkIsMobile);
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
+  // Return undefined during SSR and the actual value on the client
   return isMobile;
 }

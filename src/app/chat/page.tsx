@@ -224,7 +224,7 @@ export default function ChatPage() {
         userName: user?.displayName || 'Guest',
         userAvatar: user?.photoURL || null,
         createdAt: Timestamp.now(),
-        attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.type, size: att.size }))
+        attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.type, size: 0 }))
     };
     setMessages(prev => [...prev, userMessage]);
 
@@ -352,6 +352,7 @@ export default function ChatPage() {
         <ChatHeader
           personaName={selectedPersona?.name || 'Default'}
           onSidebarToggle={() => setSidebarOpen((prev) => !prev)}
+          onNotesToggle={toggleContextHub}
           isLoggedIn={!!user}
         />
         
@@ -422,7 +423,7 @@ export default function ChatPage() {
       
       {/* Desktop Notes Sidebar */}
       <AnimatePresence>
-        {isContextHubOpen && (
+        {isContextHubOpen && !isMobile && (
           <motion.aside
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 320, opacity: 1 }}
@@ -435,8 +436,8 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      {/* Mobile Notes Bottom Sheet */}
-      <Sheet open={isContextHubOpen && !!isMobile} onOpenChange={toggleContextHub}>
+      {/* Mobile Notes Bottom Sheet - Always mounted */}
+      <Sheet open={isContextHubOpen && isMobile === true} onOpenChange={toggleContextHub}>
         <SheetContent side="bottom" className="h-[60dvh] flex flex-col p-0">
             <ContextHub />
         </SheetContent>
@@ -444,5 +445,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
