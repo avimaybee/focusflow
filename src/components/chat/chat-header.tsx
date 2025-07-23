@@ -9,14 +9,14 @@ interface ChatHeaderProps {
   personaName: string;
   onSidebarToggle: () => void;
   isLoggedIn: boolean;
-  onNotesToggle: () => void; // Added prop
+  onNotesToggle: () => void;
 }
 
 export function ChatHeader({
   personaName,
   onSidebarToggle,
   isLoggedIn,
-  onNotesToggle, // Added prop
+  onNotesToggle,
 }: ChatHeaderProps) {
 
   return (
@@ -26,7 +26,10 @@ export function ChatHeader({
           variant="ghost"
           size="icon"
           className="md:hidden"
-          onClick={onSidebarToggle}
+          onClick={() => {
+            console.log("Sidebar toggle clicked");
+            onSidebarToggle();
+          }}
         >
           <Menu className="h-5 w-5" />
         </Button>
@@ -39,7 +42,10 @@ export function ChatHeader({
       </div>
       <div className="flex items-center gap-2">
         {isLoggedIn && (
-          <Button variant="ghost" size="icon" onClick={onNotesToggle}>
+          <Button variant="ghost" size="icon" onClick={() => {
+            console.log("Notes toggle clicked");
+            onNotesToggle();
+          }}>
             <Notebook className="h-5 w-5" />
           </Button>
         )}

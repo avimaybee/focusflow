@@ -381,10 +381,10 @@ export default function ChatPage() {
                 attachments={attachments}
                 setAttachments={setAttachments}
                 onSendMessage={handleSendMessage}
-                onStopGenerating={() => setIsSending(false)} // Assuming a stop generating function might be needed
+                onStopGenerating={() => setIsSending(false)}
                 isGenerating={isSending}
                 canSend={!isSending && !authLoading}
-                selectedVisibilityType="private" // Or determine based on user settings
+                selectedVisibilityType="private"
                 personas={personas}
                 selectedPersonaId={selectedPersonaId}
                 setSelectedPersonaId={setSelectedPersonaId}
