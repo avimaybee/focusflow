@@ -315,24 +315,26 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-background via-background to-secondary/30 text-foreground">
-      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-80 md:hidden">
-          <ChatSidebar
-            user={user}
-            chatHistory={chatHistory}
-            activeChatId={activeChatId}
-            onNewChat={handleNewChat}
-            onChatSelect={(id) => {
-              router.push(`/chat/${id}`);
-              setSidebarOpen(false);
-            }}
-            onDeleteChat={handleDeleteChat}
-            isLoading={isHistoryLoading}
-            isCollapsed={false}
-            onToggle={() => setSidebarOpen(false)}
-          />
-        </SheetContent>
-      </Sheet>
+      {isMobile && (
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetContent side="left" className="p-0 w-80">
+              <ChatSidebar
+                user={user}
+                chatHistory={chatHistory}
+                activeChatId={activeChatId}
+                onNewChat={handleNewChat}
+                onChatSelect={(id) => {
+                  router.push(`/chat/${id}`);
+                  setSidebarOpen(false);
+                }}
+                onDeleteChat={handleDeleteChat}
+                isLoading={isHistoryLoading}
+                isCollapsed={false}
+                onToggle={() => setSidebarOpen(false)}
+              />
+            </SheetContent>
+          </Sheet>
+      )}
       
       <div className="hidden md:flex">
         <ChatSidebar
@@ -436,12 +438,14 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      {/* Mobile Notes Bottom Sheet - Always mounted */}
-      <Sheet open={isContextHubOpen && isMobile} onOpenChange={toggleContextHub}>
-        <SheetContent side="bottom" className="h-[60dvh] flex flex-col p-0">
-            <ContextHub />
-        </SheetContent>
-      </Sheet>
+      {/* Mobile Notes Bottom Sheet */}
+      {isMobile && (
+        <Sheet open={isContextHubOpen} onOpenChange={toggleContextHub}>
+            <SheetContent side="bottom" className="h-[60dvh] flex flex-col p-0">
+                <ContextHub />
+            </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
