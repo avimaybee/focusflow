@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
@@ -350,7 +351,7 @@ export default function ChatPage() {
       <main className="flex-1 flex flex-col h-screen min-w-0">
         <ChatHeader
           personaName={selectedPersona?.name || 'Default'}
-          onSidebarToggle={() => setSidebarOpen(true)}
+          onSidebarToggle={() => setSidebarOpen((prev) => !prev)}
           isLoggedIn={!!user}
         />
         
@@ -436,7 +437,7 @@ export default function ChatPage() {
 
       {/* Mobile Notes Bottom Sheet */}
       {isMobile && (
-        <Sheet open={isContextHubOpen && !!user} onOpenChange={toggleContextHub}>
+        <Sheet open={isContextHubOpen} onOpenChange={toggleContextHub}>
             <SheetContent side="bottom" className="h-[60dvh] flex flex-col p-0">
                 <ContextHub />
             </SheetContent>
@@ -445,3 +446,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
