@@ -5,21 +5,20 @@ import { useState, useEffect } from 'react';
 
 const MOBILE_BREAKPOINT = 1024; // lg breakpoint in Tailwind
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = useState<boolean | undefined>(undefined);
+export function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(false); // Default to false for SSR
 
   useEffect(() => {
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     };
 
-    // Set the initial state on the client
+    // Set the initial state on the client after mount
     checkIsMobile(); 
 
     window.addEventListener('resize', checkIsMobile);
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  // Return undefined during SSR and the actual value on the client
   return isMobile;
 }

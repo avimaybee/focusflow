@@ -437,7 +437,7 @@ export default function ChatPage() {
       </AnimatePresence>
 
       {/* Mobile Notes Bottom Sheet - Always mounted */}
-      <Sheet open={isContextHubOpen && isMobile === true} onOpenChange={toggleContextHub}>
+      <Sheet open={isContextHubOpen && isMobile} onOpenChange={toggleContextHub}>
         <SheetContent side="bottom" className="h-[60dvh] flex flex-col p-0">
             <ContextHub />
         </SheetContent>
