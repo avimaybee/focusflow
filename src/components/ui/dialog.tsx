@@ -4,9 +4,9 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 import { cn } from "@/lib/utils"
-import { motion, AnimatePresence } from "framer-motion"
 
 const Dialog = DialogPrimitive.Root
 
@@ -41,36 +41,40 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
-  return (
-    <AnimatePresence>
-        <DialogPortal>
-          <DialogOverlay />
-          <DialogPrimitive.Content
-            ref={ref}
-            asChild
-            className={cn(
-              "fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border bg-secondary shadow-lg sm:rounded-xl",
-              className
+    const { open } = DialogPrimitive.useRootContext();
+
+    return (
+        <AnimatePresence>
+            {open && (
+                <DialogPortal forceMount>
+                <DialogOverlay forceMount />
+                <DialogPrimitive.Content
+                    ref={ref}
+                    asChild
+                    className={cn(
+                    "fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border bg-secondary shadow-lg sm:rounded-xl",
+                    className
+                    )}
+                    {...props}
+                >
+                    <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="grid gap-4 p-6"
+                    >
+                    {children}
+                    <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Close</span>
+                    </DialogPrimitive.Close>
+                    </motion.div>
+                </DialogPrimitive.Content>
+                </DialogPortal>
             )}
-            {...props}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="grid gap-4 p-6"
-            >
-              {children}
-              <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close</span>
-              </DialogPrimitive.Close>
-            </motion.div>
-          </DialogPrimitive.Content>
-        </DialogPortal>
-    </AnimatePresence>
-  );
+        </AnimatePresence>
+    );
 });
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
