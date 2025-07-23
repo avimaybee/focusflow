@@ -41,13 +41,8 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
-  // We need to use the open state from the context to conditionally render the content
-  // for AnimatePresence to work correctly.
-  const { open } = DialogPrimitive.useDialogContext();
-
   return (
     <AnimatePresence>
-      {open && (
         <DialogPortal>
           <DialogOverlay />
           <DialogPrimitive.Content
@@ -74,7 +69,6 @@ const DialogContent = React.forwardRef<
             </motion.div>
           </DialogPrimitive.Content>
         </DialogPortal>
-      )}
     </AnimatePresence>
   );
 });
