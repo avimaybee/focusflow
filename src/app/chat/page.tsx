@@ -422,7 +422,7 @@ export default function ChatPage() {
       
       {/* Desktop Notes Sidebar */}
       <AnimatePresence>
-        {!isMobile && isContextHubOpen && (
+        {isContextHubOpen && (
           <motion.aside
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 320, opacity: 1 }}
@@ -436,13 +436,11 @@ export default function ChatPage() {
       </AnimatePresence>
 
       {/* Mobile Notes Bottom Sheet */}
-      {isMobile && (
-        <Sheet open={isContextHubOpen} onOpenChange={toggleContextHub}>
-            <SheetContent side="bottom" className="h-[60dvh] flex flex-col p-0">
-                <ContextHub />
-            </SheetContent>
-        </Sheet>
-      )}
+      <Sheet open={isContextHubOpen && !!isMobile} onOpenChange={toggleContextHub}>
+        <SheetContent side="bottom" className="h-[60dvh] flex flex-col p-0">
+            <ContextHub />
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
