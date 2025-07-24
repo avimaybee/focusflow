@@ -400,7 +400,6 @@ function MyContentPageContent() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.2 }}
-                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <Card className="h-full flex flex-col hover:border-primary/80 hover:bg-muted transition-all">

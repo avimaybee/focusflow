@@ -48,8 +48,8 @@ export const Header = () => {
             href={link.href}
             onClick={() => setIsMobileMenuOpen(false)}
             className={cn(
-              'nav-link',
-              isActive && 'nav-link-active'
+              'text-muted-foreground hover:text-foreground transition-colors duration-200',
+              isActive && 'text-foreground'
             )}
           >
             {link.label}
@@ -123,8 +123,8 @@ export const Header = () => {
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={cn(
-                      'nav-link',
-                      isActive && 'nav-link-active'
+                      'text-muted-foreground hover:text-foreground transition-colors duration-200',
+                      isActive && 'text-foreground'
                     )}
                   >
                     {link.label}

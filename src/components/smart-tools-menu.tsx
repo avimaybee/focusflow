@@ -62,7 +62,6 @@ export function SmartToolsMenu({ onAction }: SmartToolsMenuProps) {
         role="toolbar"
         aria-label="Smart Tools"
       >
-        {!isOpen && (
             <Tooltip delayDuration={300}>
                 <TooltipTrigger asChild>
                     <motion.div layoutId="smart-tools-button">
@@ -70,7 +69,7 @@ export function SmartToolsMenu({ onAction }: SmartToolsMenuProps) {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 rounded-full"
-                            onClick={() => setIsOpen(true)}
+                            onClick={() => setIsOpen(!isOpen)}
                             aria-label="Open Smart Tools"
                         >
                             <Sparkles className="h-4 w-4" />
@@ -81,15 +80,14 @@ export function SmartToolsMenu({ onAction }: SmartToolsMenuProps) {
                     <p>Smart Tools</p>
                 </TooltipContent>
             </Tooltip>
-        )}
         
         <AnimatePresence>
             {isOpen && (
                  <motion.div
                     className="flex items-center gap-1"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1, transition: { delay: 0.1 } }}
-                    exit={{ opacity: 0 }}
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto', transition: { delay: 0.1 } }}
+                    exit={{ opacity: 0, width: 0 }}
                  >
                     {smartTools.map((tool) => (
                         <Tooltip key={tool.name} delayDuration={300}>

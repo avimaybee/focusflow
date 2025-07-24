@@ -284,7 +284,7 @@ const ChatSidebarComponent = ({
                           'flex w-full items-center font-normal py-2 px-3 rounded-lg cursor-pointer text-foreground transition-all duration-200 transform group/item',
                           activeChatId === chat.id 
                             ? 'bg-muted ring-1 ring-primary/20' 
-                            : 'hover:bg-muted/80 hover:scale-[1.02]',
+                            : 'hover:bg-muted/80',
                           isCollapsed ? 'justify-center items-center h-10 w-10 p-0 flex items-center justify-center' : 'justify-between gap-3'
                         )}
                         onClick={() => {
@@ -302,7 +302,7 @@ const ChatSidebarComponent = ({
                           <Button
                               variant="ghost"
                               size="icon"
-                              className="h-6 w-6 shrink-0 opacity-0 group-hover/item:opacity-100"
+                              className="h-6 w-6 shrink-0"
                               onClick={(e) => {
                                   e.stopPropagation();
                                   onDeleteChat(chat.id);
