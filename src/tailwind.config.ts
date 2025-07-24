@@ -144,6 +144,15 @@ const config = {
             '--tw-prose-invert-pre-bg': theme('colors.muted.DEFAULT'),
             '--tw-prose-invert-th-borders': theme('colors.border'),
             '--tw-prose-invert-td-borders': theme('colors.border'),
+             'p': {
+              lineHeight: '1.4',
+            },
+            'ul': {
+              lineHeight: '1.4',
+            },
+            'ol': {
+              lineHeight: '1.4',
+            },
           },
         },
       }),
