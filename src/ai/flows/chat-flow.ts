@@ -258,43 +258,41 @@ const chatFlow = ai.defineFlow(
     let structuredOutput: { flashcards?: any; quiz?: any } = {};
     let finalResponseText = result.text;
 
-    if (result.history && result.history.length > 0) {
-      const lastMessage = result.history[result.history.length - 1];
-      if (lastMessage.role === 'model' && lastMessage.toolCalls && lastMessage.toolCalls.length > 0) {
-        for (const toolCall of lastMessage.toolCalls) {
-          if (toolCall.output) {
-              if (!isGuest) {
-                 await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
-              }
+    const lastMessage = result.history.slice().reverse().find(m => m.role === 'model');
+    if (lastMessage?.toolCalls && lastMessage.toolCalls.length > 0) {
+      for (const toolCall of lastMessage.toolCalls) {
+        if (toolCall.output) {
+            if (!isGuest) {
+               await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
+            }
 
-              // Handle specific tool outputs for direct UI rendering
-              if (toolCall.name === 'createFlashcardsTool') {
-                structuredOutput.flashcards = (toolCall.output as any).flashcards;
-              } else if (toolCall.name === 'createQuizTool') {
-                structuredOutput.quiz = (toolCall.output as any).quiz;
+            // Handle tools that render custom UI components
+            if (toolCall.name === 'createFlashcardsTool') {
+              structuredOutput.flashcards = (toolCall.output as any).flashcards;
+              finalResponseText = ''; // Clear text to only show the component
+            } else if (toolCall.name === 'createQuizTool') {
+              structuredOutput.quiz = (toolCall.output as any).quiz;
+              finalResponseText = ''; // Clear text to only show the component
+            } else {
+              // For all other tools, format the output as a readable string
+              if (toolCall.name === 'highlightKeyInsightsTool') {
+                  const insights = (toolCall.output as { insights: string[] }).insights;
+                  finalResponseText = `Here are the key insights from the text:\n\n- ${insights.join('\n- ')}`;
               } else {
-                // For other tools, format the output as a readable string
-                // This prevents empty messages by ensuring there's always text content.
-                finalResponseText = `Here's what I found:\n\n${JSON.stringify(toolCall.output, null, 2)}`;
-                if (toolCall.name === 'highlightKeyInsightsTool') {
-                    const insights = (toolCall.output as { insights: string[] }).insights;
-                    finalResponseText = `Here are the key insights I found:\n\n- ${insights.join('\n- ')}`;
-                }
+                  // Generic fallback to present the tool's output data clearly.
+                  finalResponseText = `Here's what I came up with:\n\n\`\`\`json\n${JSON.stringify(toolCall.output, null, 2)}\n\`\`\``;
               }
-          }
+            }
         }
       }
     }
 
     // Add source and confidence to the last model message
-    if (result.history) {
-        const lastModelMessage = result.history.slice().reverse().find(m => m.role === 'model');
-        if (lastModelMessage) {
-            lastModelMessage.data = {
-                ...lastModelMessage.data,
-                persona,
-            };
-        }
+    if (lastMessage) {
+        lastMessage.data = {
+            ...lastMessage.data,
+            persona,
+        };
     }
     
     return {
