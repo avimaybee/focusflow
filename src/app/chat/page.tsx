@@ -462,7 +462,7 @@ export default function ChatPage() {
 
       {/* Mobile Notes Bottom Sheet */}
       {isMobile && (
-        <Sheet open={isContextHubOpen} onOpenChange={toggleContextHub}>
+        <Sheet open={isContextHubOpen} onOpenChange={baseToggleContextHub}>
             <SheetContent side="bottom" className="h-[60dvh] flex flex-col p-0">
                 <ContextHub />
             </SheetContent>
@@ -471,5 +471,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    

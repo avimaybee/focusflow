@@ -4,7 +4,7 @@
 import React from 'react';
 import { Menu, Notebook } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useContextHubStore } from '@/stores/use-context-hub-store';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface ChatHeaderProps {
   personaName: string;
@@ -33,9 +33,21 @@ const ChatHeaderComponent = ({
         </Button>
         <div>
           <h2 className="text-lg font-semibold text-foreground">Chat</h2>
-          <p className="text-sm text-muted-foreground -mt-1">
-            with {personaName}
-          </p>
+          <div className="text-sm text-muted-foreground -mt-1 flex items-center gap-1.5">
+            with
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={personaName}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="font-medium text-foreground"
+              >
+                {personaName}
+              </motion.span>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
       <div className="flex items-center gap-2">
