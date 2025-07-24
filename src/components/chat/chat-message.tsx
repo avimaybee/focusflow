@@ -190,7 +190,7 @@ export function ChatMessage({
   const avatar = (
     <Avatar
       className={cn(
-        'h-9 w-9',
+        'h-8 w-8',
         !isFirstInGroup && 'opacity-0',
         isUser ? '' : 'bg-accent/50 text-accent-foreground border border-accent'
       )}
@@ -239,7 +239,7 @@ export function ChatMessage({
           ref={contentRef}
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'relative max-w-full sm:max-w-xl p-2 text-sm shadow-sm prose-styles',
+            'relative max-w-full sm:max-w-xl p-3 text-sm shadow-sm prose-styles',
             'rounded-xl',
             isUser
               ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
@@ -328,5 +328,3 @@ export function ChatMessage({
     </motion.div>
   );
 }
-
-    
