@@ -219,83 +219,6 @@ const personaIcons: { [key: string]: React.ElementType } = {
 };
 
 // Sub-Components
-
-interface SuggestedActionsProps {
-  chatId: string;
-  onSelectAction: (action: string) => void;
-  selectedVisibilityType: VisibilityType;
-}
-
-function PureSuggestedActions({
-  onSelectAction,
-}: SuggestedActionsProps) {
-  const suggestedActions = [
-    {
-      title: 'How can I improve',
-      label: 'my time management skills?',
-      action: 'How can I improve my time management skills?',
-    },
-    {
-      title: 'Suggest ideas for',
-      label: 'a creative writing project',
-      action: 'Suggest ideas for a creative writing project',
-    },
-    {
-      title: 'What are some tips',
-      label: 'for staying motivated?',
-      action: 'What are some tips for staying motivated?',
-    },
-    {
-      title: 'Help me brainstorm',
-      label: 'ideas for a new hobby',
-      action: 'Help me brainstorm ideas for a new hobby',
-    },
-  ];
-
-  return (
-    <div
-      data-testid="suggested-actions"
-      className="grid pb-2 sm:grid-cols-2 gap-2 w-full"
-    >
-      <AnimatePresence>
-      {suggestedActions.map((suggestedAction, index) => (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          transition={{ delay: 0.05 * index }}
-          key={`suggested-action-${index}`}
-          className={index > 1 ? 'hidden sm:block' : 'block'}
-        >
-          <Button
-            variant="outline"
-            onClick={() => onSelectAction(suggestedAction.action)}
-            className="text-left border rounded-2xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start
-                       border-border bg-background hover:bg-muted text-foreground hover:text-foreground"
-          >
-            <span className="font-medium">{suggestedAction.title}</span>
-            <span className="text-muted-foreground">
-              {suggestedAction.label}
-            </span>
-          </Button>
-        </motion.div>
-      ))}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-const SuggestedActions = memo(
-  PureSuggestedActions,
-  (prevProps, nextProps) => {
-    if (prevProps.chatId !== nextProps.chatId) return false;
-    if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
-      return false;
-    return true;
-  },
-);
-
-
 const PreviewAttachment = ({
   attachment,
   isUploading = false,
@@ -635,31 +558,6 @@ function PureMultimodalInput({
   return (
     <div className={cn("relative w-full flex flex-col gap-4", className)}>
 
-      <AnimatePresence>
-       {showSuggestedActions && (
-         <motion.div
-            key="suggested-actions-container"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.2 }}
-         >
-            <SuggestedActions
-              onSelectAction={(action) => {
-                setInput(action);
-                requestAnimationFrame(() => {
-                     adjustHeight();
-                     textareaRef.current?.focus();
-                });
-             }}
-              chatId={chatId}
-              selectedVisibilityType={selectedVisibilityType}
-            />
-         </motion.div>
-       )}
-      </AnimatePresence>
-
-
       {/* Hidden file input */}
       <input
         type="file"
@@ -824,3 +722,5 @@ function PureMultimodalInput({
 }
 
 export { PureMultimodalInput as MultimodalInput };
+
+    
