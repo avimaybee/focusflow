@@ -161,7 +161,7 @@ const UserMenu = ({ user, isCollapsed }: { user: FirebaseUser | null, isCollapse
   if (!user) {
     return (
       <Button variant="ghost" className={cn("w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50", isCollapsed && "w-10 h-10 p-0 flex items-center justify-center")} onClick={() => authModal.onOpen('login')}>
-        <Avatar className="h-8 w-8">
+        <Avatar className="h-10 w-10">
             <AvatarFallback><User /></AvatarFallback>
         </Avatar>
         <div className={cn("text-left", isCollapsed && "hidden")}>
@@ -180,14 +180,14 @@ const UserMenu = ({ user, isCollapsed }: { user: FirebaseUser | null, isCollapse
             className={cn("w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50", isCollapsed && "w-10 h-10 p-0 flex items-center justify-center")}
           >
             <div className="relative">
-              <Avatar className="h-8 w-8">
+              <Avatar className="h-10 w-10">
                 <AvatarImage
                   src={user?.photoURL || undefined}
                   data-ai-hint="person"
                 />
                 <AvatarFallback>{initial}</AvatarFallback>
               </Avatar>
-              <span className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-500 ring-2 ring-secondary" />
+              <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-secondary" />
             </div>
             <div
               className={cn('text-left transition-opacity duration-200', isCollapsed && "opacity-0 hidden")}

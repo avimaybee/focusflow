@@ -190,7 +190,7 @@ export function ChatMessage({
   const avatar = (
     <Avatar
       className={cn(
-        'h-8 w-8',
+        'h-9 w-9',
         !isFirstInGroup && 'opacity-0',
         isUser ? '' : 'bg-accent/50 text-accent-foreground border border-accent'
       )}
