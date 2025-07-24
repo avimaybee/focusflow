@@ -27,10 +27,7 @@ const ChatHeaderComponent = ({
           variant="ghost"
           size="icon"
           className="md:hidden"
-          onClick={() => {
-            console.log("Sidebar toggle clicked");
-            onSidebarToggle();
-          }}
+          onClick={onSidebarToggle}
         >
           <Menu className="h-5 w-5" />
         </Button>
@@ -43,10 +40,7 @@ const ChatHeaderComponent = ({
       </div>
       <div className="flex items-center gap-2">
         {isLoggedIn && (
-          <Button variant="ghost" size="icon" onClick={() => {
-            console.log("Notes toggle clicked");
-            onNotesToggle();
-          }}>
+          <Button variant="ghost" size="icon" onClick={onNotesToggle}>
             <Notebook className="h-5 w-5" />
           </Button>
         )}
