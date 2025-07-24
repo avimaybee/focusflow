@@ -137,7 +137,7 @@ export function ChatMessage({
       return <QuizViewer quiz={quiz} />;
     }
     return (
-      <div className="prose-styles prose-sm">
+      <div className="prose-styles prose-sm leading-relaxed">
         {typeof text === 'string' ? (
           <MarkdownRenderer
             content={text}
@@ -237,7 +237,7 @@ export function ChatMessage({
         <div
           ref={contentRef}
           className={cn(
-            'relative max-w-full sm:max-w-xl p-3 text-sm shadow-sm leading-relaxed',
+            'relative max-w-full sm:max-w-xl p-3 text-base shadow-sm',
             'rounded-xl',
             isUser
               ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
