@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Logo } from '@/components/logo';
@@ -15,13 +14,6 @@ const genericPrompts = [
   'Help me brainstorm ideas for my essay on climate change',
   'Can you explain quantum computing in simple terms?',
 ];
-
-// TODO: Replace with real data from the backend
-const personalizedPrompts = [
-    'Create flashcards from my "Photosynthesis" summary',
-    'Quiz me on "The Roman Empire"',
-    'Continue my study plan for "Calculus II"',
-]
 
 const PromptList = ({ title, prompts, onSelectPrompt, icon: Icon }: { title: string, prompts: string[], onSelectPrompt: (prompt: string) => void, icon: React.ElementType }) => (
     <div>
@@ -61,12 +53,6 @@ export function WelcomeScreen({ onSelectPrompt }: WelcomeScreenProps) {
         </p>
         
         <div className="mt-4 space-y-6">
-            <PromptList 
-                title="For You"
-                prompts={personalizedPrompts}
-                onSelectPrompt={onSelectPrompt}
-                icon={BrainCircuit}
-            />
             <PromptList 
                 title="Suggested Starters"
                 prompts={genericPrompts}
