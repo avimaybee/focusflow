@@ -62,9 +62,29 @@ export default function ChatPage() {
 
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
   const { chatHistory, isLoading: isHistoryLoading, forceRefresh } = useChatHistory();
-  const { isContextHubOpen, toggleContextHub, closeContextHub } = useContextHubStore();
+  const { isContextHubOpen, toggleContextHub: baseToggleContextHub, closeContextHub } = useContextHubStore();
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleSetSidebarOpen = (isOpen: boolean) => {
+    setSidebarOpen(isOpen);
+    if (!isOpen) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  };
+
+  const toggleContextHub = () => {
+    const willBeOpen = !isContextHubOpen;
+    baseToggleContextHub();
+    if (!willBeOpen) {
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 100);
+    }
+  };
 
   useEffect(() => {
     const chatIdFromUrl = params.chatId as string | undefined;
@@ -316,7 +336,7 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen bg-gradient-to-br from-background via-background to-secondary/30 text-foreground">
       {isMobile && (
-          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <Sheet open={sidebarOpen} onOpenChange={handleSetSidebarOpen}>
             <SheetContent side="left" className="p-0 w-80">
               <ChatSidebar
                 user={user}
@@ -330,7 +350,7 @@ export default function ChatPage() {
                 onDeleteChat={handleDeleteChat}
                 isLoading={isHistoryLoading}
                 isCollapsed={false}
-                onToggle={() => setSidebarOpen(false)}
+                onToggle={() => handleSetSidebarOpen(false)}
               />
             </SheetContent>
           </Sheet>
@@ -353,9 +373,9 @@ export default function ChatPage() {
       <main className="flex-1 flex flex-col h-screen min-w-0">
         <ChatHeader
           personaName={selectedPersona?.name || 'Default'}
-          onSidebarToggle={() => setSidebarOpen((prev) => !prev)}
-          onNotesToggle={toggleContextHub}
+          onSidebarToggle={() => handleSetSidebarOpen(true)}
           isLoggedIn={!!user}
+          onNotesToggle={toggleContextHub}
         />
         
         <AnnouncementBanner />
@@ -376,6 +396,7 @@ export default function ChatPage() {
         <div className="w-full bg-background/50 backdrop-blur-sm sticky bottom-0">
             <div className="w-full sm:max-w-3xl mx-auto px-4 pb-4">
               <MultimodalInput
+                ref={inputRef}
                 chatId={activeChatId || 'new'}
                 messages={messages.map(msg => ({ id: msg.id || '', content: msg.rawText || '', role: msg.role }))}
                 attachments={attachments}

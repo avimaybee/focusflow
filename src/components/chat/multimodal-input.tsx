@@ -376,351 +376,354 @@ interface MultimodalInputProps {
   setSelectedPersonaId: (id: string) => void;
 }
 
-function PureMultimodalInput({
-  chatId,
-  messages,
-  attachments,
-  setAttachments,
-  onSendMessage,
-  onStopGenerating,
-  isGenerating,
-  canSend,
-  className,
-  selectedVisibilityType,
-  personas,
-  selectedPersonaId,
-  setSelectedPersonaId,
-}: MultimodalInputProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [input, setInput] = useState('');
-  const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
-  const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
-
-  const adjustHeight = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight + 2}px`;
-    }
-  };
-
-  const resetHeight = useCallback(() => {
-     const textarea = textareaRef.current;
-      if (textarea) {
-          textarea.style.height = 'auto';
-          textarea.rows = 1;
-          adjustHeight();
-      }
-  }, []);
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      adjustHeight();
-    }
-  }, [input]); // Depend only on input
-
-  const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(event.target.value);
-  };
-
-  // Placeholder File Upload Function
-  const uploadFile = async (file: File): Promise<Attachment | undefined> => {
-    console.log(`MOCK: Simulating upload for file: ${file.name}`);
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        try {
-          // Use URL.createObjectURL for client-side preview. Remember to revoke!
-          const mockUrl = URL.createObjectURL(file);
-          const mockAttachment: Attachment = {
-            url: mockUrl,
-            name: file.name,
-            contentType: file.type || 'application/octet-stream',
-            size: file.size,
-          };
-          console.log(`MOCK: Upload successful for ${file.name}`);
-          resolve(mockAttachment);
-        } catch (error) {
-          console.error('MOCK: Failed to create object URL for preview:', error);
-          resolve(undefined);
-        } finally {
-           // Remove file name from upload queue
-           setUploadQueue(currentQueue => currentQueue.filter(name => name !== file.name));
-        }
-      }, 700); // Simulate delay
-    });
-  };
-
-  const handleFileChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      console.log('handleFileChange triggered');
-      const files = Array.from(event.target.files || []);
-      if (files.length === 0) {
-        console.log('No files selected.');
-        return;
-      }
-
-      console.log(`Selected files: ${files.map(f => f.name).join(', ')}`);
-
-      // Add files to upload queue immediately by name
-      setUploadQueue(currentQueue => [...currentQueue, ...files.map((file) => file.name)]);
-
-      // Clear the file input value to allow selecting the same file again
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-
-      const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
-      const validFiles = files.filter(file => file.size <= MAX_FILE_SIZE);
-      const invalidFiles = files.filter(file => file.size > MAX_FILE_SIZE);
-
-      if (invalidFiles.length > 0) {
-         console.warn(`Skipped ${invalidFiles.length} files larger than ${MAX_FILE_SIZE / 1024 / 1024}MB.`);
-         // Also remove invalid files from the upload queue
-         setUploadQueue(currentQueue => currentQueue.filter(name => !invalidFiles.some(f => f.name === name)));
-      }
-
-      // Start uploads for valid files
-      const uploadPromises = validFiles.map((file) => uploadFile(file));
-      const uploadedAttachments = await Promise.all(uploadPromises);
-
-      const successfullyUploadedAttachments = uploadedAttachments.filter(
-        (attachment): attachment is Attachment => attachment !== undefined,
-      );
-
-      console.log(`Successfully uploaded: ${successfullyUploadedAttachments.length} attachments`);
-      // Add successfully uploaded attachments to the main attachments list
-      setAttachments((currentAttachments) => [
-        ...currentAttachments,
-        ...successfullyUploadedAttachments,
-      ]);
-
-    },
-    [setAttachments],
-  );
-
-  const handleRemoveAttachment = useCallback(
-    (attachmentToRemove: Attachment) => {
-      console.log(`Removing attachment: ${attachmentToRemove.name}`);
-      // Revoke the object URL
-      if (attachmentToRemove.url.startsWith('blob:')) {
-         URL.revokeObjectURL(attachmentToRemove.url);
-      }
-      // Filter out the attachment
-      setAttachments((currentAttachments) =>
-        currentAttachments.filter(
-          (attachment) => attachment.url !== attachmentToRemove.url || attachment.name !== attachmentToRemove.name
-        )
-      );
-      // Focus the textarea
-      textareaRef.current?.focus();
-    },
-    [setAttachments, textareaRef]
-  );
-
-  const submitForm = useCallback(() => {
-     if (input.trim().length === 0 && attachments.length === 0) {
-        console.warn('Please enter a message or add an attachment.');
-        return;
-     }
-
-    console.log('Submitting form...');
-    onSendMessage({ input, attachments });
-
-    // Clear input and attachments
-    setInput('');
-    setAttachments([]);
-
-    // Revoke object URLs for sent attachments
-    attachments.forEach(att => {
-        if (att.url.startsWith('blob:')) {
-            URL.revokeObjectURL(att.url);
-        }
-    });
-
-    resetHeight();
-    textareaRef.current?.focus();
-
-  }, [
-    input,
+const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInputProps>(
+  ({
+    chatId,
+    messages,
     attachments,
-    onSendMessage,
     setAttachments,
-    textareaRef,
-    resetHeight,
-  ]);
+    onSendMessage,
+    onStopGenerating,
+    isGenerating,
+    canSend,
+    className,
+    selectedVisibilityType,
+    personas,
+    selectedPersonaId,
+    setSelectedPersonaId,
+  }, ref) => {
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const showSuggestedActions = messages.length === 0 && attachments.length === 0 && uploadQueue.length === 0;
+    const [input, setInput] = useState('');
+    const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
+    const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
 
-  const isAttachmentDisabled = isGenerating || uploadQueue.length > 0;
+    React.useImperativeHandle(ref, () => textareaRef.current!);
 
-  return (
-    <div className={cn("relative w-full flex flex-col gap-4", className)}>
+    const adjustHeight = () => {
+      const textarea = textareaRef.current;
+      if (textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = `${textarea.scrollHeight + 2}px`;
+      }
+    };
 
-      {/* Hidden file input */}
-      <input
-        type="file"
-        className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
-        ref={fileInputRef}
-        multiple
-        onChange={handleFileChange}
-        tabIndex={-1}
-        disabled={isAttachmentDisabled}
-        accept="image/*,video/*,audio/*,.pdf" // Example mime types
-      />
+    const resetHeight = useCallback(() => {
+      const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = 'auto';
+            textarea.rows = 1;
+            adjustHeight();
+        }
+    }, []);
 
-      {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div
-          data-testid="attachments-preview"
-          className="flex pt-[10px] flex-row gap-3 overflow-x-auto items-end pb-2 pl-1"
-        >
-          {attachments.map((attachment) => (
-            <div key={attachment.url || attachment.name} className="relative group">
-                <PreviewAttachment attachment={attachment} isUploading={false} />
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-[-8px] right-[-8px] h-5 w-5 rounded-full p-0 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => handleRemoveAttachment(attachment)}
-                  aria-label={`Remove ${attachment.name}`}
-                >
-                   <XIcon className="size-3" />
-                </Button>
-            </div>
-          ))}
-          {uploadQueue.map((filename, index) => (
-            <PreviewAttachment
-              key={`upload-${filename}-${index}`}
-              attachment={{ url: '', name: filename, contentType: '', size: 0 }}
-              isUploading={true}
-            />
-          ))}
-        </div>
-      )}
+    useEffect(() => {
+      if (textareaRef.current) {
+        adjustHeight();
+      }
+    }, [input]); // Depend only on input
 
-      <div className="relative flex items-end rounded-2xl border border-input bg-background shadow-lg p-3">
-        {/* Persona Selector */}
-        <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted"
-            >
-              <Users className="h-5 w-5" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-[340px] p-0 mb-2">
-            <Command>
-              <CommandInput placeholder="Select a persona..." />
-              <CommandList>
-                <CommandEmpty>No persona found.</CommandEmpty>
-                <CommandGroup>
-                  {personas.map((p) => {
-                    const Icon = personaIcons[p.id] || Bot;
-                    return (
-                      <CommandItem
-                        key={p.id}
-                        value={p.id}
-                        onSelect={() => {
-                          setSelectedPersonaId(p.id);
-                          setPersonaMenuOpen(false);
-                        }}
-                        className="group flex items-start gap-3 cursor-pointer py-2.5"
-                      >
-                        <Icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
-                        <div className="text-left flex-1">
-                          <p className="font-semibold text-sm">
-                            {p.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground group-hover:text-accent-foreground/80">
-                            {p.description}
-                          </p>
-                        </div>
-                        {selectedPersonaId === p.id && (
-                          <Check className="h-4 w-4 mr-2 opacity-100" />
-                        )}
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+    const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setInput(event.target.value);
+    };
 
-        {/* Attachment Button */}
-        <Button
-          asChild
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:bg-muted"
-        >
-          <label>
-            <PaperclipIcon size={14} />
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              accept="image/*,application/pdf,text/*"
-            />
-          </label>
-        </Button>
+    // Placeholder File Upload Function
+    const uploadFile = async (file: File): Promise<Attachment | undefined> => {
+      console.log(`MOCK: Simulating upload for file: ${file.name}`);
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          try {
+            // Use URL.createObjectURL for client-side preview. Remember to revoke!
+            const mockUrl = URL.createObjectURL(file);
+            const mockAttachment: Attachment = {
+              url: mockUrl,
+              name: file.name,
+              contentType: file.type || 'application/octet-stream',
+              size: file.size,
+            };
+            console.log(`MOCK: Upload successful for ${file.name}`);
+            resolve(mockAttachment);
+          } catch (error) {
+            console.error('MOCK: Failed to create object URL for preview:', error);
+            resolve(undefined);
+          } finally {
+            // Remove file name from upload queue
+            setUploadQueue(currentQueue => currentQueue.filter(name => name !== file.name));
+          }
+        }, 700); // Simulate delay
+      });
+    };
 
-        {/* Textarea */}
-        <Textarea
-          data-testid="multimodal-input"
-          ref={textareaRef}
-          placeholder="Send a message..."
-          value={input}
-          onChange={handleInput}
-          className={cn(
-            'min-h-[24px] max-h-[calc(75dvh)] overflow-y-auto resize-none rounded-2xl !text-base pb-10',
-            'bg-background border-none', // Removed border and background from Textarea itself
-            className,
-          )}
-          rows={1}
-          autoFocus
-          disabled={!canSend || isGenerating || uploadQueue.length > 0}
-          onKeyDown={(event) => {
-            if (
-              event.key === 'Enter' &&
-              !event.shiftKey &&
-              !event.nativeEvent.isComposing
-            ) {
-              event.preventDefault();
+    const handleFileChange = useCallback(
+      async (event: ChangeEvent<HTMLInputElement>) => {
+        console.log('handleFileChange triggered');
+        const files = Array.from(event.target.files || []);
+        if (files.length === 0) {
+          console.log('No files selected.');
+          return;
+        }
 
-              const canSubmit = canSend && !isGenerating && uploadQueue.length === 0 && (input.trim().length > 0 || attachments.length > 0);
+        console.log(`Selected files: ${files.map(f => f.name).join(', ')}`);
 
-              if (canSubmit) {
-                submitForm();
-              }
-            }
-          }}
+        // Add files to upload queue immediately by name
+        setUploadQueue(currentQueue => [...currentQueue, ...files.map((file) => file.name)]);
+
+        // Clear the file input value to allow selecting the same file again
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+
+        const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
+        const validFiles = files.filter(file => file.size <= MAX_FILE_SIZE);
+        const invalidFiles = files.filter(file => file.size > MAX_FILE_SIZE);
+
+        if (invalidFiles.length > 0) {
+          console.warn(`Skipped ${invalidFiles.length} files larger than ${MAX_FILE_SIZE / 1024 / 1024}MB.`);
+          // Also remove invalid files from the upload queue
+          setUploadQueue(currentQueue => currentQueue.filter(name => !invalidFiles.some(f => f.name === name)));
+        }
+
+        // Start uploads for valid files
+        const uploadPromises = validFiles.map((file) => uploadFile(file));
+        const uploadedAttachments = await Promise.all(uploadPromises);
+
+        const successfullyUploadedAttachments = uploadedAttachments.filter(
+          (attachment): attachment is Attachment => attachment !== undefined,
+        );
+
+        console.log(`Successfully uploaded: ${successfullyUploadedAttachments.length} attachments`);
+        // Add successfully uploaded attachments to the main attachments list
+        setAttachments((currentAttachments) => [
+          ...currentAttachments,
+          ...successfullyUploadedAttachments,
+        ]);
+
+      },
+      [setAttachments],
+    );
+
+    const handleRemoveAttachment = useCallback(
+      (attachmentToRemove: Attachment) => {
+        console.log(`Removing attachment: ${attachmentToRemove.name}`);
+        // Revoke the object URL
+        if (attachmentToRemove.url.startsWith('blob:')) {
+          URL.revokeObjectURL(attachmentToRemove.url);
+        }
+        // Filter out the attachment
+        setAttachments((currentAttachments) =>
+          currentAttachments.filter(
+            (attachment) => attachment.url !== attachmentToRemove.url || attachment.name !== attachmentToRemove.name
+          )
+        );
+        // Focus the textarea
+        textareaRef.current?.focus();
+      },
+      [setAttachments, textareaRef]
+    );
+
+    const submitForm = useCallback(() => {
+      if (input.trim().length === 0 && attachments.length === 0) {
+          console.warn('Please enter a message or add an attachment.');
+          return;
+      }
+
+      console.log('Submitting form...');
+      onSendMessage({ input, attachments });
+
+      // Clear input and attachments
+      setInput('');
+      setAttachments([]);
+
+      // Revoke object URLs for sent attachments
+      attachments.forEach(att => {
+          if (att.url.startsWith('blob:')) {
+              URL.revokeObjectURL(att.url);
+          }
+      });
+
+      resetHeight();
+      textareaRef.current?.focus();
+
+    }, [
+      input,
+      attachments,
+      onSendMessage,
+      setAttachments,
+      textareaRef,
+      resetHeight,
+    ]);
+
+    const showSuggestedActions = messages.length === 0 && attachments.length === 0 && uploadQueue.length === 0;
+
+    const isAttachmentDisabled = isGenerating || uploadQueue.length > 0;
+
+    return (
+      <div className={cn("relative w-full flex flex-col gap-4", className)}>
+
+        {/* Hidden file input */}
+        <input
+          type="file"
+          className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
+          ref={fileInputRef}
+          multiple
+          onChange={handleFileChange}
+          tabIndex={-1}
+          disabled={isAttachmentDisabled}
+          accept="image/*,video/*,audio/*,.pdf" // Example mime types
         />
 
-        {/* Send/Stop Button */}
-        <div className="absolute bottom-3 right-3">
-          {isGenerating ? (
-            <StopButton onStop={onStopGenerating} />
-          ) : (
-            <SendButton
-              submitForm={submitForm}
-              input={input}
-              uploadQueue={uploadQueue}
-              attachments={attachments}
-              canSend={canSend}
-              isGenerating={isGenerating}
-            />
-          )}
+        {(attachments.length > 0 || uploadQueue.length > 0) && (
+          <div
+            data-testid="attachments-preview"
+            className="flex pt-[10px] flex-row gap-3 overflow-x-auto items-end pb-2 pl-1"
+          >
+            {attachments.map((attachment) => (
+              <div key={attachment.url || attachment.name} className="relative group">
+                  <PreviewAttachment attachment={attachment} isUploading={false} />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-[-8px] right-[-8px] h-5 w-5 rounded-full p-0 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => handleRemoveAttachment(attachment)}
+                    aria-label={`Remove ${attachment.name}`}
+                  >
+                    <XIcon className="size-3" />
+                  </Button>
+              </div>
+            ))}
+            {uploadQueue.map((filename, index) => (
+              <PreviewAttachment
+                key={`upload-${filename}-${index}`}
+                attachment={{ url: '', name: filename, contentType: '', size: 0 }}
+                isUploading={true}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="relative flex items-end rounded-2xl border border-input bg-background shadow-lg p-3">
+          {/* Persona Selector */}
+          <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted"
+              >
+                <Users className="h-5 w-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-[340px] p-0 mb-2">
+              <Command>
+                <CommandInput placeholder="Select a persona..." />
+                <CommandList>
+                  <CommandEmpty>No persona found.</CommandEmpty>
+                  <CommandGroup>
+                    {personas.map((p) => {
+                      const Icon = personaIcons[p.id] || Bot;
+                      return (
+                        <CommandItem
+                          key={p.id}
+                          value={p.id}
+                          onSelect={() => {
+                            setSelectedPersonaId(p.id);
+                            setPersonaMenuOpen(false);
+                          }}
+                          className="group flex items-start gap-3 cursor-pointer py-2.5"
+                        >
+                          <Icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
+                          <div className="text-left flex-1">
+                            <p className="font-semibold text-sm">
+                              {p.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground group-hover:text-accent-foreground/80">
+                              {p.description}
+                            </p>
+                          </div>
+                          {selectedPersonaId === p.id && (
+                            <Check className="h-4 w-4 mr-2 opacity-100" />
+                          )}
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
+          {/* Attachment Button */}
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:bg-muted"
+          >
+            <label>
+              <PaperclipIcon size={14} />
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/*,application/pdf,text/*"
+              />
+            </label>
+          </Button>
+
+          {/* Textarea */}
+          <Textarea
+            data-testid="multimodal-input"
+            ref={textareaRef}
+            placeholder="Send a message..."
+            value={input}
+            onChange={handleInput}
+            className={cn(
+              'min-h-[24px] max-h-[calc(75dvh)] overflow-y-auto resize-none rounded-2xl !text-base pb-10',
+              'bg-background border-none', // Removed border and background from Textarea itself
+              className,
+            )}
+            rows={1}
+            autoFocus
+            disabled={!canSend || isGenerating || uploadQueue.length > 0}
+            onKeyDown={(event) => {
+              if (
+                event.key === 'Enter' &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
+              ) {
+                event.preventDefault();
+
+                const canSubmit = canSend && !isGenerating && uploadQueue.length === 0 && (input.trim().length > 0 || attachments.length > 0);
+
+                if (canSubmit) {
+                  submitForm();
+                }
+              }
+            }}
+          />
+
+          {/* Send/Stop Button */}
+          <div className="absolute bottom-3 right-3">
+            {isGenerating ? (
+              <StopButton onStop={onStopGenerating} />
+            ) : (
+              <SendButton
+                submitForm={submitForm}
+                input={input}
+                uploadQueue={uploadQueue}
+                attachments={attachments}
+                canSend={canSend}
+                isGenerating={isGenerating}
+              />
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+);
+PureMultimodalInput.displayName = 'PureMultimodalInput';
 
 export { PureMultimodalInput as MultimodalInput };
-
-    
