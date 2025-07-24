@@ -56,7 +56,7 @@ export function SmartToolsMenu({ onAction }: SmartToolsMenuProps) {
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         className={cn(
             "flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border",
-            isOpen ? "w-auto" : "w-auto" // let width be determined by content
+            isOpen ? "w-auto" : "w-auto"
         )}
         onMouseLeave={() => setIsOpen(false)}
         role="toolbar"
@@ -114,3 +114,5 @@ export function SmartToolsMenu({ onAction }: SmartToolsMenuProps) {
     </TooltipProvider>
   );
 }
+
+    

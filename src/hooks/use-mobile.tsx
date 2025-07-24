@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 
-const MOBILE_BREAKPOINT = 1024; // lg breakpoint in Tailwind
+const MOBILE_BREAKPOINT = 768; // md breakpoint in Tailwind
 
 export function useIsMobile(): boolean {
   const [isMobile, setIsMobile] = useState(false); // Default to false for SSR
@@ -22,3 +22,5 @@ export function useIsMobile(): boolean {
 
   return isMobile;
 }
+
+    
