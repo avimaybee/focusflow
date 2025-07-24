@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
@@ -206,7 +206,7 @@ const UserMenu = ({ user, isCollapsed }: { user: FirebaseUser | null, isCollapse
   );
 };
 
-export function ChatSidebar({
+const ChatSidebarComponent = ({
   user,
   chatHistory,
   activeChatId,
@@ -216,7 +216,7 @@ export function ChatSidebar({
   isLoading,
   isCollapsed,
   onToggle,
-}: ChatSidebarProps) {
+}: ChatSidebarProps) => {
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -358,3 +358,5 @@ export function ChatSidebar({
     </TooltipProvider>
   );
 }
+
+export const ChatSidebar = React.memo(ChatSidebarComponent);

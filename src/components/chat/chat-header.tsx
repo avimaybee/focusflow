@@ -1,6 +1,7 @@
 
 'use client';
 
+import React from 'react';
 import { Menu, Notebook } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
@@ -12,12 +13,12 @@ interface ChatHeaderProps {
   onNotesToggle: () => void;
 }
 
-export function ChatHeader({
+const ChatHeaderComponent = ({
   personaName,
   onSidebarToggle,
   isLoggedIn,
   onNotesToggle,
-}: ChatHeaderProps) {
+}: ChatHeaderProps) => {
 
   return (
     <header className="sticky top-0 z-10 h-16 px-4 md:px-6 flex justify-between items-center w-full border-b border-border/60 bg-background/95 backdrop-blur-sm">
@@ -53,3 +54,5 @@ export function ChatHeader({
     </header>
   );
 }
+
+export const ChatHeader = React.memo(ChatHeaderComponent);

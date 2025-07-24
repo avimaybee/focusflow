@@ -60,7 +60,7 @@ export type ChatMessageProps = {
   attachments?: { url: string; name: string; contentType: string; size: number; }[];
 };
 
-export function ChatMessage({
+const ChatMessageComponent = ({
   id,
   role,
   text,
@@ -78,13 +78,13 @@ export function ChatMessage({
   onToolAction,
   onRegenerate,
   attachments,
-}: ChatMessageProps) {
+}: ChatMessageProps) => {
   const isUser = role === 'user';
   const { user } = useAuth();
   const { toast } = useToast();
   const contentRef = React.useRef<HTMLDivElement>(null);
 
-  const handleCopy = () => {
+  const handleCopy = React.useCallback(() => {
     const textToCopy =
       rawText || (typeof text === 'string' ? text.replace(/<[^>]*>/g, '') : '');
     if (textToCopy) {
@@ -94,9 +94,9 @@ export function ChatMessage({
         description: 'The message content has been copied.',
       });
     }
-  };
+  }, [rawText, text, toast]);
 
-  const handleSave = async () => {
+  const handleSave = React.useCallback(async () => {
     if (!user || !rawText) {
       toast({
         variant: 'destructive',
@@ -119,9 +119,9 @@ export function ChatMessage({
         description: 'There was a problem saving your message.',
       });
     }
-  };
+  }, [user, rawText, toast]);
 
-  const handleFeatureAction = (featurePrompt: (text: string) => string) => {
+  const handleFeatureAction = React.useCallback((featurePrompt: (text: string) => string) => {
     if (onToolAction && rawText) {
       const tool: SmartTool = {
         name: 'feature',
@@ -130,7 +130,7 @@ export function ChatMessage({
       };
       onToolAction(tool, rawText);
     }
-  };
+  }, [onToolAction, rawText]);
 
   const renderContent = () => {
     if (flashcards) {
@@ -293,7 +293,7 @@ export function ChatMessage({
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7 rounded-full"
-                                onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`)}
+                                onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${'\'\''}'${text}'\'\''"`)}
                             >
                                 <Album className="h-4 w-4" />
                             </Button>
@@ -306,7 +306,7 @@ export function ChatMessage({
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7 rounded-full"
-                                onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`)}
+                                onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${'\'\''}'${text}'\'\''"`)}
                             >
                                 <HelpCircle className="h-4 w-4" />
                             </Button>
@@ -332,3 +332,5 @@ export function ChatMessage({
     </motion.div>
   );
 }
+
+export const ChatMessage = React.memo(ChatMessageComponent);
