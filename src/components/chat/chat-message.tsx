@@ -239,7 +239,7 @@ export function ChatMessage({
           ref={contentRef}
           style={{ lineHeight: 1.5 }}
           className={cn(
-            'relative max-w-full sm:max-w-xl p-3 text-sm shadow-sm prose-styles',
+            'relative max-w-full sm:max-w-xl p-2 text-sm shadow-sm prose-styles',
             'rounded-xl',
             isUser
               ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
@@ -258,7 +258,7 @@ export function ChatMessage({
                 <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
                     <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleCopy}>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={handleCopy}>
                                 <Copy className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
@@ -267,7 +267,7 @@ export function ChatMessage({
                     {isLastInGroup && onRegenerate && (
                     <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={onRegenerate}>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={onRegenerate}>
                             <RotateCw className="h-4 w-4" />
                         </Button>
                         </TooltipTrigger>
@@ -277,7 +277,7 @@ export function ChatMessage({
                     {user && rawText && (
                     <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleSave}>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={handleSave}>
                             <Save className="h-4 w-4" />
                         </Button>
                         </TooltipTrigger>
@@ -291,7 +291,7 @@ export function ChatMessage({
                             <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 rounded-full"
+                            className="h-6 w-6 rounded-full"
                             onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`)}
                             >
                             <Album className="h-4 w-4" />
@@ -304,7 +304,7 @@ export function ChatMessage({
                             <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 rounded-full"
+                            className="h-6 w-6 rounded-full"
                             onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`)}
                             >
                             <HelpCircle className="h-4 w-4" />

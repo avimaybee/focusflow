@@ -190,7 +190,7 @@ export function ChatMessage({
   const avatar = (
     <Avatar
       className={cn(
-        'h-9 w-9',
+        'h-8 w-8',
         !isFirstInGroup && 'opacity-0',
         isUser ? '' : 'bg-accent/50 text-accent-foreground border border-accent'
       )}
@@ -258,7 +258,7 @@ export function ChatMessage({
                 <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
                     <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleCopy}>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={handleCopy}>
                                 <Copy className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
@@ -267,7 +267,7 @@ export function ChatMessage({
                     {isLastInGroup && onRegenerate && (
                     <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={onRegenerate}>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={onRegenerate}>
                             <RotateCw className="h-4 w-4" />
                         </Button>
                         </TooltipTrigger>
@@ -277,7 +277,7 @@ export function ChatMessage({
                     {user && rawText && (
                     <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={handleSave}>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={handleSave}>
                             <Save className="h-4 w-4" />
                         </Button>
                         </TooltipTrigger>
@@ -291,7 +291,7 @@ export function ChatMessage({
                             <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 rounded-full"
+                            className="h-6 w-6 rounded-full"
                             onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`)}
                             >
                             <Album className="h-4 w-4" />
@@ -304,7 +304,7 @@ export function ChatMessage({
                             <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 rounded-full"
+                            className="h-6 w-6 rounded-full"
                             onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`)}
                             >
                             <HelpCircle className="h-4 w-4" />
