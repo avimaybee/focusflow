@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -140,7 +139,6 @@ export function ChatMessage({
       <>
         {typeof text === 'string' ? (
           <MarkdownRenderer
-            className={cn('prose-styles prose-sm', isError && 'text-destructive')}
             content={text}
           />
         ) : (
@@ -238,7 +236,7 @@ export function ChatMessage({
         <div
           ref={contentRef}
           className={cn(
-            'relative max-w-full sm:max-w-xl px-3 py-2 text-sm shadow-sm prose-styles prose-sm',
+            'relative max-w-full sm:max-w-xl px-3 py-2 text-sm shadow-sm leading-relaxed',
             'rounded-xl',
             isUser
               ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'

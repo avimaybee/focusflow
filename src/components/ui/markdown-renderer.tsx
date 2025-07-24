@@ -2,14 +2,14 @@
 
 import { marked } from 'marked';
 import { CodeBlock } from './code-block';
-import React from 'react';
+import React, { Fragment } from 'react';
 
 interface MarkdownRendererProps {
   content: string;
-  className?: string;
+  className?: string; // className is now unused but kept for API consistency
 }
 
-export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   const tokens = marked.lexer(content);
 
   const renderTokens = (tokens: marked.TokensList) => {
@@ -17,17 +17,12 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
       if (token.type === 'code') {
         return <CodeBlock key={index} language={token.lang || 'plaintext'} code={token.text} />;
       }
-      // For all other token types, we can convert them back to a string
-      // and let React render the HTML. This is a simplification.
-      // A full-featured renderer would handle each token type.
+      // For all other token types, convert them back to a string of HTML
       const html = marked.parser([token]);
-      return <div key={index} dangerouslySetInnerHTML={{ __html: html }} />;
+      // Use a React Fragment to avoid adding a wrapping div
+      return <Fragment key={index}><div dangerouslySetInnerHTML={{ __html: html }} /></Fragment>;
     });
   };
 
-  return (
-    <div className={className}>
-      {renderTokens(tokens)}
-    </div>
-  );
+  return <>{renderTokens(tokens)}</>;
 }
