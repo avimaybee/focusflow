@@ -1,3 +1,4 @@
+
 'use client';
 
 import { marked } from 'marked';
@@ -6,7 +7,6 @@ import React, { Fragment } from 'react';
 
 interface MarkdownRendererProps {
   content: string;
-  className?: string; // className is now unused but kept for API consistency
 }
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
@@ -20,7 +20,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
       // For all other token types, convert them back to a string of HTML
       const html = marked.parser([token]);
       // Use a React Fragment to avoid adding a wrapping div
-      return <Fragment key={index}><div dangerouslySetInnerHTML={{ __html: html }} /></Fragment>;
+      return <div key={index} dangerouslySetInnerHTML={{ __html: html }} />;
     });
   };
 
