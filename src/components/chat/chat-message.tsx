@@ -253,7 +253,7 @@ export function ChatMessage({
           {renderContent()}
         </div>
         {!isUser && !isError && (
-            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="flex items-center gap-1.5 transition-opacity duration-200">
                 <TooltipProvider>
                 <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
                     <Tooltip delayDuration={300}>
@@ -328,3 +328,5 @@ export function ChatMessage({
     </motion.div>
   );
 }
+
+    

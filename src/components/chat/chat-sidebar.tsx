@@ -298,19 +298,17 @@ const ChatSidebarComponent = ({
                                 <p className="truncate text-xs text-muted-foreground">{chat.lastMessagePreview}</p>
                             </div>
                         </div>
-                        {!isCollapsed && (
-                          <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 shrink-0"
-                              onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDeleteChat(chat.id);
-                              }}
-                          >
-                              <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className={cn("h-6 w-6 shrink-0", isCollapsed && "hidden")}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteChat(chat.id);
+                            }}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TooltipTrigger>
                     {isCollapsed && (

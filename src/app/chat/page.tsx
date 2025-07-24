@@ -97,6 +97,14 @@ export default function ChatPage() {
       }
     }
   }, [params.chatId, activeChatId]);
+  
+  useEffect(() => {
+    // This effect syncs the URL with the activeChatId state.
+    // It prevents the race condition that was causing the error message.
+    if (activeChatId && activeChatId !== params.chatId) {
+      router.push(`/chat/${activeChatId}`);
+    }
+  }, [activeChatId, params.chatId, router]);
 
   useEffect(() => {
     if (!user || !activeChatId) {
@@ -186,7 +194,7 @@ export default function ChatPage() {
         await deleteChat(user.uid, chatToDelete);
         forceRefresh();
         if (activeChatId === chatToDelete) {
-            router.push('/chat');
+            handleNewChat();
         }
         toast({
             title: 'Chat Deleted',
@@ -208,7 +216,7 @@ export default function ChatPage() {
   const handleRegenerate = () => {
     const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
     if (lastUserMessage && lastUserMessage.rawText) {
-      setMessages(prev => prev.slice(0, -1));
+      setMessages(prev => prev.filter(m => m.id !== lastUserMessage.id).filter(m => m.role !== 'model'));
       handleSendMessage({ input: lastUserMessage.rawText, attachments: lastUserMessage.attachments || [] });
     } else {
       toast({ variant: 'destructive', title: 'Error', description: 'Could not find a previous prompt to regenerate.' });
@@ -280,7 +288,7 @@ export default function ChatPage() {
       }
       
       if (user && result.sessionId && !activeChatId) {
-        router.push(`/chat/${result.sessionId}`);
+        setActiveChatId(result.sessionId); // This will trigger the useEffect for navigation
         forceRefresh();
       } else if (!user) {
         const modelResponse: ChatMessageProps = {
@@ -345,7 +353,7 @@ export default function ChatPage() {
                 activeChatId={activeChatId}
                 onNewChat={handleNewChat}
                 onChatSelect={(id) => {
-                  router.push(`/chat/${id}`);
+                  setActiveChatId(id);
                   setSidebarOpen(false);
                 }}
                 onDeleteChat={handleDeleteChat}
@@ -363,7 +371,7 @@ export default function ChatPage() {
             chatHistory={chatHistory}
             activeChatId={activeChatId}
             onNewChat={handleNewChat}
-            onChatSelect={(id) => router.push(`/chat/${id}`)}
+            onChatSelect={(id) => setActiveChatId(id)}
             onDeleteChat={handleDeleteChat}
             isLoading={isHistoryLoading}
             isCollapsed={isSidebarCollapsed}
