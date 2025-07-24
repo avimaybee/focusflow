@@ -290,7 +290,7 @@ export function ChatMessage({
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 rounded-full"
-                            onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${text}"`)}
+                            onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${'\'\'\''}${text}${'\'''\'\'}"`)}
                             >
                             <Album className="h-4 w-4" />
                             </Button>
@@ -303,7 +303,7 @@ export function ChatMessage({
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 rounded-full"
-                            onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${text}"`)}
+                            onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${'\'\'\''}${text}${'\'''\'\'}"`)}
                             >
                             <HelpCircle className="h-4 w-4" />
                             </Button>

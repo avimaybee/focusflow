@@ -192,3 +192,9 @@
 .prose-styles > :last-child {
     margin-bottom: 0;
 }
+
+.prose-styles p,
+.prose-styles ul,
+.prose-styles ol {
+    line-height: 1.4;
+}
