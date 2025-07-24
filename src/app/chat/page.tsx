@@ -373,7 +373,7 @@ export default function ChatPage() {
           onRegenerate={handleRegenerate}
         />
 
-        <div className="w-full bg-background/50 backdrop-blur-sm">
+        <div className="w-full bg-background/50 backdrop-blur-sm sticky bottom-0">
             <div className="w-full sm:max-w-3xl mx-auto px-4 pb-4">
               <MultimodalInput
                 chatId={activeChatId || 'new'}
