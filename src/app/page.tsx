@@ -14,6 +14,7 @@ import { FaqSection } from '@/components/landing/faq-section';
 import { LandingPageChatV2 } from '@/components/landing/landing-page-chat-v2';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 import { faqs, testimonials } from '@/lib/landing-page-data';
+import { SocialProofSection } from '@/components/landing/social-proof-section';
 
 export default function LandingPage() {
   const authModal = useAuthModal();
@@ -73,6 +74,10 @@ export default function LandingPage() {
 
           <ScrollReveal yOffset={50}>
             <FeaturesSection />
+          </ScrollReveal>
+          
+          <ScrollReveal yOffset={50} delay={0.1}>
+            <SocialProofSection />
           </ScrollReveal>
 
           <ScrollReveal yOffset={50} delay={0.2}>
