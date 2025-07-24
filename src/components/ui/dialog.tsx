@@ -42,8 +42,8 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
   const onDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const swipeThreshold = 50; // Minimum distance for a swipe
-    const swipeVelocityThreshold = 500; // Minimum velocity for a swipe
+    const swipeThreshold = 50;
+    const swipeVelocityThreshold = 500;
     const onOpenChange = (props as any).onOpenChange;
     if (onOpenChange && info.offset.y > swipeThreshold && info.velocity.y > swipeVelocityThreshold) {
         onOpenChange(false);
