@@ -144,30 +144,27 @@ const config = {
             '--tw-prose-invert-pre-bg': theme('colors.muted.DEFAULT'),
             '--tw-prose-invert-th-borders': theme('colors.border'),
             '--tw-prose-invert-td-borders': theme('colors.border'),
-            // Customizations for compactness
-            'p, ul, ol, blockquote': {
-              marginTop: '0.5em',
-              marginBottom: '0.5em',
-            },
-            'h1, h2, h3': {
-              marginTop: '1em',
-              marginBottom: '0.5em',
-            },
-             'p': {
+             'p, ul, ol, blockquote': {
+              marginTop: '0',
+              marginBottom: '0',
               lineHeight: '1.4',
             },
-            'ul': {
+             'h1, h2, h3': {
+              marginTop: '0',
+              marginBottom: '0',
+            },
+          },
+        },
+        sm: {
+          css: {
+             'p, ul, ol, blockquote': {
+              marginTop: '0',
+              marginBottom: '0',
               lineHeight: '1.4',
             },
-            'ol': {
-              lineHeight: '1.4',
-            },
-            // Remove all margin from first and last children
-            '>:first-child': {
-              marginTop: '0 !important',
-            },
-            '>:last-child': {
-              marginBottom: '0 !important',
+             'h1, h2, h3': {
+              marginTop: '0',
+              marginBottom: '0',
             },
           },
         },
@@ -177,4 +174,3 @@ const config = {
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
 
-export default config;
