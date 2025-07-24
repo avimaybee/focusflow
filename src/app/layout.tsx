@@ -36,6 +36,9 @@ export default function RootLayout({
 
   return (
     <html lang="en" className="dark">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
       <body
         className={cn(
           'min-h-screen bg-background font-body antialiased flex flex-col',
@@ -53,5 +56,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-
