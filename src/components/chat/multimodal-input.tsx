@@ -366,6 +366,7 @@ interface MultimodalInputProps {
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   onSendMessage: (params: { input: string; attachments: Attachment[] }) => void;
   onStopGenerating: () => void;
+  onFocus?: () => void;
   isGenerating: boolean;
   canSend: boolean;
   className?: string;
@@ -384,6 +385,7 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
     setAttachments,
     onSendMessage,
     onStopGenerating,
+    onFocus,
     isGenerating,
     canSend,
     className,
@@ -394,6 +396,7 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
   }, ref) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const formRef = useRef<HTMLFormElement>(null);
 
     const [input, setInput] = useState('');
     const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
@@ -558,8 +561,15 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
 
     const isAttachmentDisabled = isGenerating || uploadQueue.length > 0;
 
+    const handleFocus = () => {
+        if (onFocus) onFocus();
+        if(formRef.current) {
+            formRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
     return (
-      <div className={cn("relative w-full flex flex-col gap-4", className)}>
+      <form ref={formRef} className={cn("relative w-full flex flex-col gap-4", className)}>
 
         {/* Hidden file input */}
         <input
@@ -679,6 +689,7 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
             placeholder="Send a message..."
             value={input}
             onChange={handleInput}
+            onFocus={handleFocus}
             className={cn(
               'min-h-[24px] max-h-[calc(75dvh)] overflow-y-auto resize-none rounded-2xl !text-base pb-10',
               'bg-background border-none', // Removed border and background from Textarea itself
@@ -720,7 +731,7 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
             )}
           </div>
         </div>
-      </div>
+      </form>
     );
   }
 );

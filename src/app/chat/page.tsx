@@ -333,6 +333,15 @@ export default function ChatPage() {
     }
   };
 
+  const handleFocusInput = () => {
+    if (sidebarOpen) {
+      setSidebarOpen(false);
+    }
+    if (isContextHubOpen) {
+      closeContextHub();
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-background via-background to-secondary/30 text-foreground">
       {isMobile && (
@@ -403,6 +412,7 @@ export default function ChatPage() {
                 setAttachments={setAttachments}
                 onSendMessage={handleSendMessage}
                 onStopGenerating={() => setIsSending(false)}
+                onFocus={handleFocusInput}
                 isGenerating={isSending}
                 canSend={!isSending && !authLoading}
                 selectedVisibilityType="private"
