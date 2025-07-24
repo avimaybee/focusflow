@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -40,7 +41,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="container mx-auto py-12">
+    <div className="container mx-auto py-10">
       <h1 className="text-3xl font-bold mb-6">Progress Analytics</h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <MasteryGraph data={masteryData} />

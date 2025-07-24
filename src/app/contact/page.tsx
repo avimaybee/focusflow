@@ -1,6 +1,7 @@
+
 export default function ContactPage() {
   return (
-    <main className="container mx-auto px-4 py-12 max-w-4xl">
+    <main className="container mx-auto px-4 py-10 max-w-4xl">
       <div className="prose dark:prose-invert lg:prose-xl mx-auto">
         <h1>Contact Us</h1>
         <p>

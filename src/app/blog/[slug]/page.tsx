@@ -60,7 +60,7 @@ export default async function BlogPostPage({ params }: Props) {
     const publishedDate = format(new Date(post.source === 'local' ? post.datePublished : post.publishedAt), 'MMMM d, yyyy');
 
     return (
-        <div className="container mx-auto px-4 py-12 max-w-3xl">
+        <div className="container mx-auto px-4 py-10 max-w-3xl">
             <BackButton href="/blog" label="Back to Blog" className="mb-8" />
             <article>
                 <header className="mb-8">

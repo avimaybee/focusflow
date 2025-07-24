@@ -1,6 +1,7 @@
+
 export default function TermsOfServicePage() {
   return (
-    <main className="container mx-auto px-4 py-12 max-w-4xl">
+    <main className="container mx-auto px-4 py-10 max-w-4xl">
       <div className="prose dark:prose-invert lg:prose-xl mx-auto">
         <h1>Terms of Service</h1>
         <p>

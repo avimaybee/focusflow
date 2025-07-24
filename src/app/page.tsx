@@ -25,7 +25,7 @@ export default function LandingPage() {
       <div className="flex-grow">
         <main>
           {/* Hero Section */}
-          <section className="relative py-20 md:py-24 lg:py-32">
+          <section className="relative py-20 md:py-24">
             <div className="relative z-10 text-center container mx-auto px-4 flex flex-col items-center">
                   <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight tracking-tighter text-foreground">
                       Your AI Co-Pilot for
@@ -40,7 +40,7 @@ export default function LandingPage() {
                   FocusFlow is your all-in-one toolkit. Turn any document into
                   <FlipWords words={words} /> in seconds.
                 </div>
-                <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <HoverBorderGradient
                       containerClassName="rounded-full"

@@ -34,7 +34,7 @@ export default function PremiumPage() {
   return (
     <>
       <main className="flex-grow bg-secondary/30">
-        <div className="container mx-auto px-4 py-12 text-center">
+        <div className="container mx-auto px-4 py-10 text-center">
             <Alert className="max-w-2xl mx-auto mb-8 bg-background border-primary/50">
                 <Rocket className="h-4 w-4" />
                 <AlertTitle className="font-bold">Early Access Beta!</AlertTitle>

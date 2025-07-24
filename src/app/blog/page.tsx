@@ -17,8 +17,8 @@ export default async function BlogIndexPage() {
 
   return (
     <>
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <header className="text-center mb-12">
+      <div className="container mx-auto px-4 py-10 max-w-4xl">
+        <header className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold font-heading">
             The FocusFlow Blog
           </h1>
@@ -26,7 +26,7 @@ export default async function BlogIndexPage() {
             Insights on AI, learning science, and productivity.
           </p>
         </header>
-        <div className="space-y-8">
+        <div className="space-y-6">
           {allPosts.map((post) => (
             <Link href={`/blog/${post.slug}`} key={post.slug} passHref>
               <Card className="group hover:border-primary/50 transition-colors">

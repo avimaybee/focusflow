@@ -498,7 +498,7 @@ function MyContentPageContent() {
           </p>
         </div>
 
-        <div className="mb-8 flex flex-col md:flex-row items-center gap-4">
+        <div className="mb-6 flex flex-col md:flex-row items-center gap-4">
             <div className="relative w-full md:w-1/2 lg:w-1/3">
                 <Input 
                     placeholder="Search your materials..."
@@ -528,7 +528,7 @@ function MyContentPageContent() {
         )}
 
         {recentContent.length > 0 && !selectedCollectionId && (
-          <div className="mb-12">
+          <div className="mb-10">
             <h2 className="text-2xl font-bold font-heading mb-4">Recently Viewed</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {recentContent.map(item => {

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -50,7 +51,7 @@ export default function NewStudyPlanPage() {
   };
 
   return (
-    <div className="container mx-auto py-12 max-w-2xl">
+    <div className="container mx-auto py-10 max-w-2xl">
       <h1 className="text-3xl font-bold mb-6">Create a Study Plan</h1>
       <div className="space-y-6">
         <div>
