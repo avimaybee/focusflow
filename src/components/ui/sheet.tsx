@@ -104,6 +104,7 @@ const SheetContent = React.forwardRef<
   const dragProps = {
       drag: (side === 'left' || side === 'right') ? 'x' : 'y',
       dragConstraints: (side === 'right' || side === 'bottom') ? { left: 0, top: 0 } : { right: 0, bottom: 0 },
+      dragElastic: 0.1,
       onDragEnd: onDragEnd,
   };
 

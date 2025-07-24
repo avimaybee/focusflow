@@ -67,6 +67,7 @@ const DialogContent = React.forwardRef<
         <motion.div
           drag="y"
           dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={0.1}
           onDragEnd={onDragEnd}
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
