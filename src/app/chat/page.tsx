@@ -64,7 +64,6 @@ export default function ChatPage() {
   const { chatHistory, isLoading: isHistoryLoading, forceRefresh } = useChatHistory();
   const { isContextHubOpen, toggleContextHub: baseToggleContextHub, closeContextHub } = useContextHubStore();
 
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSetSidebarOpen = (isOpen: boolean) => {
@@ -167,13 +166,6 @@ export default function ChatPage() {
     
     return () => unsubscribe();
   }, [activeChatId, user, toast, selectedPersona]);
-
-  useEffect(() => {
-    if (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')) {
-      const scrollableView = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]')!;
-      scrollableView.scrollTo({ top: scrollableView.scrollHeight, behavior: 'smooth' });
-    }
-  }, [messages]);
 
   const handleNewChat = () => {
     setActiveChatId(null);
@@ -395,7 +387,6 @@ export default function ChatPage() {
           isHistoryLoading={isHistoryLoading && !!activeChatId}
           activeChatId={activeChatId}
           activePersona={selectedPersona}
-          scrollAreaRef={scrollAreaRef}
           onSmartToolAction={(prompt) => {
             handleSendMessage({ input: prompt, attachments: [] });
           }}

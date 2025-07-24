@@ -2,7 +2,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { AIConversation, AIConversationContent, AIConversationScrollButton } from '@/components/ui/kibo-ui/ai/conversation';
 import { ChatMessage, ChatMessageProps } from '../chat-message';
 import { Loader2 } from 'lucide-react';
 import { WelcomeScreen } from './welcome-screen';
@@ -22,7 +22,6 @@ interface MessageListProps {
   isHistoryLoading: boolean;
   activeChatId: string | null;
   activePersona: Persona | null;
-  scrollAreaRef: RefObject<HTMLDivElement>;
   onSmartToolAction: (prompt: string) => void;
   onRegenerate: () => void;
 }
@@ -33,7 +32,6 @@ export function MessageList({
   isHistoryLoading,
   activeChatId,
   activePersona,
-  scrollAreaRef,
   onSmartToolAction,
   onRegenerate,
 }: MessageListProps) {
@@ -54,12 +52,11 @@ export function MessageList({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <ScrollArea className="h-full" ref={scrollAreaRef}>
+    <AIConversation className="flex-1 overflow-y-auto">
         {showWelcomeScreen ? (
           <WelcomeScreen onSelectPrompt={onSmartToolAction} />
         ) : (
-          <div className="p-3 md:p-4 space-y-2 max-w-3xl mx-auto">
+          <AIConversationContent className="p-3 md:p-4 space-y-2 max-w-3xl mx-auto">
             {messages.map((msg, index) => (
               <ChatMessage
                 key={msg.id || index}
@@ -77,9 +74,9 @@ export function MessageList({
                   <ChatMessageSkeleton persona={activePersona || undefined} />
                 </motion.div>
             )}
-          </div>
+          </AIConversationContent>
         )}
-      </ScrollArea>
-    </div>
+      <AIConversationScrollButton />
+    </AIConversation>
   );
 }
