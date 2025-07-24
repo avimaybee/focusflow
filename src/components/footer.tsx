@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Logo } from '@/components/logo';
@@ -26,9 +27,9 @@ export function Footer() {
   return (
     <footer className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {/* Column 1: Logo and Branding */}
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-1">
             <Link href="/" className="flex items-center gap-2">
               <Logo className="h-8 w-8" />
               <span className="text-lg font-semibold">FocusFlow AI</span>
