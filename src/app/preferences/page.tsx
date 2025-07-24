@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2, ArrowLeft, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getPersonas, Persona, updateUserProfile, getUserProfile } from '@/lib/user-actions';
+import Link from 'next/link';
 
 export default function PreferencesPage() {
   const { user } = useAuth();
@@ -79,7 +80,7 @@ export default function PreferencesPage() {
   }
 
   return (
-    <div className="container mx-auto py-10 max-w-3xl">
+    <div className="container mx-auto py-10 max-w-3xl px-4">
       <div className="flex items-center mb-6">
         <Button variant="ghost" size="icon" className="mr-2" onClick={() => router.back()}>
           <ArrowLeft className="h-5 w-5" />
