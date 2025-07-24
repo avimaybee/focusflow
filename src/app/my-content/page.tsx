@@ -11,6 +11,17 @@ import { makeSummaryPublic, makeFlashcardsPublic, makeQuizPublic, makeStudyPlanP
 import { getCollections } from '@/lib/collections-actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { collection, query, orderBy, getDocs, Timestamp, limit, startAfter, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/auth-context';
+import { Loader2, FileText, HelpCircle, BookOpen, Save, Calendar, Star, Folder, Plus, LayoutGrid, Search, FolderPlus, MessageSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
+import { Input } from '@/components/ui/input';
+import { ExpandedTabs } from '@/components/ui/expanded-tabs';
+import { formatDistanceToNow } from 'date-fns';
+
 
 const contentIcons: { [key: string]: React.ElementType } = {
   summary: FileText,
@@ -47,6 +58,11 @@ function MyContentPageContent() {
   const [collections, setCollections] = React.useState<any[]>([]);
   const [selectedCollectionId, setSelectedCollectionId] = React.useState<string | null>(null);
 
+  // Pagination State
+  const [lastVisible, setLastVisible] = React.useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [hasMore, setHasMore] = React.useState(true);
+  const [isLoadingMore, setIsLoadingMore] = React.useState(false);
+
   React.useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab) {
@@ -70,20 +86,49 @@ function MyContentPageContent() {
     }
   }, [user, toast]);
 
-  const fetchContent = React.useCallback(async () => {
+  const fetchContent = React.useCallback(async (loadMore = false) => {
     if (!user) {
       if (!authLoading) setIsLoading(false);
       return;
     }
     
-    setIsLoading(true);
-    fetchCollections(); // Fetch collections alongside content
+    if (loadMore) {
+        setIsLoadingMore(true);
+    } else {
+        setIsLoading(true);
+        setAllContent([]);
+        setLastVisible(null);
+        setHasMore(true);
+    }
+
+    // Only fetch collections on initial load
+    if (!loadMore) {
+      fetchCollections();
+    }
+    
     const contentTypes = ['summaries', 'quizzes', 'flashcardSets', 'savedMessages', 'studyPlans'];
+    const CONTENT_LIMIT = 9;
+
     const promises = contentTypes.map(async (type) => {
-      const collectionName = type === 'flashcardSets' ? 'flashcardSets' : type;
+      const collectionName = type;
       const contentRef = collection(db, 'users', user.uid, collectionName);
-      const q = query(contentRef, orderBy('createdAt', 'desc'));
+      let q;
+
+      if (loadMore && lastVisible) {
+          q = query(contentRef, orderBy('createdAt', 'desc'), startAfter(lastVisible), limit(CONTENT_LIMIT));
+      } else {
+          q = query(contentRef, orderBy('createdAt', 'desc'), limit(CONTENT_LIMIT));
+      }
+      
       const querySnapshot = await getDocs(q);
+      const newLastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+
+      if (querySnapshot.docs.length < CONTENT_LIMIT) {
+        setHasMore(false);
+      }
+      if(newLastVisible) {
+          setLastVisible(newLastVisible);
+      }
       
       return querySnapshot.docs.map(doc => {
           const data = doc.data();
@@ -132,15 +177,18 @@ function MyContentPageContent() {
       }).filter(item => item !== null) as ContentItem[];
     });
 
-    const fetchedContent = (await Promise.all(promises)).flat();
-    fetchedContent.sort((a, b) => b!.createdAt.toMillis() - a!.createdAt.toMillis());
-    setAllContent(fetchedContent);
+    const fetchedBatches = await Promise.all(promises);
+    const newContent = fetchedBatches.flat().sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
+
+    setAllContent(prev => loadMore ? [...prev, ...newContent] : newContent);
     setIsLoading(false);
-  }, [user, authLoading, fetchCollections, toast]);
+    setIsLoadingMore(false);
+
+  }, [user, authLoading, fetchCollections, toast, lastVisible]);
 
   React.useEffect(() => {
     fetchContent();
-  }, [fetchContent]);
+  }, [user]); // Only run on user change, not on fetchContent change
 
   const [isSharing, setIsSharing] = React.useState<string | null>(null);
 
@@ -203,7 +251,7 @@ function MyContentPageContent() {
     ));
 
     try {
-      await toggleFavoriteStatus(user.uid, item.id, item.type, item.isFavorited);
+      await toggleFavoriteStatus(user.uid, item.id, item.type, !item.isFavorited);
     } catch (error) {
       // Revert the UI change on error
       setAllContent(prev => prev.map(c => 
@@ -484,8 +532,9 @@ function MyContentPageContent() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {recentContent.map(item => {
                 const Icon = contentIcons[item.type];
+                let path = item.type === 'flashcardSet' ? 'flashcardSets' : `${item.type}s`;
                 return (
-                <Link href={`/my-content/${item.type}s/${item.id}`} key={item.id} className="block">
+                <Link href={`/my-content/${path}/${item.id}`} key={item.id} className="block">
                   <Card className="hover:border-primary/80 hover:bg-muted transition-all">
                     <CardHeader>
                       <div className="flex items-center gap-3">
@@ -505,13 +554,21 @@ function MyContentPageContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {renderContent()}
         </div>
+
+        {hasMore && !isLoading && (
+            <div className="mt-8 flex justify-center">
+                <Button onClick={() => fetchContent(true)} disabled={isLoadingMore}>
+                    {isLoadingMore ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Load More'}
+                </Button>
+            </div>
+        )}
       </div>
       {selectedContent && (
           <PublishAsBlogModal
               isOpen={isPublishModalOpen}
               onOpenChange={setIsPublishModalOpen}
               contentItem={selectedContent}
-              onSuccess={fetchContent}
+              onSuccess={() => fetchContent()}
           />
       )}
       {selectedContent && (
@@ -519,7 +576,7 @@ function MyContentPageContent() {
           isOpen={isCollectionModalOpen}
           onOpenChange={setIsCollectionModalOpen}
           contentItem={selectedContent}
-          onSuccess={fetchContent}
+          onSuccess={() => fetchContent()}
         />
       )}
     </>
@@ -533,3 +590,5 @@ export default function MyContentPage() {
         </React.Suspense>
     )
 }
+
+    
