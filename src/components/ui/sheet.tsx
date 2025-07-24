@@ -5,7 +5,7 @@ import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, PanInfo } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
@@ -83,31 +83,54 @@ const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
 >(({ side = "right", className, children, ...props }, ref) => {
+  const onDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const swipeThreshold = 50;
+    const swipeVelocityThreshold = 400;
+    const onOpenChange = (props as any).onOpenChange;
+
+    if (!onOpenChange) return;
+
+    if (side === 'left' && info.offset.x < -swipeThreshold && info.velocity.x < -swipeVelocityThreshold) {
+        onOpenChange(false);
+    } else if (side === 'right' && info.offset.x > swipeThreshold && info.velocity.x > swipeVelocityThreshold) {
+        onOpenChange(false);
+    } else if (side === 'top' && info.offset.y < -swipeThreshold && info.velocity.y < -swipeVelocityThreshold) {
+        onOpenChange(false);
+    } else if (side === 'bottom' && info.offset.y > swipeThreshold && info.velocity.y > swipeVelocityThreshold) {
+        onOpenChange(false);
+    }
+  };
+
+  const dragProps = {
+      drag: (side === 'left' || side === 'right') ? 'x' : 'y',
+      dragConstraints: (side === 'right' || side === 'bottom') ? { left: 0, top: 0 } : { right: 0, bottom: 0 },
+      onDragEnd: onDragEnd,
+  };
+
   return (
-    <AnimatePresence>
-      <SheetPortal>
-        <SheetOverlay />
-        <SheetPrimitive.Content
-          ref={ref}
-          asChild
-          className={cn(sheetVariants({ side }), className)}
-          {...props}
+    <SheetPortal>
+      <SheetOverlay />
+      <SheetPrimitive.Content
+        ref={ref}
+        asChild
+        className={cn(sheetVariants({ side }), className)}
+        {...props}
+      >
+        <motion.div
+          {...dragProps}
+          initial={sheetTransitions[side].initial}
+          animate={sheetTransitions[side].animate}
+          exit={sheetTransitions[side].exit}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          <motion.div
-            initial={sheetTransitions[side].initial}
-            animate={sheetTransitions[side].animate}
-            exit={sheetTransitions[side].exit}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          >
-            {children}
-            <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </SheetPrimitive.Close>
-          </motion.div>
-        </SheetPrimitive.Content>
-      </SheetPortal>
-    </AnimatePresence>
+          {children}
+          <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </SheetPrimitive.Close>
+        </motion.div>
+      </SheetPrimitive.Content>
+    </SheetPortal>
   );
 });
 SheetContent.displayName = SheetPrimitive.Content.displayName

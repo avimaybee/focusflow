@@ -4,7 +4,7 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, PanInfo } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
@@ -40,8 +40,19 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <AnimatePresence>
+>(({ className, children, ...props }, ref) => {
+  const onDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const swipeThreshold = 50; // Minimum distance for a swipe
+    const swipeVelocityThreshold = 500; // Minimum velocity for a swipe
+    if (info.offset.y > swipeThreshold && info.velocity.y > swipeVelocityThreshold) {
+      const onOpenChange = (props as any).onOpenChange;
+      if (onOpenChange) {
+        onOpenChange(false);
+      }
+    }
+  };
+
+  return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
@@ -54,6 +65,9 @@ const DialogContent = React.forwardRef<
         {...props}
       >
         <motion.div
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          onDragEnd={onDragEnd}
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -68,8 +82,8 @@ const DialogContent = React.forwardRef<
         </motion.div>
       </DialogPrimitive.Content>
     </DialogPortal>
-  </AnimatePresence>
-));
+  )
+});
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({
