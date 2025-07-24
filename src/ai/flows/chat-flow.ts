@@ -256,6 +256,7 @@ const chatFlow = ai.defineFlow(
     const result = await chat.send(userMessageContent);
 
     let structuredOutput: { flashcards?: any; quiz?: any } = {};
+    let finalResponseText = result.text;
 
     if (result.history && result.history.length > 0) {
       const lastMessage = result.history[result.history.length - 1];
@@ -265,11 +266,20 @@ const chatFlow = ai.defineFlow(
               if (!isGuest) {
                  await saveGeneratedContent(userId, toolCall.name, toolCall.output, toolCall.input);
               }
+
+              // Handle specific tool outputs for direct UI rendering
               if (toolCall.name === 'createFlashcardsTool') {
                 structuredOutput.flashcards = (toolCall.output as any).flashcards;
-              }
-              if (toolCall.name === 'createQuizTool') {
+              } else if (toolCall.name === 'createQuizTool') {
                 structuredOutput.quiz = (toolCall.output as any).quiz;
+              } else {
+                // For other tools, format the output as a readable string
+                // This prevents empty messages by ensuring there's always text content.
+                finalResponseText = `Here's what I found:\n\n${JSON.stringify(toolCall.output, null, 2)}`;
+                if (toolCall.name === 'highlightKeyInsightsTool') {
+                    const insights = (toolCall.output as { insights: string[] }).insights;
+                    finalResponseText = `Here are the key insights I found:\n\n- ${insights.join('\n- ')}`;
+                }
               }
           }
         }
@@ -289,8 +299,8 @@ const chatFlow = ai.defineFlow(
     
     return {
       sessionId: session.id,
-      response: result.text,
-      rawResponse: result.text,
+      response: finalResponseText,
+      rawResponse: finalResponseText,
       persona,
       ...structuredOutput,
     };
