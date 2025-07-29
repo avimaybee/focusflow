@@ -7,13 +7,13 @@ import { getFunctions } from "firebase/functions";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyC-0EoBq0044_NX-NrUC7noM8_MA9jbT_8",
+  authDomain: "focusflow-ai-w1jt3.firebaseapp.com",
+  projectId: "focusflow-ai-w1jt3",
+  storageBucket: "focusflow-ai-w1jt3.appspot.com",
+  messagingSenderId: "434262671485",
+  appId: "1:434262671485:web:8c0efe439951108b547114",
+  measurementId: "G-WYWK9K2375"
 };
 
 // Initialize Firebase
