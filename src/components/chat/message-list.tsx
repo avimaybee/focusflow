@@ -3,7 +3,7 @@
 
 import { motion } from 'framer-motion';
 import { AIConversation, AIConversationContent, AIConversationScrollButton } from '@/components/ui/kibo-ui/ai/conversation';
-import { ChatMessage, ChatMessageProps } from './chat-message';
+import { ChatMessage, ChatMessageProps } from '@/components/chat/chat-message';
 import { Loader2 } from 'lucide-react';
 import { WelcomeScreen } from './welcome-screen';
 import { RefObject } from 'react';
