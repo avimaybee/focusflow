@@ -18,7 +18,7 @@ import { MultimodalInput } from '@/components/chat/multimodal-input';
 import { ContextHub } from '@/components/chat/context-hub';
 import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { ChatMessageProps } from '@/components/chat-message';
+import { ChatMessageProps } from '@/components/chat/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
 import { marked } from 'marked';
 import { deleteChat } from '@/lib/content-actions';
