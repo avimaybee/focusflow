@@ -36,9 +36,9 @@ export function VisionSection() {
             </div>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
                 {visionPoints.map((point, index) => (
-                    <Card key={index} className="bg-background/50 text-center flex flex-col items-center">
+                    <Card key={index} className="bg-background/50 text-center flex flex-col items-center p-4">
                         <CardHeader>
-                            <div className="p-4 bg-primary/10 rounded-full inline-flex mb-4">
+                            <div className="p-4 bg-primary/10 rounded-full inline-flex mb-4 items-center justify-center">
                                 {point.icon}
                             </div>
                             <CardTitle>{point.title}</CardTitle>
