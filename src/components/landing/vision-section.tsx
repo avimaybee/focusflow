@@ -2,7 +2,7 @@
 'use client';
 
 import { GraduationCap, Users, ShieldCheck } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
+import { GlowingCard } from '../ui/glowing-card';
 
 const visionPoints = [
     {
@@ -24,7 +24,7 @@ const visionPoints = [
 
 export function VisionSection() {
   return (
-    <section id="vision" className="py-20 bg-secondary/30">
+    <section id="vision" className="py-20">
         <div className="container mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto">
                 <h2 className="text-3xl md:text-4xl font-bold font-heading">
@@ -34,20 +34,25 @@ export function VisionSection() {
                     We believe learning should be an empowering and personalized journey, not a one-size-fits-all struggle.
                 </p>
             </div>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-                {visionPoints.map((point, index) => (
-                    <Card key={index} className="bg-background/50 text-center flex flex-col items-center p-4">
-                        <CardHeader>
-                            <div className="p-4 bg-primary/10 rounded-full inline-flex mb-4 items-center justify-center">
-                                {point.icon}
-                            </div>
-                            <CardTitle>{point.title}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground">{point.description}</p>
-                        </CardContent>
-                    </Card>
-                ))}
+            <div className="mt-12 max-w-5xl mx-auto">
+                <GlowingCard className="rounded-xl">
+                    <div className="glowing-card-content p-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {visionPoints.map((point, index) => (
+                                <div key={index} className="flex flex-col items-center text-center gap-4 relative px-4">
+                                     {index !== 0 && (
+                                        <div className="absolute left-0 top-0 h-full w-px bg-border hidden md:block" />
+                                     )}
+                                    <div className="p-4 bg-primary/10 rounded-full inline-flex items-center justify-center">
+                                        {point.icon}
+                                    </div>
+                                    <h3 className="text-xl font-bold font-heading">{point.title}</h3>
+                                    <p className="text-muted-foreground">{point.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </GlowingCard>
             </div>
         </div>
     </section>
