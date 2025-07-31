@@ -214,116 +214,118 @@ export function ChatMessage({
   );
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-      className={cn(
-        'group flex items-start gap-3',
-        isUser && 'justify-end'
-      )}
-    >
-      {!isUser && avatar}
-      <div
+    <>
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         className={cn(
-          'flex flex-col gap-1',
-          isUser ? 'items-end' : 'items-start'
+          'group flex items-start gap-3',
+          isUser && 'justify-end'
         )}
       >
-        {!isUser && isFirstInGroup && (
-            <p className="text-xs text-muted-foreground font-medium ml-2">{persona?.name || 'AI Assistant'}</p>
-        )}
+        {!isUser && avatar}
         <div
-          ref={contentRef}
           className={cn(
-            'relative max-w-full sm:max-w-xl p-3 text-base shadow-sm',
-            'rounded-xl',
-            isUser
-              ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
-              : 'bg-secondary',
-            isUser ? (isFirstInGroup ? 'rounded-tr-xl' : 'rounded-tr-md') : (isFirstInGroup ? 'rounded-tl-xl' : 'rounded-tl-md'),
-            isUser ? (isLastInGroup ? 'rounded-br-xl' : 'rounded-br-md') : (isLastInGroup ? 'rounded-bl-xl' : 'rounded-bl-md'),
-            isError && 'bg-destructive/20 border border-destructive text-destructive-foreground'
+            'flex flex-col gap-1',
+            isUser ? 'items-end' : 'items-start'
           )}
         >
-          {user && <TextSelectionMenu containerRef={contentRef} />}
-          {renderContent()}
-        </div>
-        {!isUser && !isError && (
+          {!isUser && isFirstInGroup && (
+            <p className="text-xs text-muted-foreground font-medium ml-2">{persona?.name || 'AI Assistant'}</p>
+          )}
+          <div
+            ref={contentRef}
+            className={cn(
+              'relative max-w-full sm:max-w-xl p-3 text-base shadow-sm',
+              'rounded-xl',
+              isUser
+                ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
+                : 'bg-secondary',
+              isUser ? (isFirstInGroup ? 'rounded-tr-xl' : 'rounded-tr-md') : (isFirstInGroup ? 'rounded-tl-xl' : 'rounded-tl-md'),
+              isUser ? (isLastInGroup ? 'rounded-br-xl' : 'rounded-br-md') : (isLastInGroup ? 'rounded-bl-xl' : 'rounded-bl-md'),
+              isError && 'bg-destructive/20 border border-destructive text-destructive-foreground'
+            )}
+          >
+            {user && <TextSelectionMenu containerRef={contentRef} />}
+            {renderContent()}
+          </div>
+          {!isUser && !isError && (
             <div className="flex items-center gap-1.5 transition-opacity duration-200">
-                <TooltipProvider>
+              <TooltipProvider>
                 <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={handleCopy}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Copy</p></TooltipContent>
+                  </Tooltip>
+                  {isLastInGroup && onRegenerate && (
                     <Tooltip delayDuration={300}>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={handleCopy}>
-                                <Copy className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent><p>Copy</p></TooltipContent>
-                    </Tooltip>
-                    {isLastInGroup && onRegenerate && (
-                    <Tooltip delayDuration={300}>
-                        <TooltipTrigger asChild>
+                      <TooltipTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={onRegenerate}>
-                            <RotateCw className="h-4 w-4" />
+                          <RotateCw className="h-4 w-4" />
                         </Button>
-                        </TooltipTrigger>
-                        <TooltipContent><p>Regenerate</p></TooltipContent>
+                      </TooltipTrigger>
+                      <TooltipContent><p>Regenerate</p></TooltipContent>
                     </Tooltip>
-                    )}
-                    {user && rawText && (
+                  )}
+                  {user && rawText && (
                     <Tooltip delayDuration={300}>
-                        <TooltipTrigger asChild>
+                      <TooltipTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={handleSave}>
-                            <Save className="h-4 w-4" />
+                          <Save className="h-4 w-4" />
                         </Button>
-                        </TooltipTrigger>
-                        <TooltipContent><p>Save to My Content</p></TooltipContent>
+                      </TooltipTrigger>
+                      <TooltipContent><p>Save to My Content</p></TooltipContent>
                     </Tooltip>
-                    )}
-                    {rawText && onToolAction && (
+                  )}
+                  {rawText && onToolAction && (
                     <>
-                        <Tooltip delayDuration={300}>
+                      <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                            <Button
+                          <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 rounded-full"
-                            onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "${'\'\'\''}${text}${'\'''\'\'}"`)}
-                            >
+                            onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "'\''\''${text}'\''\''"`)}
+                          >
                             <Album className="h-4 w-4" />
-                            </Button>
+                          </Button>
                         </TooltipTrigger>
                         <TooltipContent><p>Create Flashcards</p></TooltipContent>
-                        </Tooltip>
-                        <Tooltip delayDuration={300}>
+                      </Tooltip>
+                      <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                            <Button
+                          <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 rounded-full"
-                            onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "${'\'\'\''}${text}${'\'''\'\'}"`)}
-                            >
+                            onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "'\''\''${text}'\''\''"`)}
+                          >
                             <HelpCircle className="h-4 w-4" />
-                            </Button>
+                          </Button>
                         </TooltipTrigger>
                         <TooltipContent><p>Create Quiz</p></TooltipContent>
-                        </Tooltip>
+                      </Tooltip>
                     </>
-                    )}
+                  )}
                 </div>
                 {rawText && onToolAction && (
-                    <SmartToolsMenu
+                  <SmartToolsMenu
                     onAction={(tool) => onToolAction(tool, rawText)}
-                    />
+                  />
                 )}
-                </TooltipProvider>
+              </TooltipProvider>
             </div>
-        )}
-      </div>
-      {isUser && avatar}
-    </motion.div>
+          )}
+        </div>
+        {isUser && avatar}
+      </motion.div>
+    </>
   );
 }
