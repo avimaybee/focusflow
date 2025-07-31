@@ -1,60 +1,60 @@
+
 'use client';
 
 import { GraduationCap, Users, ShieldCheck } from 'lucide-react';
+import { GlowingCard } from '../ui/glowing-card';
+
+const visionPoints = [
+    {
+        icon: <GraduationCap className="h-8 w-8 text-primary" />,
+        title: "Personalized Learning",
+        description: "To make personalized learning accessible to every student, regardless of their background or resources. We're building tools that adapt to individual learning styles and needs."
+    },
+    {
+        icon: <Users className="h-8 w-8 text-primary" />,
+        title: "Fostering Community",
+        description: "To bring students together, not just create tools. Our public profiles and content sharing features are designed to foster a vibrant, collaborative community of learners."
+    },
+    {
+        icon: <ShieldCheck className="h-8 w-8 text-primary" />,
+        title: "Simple & Trustworthy",
+        description: "To build a platform that is not only powerful but also simple to use, secure with your data, and a trustworthy partner in your academic journey."
+    }
+]
 
 export function VisionSection() {
   return (
-    <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
-      <div className="max-w-2xl mx-auto">
-        <div className="grid gap-12">
-          <div>
-            <h2 className="text-3xl text-foreground font-bold lg:text-4xl">
-              Our Vision
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              We believe that learning should be an empowering and personalized journey, not a one-size-fits-all struggle. Our vision is to create an AI partner that not only helps students study, but also inspires them to learn more deeply and effectively.
-            </p>
-          </div>
-
-          <div className="space-y-6 lg:space-y-10">
-            <div className="flex gap-x-5 sm:gap-x-8">
-              <GraduationCap className="shrink-0 mt-2 size-6 text-foreground" />
-              <div className="grow">
-                <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                  Personalized Learning for All
-                </h3>
-                <p className="mt-1 text-muted-foreground">
-                  Our goal is to make personalized learning accessible to every student, regardless of their background or resources. We're building tools that adapt to individual learning styles and needs.
+    <section id="vision" className="py-20">
+        <div className="container mx-auto px-4">
+            <div className="text-center max-w-3xl mx-auto">
+                <h2 className="text-3xl md:text-4xl font-bold font-heading">
+                    Our Vision
+                </h2>
+                <p className="mt-4 text-lg text-muted-foreground leading-snug">
+                    We believe learning should be an empowering and personalized journey, not a one-size-fits-all struggle.
                 </p>
-              </div>
             </div>
-
-            <div className="flex gap-x-5 sm:gap-x-8">
-              <Users className="shrink-0 mt-2 size-6 text-foreground" />
-              <div className="grow">
-                <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                  Fostering a Study Community
-                </h3>
-                <p className="mt-1 text-muted-foreground">
-                  Beyond creating powerful tools, we aim to bring students together. Our public profiles and content sharing features are designed to foster a vibrant community of learners.
-                </p>
-              </div>
+            <div className="mt-12 max-w-5xl mx-auto">
+                <GlowingCard className="rounded-xl">
+                    <div className="glowing-card-content p-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {visionPoints.map((point, index) => (
+                                <div key={index} className="flex flex-col items-center text-center gap-4 relative px-4">
+                                     {index !== 0 && (
+                                        <div className="absolute left-0 top-0 h-full w-px bg-border hidden md:block" />
+                                     )}
+                                    <div className="p-4 bg-primary/10 rounded-full inline-flex items-center justify-center">
+                                        {point.icon}
+                                    </div>
+                                    <h3 className="text-xl font-bold font-heading">{point.title}</h3>
+                                    <p className="text-muted-foreground">{point.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </GlowingCard>
             </div>
-
-            <div className="flex gap-x-5 sm:gap-x-8">
-              <ShieldCheck className="shrink-0 mt-2 size-6 text-foreground" />
-              <div className="grow">
-                <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                  Simple, Secure, and Trustworthy
-                </h3>
-                <p className="mt-1 text-muted-foreground">
-                  We are committed to building a platform that is not only powerful but also simple to use, secure with your data, and a trustworthy partner in your academic journey.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
+    </section>
   );
 }

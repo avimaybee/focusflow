@@ -1,6 +1,6 @@
 // src/lib/blog-posts-data.ts
-import { db } from '@/lib/firebase-admin';
-import { Timestamp } from 'firebase-admin/firestore';
+import { collection, getDocs, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase'; // Use client SDK instead of admin
 
 export interface BlogPost {
     id: string;
@@ -13,47 +13,37 @@ export interface BlogPost {
     tags: string[];
 }
 
+// Helper to convert Firestore Timestamp to a serializable format (ISO string)
+const processDoc = (doc: any) => {
+    const data = doc.data();
+    // Ensure publishedAt is a serializable string
+    const publishedAtDate = data.publishedAt?.toDate ? data.publishedAt.toDate() : new Date();
+    
+    return {
+        id: doc.id,
+        ...data,
+        publishedAt: publishedAtDate.toISOString(),
+    } as BlogPost;
+};
+
+
 export async function getBlogPost(slug: string): Promise<BlogPost | undefined> {
-    const collectionRef = db.collection('publicBlogPosts');
-    const q = collectionRef.where('publicSlug', '==', slug);
-    const snapshot = await q.get();
+    const collectionRef = collection(db, 'publicBlogPosts');
+    const q = query(collectionRef, where('publicSlug', '==', slug));
+    const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
         return undefined;
     }
 
     const doc = snapshot.docs[0];
-    const data = doc.data();
-    const publishedAt = (data.publishedAt as Timestamp).toDate().toISOString();
-
-    return {
-        id: doc.id,
-        title: data.title,
-        content: data.content,
-        excerpt: data.excerpt,
-        author: data.author,
-        publishedAt: publishedAt,
-        publicSlug: data.publicSlug,
-        tags: data.tags || [],
-    };
+    return processDoc(doc);
 }
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
-    const collectionRef = db.collection('publicBlogPosts');
-    const snapshot = await collectionRef.orderBy('publishedAt', 'desc').get();
+    const collectionRef = collection(db, 'publicBlogPosts');
+    const q = query(collectionRef, orderBy('publishedAt', 'desc'));
+    const snapshot = await getDocs(q);
     
-    return snapshot.docs.map(doc => {
-        const data = doc.data();
-        const publishedAt = (data.publishedAt as Timestamp).toDate().toISOString();
-        return {
-            id: doc.id,
-            title: data.title,
-            content: data.content,
-            excerpt: data.excerpt,
-            author: data.author,
-            publishedAt: publishedAt,
-            publicSlug: data.publicSlug,
-            tags: data.tags || [],
-        }
-    });
+    return snapshot.docs.map(processDoc);
 }
