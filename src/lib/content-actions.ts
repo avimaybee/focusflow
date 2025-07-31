@@ -2,7 +2,7 @@
 
 import { db } from './firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { generateSlug } from './utils';
+import { slugify } from './utils';
 
 /**
  * Saves a specific chat message to a user's "Saved Messages" collection.
@@ -28,6 +28,57 @@ export async function saveChatMessage(userId: string, messageContent: string) {
  * @param chatId The ID of the chat to delete.
  */
 export async function deleteChat(userId: string, chatId: string) {
+  if (!userId || !chatId) {
+    throw new Error('User ID and chat ID are required.');
+  }
+  await db.collection('users').doc(userId).collection('chats').doc(chatId).delete();
+  return { success: true };
+}
+
+/**
+ * Updates the content of a saved message or summary
+ */
+export async function updateContent(userId: string, contentId: string, type: 'savedMessages' | 'summaries', updates: { title?: string; content?: string }) {
+  if (!userId || !contentId) {
+    throw new Error('User ID and content ID are required.');
+  }
+  
+  const contentRef = db.collection('users').doc(userId).collection(type).doc(contentId);
+  await contentRef.update({
+    ...updates,
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+  
+  return { success: true };
+}
+
+/**
+ * Publishes content as a blog post
+ */
+export async function publishAsBlog(userId: string, contentId: string, type: 'savedMessages' | 'summaries', blogData: {
+  title: string;
+  content: string;
+  description: string;
+  tags?: string[];
+}) {
+  if (!userId || !contentId) {
+    throw new Error('User ID and content ID are required.');
+  }
+
+  const slug = slugify(blogData.title);
+  const blogRef = db.collection('blogs').doc(slug);
+  
+  await blogRef.set({
+    ...blogData,
+    authorId: userId,
+    originalContentId: contentId,
+    originalContentType: type,
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+
+  return { success: true, slug };
+}
   if (!userId || !chatId) {
     throw new Error('User ID and Chat ID are required.');
   }

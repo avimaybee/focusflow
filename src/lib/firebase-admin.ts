@@ -28,6 +28,10 @@ if (!admin.apps.length) {
   console.log('DEBUG: Firebase admin app already initialized.');
 }
 
+export const db = getFirestore();
+export const auth = getAuth();
+export { FieldValue } from 'firebase-admin/firestore';
+
 export const app = admin.apps[0]!;
 export const db = getFirestore(app);
 export const auth = getAuth(app);
