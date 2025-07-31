@@ -1,23 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  experimental: {
-    images: {
-      remotePatterns: [
-        {
-          protocol: 'https',
-          hostname: 'placehold.co',
-          port: '',
-          pathname: '/**',
-        },
-      ],
-    },
-  }
 };
 
 export default nextConfig;
