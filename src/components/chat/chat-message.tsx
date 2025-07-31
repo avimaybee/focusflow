@@ -1,7 +1,9 @@
 
+
 'use client';
 
 import * as React from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bot, User, Album, HelpCircle, Save, RotateCw, Copy, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
@@ -17,7 +19,6 @@ import { useAuth } from '@/context/auth-context';
 import { saveChatMessage } from '@/lib/content-actions';
 import { TextSelectionMenu } from '@/components/notes/text-selection-menu';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
-import { motion } from 'framer-motion';
 
 interface FlashcardData {
   question: string;
