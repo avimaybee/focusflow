@@ -31,7 +31,8 @@ export async function deleteChat(userId: string, chatId: string) {
   if (!userId || !chatId) {
     throw new Error('User ID and chat ID are required.');
   }
-  await db.collection('users').doc(userId).collection('chats').doc(chatId).delete();
+  const chatRef = db.collection('users').doc(userId).collection('chats').doc(chatId);
+  await chatRef.delete();
   return { success: true };
 }
 
@@ -79,13 +80,7 @@ export async function publishAsBlog(userId: string, contentId: string, type: 'sa
 
   return { success: true, slug };
 }
-  if (!userId || !chatId) {
-    throw new Error('User ID and Chat ID are required.');
-  }
-  const chatRef = db.collection('users').doc(userId).collection('chats').doc(chatId);
-  await chatRef.delete();
-  return { success: true };
-}
+  
 
 const getCollectionName = (type: string) => {
     if (type === 'summary') return 'summaries';
