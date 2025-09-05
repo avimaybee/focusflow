@@ -1,28 +1,26 @@
-import { db } from '@/lib/firebase-admin';
-
 // Functions to fetch all public content for sitemap generation
 
 export async function getPublicSummaries() {
-  const snapshot = await db.collection('publicSummaries').get();
-  return snapshot.docs.map(doc => doc.data());
+  console.log('[PLACEHOLDER] getPublicSummaries called');
+  return [];
 }
 
 export async function getPublicFlashcardSets() {
-  const snapshot = await db.collection('publicFlashcardSets').get();
-  return snapshot.docs.map(doc => doc.data());
+  console.log('[PLACEHOLDER] getPublicFlashcardSets called');
+  return [];
 }
 
 export async function getPublicQuizzes() {
-  const snapshot = await db.collection('publicQuizzes').get();
-  return snapshot.docs.map(doc => doc.data());
+  console.log('[PLACEHOLDER] getPublicQuizzes called');
+  return [];
 }
 
 export async function getPublicStudyPlans() {
-  const snapshot = await db.collection('publicStudyPlans').get();
-  return snapshot.docs.map(doc => doc.data());
+  console.log('[PLACEHOLDER] getPublicStudyPlans called');
+  return [];
 }
 
 export async function getAllUsernames() {
-    const snapshot = await db.collection('usernames').get();
-    return snapshot.docs.map(doc => doc.id);
+    console.log('[PLACEHOLDER] getAllUsernames called');
+    return [];
 }

@@ -1,7 +1,4 @@
-
 'use server';
-import { doc, updateDoc, getDocs, collection, getDoc, writeBatch } from 'firebase/firestore';
-import { db } from './firebase';
 import { isUsernameAvailable as checkUsernameAvailability } from './profile-actions'; // Renamed to avoid conflict
 import type { Persona } from '@/types/chat-types';
 
@@ -13,57 +10,34 @@ export interface UserProfile {
 }
 
 export const getPersonas = async (): Promise<Persona[]> => {
-    const personasCollection = collection(db, 'personas');
-    const snapshot = await getDocs(personasCollection);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as Persona));
+    console.log('[PLACEHOLDER] getPersonas called');
+    return [
+        { id: 'neutral', name: 'Neutral', prompt: 'You are a helpful AI study assistant.' },
+        { id: 'socratic', name: 'Socratic', prompt: 'You are a Socratic tutor.' },
+    ];
 };
 
 export const getUserProfile = async (userId: string): Promise<UserProfile> => {
-    const userRef = doc(db, 'users', userId);
-    const snapshot = await getDoc(userRef);
-    if (snapshot.exists()) {
-        return snapshot.data() as UserProfile;
-    }
-    return {};
+    console.log(`[PLACEHOLDER] getUserProfile called for user ${userId}`);
+    return {
+        username: 'placeholder-user',
+        learningGoals: 'Placeholder learning goals.',
+        preferredPersona: 'neutral',
+        onboardingCompleted: true,
+    };
 };
 
 export const updateUserProfile = async (userId: string, profileData: UserProfile) => {
-    if (!userId) {
-        throw new Error("User ID is required to update profile.");
-    }
-    
-    const userRef = doc(db, 'users', userId);
-    const batch = writeBatch(db);
-
-    const { username, ...restOfProfile } = profileData;
-
-    if (username) {
-        const userDoc = await getDoc(userRef);
-        const currentUsername = userDoc.data()?.username;
-        if (username !== currentUsername) {
-            const isAvailable = await checkUsernameAvailability(username);
-            if (!isAvailable) {
-                throw new Error('Username is already taken.');
-            }
-            const usernameRef = doc(db, 'usernames', username);
-            batch.set(usernameRef, { userId });
-            batch.update(userRef, { username });
-
-            // If old username exists, remove it from the lookup
-            if (currentUsername) {
-                const oldUsernameRef = doc(db, 'usernames', currentUsername);
-                batch.delete(oldUsernameRef);
-            }
+    console.log(`[PLACEHOLDER] updateUserProfile called for user ${userId}, profileData:`, profileData);
+    // Simulate username check if provided
+    if (profileData.username) {
+        const isAvailable = await checkUsernameAvailability(profileData.username);
+        if (!isAvailable) {
+            throw new Error('Username is already taken (placeholder).');
         }
     }
-
-    batch.update(userRef, restOfProfile);
-
-    await batch.commit();
 };
 
 export const updateUserFavoritePrompts = async (userId: string, favoritePrompts: string[]) => {
-    if (!userId) return;
-    const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, { favoritePrompts });
+    console.log(`[PLACEHOLDER] updateUserFavoritePrompts called for user ${userId}, favoritePrompts:`, favoritePrompts);
 };
