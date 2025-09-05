@@ -1,10 +1,7 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -18,8 +15,25 @@ interface Summary {
   title: string;
   summary: string;
   keywords: string[];
-  createdAt: Timestamp;
+  createdAt: Date; // Replaced Timestamp with Date
 }
+
+const placeholderSummaries: Summary[] = [
+    {
+        id: '1',
+        title: 'Placeholder Summary 1',
+        summary: 'This is the first placeholder summary.',
+        keywords: ['placeholder', 'summary'],
+        createdAt: new Date(),
+    },
+    {
+        id: '2',
+        title: 'Placeholder Summary 2',
+        summary: 'This is the second placeholder summary.',
+        keywords: ['placeholder', 'summary'],
+        createdAt: new Date(),
+    },
+];
 
 export default function MySummariesPage() {
   const { user, loading: authLoading } = useAuth();
@@ -27,27 +41,10 @@ export default function MySummariesPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.uid) {
-      const summariesRef = collection(db, 'users', user.uid, 'summaries');
-      const q = query(summariesRef, orderBy('createdAt', 'desc'));
-      
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const userSummaries = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Summary[];
-        setSummaries(userSummaries);
-        setIsLoading(false);
-      }, (error) => {
-        console.error("Error fetching summaries:", error);
-        setIsLoading(false);
-      });
-
-      return () => unsubscribe();
-    } else if (!authLoading) {
-      setIsLoading(false);
-    }
-  }, [user, authLoading]);
+    // Placeholder for fetching data from Supabase
+    setSummaries(placeholderSummaries);
+    setIsLoading(false);
+  }, []);
 
   if (isLoading || authLoading) {
     return (
@@ -75,15 +72,15 @@ export default function MySummariesPage() {
                 <CardHeader>
                   <CardTitle className="truncate">{summary.title}</CardTitle>
                   <CardDescription>
-                    Created {formatDistanceToNow(summary.createdAt.toDate(), { addSuffix: true })}
+                    Created {formatDistanceToNow(summary.createdAt, { addSuffix: true })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="line-clamp-3 text-sm text-muted-foreground mb-4">
                     {summary.summary}
                   </p>
-                  <Button variant="secondary" className="w-full">
-                    View Summary
+                  <Button variant="secondary" className="w-full" asChild>
+                    <Link href={`/my-content/summaries/${summary.id}`}>View Summary</Link>
                   </Button>
                 </CardContent>
               </Card>

@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
 import { notFound } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,29 +13,25 @@ export default function StudyPlanPage({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-
-    const fetchPlan = async () => {
-      const docRef = doc(db, 'users', user.uid, 'studyPlans', params.id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setPlan(docSnap.data());
-      } else {
-        notFound();
-      }
-      setIsLoading(false);
-    };
-
-    fetchPlan();
-  }, [user, params.id]);
+    // Placeholder for fetching data from Supabase
+    if (params.id) {
+        setPlan({
+            title: 'Placeholder Study Plan',
+            plan: [
+                { day: 1, topic: 'Introduction', tasks: ['Read Chapter 1', 'Watch intro video'] },
+                { day: 2, topic: 'Deep Dive', tasks: ['Read Chapter 2', 'Do practice problems'] },
+            ],
+        });
+    }
+    setIsLoading(false);
+  }, [params.id]);
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
   if (!plan) {
-    return null;
+    notFound();
   }
 
   return (

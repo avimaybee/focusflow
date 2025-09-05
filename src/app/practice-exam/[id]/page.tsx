@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { notFound, useRouter } from 'next/navigation';
 import { ExamViewer } from '@/components/exam-viewer';
 import { Loader2 } from 'lucide-react';
@@ -17,35 +15,30 @@ export default function PracticeExamPage({ params }: { params: { id: string } })
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-
-    const fetchExam = async () => {
-      const docRef = doc(db, 'users', user.uid, 'examSessions', params.id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setExamSession({ id: docSnap.id, ...docSnap.data() });
-      } else {
-        notFound();
-      }
-      setIsLoading(false);
-    };
-
-    fetchExam();
-  }, [user, params.id]);
+    // Placeholder for fetching data from Supabase
+    if (params.id) {
+        setExamSession({
+            id: params.id,
+            exam: {
+                title: 'Placeholder Practice Exam',
+                questions: [
+                    {
+                        question: 'What is the capital of France?',
+                        options: ['London', 'Berlin', 'Paris', 'Madrid'],
+                        correctAnswer: 'Paris',
+                        explanation: 'Paris is the capital of France.',
+                        questionType: 'multiple-choice',
+                    },
+                ],
+            },
+        });
+    }
+    setIsLoading(false);
+  }, [params.id]);
 
   const handleSubmit = async (answers: any) => {
-    if (!user) return;
-    
-    // In a real app, you would have a server-side function to grade the exam.
-    // For now, we'll just save the answers.
-    const docRef = doc(db, 'users', user.uid, 'examSessions', params.id);
-    await updateDoc(docRef, {
-      answers,
-      status: 'completed',
-    });
-
-    toast({ title: 'Exam Submitted!', description: 'Your exam has been submitted for grading.' });
+    // Placeholder for submit logic
+    toast({ title: 'Exam Submitted!', description: 'Your exam has been submitted (placeholder).' });
     router.push(`/practice-exam/${params.id}/review`);
   };
 
@@ -54,7 +47,7 @@ export default function PracticeExamPage({ params }: { params: { id: string } })
   }
 
   if (!examSession) {
-    return null;
+    notFound();
   }
 
   return (
