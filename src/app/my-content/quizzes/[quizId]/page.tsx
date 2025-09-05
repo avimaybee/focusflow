@@ -11,6 +11,7 @@ import { BackButton } from '@/components/ui/back-button';
 
 interface Quiz {
     title: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     quiz: any;
     createdAt: Date; // Replaced Timestamp with Date
 }

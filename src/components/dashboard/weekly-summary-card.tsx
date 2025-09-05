@@ -8,7 +8,7 @@ export function WeeklySummaryCard() {
     <Card className="col-span-full">
       <CardHeader>
         <CardTitle>Your Weekly Report</CardTitle>
-        <CardDescription>Here's how you did this past week.</CardDescription>
+        <CardDescription>Here&apos;s how you did this past week.</CardDescription>
       </CardHeader>
       <CardContent>
         {/* Summary data will be populated here */}

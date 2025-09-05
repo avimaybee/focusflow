@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SessionStore, SessionData } from 'genkit/beta';
 import { db } from './firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';

@@ -72,6 +72,7 @@ export function PublishAsBlogModal({ isOpen, onOpenChange, contentItem, onSucces
 
             onSuccess(); // Refresh the content on the parent page
             onOpenChange(false);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error('Failed to publish as blog:', error);
             toast({

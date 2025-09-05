@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/lib/__mocks__/lucide-react.tsx
 import React from 'react';
 

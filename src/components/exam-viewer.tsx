@@ -21,6 +21,7 @@ interface Exam {
 
 interface ExamViewerProps {
   exam: Exam;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSubmit: (answers: any) => void;
 }
 

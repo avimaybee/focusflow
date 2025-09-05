@@ -208,6 +208,7 @@ export function LandingPageChatV2() {
         content: await marked.parse(result.response),
       };
       setMessages(prev => [...prev, modelResponse]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Message Failed', description: error.message });
       const errorResponse: ChatMessageProps = {

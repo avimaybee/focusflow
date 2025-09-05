@@ -152,6 +152,7 @@ export function PreviewChatWidget({ onClose }: { onClose: () => void }) {
         setMessages(prev => [...prev, { role: 'assistant', content: htmlResponse }]);
         setLimitRemaining(prev => prev - 1);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         toast({ variant: 'destructive', title: 'Error', description: error.message });
         setMessages(prev => prev.slice(0, -1));

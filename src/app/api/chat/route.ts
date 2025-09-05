@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(result);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('=== FATAL API ROUTE ERROR ===');
     console.error('Error Name:', error.name);

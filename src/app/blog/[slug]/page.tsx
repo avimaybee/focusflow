@@ -57,7 +57,8 @@ export default async function BlogPostPage({ params }: Props) {
         notFound();
     }
 
-    const publishedDate = format(new Date(post.source === 'local' ? post.datePublished : post.publishedAt), 'MMMM d, yyyy');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const publishedDate = format(new Date((post as any).source === 'local' ? (post as any).datePublished : (post as any).publishedAt), 'MMMM d, yyyy');
 
     return (
         <div className="container mx-auto px-4 py-10 max-w-3xl">

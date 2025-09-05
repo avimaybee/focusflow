@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function StudyPlanViewerPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [plan, setPlan] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 

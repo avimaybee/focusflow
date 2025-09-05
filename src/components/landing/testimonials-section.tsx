@@ -13,7 +13,7 @@ export function TestimonialsSection({ testimonials }) {
             Loved by Students Everywhere
           </h2>
           <p className="mt-4 text-lg text-muted-foreground leading-snug">
-            Don't just take our word for it. Here's what students are saying.
+            Don&apos;t just take our word for it. Here&apos;s what students are saying.
           </p>
         </div>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -28,7 +28,7 @@ export function TestimonialsSection({ testimonials }) {
               />
               <Card className="bg-transparent h-full">
                 <CardContent className="p-6">
-                  <p className="italic">"{testimonial.quote}"</p>
+                  <p className="italic">&quot;{testimonial.quote}&quot;</p>
                   <div className="flex items-center mt-6">
                     <Avatar className="h-10 w-10">
                       <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>

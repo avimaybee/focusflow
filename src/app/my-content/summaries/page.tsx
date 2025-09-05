@@ -91,7 +91,7 @@ export default function MySummariesPage() {
             <FileText className="h-12 w-12 text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold mb-2">No Summaries Yet</h2>
             <p className="text-muted-foreground mb-4">
-              It looks like you haven't created any summaries.
+              It looks like you haven&apos;t created any summaries.
             </p>
             <Button asChild>
               <Link href="/chat">Generate Your First Summary</Link>

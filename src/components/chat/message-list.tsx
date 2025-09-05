@@ -9,19 +9,14 @@ import { WelcomeScreen } from './welcome-screen';
 import { RefObject } from 'react';
 import { ChatMessageSkeleton } from './chat-message-skeleton';
 import type { SmartTool } from '@/components/smart-tools-menu';
-
-interface Persona {
-    id: string;
-    name: string;
-    avatarUrl: string;
-}
+import type { PersonaDetails } from '@/types/chat-types';
 
 interface MessageListProps {
   messages: ChatMessageProps[];
   isSending: boolean;
   isHistoryLoading: boolean;
   activeChatId: string | null;
-  activePersona: Persona | null;
+  activePersona: PersonaDetails | undefined;
   onSmartToolAction: (prompt: string) => void;
   onRegenerate: () => void;
 }

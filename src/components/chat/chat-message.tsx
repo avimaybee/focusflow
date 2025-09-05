@@ -13,12 +13,12 @@ import { FlashcardViewer } from '@/components/flashcard-viewer';
 import { QuizViewer } from '@/components/quiz-viewer';
 import { SmartToolsMenu, type SmartTool } from '@/components/smart-tools-menu';
 import { useToast } from '@/hooks/use-toast';
-import type { Timestamp } from 'firebase/firestore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/context/auth-context';
 import { saveChatMessage } from '@/lib/content-actions';
 import { TextSelectionMenu } from '@/components/notes/text-selection-menu';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import type { PersonaDetails } from '@/types/chat-types';
 
 interface FlashcardData {
   question: string;
@@ -34,12 +34,6 @@ interface QuizData {
   }[];
 }
 
-interface Persona {
-    id: string;
-    name: string;
-    avatarUrl: string;
-}
-
 export type ChatMessageProps = {
   id?: string;
   role: 'user' | 'model';
@@ -50,8 +44,10 @@ export type ChatMessageProps = {
   quiz?: QuizData;
   userAvatar?: string | null;
   userName?: string;
-  persona?: Persona;
-  createdAt?: Timestamp;
+  persona?: PersonaDetails;
+  createdAt?: Date;
+  source?: any;
+  confidence?: any;
   isError?: boolean;
   isFirstInGroup?: boolean;
   isLastInGroup?: boolean;

@@ -15,6 +15,7 @@ interface AuthContextType {
   isPremium: boolean;
   isGuest: boolean;
   username: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   publicProfile: any | null;
   preferredPersona: string | null;
   favoritePrompts: string[] | null;

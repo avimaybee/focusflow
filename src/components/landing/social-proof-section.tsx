@@ -33,7 +33,7 @@ export function SocialProofSection() {
         {/* Logos Section */}
         <div className="mt-16">
           <p className="text-center text-lg text-muted-foreground">
-            Trusted by students at the world's top universities
+            Trusted by students at the world&apos;s top universities
           </p>
           <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 items-center">
             {logos.map((logo, index) => (

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/ai/tools.ts
 /**
  * @fileOverview Defines placeholder tools. Each tool is defined with a clear input and output schema

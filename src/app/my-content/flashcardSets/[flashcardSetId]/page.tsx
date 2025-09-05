@@ -12,6 +12,7 @@ import { BackButton } from '@/components/ui/back-button';
 
 interface FlashcardSet {
     title: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     flashcards: any[];
     createdAt: Date; // Replaced Timestamp with Date
 }
