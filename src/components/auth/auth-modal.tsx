@@ -8,14 +8,7 @@ import { useAuth } from '@/context/auth-context';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
-  updateProfile,
-} from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -104,7 +97,7 @@ export function AuthModal() {
 
   const handleLogin = (values: LoginFormValues) => {
     handleAuthAction(
-      (email, password) => signInWithEmailAndPassword(auth, email, password),
+      (email, password) => supabase.auth.signInWithPassword({ email, password }),
       values,
       "Welcome back!"
     );
@@ -113,10 +106,16 @@ export function AuthModal() {
   const handleSignup = (values: SignupFormValues) => {
     handleAuthAction(
       async (email, password) => {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, {
-          displayName: email.split('@')[0],
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              displayName: email.split('@')[0],
+            },
+          },
         });
+        if (error) throw error;
       },
       values,
       "Welcome to FocusFlow AI!"
@@ -125,10 +124,12 @@ export function AuthModal() {
   
   const handleGoogleSignIn = async () => {
     setFormState('loading');
-    const provider = new GoogleAuthProvider();
     try {
-        await signInWithPopup(auth, provider);
-        toast({ title: 'Signed in with Google!', description: 'Welcome to FocusFlow AI!' });
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+        });
+        if (error) throw error;
+        // Supabase signInWithOAuth redirects, so no need for toast here immediately
     } catch (error: any) {
         toast({ variant: 'destructive', title: 'Google Sign-In Failed', description: error.message });
         setFormState('idle');

@@ -11,7 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/auth-context';
-import { auth } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { LayoutDashboard, LogOut, User as UserIcon } from 'lucide-react';
 
@@ -22,7 +22,7 @@ export function UserNav() {
     return null;
   }
 
-  const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+  const displayName = user.user_metadata?.displayName || user.email?.split('@')[0] || 'User';
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
@@ -30,7 +30,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.photoURL || undefined} alt={displayName} />
+            <AvatarImage src={user.user_metadata?.avatar_url || undefined} alt={displayName} />
             <AvatarFallback>{initial}</AvatarFallback>
           </Avatar>
         </Button>
@@ -58,7 +58,7 @@ export function UserNav() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => auth.signOut()}>
+        <DropdownMenuItem onClick={() => supabase.auth.signOut()}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>
