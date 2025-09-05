@@ -1,7 +1,5 @@
 'use server';
 
-import { db } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
 import { z } from 'zod';
 
 const GoalSchema = z.object({
@@ -20,10 +18,8 @@ const GoalSchema = z.object({
  * @param weekStartDate The start date of the week (YYYY-MM-DD).
  */
 export async function getGoals(userId: string, weekStartDate: string) {
-  if (!userId) throw new Error('User not found.');
-  const goalsRef = db.collection('users').doc(userId).collection('userGoals').where('weekStartDate', '==', weekStartDate);
-  const snapshot = await goalsRef.get();
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  console.log(`[PLACEHOLDER] getGoals called for user ${userId}, week: ${weekStartDate}`);
+  return []; // Return empty array for now
 }
 
 /**
@@ -32,29 +28,8 @@ export async function getGoals(userId: string, weekStartDate: string) {
  * @param goalData The goal data.
  */
 export async function setGoal(userId: string, goalData: { subject: string; targetHours: number; weekStartDate: string }) {
-  if (!userId) throw new Error('User not found.');
-  
-  const data = {
-    userId,
-    ...goalData,
-    createdAt: FieldValue.serverTimestamp(),
-    updatedAt: FieldValue.serverTimestamp(),
-  };
-
-  const validatedData = GoalSchema.partial().parse(data);
-  
-  // Check if a goal for this subject and week already exists
-  const goalsRef = db.collection('users').doc(userId).collection('userGoals');
-  const q = query(goalsRef, where('weekStartDate', '==', goalData.weekStartDate), where('subject', '==', goalData.subject));
-  const snapshot = await getDocs(q);
-
-  if (snapshot.empty) {
-    await goalsRef.add(validatedData);
-  } else {
-    // Update the existing goal
-    const docId = snapshot.docs[0].id;
-    await goalsRef.doc(docId).update({ targetHours: goalData.targetHours, updatedAt: FieldValue.serverTimestamp() });
-  }
+  console.log(`[PLACEHOLDER] setGoal called for user ${userId}, goalData:`, goalData);
+  return { success: true };
 }
 
 /**
@@ -69,30 +44,5 @@ export async function logStudyActivity(userId: string, activityData: {
     durationMinutes: number;
     score?: number; // e.g., 85 for 85%
 }) {
-    if (!userId) return;
-
-    const userRef = db.collection('users').doc(userId);
-    const activityLogRef = userRef.collection('studyActivityLog');
-
-    const batch = db.batch();
-
-    // 1. Log the specific activity
-    batch.set(activityLogRef.doc(), {
-        ...activityData,
-        createdAt: FieldValue.serverTimestamp(),
-    });
-
-    // 2. Update total study time for the subject
-    batch.update(userRef, {
-        [`studyTime.${activityData.subject}`]: FieldValue.increment(activityData.durationMinutes),
-        lastStudyDate: FieldValue.serverTimestamp(),
-    });
-
-    // 3. Update streak
-    // (Complex streak logic will be added here later)
-
-    // 4. Check for achievements
-    // (Achievement logic will be added here later)
-
-    await batch.commit();
+    console.log(`[PLACEHOLDER] logStudyActivity called for user ${userId}, activityData:`, activityData);
 }
