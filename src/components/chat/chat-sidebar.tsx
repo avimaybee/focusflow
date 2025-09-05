@@ -1,11 +1,8 @@
-
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import {
   LogIn,
   LogOut,
@@ -40,14 +37,22 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Logo } from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import type { User as FirebaseUser } from 'firebase/auth';
 import type { ChatHistoryItem } from '@/hooks/use-chat-history';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useAuth } from '@/context/auth-context';
 import { motion } from 'framer-motion';
 
+// Using the MockUser type from auth-context
+type MockUser = {
+  uid: string;
+  isAnonymous: boolean;
+  displayName: string | null;
+  email: string | null;
+  photoURL: string | null;
+};
+
 interface ChatSidebarProps {
-  user: FirebaseUser | null;
+  user: MockUser | null;
   chatHistory: ChatHistoryItem[];
   activeChatId: string | null;
   onNewChat: () => void;
@@ -78,21 +83,12 @@ const UserMenuItems = () => {
     const { user, isPremium, username } = useAuth();
   
     const handleLogout = async () => {
-      try {
-        await signOut(auth);
-        toast({
-          title: 'Logged Out',
-          description: 'You have been successfully logged out.',
-        });
-        router.push('/');
-      } catch (error) {
-        console.error('Error logging out:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Logout Failed',
-          description: 'An error occurred while logging out. Please try again.',
-        });
-      }
+      // Placeholder for logout
+      toast({
+        title: 'Logged Out',
+        description: 'You have been successfully logged out (placeholder).',
+      });
+      router.push('/');
     };
   
     if (!user) return null;
@@ -152,7 +148,7 @@ const UserMenuItems = () => {
     );
 };
 
-const UserMenu = ({ user, isCollapsed }: { user: FirebaseUser | null, isCollapsed: boolean }) => {
+const UserMenu = ({ user, isCollapsed }: { user: MockUser | null, isCollapsed: boolean }) => {
   const authModal = useAuthModal();
   const { isPremium } = useAuth();
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
@@ -358,5 +354,3 @@ const ChatSidebarComponent = ({
 }
 
 export const ChatSidebar = React.memo(ChatSidebarComponent);
-
-    
