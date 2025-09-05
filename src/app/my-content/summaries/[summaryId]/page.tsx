@@ -1,10 +1,7 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Share2, Printer, Save, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
-import { makeSummaryPublic, updateContent } from '@/lib/content-actions';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,7 +20,7 @@ interface Summary {
   title: string;
   summary: string;
   keywords: string[];
-  createdAt: Timestamp;
+  createdAt: Date; // Replaced Timestamp with Date
   isPublic?: boolean;
   publicSlug?: string;
 }
@@ -47,58 +43,39 @@ export default function SummaryDetailPage() {
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
-    if (authLoading) return;
-
-    if (!user) {
-      router.push('/login');
-      return;
+    // Placeholder for fetching data from Supabase
+    if (summaryId) {
+        const placeholderSummary = {
+            id: summaryId,
+            title: 'Placeholder Summary',
+            summary: 'This is a placeholder summary.',
+            keywords: ['placeholder', 'summary'],
+            createdAt: new Date(),
+            isPublic: false,
+            publicSlug: '',
+        };
+        setSummary(placeholderSummary);
+        setTitle(placeholderSummary.title);
+        setContent(placeholderSummary.summary);
+        marked.parse(placeholderSummary.summary).then(setRenderedContent);
     }
-    
-    if (user && summaryId) {
-      const fetchSummary = async () => {
-        setIsLoading(true);
-        const docRef = doc(db, 'users', user.uid, 'summaries', summaryId);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = { id: docSnap.id, ...docSnap.data() } as Summary;
-          setSummary(data);
-          setTitle(data.title);
-          setContent(data.summary);
-          setRenderedContent(await marked.parse(data.summary));
-        } else {
-          setSummary(null);
-        }
-        setIsLoading(false);
-      };
-
-      fetchSummary();
-    }
-  }, [user, summaryId, authLoading, router]);
+    setIsLoading(false);
+  }, [summaryId]);
   
   const handleUpdate = async () => {
-    if (!user || !summary || !hasChanges) {
+    if (!hasChanges) {
         setEditMode(false);
         return;
     }
     setIsSaving(true);
-    try {
-      const contentToSave = { title, summary: content };
-      await updateContent(user.uid, summary.id, 'summary', contentToSave);
-      setRenderedContent(await marked.parse(content));
-      toast({ title: 'Success!', description: 'Your summary has been updated.' });
-      setHasChanges(false);
-      setEditMode(false);
-    } catch (error) {
-       console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Update Failed',
-        description: 'Could not update the summary. Please try again.',
-      });
-    } finally {
+    // Placeholder for update logic
+    setTimeout(async () => {
+        setRenderedContent(await marked.parse(content));
+        toast({ title: 'Success!', description: 'Your summary has been updated (placeholder).' });
+        setHasChanges(false);
+        setEditMode(false);
         setIsSaving(false);
-    }
+    }, 1000);
   };
 
   const handleToggleEdit = () => {
@@ -110,27 +87,8 @@ export default function SummaryDetailPage() {
   };
 
   const handleShare = async () => {
-    if (!user || !summary) return;
-    setIsSharing(true);
-    try {
-      const slug = await makeSummaryPublic(user.uid, summary.id);
-      const publicUrl = `${window.location.origin}/summaries/${slug}`;
-      setSummary(prev => prev ? { ...prev, isPublic: true, publicSlug: slug } : null);
-      toast({
-        title: "Summary Published!",
-        description: `Your summary is now live at: ${publicUrl}`,
-      });
-      navigator.clipboard.writeText(publicUrl);
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Sharing Failed',
-        description: 'Could not make the summary public. Please try again.',
-      });
-    } finally {
-      setIsSharing(false);
-    }
+    // Placeholder
+    toast({ title: 'Coming Soon!', description: 'Sharing will be re-enabled soon.' });
   };
 
   if (isLoading || authLoading) {
@@ -173,7 +131,7 @@ export default function SummaryDetailPage() {
                 <h1 className="text-3xl font-bold">{title}</h1>
               )}
               <CardDescription>
-                Created on {format(summary.createdAt.toDate(), 'MMMM dd, yyyy')}
+                Created on {format(summary.createdAt, 'MMMM dd, yyyy')}
               </CardDescription>
               <div className="flex gap-2 pt-2">
                 {summary.keywords && summary.keywords.map(keyword => (

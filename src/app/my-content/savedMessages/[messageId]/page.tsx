@@ -1,10 +1,7 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,13 +10,12 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
-import { updateContent } from '@/lib/content-actions';
 import { marked } from 'marked';
 import { BackButton } from '@/components/ui/back-button';
 
 interface SavedMessage {
   content: string;
-  createdAt: Timestamp;
+  createdAt: Date; // Replaced Timestamp with Date
 }
 
 export default function SavedMessageDetailPage() {
@@ -38,33 +34,18 @@ export default function SavedMessageDetailPage() {
   const [renderedContent, setRenderedContent] = useState('');
 
   useEffect(() => {
-    if (authLoading) return;
-
-    if (!user) {
-      router.push('/login');
-      return;
+    // Placeholder for fetching data from Supabase
+    if (messageId) {
+        const placeholderMessage = {
+            content: 'This is a placeholder saved message.',
+            createdAt: new Date(),
+        };
+        setMessage(placeholderMessage);
+        setContent(placeholderMessage.content);
+        marked.parse(placeholderMessage.content).then(setRenderedContent);
     }
-
-    if (user && messageId) {
-      const fetchMessage = async () => {
-        setIsLoading(true);
-        const docRef = doc(db, 'users', user.uid, 'savedMessages', messageId);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = docSnap.data() as SavedMessage;
-          setMessage(data);
-          setContent(data.content);
-          setRenderedContent(await marked.parse(data.content));
-        } else {
-          setMessage(null);
-        }
-        setIsLoading(false);
-      };
-
-      fetchMessage();
-    }
-  }, [user, messageId, authLoading, router]);
+    setIsLoading(false);
+  }, [messageId]);
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
@@ -72,23 +53,19 @@ export default function SavedMessageDetailPage() {
   };
 
   const handleUpdate = async () => {
-    if (!user || !hasChanges) {
+    if (!hasChanges) {
       setEditMode(false);
       return;
     };
     setIsSaving(true);
-    try {
-      await updateContent(user.uid, messageId, 'savedMessage', { content });
-      setRenderedContent(await marked.parse(content));
-      toast({ title: 'Success!', description: 'Saved message has been updated.' });
-      setHasChanges(false);
-      setEditMode(false);
-    } catch (error) {
-      console.error('Failed to update message:', error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not update the message.' });
-    } finally {
-      setIsSaving(false);
-    }
+    // Placeholder for update logic
+    setTimeout(async () => {
+        setRenderedContent(await marked.parse(content));
+        toast({ title: 'Success!', description: 'Saved message has been updated (placeholder).' });
+        setHasChanges(false);
+        setEditMode(false);
+        setIsSaving(false);
+    }, 1000);
   };
   
   const handleToggleEdit = () => {
@@ -129,7 +106,7 @@ export default function SavedMessageDetailPage() {
           <CardHeader>
             <CardTitle className="text-3xl font-bold">Saved Message</CardTitle>
             <CardDescription>
-              Saved on {format(message.createdAt.toDate(), 'MMMM dd, yyyy')}
+              Saved on {format(message.createdAt, 'MMMM dd, yyyy')}
             </CardDescription>
           </CardHeader>
           <CardContent>
