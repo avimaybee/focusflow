@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
@@ -16,12 +15,9 @@ import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
 import { MultimodalInput } from '@/components/chat/multimodal-input';
 import { ContextHub } from '@/components/chat/context-hub';
-import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { ChatMessageProps } from '@/components/chat/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
 import { marked } from 'marked';
-import { deleteChat } from '@/lib/content-actions';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -68,112 +64,11 @@ export default function ChatPage() {
 
   const handleSetSidebarOpen = (isOpen: boolean) => {
     setSidebarOpen(isOpen);
-    if (!isOpen) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-    }
   };
 
   const toggleContextHub = () => {
-    const willBeOpen = !isContextHubOpen;
     baseToggleContextHub();
-    if (!willBeOpen) {
-        setTimeout(() => {
-            inputRef.current?.focus();
-        }, 100);
-    }
   };
-
-  useEffect(() => {
-    const chatIdFromUrl = params.chatId as string | undefined;
-    if (chatIdFromUrl) {
-      if (chatIdFromUrl !== activeChatId) {
-        setActiveChatId(chatIdFromUrl);
-      }
-    } else {
-      if (activeChatId) {
-        handleNewChat();
-      }
-    }
-  }, [params.chatId, activeChatId]);
-  
-  useEffect(() => {
-    // This effect syncs the URL with the activeChatId state.
-    // It prevents the race condition that was causing the error message.
-    if (activeChatId && activeChatId !== params.chatId) {
-      router.push(`/chat/${activeChatId}`);
-    }
-  }, [activeChatId, params.chatId, router]);
-
-  useEffect(() => {
-    if (!user || !activeChatId) {
-        if (!user) {
-            setMessages([]);
-            setGuestMessageCount(0);
-        }
-        return;
-    }
-  
-    const chatRef = doc(db, 'users', user.uid, 'chats', activeChatId);
-    
-    const unsubscribe = onSnapshot(chatRef, async (docSnapshot) => {
-      if (docSnapshot.exists()) {
-        const sessionData = docSnapshot.data();
-        const history = sessionData.threads?.main || [];
-        
-        const chatMessagesPromises = history
-          .filter((msg: any) => msg.role !== 'system')
-          .map(async (msg: any, index: number, arr: any[]) => {
-            const textContent = msg.content?.find((p: any) => p.text)?.text || '';
-
-            let toolCallOutput: any = {};
-            if (msg.role === 'model' && msg.toolCalls?.length > 0) {
-              const call = msg.toolCalls[0];
-              if (call.output) {
-                if (call.name === 'createFlashcardsTool') {
-                  toolCallOutput.flashcards = call.output.flashcards;
-                }
-                if (call.name === 'createQuizTool') {
-                  toolCallOutput.quiz = call.output.quiz;
-                }
-              }
-            }
-
-            const prevMessage = arr[index - 1];
-            const nextMessage = arr[index + 1];
-            const isFirstInGroup = !prevMessage || prevMessage.role !== msg.role;
-            const isLastInGroup = !nextMessage || nextMessage.role !== msg.role;
-
-          return { 
-            id: `${docSnapshot.id}-${index}`,
-            role: msg.role,
-            text: await marked.parse(textContent),
-            rawText: textContent,
-            source: msg.data?.source,
-            confidence: msg.data?.confidence,
-            createdAt: sessionData.updatedAt || Timestamp.now(),
-            userName: user.displayName || 'User',
-            userAvatar: user.photoURL,
-            persona: selectedPersona || undefined,
-            isFirstInGroup,
-            isLastInGroup,
-            ...toolCallOutput,
-          } as ChatMessageProps;
-        });
-
-        const resolvedMessages = await Promise.all(chatMessagesPromises);
-        setMessages(resolvedMessages);
-      } else {
-        setMessages([]);
-      }
-    }, (error) => {
-      console.error("Error fetching chat document:", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not load chat session.' });
-    });
-    
-    return () => unsubscribe();
-  }, [activeChatId, user, toast, selectedPersona]);
 
   const handleNewChat = () => {
     setActiveChatId(null);
@@ -183,56 +78,19 @@ export default function ChatPage() {
   };
 
   const handleDeleteChat = async (chatId: string) => {
-    setChatToDelete(chatId);
-    setDialogOpen(true);
+    toast({ title: 'Coming Soon', description: 'Chat deletion will be re-enabled soon.' });
   };
 
   const confirmDeleteChat = async () => {
-    if (!user || !chatToDelete) return;
-
-    try {
-        await deleteChat(user.uid, chatToDelete);
-        forceRefresh();
-        if (activeChatId === chatToDelete) {
-            handleNewChat();
-        }
-        toast({
-            title: 'Chat Deleted',
-            description: 'The chat session has been permanently deleted.',
-        });
-    } catch (error) {
-        console.error('Failed to delete chat:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Could not delete the chat session.',
-        });
-    } finally {
-        setDialogOpen(false);
-        setChatToDelete(null);
-    }
+    // Placeholder
   };
 
   const handleRegenerate = () => {
-    const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
-    if (lastUserMessage && lastUserMessage.rawText) {
-      setMessages(prev => prev.filter(m => m.id !== lastUserMessage.id).filter(m => m.role !== 'model'));
-      handleSendMessage({ input: lastUserMessage.rawText, attachments: lastUserMessage.attachments || [] });
-    } else {
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not find a previous prompt to regenerate.' });
-    }
+    toast({ title: 'Coming Soon', description: 'Message regeneration will be re-enabled soon.' });
   };
 
   const handleSendMessage = async ({ input, attachments }: { input: string; attachments: Attachment[] }) => {
     if (!input.trim() && attachments.length === 0 || isSending || authLoading ) return;
-
-    if (!user) {
-        if (guestMessageCount >= GUEST_MESSAGE_LIMIT) {
-            openAuthModal('signup');
-            toast({ title: 'Message Limit Reached', description: 'Please sign up or log in to continue chatting.' });
-            return;
-        }
-    }
 
     setIsSending(true);
 
@@ -241,20 +99,18 @@ export default function ChatPage() {
         role: 'user',
         text: await marked.parse(input.trim()),
         rawText: input.trim(),
-        userName: user?.displayName || 'Guest',
-        userAvatar: user?.photoURL || null,
-        createdAt: Timestamp.now(),
+        userName: 'Guest',
+        userAvatar: null,
+        createdAt: new Date(),
         attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.type, size: 0 }))
     };
     setMessages(prev => [...prev, userMessage]);
 
-    if (!user) {
-        setGuestMessageCount(prev => prev + 1);
-    }
+    setGuestMessageCount(prev => prev + 1);
   
     const chatInput = {
       message: input.trim(),
-      sessionId: user ? activeChatId || undefined : undefined,
+      sessionId: activeChatId || undefined,
       personaId: selectedPersonaId,
       context: attachments.length > 0 ? { url: attachments[0].url, filename: attachments[0].name } : undefined,
     };
@@ -263,55 +119,35 @@ export default function ChatPage() {
     setAttachments([]);
   
     try {
-      const idToken = await user?.getIdToken();
-      const headers: { [key:string]: string } = { 'Content-Type': 'application/json' };
-      if (idToken) {
-        headers['Authorization'] = `Bearer ${idToken}`;
-      }
-
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(chatInput),
       });
   
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        throw new Error(`Received non-JSON response from server: ${text}`);
-      }
-
       const result = await response.json();
       
       if (!response.ok) {
         throw { response, result };
       }
       
-      if (user && result.sessionId && !activeChatId) {
-        setActiveChatId(result.sessionId); // This will trigger the useEffect for navigation
-        forceRefresh();
-      } else if (!user) {
-        const modelResponse: ChatMessageProps = {
-            id: `guest-ai-${Date.now()}`,
-            role: 'model',
-            text: await marked.parse(result.response),
-            rawText: result.response,
-            flashcards: result.flashcards,
-            quiz: result.quiz,
-            source: result.source,
-            confidence: result.confidence,
-            persona: selectedPersona || undefined,
-            createdAt: Timestamp.now(),
-        };
-        setMessages(prev => [...prev, modelResponse]);
-      }
+      const modelResponse: ChatMessageProps = {
+          id: `guest-ai-${Date.now()}`,
+          role: 'model',
+          text: await marked.parse(result.response),
+          rawText: result.response,
+          flashcards: result.flashcards,
+          quiz: result.quiz,
+          source: result.source,
+          confidence: result.confidence,
+          persona: selectedPersona || undefined,
+          createdAt: new Date(),
+      };
+      setMessages(prev => [...prev, modelResponse]);
+
     } catch (error: any) {
       console.error("Client-side send message error:", error);
       const description = error.result?.error || error.message || 'An unknown error occurred.';
-
-      if (description.includes('You have reached your monthly limit')) {
-        setUpgradeModalOpen(true);
-      }
 
       toast({
         variant: 'destructive',
@@ -325,7 +161,7 @@ export default function ChatPage() {
         text: `<p>Sorry, there was an error. Please try again.</p>`,
         rawText: `Sorry, there was an error. Please try again.`,
         isError: true,
-        createdAt: Timestamp.now(),
+        createdAt: new Date(),
       };
       setMessages(prev => [...prev, errorResponse]);
     } finally {
@@ -348,7 +184,7 @@ export default function ChatPage() {
           <Sheet open={sidebarOpen} onOpenChange={handleSetSidebarOpen}>
             <SheetContent side="left" className="p-0 w-80">
               <ChatSidebar
-                user={user}
+                user={null}
                 chatHistory={chatHistory}
                 activeChatId={activeChatId}
                 onNewChat={handleNewChat}
@@ -367,7 +203,7 @@ export default function ChatPage() {
       
       <div className="hidden md:flex">
         <ChatSidebar
-            user={user}
+            user={null}
             chatHistory={chatHistory}
             activeChatId={activeChatId}
             onNewChat={handleNewChat}
@@ -383,7 +219,7 @@ export default function ChatPage() {
         <ChatHeader
           personaName={selectedPersona?.name || 'Default'}
           onSidebarToggle={() => handleSetSidebarOpen(true)}
-          isLoggedIn={!!user}
+          isLoggedIn={false}
           onNotesToggle={toggleContextHub}
         />
         

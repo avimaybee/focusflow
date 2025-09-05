@@ -1,10 +1,7 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { db } from '@/lib/firebase';
-import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { MasteryGraph } from '@/components/dashboard/mastery-graph';
 import { LearningVelocity } from '@/components/dashboard/learning-velocity';
@@ -15,21 +12,8 @@ export default function AnalyticsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
-
-    const logRef = collection(db, 'users', user.uid, 'studyActivityLog');
-    const q = query(logRef, orderBy('createdAt', 'asc'));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const log = snapshot.docs.map(doc => doc.data());
-      setActivityLog(log);
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe();
+    // Placeholder for fetching data from Supabase
+    setIsLoading(false);
   }, [user]);
 
   // In a real app, you would process the activityLog into the format needed by the charts.

@@ -1,12 +1,8 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { db } from '@/lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
 import { Loader2, FileText, BookOpen, HelpCircle, BrainCircuit, Calendar } from 'lucide-react';
-import { getGoals, setGoal } from '@/lib/dashboard-actions';
 import { StreakCalendar } from '@/components/dashboard/streak-calendar';
 import { SubjectPieChart } from '@/components/dashboard/subject-pie-chart';
 import { GoalTracker } from '@/components/dashboard/goal-tracker';
@@ -19,33 +15,12 @@ import Link from 'next/link';
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
-  const [userData, setUserData] = useState<any>(null);
-  const [goals, setGoals] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      if (!authLoading) setIsLoading(false);
-      return;
-    }
-
-    // Listener for the main user document
-    const userUnsub = onSnapshot(doc(db, 'users', user.uid), (doc) => {
-      if (doc.exists()) {
-        setUserData(doc.data());
-      }
-      setIsLoading(false);
-    });
-
-    // Fetch goals for the current week
-    // (Simplified for now - will add proper week start date logic later)
-    const weekStartDate = new Date().toISOString().split('T')[0];
-    getGoals(user.uid, weekStartDate).then(setGoals);
-
-    return () => {
-      userUnsub();
-    };
+    // Placeholder for fetching data from Supabase
+    setIsLoading(false);
   }, [user, authLoading]);
 
   if (isLoading || authLoading) {
@@ -67,7 +42,7 @@ export default function DashboardPage() {
         </div>
         
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5 mb-6">
-            <StreakCalendar streakCount={userData?.streakCount || 0} />
+            <StreakCalendar streakCount={0} />
             <Link href="/my-content?tab=Summaries">
                 <Card className="hover:border-primary/80 hover:bg-muted transition-all">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -75,9 +50,7 @@ export default function DashboardPage() {
                         <FileText className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
-                            {userData?.summariesCount || 0}
-                        </div>
+                        <div className="text-2xl font-bold">0</div>
                     </CardContent>
                 </Card>
             </Link>
@@ -88,9 +61,7 @@ export default function DashboardPage() {
                         <HelpCircle className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
-                            {userData?.quizzesCount || 0}
-                        </div>
+                        <div className="text-2xl font-bold">0</div>
                     </CardContent>
                 </Card>
             </Link>
@@ -101,9 +72,7 @@ export default function DashboardPage() {
                         <BrainCircuit className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
-                            {userData?.flashcardSetsCount || 0}
-                        </div>
+                        <div className="text-2xl font-bold">0</div>
                     </CardContent>
                 </Card>
             </Link>
@@ -114,18 +83,16 @@ export default function DashboardPage() {
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
-                            {userData?.studyPlansCount || 0}
-                        </div>
+                        <div className="text-2xl font-bold">0</div>
                     </CardContent>
                 </Card>
             </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <SubjectPieChart studyTime={userData?.studyTime || {}} />
-            <GoalTracker goals={goals} onSetGoal={() => setIsGoalModalOpen(true)} />
-            <BadgeGrid earnedAchievements={userData?.achievements || []} />
+            <SubjectPieChart studyTime={{}} />
+            <GoalTracker goals={[]} onSetGoal={() => setIsGoalModalOpen(true)} />
+            <BadgeGrid earnedAchievements={[]} />
         </div>
 
         <div className="grid grid-cols-1 gap-6 mt-6">
@@ -175,9 +142,7 @@ export default function DashboardPage() {
         isOpen={isGoalModalOpen}
         onOpenChange={setIsGoalModalOpen}
         onSuccess={() => {
-          if (!user) return;
-          const weekStartDate = new Date().toISOString().split('T')[0];
-          getGoals(user.uid, weekStartDate).then(setGoals);
+          // Placeholder
         }}
       />
     </main>
