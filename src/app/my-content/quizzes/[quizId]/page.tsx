@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Loader2 } from 'lucide-react';
@@ -6,8 +5,6 @@ import Link from 'next/link';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { useEffect, useState } from 'react';
-import { doc, getDoc, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { QuizViewer } from '@/components/quiz-viewer';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
@@ -15,7 +12,7 @@ import { BackButton } from '@/components/ui/back-button';
 interface Quiz {
     title: string;
     quiz: any;
-    createdAt: Timestamp;
+    createdAt: Date; // Replaced Timestamp with Date
 }
 
 export default function QuizDetailPage() {
@@ -27,28 +24,26 @@ export default function QuizDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-        router.push('/login');
-        return;
+    // Placeholder for fetching data from Supabase
+    if (quizId) {
+        setQuiz({
+            title: 'Placeholder Quiz',
+            quiz: {
+                title: 'Placeholder Quiz',
+                questions: [
+                    {
+                        question: 'What is the capital of France?',
+                        options: ['London', 'Berlin', 'Paris', 'Madrid'],
+                        correctAnswer: 'Paris',
+                        explanation: 'Paris is the capital of France.',
+                    },
+                ],
+            },
+            createdAt: new Date(),
+        });
     }
-
-    if (user && quizId) {
-        const fetchQuiz = async () => {
-            setIsLoading(true);
-            const docRef = doc(db, 'users', user.uid, 'quizzes', quizId);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                setQuiz(docSnap.data() as Quiz);
-            } else {
-                setQuiz(null);
-            }
-            setIsLoading(false);
-        };
-        fetchQuiz();
-    }
-  }, [user, quizId, authLoading, router]);
+    setIsLoading(false);
+  }, [quizId]);
 
   if (isLoading || authLoading) {
     return (

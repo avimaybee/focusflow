@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,15 +7,13 @@ import Link from 'next/link';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { useEffect, useState } from 'react';
-import { doc, getDoc, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { FlashcardViewer } from '@/components/flashcard-viewer';
 import { BackButton } from '@/components/ui/back-button';
 
 interface FlashcardSet {
     title: string;
     flashcards: any[];
-    createdAt: Timestamp;
+    createdAt: Date; // Replaced Timestamp with Date
 }
 
 export default function FlashcardSetDetailPage() {
@@ -28,28 +25,19 @@ export default function FlashcardSetDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (authLoading) return;
-        if (!user) {
-            router.push('/login');
-            return;
+        // Placeholder for fetching data from Supabase
+        if (flashcardSetId) {
+            setFlashcardSet({
+                title: 'Placeholder Flashcard Set',
+                flashcards: [
+                    { question: 'What is the capital of France?', answer: 'Paris' },
+                    { question: 'What is 2 + 2?', answer: '4' },
+                ],
+                createdAt: new Date(),
+            });
         }
-
-        if (user && flashcardSetId) {
-            const fetchSet = async () => {
-                setIsLoading(true);
-                const docRef = doc(db, 'users', user.uid, 'flashcardSets', flashcardSetId);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    setFlashcardSet(docSnap.data() as FlashcardSet);
-                } else {
-                    setFlashcardSet(null);
-                }
-                setIsLoading(false);
-            };
-            fetchSet();
-        }
-    }, [user, flashcardSetId, authLoading, router]);
+        setIsLoading(false);
+    }, [flashcardSetId]);
 
     if (isLoading || authLoading) {
         return (
