@@ -18,6 +18,7 @@ describe('POST /api/chat', () => {
     });
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createMockRequest = (body: any) => {
     return new NextRequest('http://localhost/api/chat', {
       method: 'POST',

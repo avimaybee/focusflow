@@ -15,6 +15,7 @@ interface RichTextEditorProps {
   placeholder?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const EditorToolbar = ({ editor }: { editor: any | null }) => {
   if (!editor) return null;
 

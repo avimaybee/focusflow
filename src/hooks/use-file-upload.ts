@@ -3,12 +3,7 @@
 
 import { useState, DragEvent, Dispatch, SetStateAction } from 'react';
 import { useToast } from '@/hooks/use-toast';
-
-export type Attachment = {
-  name: string;
-  type: string;
-  url: string; // This will store the data URI
-};
+import type { Attachment } from '@/types/chat-types';
 
 export function useFileUpload(setAttachment: Dispatch<SetStateAction<Attachment | null>>) {
   const { toast } = useToast();
@@ -47,9 +42,10 @@ export function useFileUpload(setAttachment: Dispatch<SetStateAction<Attachment 
 
     try {
       const dataUri = await readFileAsDataURI(file);
-      const newAttachment = {
+      const newAttachment: Attachment = {
         name: file.name,
-        type: file.type,
+        contentType: file.type,
+        size: file.size,
         url: dataUri,
       };
       setAttachment(newAttachment);

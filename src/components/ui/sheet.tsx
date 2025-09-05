@@ -86,6 +86,7 @@ const SheetContent = React.forwardRef<
   const onDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const swipeThreshold = 50;
     const swipeVelocityThreshold = 400;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onOpenChange = (props as any).onOpenChange;
 
     if (!onOpenChange) return;

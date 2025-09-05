@@ -1,5 +1,7 @@
 
 import type { Config } from 'tailwindcss';
+import tailwindcssAnimate from 'tailwindcss-animate';
+import tailwindcssTypography from '@tailwindcss/typography';
 
 const config = {
   darkMode: ['class'],
@@ -109,6 +111,7 @@ const config = {
         'accordion-up': 'accordion-up 0.2s ease-out',
         rainbow: "rainbow 2s linear infinite",
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       typography: (theme: (arg0: string) => any) => ({
         DEFAULT: {
           css: {
@@ -171,6 +174,6 @@ const config = {
       }),
     },
   },
-  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
+  plugins: [tailwindcssAnimate, tailwindcssTypography],
 } satisfies Config;
 

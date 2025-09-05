@@ -1,6 +1,20 @@
 
 import { z } from 'zod';
 
+export interface Attachment {
+  url: string;
+  name: string;
+  contentType: string;
+  size: number;
+}
+
+export interface PersonaDetails {
+  id: string;
+  name: string;
+  avatarUrl: string;
+  prompt: string;
+}
+
 export const validPersonas = [
   'neutral',
   'five-year-old',

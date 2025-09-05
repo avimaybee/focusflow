@@ -132,7 +132,7 @@ export const OnboardingModal = () => {
                     <Check className="h-10 w-10 text-green-500" />
                 </div>
                 <h2 className="text-2xl font-bold mb-2">All Set!</h2>
-                <p className="text-muted-foreground">Your profile is ready. Let's start learning.</p>
+                <p className="text-muted-foreground">Your profile is ready. Let&apos;s start learning.</p>
             </div>
         )
       default:

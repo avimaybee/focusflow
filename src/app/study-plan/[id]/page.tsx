@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 export default function StudyPlanPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [plan, setPlan] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -38,6 +39,7 @@ export default function StudyPlanPage({ params }: { params: { id: string } }) {
     <main className="container mx-auto px-4 py-12 max-w-4xl">
       <h1 className="text-3xl font-bold mb-8 text-center">{plan.title}</h1>
       <div className="space-y-6">
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {plan.plan.map((day: any) => (
           <Card key={day.day}>
             <CardHeader>

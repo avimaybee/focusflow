@@ -8,7 +8,7 @@ import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
-import { Attachment } from '@/hooks/use-file-upload';
+import { Attachment } from '@/types/chat-types';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatHeader } from '@/components/chat/chat-header';
@@ -102,7 +102,7 @@ export default function ChatPage() {
         userName: 'Guest',
         userAvatar: null,
         createdAt: new Date(),
-        attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.type, size: 0 }))
+        attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.contentType, size: att.size }))
     };
     setMessages(prev => [...prev, userMessage]);
 
@@ -140,11 +140,12 @@ export default function ChatPage() {
           quiz: result.quiz,
           source: result.source,
           confidence: result.confidence,
-          persona: selectedPersona || undefined,
+          persona: selectedPersona,
           createdAt: new Date(),
       };
       setMessages(prev => [...prev, modelResponse]);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Client-side send message error:", error);
       const description = error.result?.error || error.message || 'An unknown error occurred.';
@@ -276,7 +277,7 @@ export default function ChatPage() {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Upgrade to Premium</AlertDialogTitle>
                     <AlertDialogDescription>
-                        You've reached your monthly usage limit for this feature. Please upgrade to Premium for unlimited access.
+                        You&apos;ve reached your monthly usage limit for this feature. Please upgrade to Premium for unlimited access.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

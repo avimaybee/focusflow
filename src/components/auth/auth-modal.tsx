@@ -81,6 +81,7 @@ export function AuthModal() {
   }, [isOpen, loginForm, signupForm]);
 
   const handleAuthAction = async (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     action: (email: string, pass: string) => Promise<any>,
     values: LoginFormValues | SignupFormValues,
     successMessage: string
@@ -89,6 +90,7 @@ export function AuthModal() {
     try {
       await action(values.email, values.password);
       toast({ title: 'Success!', description: successMessage });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Authentication Failed', description: error.message });
       setFormState('idle');
@@ -130,6 +132,7 @@ export function AuthModal() {
         });
         if (error) throw error;
         // Supabase signInWithOAuth redirects, so no need for toast here immediately
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         toast({ variant: 'destructive', title: 'Google Sign-In Failed', description: error.message });
         setFormState('idle');

@@ -52,15 +52,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
-import type { UIMessage } from '@/types/chat';
+import type { UIMessage, Attachment } from '@/types/chat-types';
 
 // Type Definitions
-interface Attachment {
-  url: string;
-  name: string;
-  contentType: string;
-  size: number;
-}
 type VisibilityType = 'public' | 'private' | 'unlisted' | string;
 
 // Mapping persona IDs to icons
@@ -91,6 +85,7 @@ interface MultimodalInputProps {
   canSend: boolean;
   className?: string;
   selectedVisibilityType: VisibilityType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   personas: any[];
   selectedPersonaId: string;
   setSelectedPersonaId: (id: string) => void;
