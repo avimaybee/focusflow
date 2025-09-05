@@ -1,8 +1,6 @@
-import { db } from '@/lib/firebase-admin';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { QuizViewer } from '@/components/quiz-viewer';
-import { incrementViews } from '@/lib/profile-actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 
@@ -11,24 +9,34 @@ type Props = {
 };
 
 async function getQuiz(slug: string) {
-  const quizRef = db.collection('publicQuizzes').doc(slug);
-  const quizSnap = await quizRef.get();
-
-  if (!quizSnap.exists) {
-    return null;
+  // Placeholder for fetching data from Supabase
+  if (slug === 'placeholder') {
+    return {
+      quiz: {
+        title: 'Placeholder Quiz',
+        quiz: {
+            title: 'Placeholder Quiz',
+            questions: [
+                {
+                    question: 'What is the capital of France?',
+                    options: ['London', 'Berlin', 'Paris', 'Madrid'],
+                    correctAnswer: 'Paris',
+                    explanation: 'Paris is the capital of France.',
+                },
+            ],
+        },
+        sourceText: 'Placeholder Topic',
+        authorId: 'placeholder-author',
+        id: 'placeholder-id',
+      },
+      author: {
+        username: 'placeholder-user',
+        displayName: 'Placeholder User',
+        avatarUrl: '',
+      },
+    };
   }
-  
-  const quizData = quizSnap.data();
-  if (!quizData?.authorId) {
-    return { quiz: quizData, author: null };
-  }
-
-  const authorRef = db.collection('users').doc(quizData.authorId);
-  const authorSnap = await authorRef.get();
-  
-  const authorData = authorSnap.exists() ? authorSnap.data()?.publicProfile : null;
-
-  return { quiz: quizData, author: authorData };
+  return null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -62,11 +70,6 @@ export default async function PublicQuizPage({ params }: Props) {
   }
 
   const { quiz, author } = data;
-
-  // Increment views - fire and forget
-  if (quiz.authorId && quiz.id) {
-    incrementViews(quiz.authorId, quiz.id, 'quiz');
-  }
 
   return (
     <main className="container mx-auto px-4 py-12 max-w-4xl">

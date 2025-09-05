@@ -1,8 +1,6 @@
-import { db } from '@/lib/firebase-admin';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { FlashcardViewer } from '@/components/flashcard-viewer';
-import { incrementViews } from '@/lib/profile-actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 
@@ -11,24 +9,27 @@ type Props = {
 };
 
 async function getFlashcardSet(slug: string) {
-  const setRef = db.collection('publicFlashcardSets').doc(slug);
-  const setSnap = await setRef.get();
-
-  if (!setSnap.exists) {
-    return null;
+  // Placeholder for fetching data from Supabase
+  if (slug === 'placeholder') {
+    return {
+      set: {
+        title: 'Placeholder Flashcard Set',
+        flashcards: [
+          { question: 'What is the capital of France?', answer: 'Paris' },
+          { question: 'What is 2 + 2?', answer: '4' },
+        ],
+        sourceText: 'Placeholder Topic',
+        authorId: 'placeholder-author',
+        id: 'placeholder-id',
+      },
+      author: {
+        username: 'placeholder-user',
+        displayName: 'Placeholder User',
+        avatarUrl: '',
+      },
+    };
   }
-  
-  const setData = setSnap.data();
-  if (!setData?.authorId) {
-    return { set: setData, author: null };
-  }
-
-  const authorRef = db.collection('users').doc(setData.authorId);
-  const authorSnap = await authorRef.get();
-  
-  const authorData = authorSnap.exists() ? authorSnap.data()?.publicProfile : null;
-
-  return { set: setData, author: authorData };
+  return null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -62,10 +63,6 @@ export default async function PublicFlashcardSetPage({ params }: Props) {
   }
 
   const { set, author } = data;
-
-  if (set.authorId && set.id) {
-    incrementViews(set.authorId, set.id, 'flashcardSet');
-  }
 
   return (
     <main className="container mx-auto px-4 py-12 max-w-4xl">

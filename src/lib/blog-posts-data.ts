@@ -1,7 +1,4 @@
 // src/lib/blog-posts-data.ts
-import { collection, getDocs, query, where, orderBy, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase'; // Use client SDK instead of admin
-
 export interface BlogPost {
     id: string;
     title: string;
@@ -13,37 +10,33 @@ export interface BlogPost {
     tags: string[];
 }
 
-// Helper to convert Firestore Timestamp to a serializable format (ISO string)
-const processDoc = (doc: any) => {
-    const data = doc.data();
-    // Ensure publishedAt is a serializable string
-    const publishedAtDate = data.publishedAt?.toDate ? data.publishedAt.toDate() : new Date();
-    
-    return {
-        id: doc.id,
-        ...data,
-        publishedAt: publishedAtDate.toISOString(),
-    } as BlogPost;
-};
-
+const placeholderBlogPosts: BlogPost[] = [
+    {
+        id: '1',
+        title: 'Placeholder Blog Post 1',
+        content: 'This is the content of the first placeholder blog post.',
+        excerpt: 'This is the excerpt of the first placeholder blog post.',
+        author: 'Placeholder Author',
+        publishedAt: new Date().toISOString(),
+        publicSlug: 'placeholder-1',
+        tags: ['placeholder', 'blog'],
+    },
+    {
+        id: '2',
+        title: 'Placeholder Blog Post 2',
+        content: 'This is the content of the second placeholder blog post.',
+        excerpt: 'This is the excerpt of the second placeholder blog post.',
+        author: 'Placeholder Author',
+        publishedAt: new Date().toISOString(),
+        publicSlug: 'placeholder-2',
+        tags: ['placeholder', 'blog'],
+    },
+];
 
 export async function getBlogPost(slug: string): Promise<BlogPost | undefined> {
-    const collectionRef = collection(db, 'publicBlogPosts');
-    const q = query(collectionRef, where('publicSlug', '==', slug));
-    const snapshot = await getDocs(q);
-
-    if (snapshot.empty) {
-        return undefined;
-    }
-
-    const doc = snapshot.docs[0];
-    return processDoc(doc);
+    return placeholderBlogPosts.find(post => post.publicSlug === slug);
 }
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
-    const collectionRef = collection(db, 'publicBlogPosts');
-    const q = query(collectionRef, orderBy('publishedAt', 'desc'));
-    const snapshot = await getDocs(q);
-    
-    return snapshot.docs.map(processDoc);
+    return placeholderBlogPosts;
 }

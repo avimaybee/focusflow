@@ -1,7 +1,5 @@
-import { db } from '@/lib/firebase-admin';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { incrementViews } from '@/lib/profile-actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 
@@ -10,24 +8,27 @@ type Props = {
 };
 
 async function getStudyPlan(slug: string) {
-  const planRef = db.collection('publicStudyPlans').doc(slug);
-  const planSnap = await planRef.get();
-
-  if (!planSnap.exists) {
-    return null;
+  // Placeholder for fetching data from Supabase
+  if (slug === 'placeholder') {
+    return {
+      plan: {
+        title: 'Placeholder Study Plan',
+        plan: {
+          'Day 1': ['Introduction to Topic', 'Read Chapter 1'],
+          'Day 2': ['Practice Problems', 'Review Chapter 1'],
+        },
+        sourceText: 'Placeholder Topic',
+        authorId: 'placeholder-author',
+        id: 'placeholder-id',
+      },
+      author: {
+        username: 'placeholder-user',
+        displayName: 'Placeholder User',
+        avatarUrl: '',
+      },
+    };
   }
-  
-  const planData = planSnap.data();
-  if (!planData?.authorId) {
-    return { plan: planData, author: null };
-  }
-
-  const authorRef = db.collection('users').doc(planData.authorId);
-  const authorSnap = await authorRef.get();
-  
-  const authorData = authorSnap.exists() ? authorSnap.data()?.publicProfile : null;
-
-  return { plan: planData, author: authorData };
+  return null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -61,10 +62,6 @@ export default async function PublicStudyPlanPage({ params }: Props) {
   }
 
   const { plan, author } = data;
-
-  if (plan.authorId && plan.id) {
-    incrementViews(plan.authorId, plan.id, 'studyPlan');
-  }
 
   return (
     <main className="container mx-auto px-4 py-12 max-w-4xl">

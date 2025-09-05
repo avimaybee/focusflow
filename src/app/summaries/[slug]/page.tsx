@@ -1,6 +1,4 @@
-
 // src/app/summaries/[slug]/page.tsx
-import { db } from '@/lib/firebase-admin';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,24 +10,44 @@ type Props = {
 
 // This is a server-side function to fetch the data for a public summary.
 async function getSummary(slug: string) {
-  const summaryRef = db.collection('publicSummaries').doc(slug);
-  const summarySnap = await summaryRef.get();
-
-  if (!summarySnap.exists) {
-    return null;
+  // Placeholder for fetching data from Supabase
+  if (slug === 'placeholder') {
+    return {
+      summary: {
+        title: 'Placeholder Summary',
+        summary: 'This is a placeholder summary.',
+        keywords: ['placeholder', 'summary'],
+        authorId: 'placeholder-author',
+        id: 'placeholder-id',
+        publishedAt: { _seconds: Math.floor(new Date().getTime() / 1000) },
+      },
+      author: {
+        username: 'placeholder-user',
+        displayName: 'Placeholder User',
+        avatarUrl: '',
+      },
+    };
   }
-  
-  const summaryData = summarySnap.data();
-  if (!summaryData?.authorId) {
-    return { summary: summaryData, author: null };
-  }
+  // Removed firebase import and usage as per the new placeholder logic
+  // const summaryRef = db.collection('publicSummaries').doc(slug);
+  // const summarySnap = await summaryRef.get();
 
-  const authorRef = db.collection('users').doc(summaryData.authorId);
-  const authorSnap = await authorRef.get();
+  // if (!summarySnap.exists) {
+  //   return null;
+  // }
   
-  const authorData = authorSnap.exists() ? authorSnap.data()?.publicProfile : null;
+  // const summaryData = summarySnap.data();
+  // if (!summaryData?.authorId) {
+  //   return { summary: summaryData, author: null };
+  // }
 
-  return { summary: summaryData, author: authorData };
+  // const authorRef = db.collection('users').doc(summaryData.authorId);
+  // const authorSnap = await authorRef.get();
+  
+  // const authorData = authorSnap.exists() ? authorSnap.data()?.publicProfile : null;
+
+  // return { summary: summaryData, author: authorData };
+  return null; // Return null if not a placeholder and no data found
 }
 
 // This generates the dynamic metadata for the page.
