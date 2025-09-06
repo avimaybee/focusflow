@@ -1,9 +1,8 @@
+// src/app/chat/[chatId]/page.tsx
+export const runtime = 'edge';
 
-'use client';
-
-// This component is essentially a client-side entry point that renders the main 
-// ChatPage component. This allows us to have a dynamic route for chats
-// while reusing the entire existing chat page logic.
+// We keep the actual chat UI in a client component.
+// This server component wrapper exists to satisfy the Edge Runtime requirement for dynamic routes.
 import ChatPage from '../page';
 
 export default function ChatWithIdPage() {

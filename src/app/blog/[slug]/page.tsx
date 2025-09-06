@@ -1,4 +1,6 @@
 
+export const runtime = 'edge';
+
 import { getPostBySlug as getLocalPost, getBlogPosts as getLocalBlogPosts } from '@/lib/blog-data';
 import { getBlogPost, getBlogPosts as getDbBlogPosts } from '@/lib/blog-posts-data';
 import { notFound } from 'next/navigation';

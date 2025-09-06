@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { QuizViewer } from '@/components/quiz-viewer';
