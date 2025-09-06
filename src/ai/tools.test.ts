@@ -10,7 +10,7 @@ import {
 describe('AI Tools (Placeholders)', () => {
   it('summarizeNotesTool should return an under construction message', async () => {
     const result = await summarizeNotesTool({ notes: 'test' });
-    expect(result.summary).toContain('Under Construction');
+    expect(result.summary).toContain('upgraded to use Supabase');
   });
 
   it('createStudyPlanTool should return an under construction message', async () => {
