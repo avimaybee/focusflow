@@ -210,7 +210,7 @@ export function AuthModal() {
                       )}
                   />
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignup ? 'Create Account' : 'Log In')}
+                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignup ? 'Create Account' : 'Log In (Diagnostics)')}
                   </Button>
               </form>
           </Form>
