@@ -60,14 +60,18 @@ export function AuthModal() {
   });
 
   useEffect(() => {
-    // Only trigger success redirect if a REAL user is logged in and the form is in the success state
-    if (user && !isGuest && isOpen && formState === 'success') {
+    // If the user is successfully logged in (not a guest),
+    // and the auth modal is open, it means they just logged in.
+    // So, we should close the modal and redirect them.
+    if (user && !isGuest && isOpen) {
+      // We can keep the success message showing for a bit before redirecting.
+      setFormState('success'); // Ensure success UI is shown
       setTimeout(() => {
         onClose();
         router.push('/chat');
       }, 1500);
     }
-  }, [user, isGuest, isOpen, onClose, router, formState]);
+  }, [user, isGuest, isOpen, onClose, router]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -89,7 +93,6 @@ export function AuthModal() {
     try {
       await action(values.email, values.password);
       toast({ title: 'Success!', description: successMessage });
-      setFormState('success');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Authentication Failed', description: error.message });
@@ -166,7 +169,7 @@ export function AuthModal() {
                       <FormItem>
                           <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
                           <FormControl>
-                          <Input id={isSignup ? 'signup-email' : 'login-email'} type="email" placeholder="you@example.com" {...field} disabled={isLoading} />
+                          <Input id={isSignup ? 'signup-email' : 'login-email'} type="email" placeholder="you@example.com" {...field} disabled={isLoading} autoComplete="email" />
                           </FormControl>
                           <FormMessage />
                       </FormItem>
@@ -179,7 +182,7 @@ export function AuthModal() {
                       <FormItem>
                           <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
                           <FormControl>
-                          <Input id={isSignup ? 'signup-password' : 'login-password'} type="password" {...field} disabled={isLoading}/>
+                          <Input id={isSignup ? 'signup-password' : 'login-password'} type="password" {...field} disabled={isLoading} autoComplete={isSignup ? 'new-password' : 'current-password'}/>
                           </FormControl>
                           <FormMessage />
                       </FormItem>
