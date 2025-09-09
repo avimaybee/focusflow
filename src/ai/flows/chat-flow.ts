@@ -46,7 +46,7 @@ export async function chatFlow(input: ChatFlowInput) {
       temperature: 0.7,
       topK: 1,
       topP: 1,
-      maxOutputTokens: 2048,
+      maxOutputTokens: 8192,
     },
   };
 
