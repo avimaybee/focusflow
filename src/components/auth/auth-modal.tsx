@@ -44,7 +44,7 @@ const GoogleIcon = () => (
 
 export function AuthModal() {
   const { isOpen, view, layoutId, setView, onClose } = useAuthModal();
-  const { user, isGuest } = useAuth();
+  const { user, isGuest, refreshAuthStatus } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -91,8 +91,13 @@ export function AuthModal() {
   ) => {
     setFormState('loading');
     try {
-      await action(values.email, values.password);
+      const { error } = await action(values.email, values.password);
+      if (error) throw error;
+
+      await refreshAuthStatus();
+
       toast({ title: 'Success!', description: successMessage });
+      setFormState('success');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Authentication Failed', description: error.message });
