@@ -36,12 +36,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [favoritePrompts, setFavoritePrompts] = useState<string[] | null>([]);
 
   const refreshAuthStatus = async () => {
-    console.log('[AuthContext] refreshAuthStatus called.');
     setLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
-    console.log('[AuthContext] getSession returned:', session);
+    setSession(session);
     setUser(session?.user ?? null);
-    console.log('[AuthContext] user state set to:', session?.user ?? null);
 
     if (session?.user) {
         const { data, error } = await supabase
@@ -51,15 +49,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             .single();
 
         if (error) {
-            console.error('[AuthContext] Error fetching profile on refresh:', error);
+            console.error('Error fetching profile on refresh:', error);
         }
-        console.log('[AuthContext] Profile fetched:', data);
         setProfile(data);
         if (data?.favorite_prompts) {
             setFavoritePrompts(data.favorite_prompts);
         }
     } else {
-        console.log('[AuthContext] No user session, setting profile to null.');
         setProfile(null);
     }
     setLoading(false);
@@ -68,7 +64,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('[AuthContext] onAuthStateChange event:', event, 'session:', session);
         refreshAuthStatus();
       }
     );

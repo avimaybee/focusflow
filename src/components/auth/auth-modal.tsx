@@ -60,25 +60,16 @@ export function AuthModal() {
   });
 
   useEffect(() => {
-    console.log('[AuthModal] Redirect effect triggered. Dependencies:', {
-        user: user,
-        isGuest: isGuest,
-        isOpen: isOpen,
-    });
     // If the user is successfully logged in (not a guest),
     // and the auth modal is open, it means they just logged in.
     // So, we should close the modal and redirect them.
     if (user && !isGuest && isOpen) {
       // We can keep the success message showing for a bit before redirecting.
-      console.log('[AuthModal] Redirect condition met. Scheduling redirect to /chat.');
       setFormState('success'); // Ensure success UI is shown
       setTimeout(() => {
-        console.log('[AuthModal] Executing redirect.');
         onClose();
         router.push('/chat');
       }, 1500);
-    } else {
-        console.log('[AuthModal] Redirect condition NOT met.');
     }
   }, [user, isGuest, isOpen, onClose, router]);
 
@@ -98,24 +89,17 @@ export function AuthModal() {
     values: LoginFormValues | SignupFormValues,
     successMessage: string
   ) => {
-    console.log('[AuthModal] handleAuthAction started.');
     setFormState('loading');
     try {
-      console.log('[AuthModal] Calling auth action (e.g., signInWithPassword)...');
       const { error } = await action(values.email, values.password);
-      console.log('[AuthModal] Auth action completed. Error:', error);
       if (error) throw error;
 
-      console.log('[AuthModal] Calling refreshAuthStatus...');
       await refreshAuthStatus();
-      console.log('[AuthModal] refreshAuthStatus completed.');
 
       toast({ title: 'Success!', description: successMessage });
-      console.log('[AuthModal] Setting formState to "success".');
       setFormState('success');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error('[AuthModal] Auth failed:', error.message);
       toast({ variant: 'destructive', title: 'Authentication Failed', description: error.message });
       setFormState('idle');
     }
@@ -123,10 +107,7 @@ export function AuthModal() {
 
   const handleLogin = (values: LoginFormValues) => {
     handleAuthAction(
-      async (email, password) => {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      },
+      (email, password) => supabase.auth.signInWithPassword({ email, password }),
       values,
       "Welcome back!"
     );
@@ -134,18 +115,15 @@ export function AuthModal() {
   
   const handleSignup = (values: SignupFormValues) => {
     handleAuthAction(
-      async (email, password) => {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              displayName: email.split('@')[0],
-            },
+      (email, password) => supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            displayName: email.split('@')[0],
           },
-        });
-        if (error) throw error;
-      },
+        },
+      }),
       values,
       "Welcome to FocusFlow AI!"
     );
@@ -210,7 +188,7 @@ export function AuthModal() {
                       )}
                   />
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignup ? 'Create Account' : 'Log In (Diagnostics)')}
+                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignup ? 'Create Account' : 'Log In')}
                   </Button>
               </form>
           </Form>
