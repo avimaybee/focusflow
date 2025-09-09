@@ -110,6 +110,7 @@ export default function ChatPage() {
   
     const chatInput = {
       message: input.trim(),
+      history: messages.map(msg => ({ role: msg.role, text: msg.rawText || '' })),
       sessionId: activeChatId || undefined,
       personaId: selectedPersonaId,
       context: attachments.length > 0 ? { url: attachments[0].url, filename: attachments[0].name } : undefined,

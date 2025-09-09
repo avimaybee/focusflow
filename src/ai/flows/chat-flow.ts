@@ -13,6 +13,10 @@ const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-
 
 const chatFlowInputSchema = z.object({
   message: z.string(),
+  history: z.array(z.object({
+    role: z.enum(['user', 'model']),
+    text: z.string(),
+  })).optional(),
   userId: z.string(),
   isGuest: z.boolean(),
   sessionId: z.string().optional(),
@@ -24,7 +28,7 @@ type ChatFlowInput = z.infer<typeof chatFlowInputSchema>;
 
 export async function chatFlow(input: ChatFlowInput) {
   const validatedInput = chatFlowInputSchema.parse(input);
-  const { message, personaId } = validatedInput;
+  const { message, history, personaId } = validatedInput;
 
   if (!API_KEY) {
     throw new Error('The GEMINI_API_KEY environment variable is not set.');
@@ -33,15 +37,24 @@ export async function chatFlow(input: ChatFlowInput) {
   const selectedPersona: PersonaDetails | undefined = defaultPersonas.find(p => p.id === personaId);
   const personaPrompt = selectedPersona?.prompt || defaultPersonas.find(p => p.id === 'neutral')!.prompt;
 
+  // Construct the conversation history for the API
+  const apiHistory = (history || []).map(h => ({
+    role: h.role,
+    parts: [{ text: h.text }],
+  }));
+
+  // The persona prompt acts as a system instruction.
+  // We prepend it to the history, followed by a priming message from the model.
+  // This helps the model adopt the persona consistently.
+  const contents = [
+    { role: 'user', parts: [{ text: personaPrompt }] },
+    { role: 'model', parts: [{ text: "Okay, I understand. I will act as that persona. What is the first question?" }] },
+    ...apiHistory,
+    { role: 'user', parts: [{ text: message }] },
+  ];
+
   const requestPayload = {
-    contents: [
-      {
-        parts: [
-          { text: personaPrompt },
-          { text: `\n\nUser Message: "${message}"` },
-        ],
-      },
-    ],
+    contents,
     generationConfig: {
       temperature: 0.7,
       topK: 1,
