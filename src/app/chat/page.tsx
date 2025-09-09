@@ -131,6 +131,13 @@ export default function ChatPage() {
       if (!response.ok) {
         throw { response, result };
       }
+
+      // If this is the first message in a new chat, set the activeChatId
+      if (!activeChatId && result.sessionId) {
+        setActiveChatId(result.sessionId);
+        // Optionally, you might want to update the URL
+        // router.replace(`/chat/${result.sessionId}`);
+      }
       
       const modelResponse: ChatMessageProps = {
           id: `guest-ai-${Date.now()}`,

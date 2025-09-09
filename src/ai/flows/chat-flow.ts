@@ -1,101 +1,69 @@
 'use server';
 
 import { z } from 'zod';
-// NOTE: Importing from a client-side hook file into a server-side flow
-// is not ideal. In a larger application, this persona data should be
-// sourced from a shared location or a database. For now, this is the
-// most direct way to access the persona prompts.
+import { configureGenkit } from 'genkit';
+import { defineFlow, runFlow, ai } from 'genkit/beta';
+import { googleAI } from '@genkit-ai/googleai';
 import { defaultPersonas } from '@/lib/personas';
+import { SupabaseSessionStore } from '@/lib/supabase-session-store';
 import type { PersonaDetails } from '@/types/chat-types';
 
-const API_KEY = process.env.GEMINI_API_KEY;
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`;
+// Initialize Genkit with the Google AI plugin
+configureGenkit({
+  plugins: [
+    googleAI({
+      apiKey: process.env.GEMINI_API_KEY,
+    }),
+  ],
+  logSinks: [], // You can configure logging sinks here if needed
+  enableTracingAndMetrics: true,
+});
 
 const chatFlowInputSchema = z.object({
   message: z.string(),
-  history: z.array(z.object({
-    role: z.enum(['user', 'model']),
-    text: z.string(),
-  })).optional(),
-  userId: z.string(),
-  isGuest: z.boolean(),
   sessionId: z.string().optional(),
   personaId: z.string().optional(),
-  context: z.any().optional(),
 });
 
 type ChatFlowInput = z.infer<typeof chatFlowInputSchema>;
 
-export async function chatFlow(input: ChatFlowInput) {
-  const validatedInput = chatFlowInputSchema.parse(input);
-  const { message, history, personaId } = validatedInput;
+export const chatFlow = defineFlow(
+  {
+    name: 'chatFlow',
+    inputSchema: chatFlowInputSchema,
+    outputSchema: z.any(), // Define a more specific output schema if needed
+  },
+  async (input) => {
+    const { message, sessionId, personaId } = input;
 
-  if (!API_KEY) {
-    throw new Error('The GEMINI_API_KEY environment variable is not set.');
-  }
+    const store = new SupabaseSessionStore();
 
-  const selectedPersona: PersonaDetails | undefined = defaultPersonas.find(p => p.id === personaId);
-  const personaPrompt = selectedPersona?.prompt || defaultPersonas.find(p => p.id === 'neutral')!.prompt;
+    // Load an existing session or create a new one.
+    // Genkit will handle ID generation for new sessions.
+    const session = await (sessionId
+      ? ai.loadSession(sessionId, { store })
+      : ai.createSession({ store }));
 
-  // Construct the conversation history for the API
-  const apiHistory = (history || []).map(h => ({
-    role: h.role,
-    parts: [{ text: h.text }],
-  }));
+    const selectedPersona: PersonaDetails | undefined = defaultPersonas.find(p => p.id === personaId);
+    const personaPrompt = selectedPersona?.prompt || defaultPersonas.find(p => p.id === 'neutral')!.prompt;
 
-  // The persona prompt acts as a system instruction.
-  // We prepend it to the history, followed by a priming message from the model.
-  // This helps the model adopt the persona consistently.
-  const contents = [
-    { role: 'user', parts: [{ text: personaPrompt }] },
-    { role: 'model', parts: [{ text: "Okay, I understand. I will act as that persona. What is the first question?" }] },
-    ...apiHistory,
-    { role: 'user', parts: [{ text: message }] },
-  ];
-
-  const requestPayload = {
-    contents,
-    generationConfig: {
-      temperature: 0.7,
-      topK: 1,
-      topP: 1,
-      maxOutputTokens: 8192,
-    },
-  };
-
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestPayload),
+    // Get a chat instance from the session. It will use the session's history.
+    const chat = session.chat({
+        model: googleAI.model('gemini-2.0-flash-lite'),
+        system: personaPrompt,
+        config: {
+            temperature: 0.7,
+        },
     });
 
-    if (!response.ok) {
-      const errorBody = await response.json();
-      console.error('Gemini API Error:', errorBody);
-      throw new Error(`Gemini API request failed with status ${response.status}: ${errorBody.error?.message || 'Unknown error'}`);
-    }
+    const response = await chat.send(message);
 
-    const responseData = await response.json();
-
-    if (!responseData.candidates || responseData.candidates.length === 0 || !responseData.candidates[0].content.parts[0].text) {
-        console.error('Invalid response structure from Gemini API:', responseData);
-        throw new Error('Received an invalid response from the Gemini API.');
-    }
-
-    const generatedText = responseData.candidates[0].content.parts[0].text;
+    // When using a session with a store, Genkit automatically saves the new
+    // message and response to the history.
 
     return {
-      sessionId: validatedInput.sessionId || 'new-session',
-      response: generatedText,
-      rawResponse: generatedText,
-      persona: selectedPersona || defaultPersonas.find(p => p.id === 'neutral'),
+      sessionId: session.id, // Return the session ID (it will be new for a new chat)
+      response: response.text(),
     };
-  } catch (error) {
-    console.error('Error in chatFlow:', error);
-    // Re-throw the error to be caught by the API route's error handler
-    throw error;
   }
-}
+);
