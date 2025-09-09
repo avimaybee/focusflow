@@ -45,13 +45,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const { data, error } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', session.user.id)
-            .single();
+            .eq('id', session.user.id);
 
-        if (error) {
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "exact one row not found"
             console.error('Error fetching profile on refresh:', error);
         }
-        setProfile(data);
+
+        // data will be an array. If a profile exists, it will be the first element.
+        setProfile(data?.[0] || null);
         if (data?.favorite_prompts) {
             setFavoritePrompts(data.favorite_prompts);
         }
@@ -72,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     refreshAuthStatus();
 
     return () => {
-      authListener?.unsubscribe();
+      authListener?.subscription?.unsubscribe();
     };
   }, []);
 

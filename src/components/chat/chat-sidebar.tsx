@@ -205,6 +205,7 @@ const ChatSidebarComponent = ({
   isCollapsed,
   onToggle,
 }: ChatSidebarProps) => {
+  const { profile } = useAuth();
 
   return (
     <TooltipProvider delayDuration={0}>
