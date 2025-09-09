@@ -40,9 +40,9 @@ A personalized dashboard tracks user activity and progress.
 - **Gamification:** Features a "Study Streak" counter and unlockable badges to motivate consistent learning.
 
 ### g. Authentication & Content Persistence
-- **Secure Authentication:** Supports Email/Password and Google Sign-In via **Firebase Authentication**.
-- **Personalized Content:** Logged-in users have their generated summaries, quizzes, flashcard sets, study plans, and notes automatically saved to their personal "My Content" area, powered by **Firestore**.
-- **Feature Gating:** The application supports a premium tier. A user's `isPremium` status, stored in their Firestore document, controls access to advanced features and lifts usage limits on core tools.
+- **Secure Authentication:** Supports Email/Password and Google Sign-In via **Supabase**.
+- **Personalized Content:** Logged-in users have their generated summaries, quizzes, flashcard sets, study plans, and notes automatically saved to their personal "My Content" area, powered by **Supabase**.
+- **Feature Gating:** The application supports a premium tier. A user's `isPremium` status, stored in their Supabase profile, controls access to advanced features and lifts usage limits on core tools.
 
 ---
 
@@ -51,17 +51,18 @@ A personalized dashboard tracks user activity and progress.
 ### a. Technology Stack
 - **Frontend:** Next.js (App Router), React, TypeScript
 - **Styling:** Tailwind CSS, ShadCN UI, Framer Motion
-- **Backend & Database:** Firebase (Authentication, Firestore, Functions)
+- **Backend & Database:** Supabase (Authentication, Database)
+- **Deployment:** Cloudflare
 - **AI:** Google Genkit, Google Gemini Models (e.g., `gemini-1.5-flash` for most tasks)
 
 ### b. Core Chat Flow
 1.  **User Input:** The user sends a message or selects a tool from the `ChatPage` UI. They can also attach a file (like a PDF), which is converted to a Data URI on the client-side.
 2.  **API Route:** A request is made to the `/api/chat` Next.js server route, containing the message, user auth token, and any contextual data (like a file's data URI or a selected persona).
 3.  **Genkit Flow (`chatFlow`):** The API route invokes the main Genkit flow (`src/ai/flows/chat-flow.ts`).
-4.  **Usage Check (for Tools):** Before executing a protected tool (like `createQuizTool`), the flow checks the user's `isPremium` status and their monthly usage count in Firestore. If a free user exceeds their limit, the flow returns an error.
+4.  **Usage Check (for Tools):** Before executing a protected tool (like `createQuizTool`), the flow checks the user's `isPremium` status and their monthly usage count in the Supabase database. If a free user exceeds their limit, the flow returns an error.
 5.  **Tool Dispatch:** The flow, powered by a Gemini model, determines user intent. It either formulates a direct conversational response or calls a specific, predefined **Genkit Tool** (e.g., `createQuizTool`, `summarizeNotesTool`). The file's Data URI is passed along, allowing the AI to "read" the document.
 6.  **Structured Output:** Tools are designed to return structured JSON data (e.g., an array of flashcard objects, a quiz object with questions and answers).
-7.  **Data Persistence:** If a tool was used, the `chatFlow` saves the generated content to the user's Firestore `My Content` subcollection (e.g., `/users/{userId}/quizzes/{quizId}`). The notepad content is saved to a dedicated `notepad` subcollection, with a debounced server action ensuring changes are saved automatically.
+7.  **Data Persistence:** If a tool was used, the `chatFlow` saves the generated content to the user's Supabase database (e.g., in a `quizzes` table). The notepad content is saved to a dedicated `notepad` table, with a debounced server action ensuring changes are saved automatically.
 8.  **Response to Client:** The flow returns a response object containing the AI's text and any structured data (like the quiz object).
 9.  **Frontend Rendering:** The `ChatPage` receives the response. If structured data is present, it renders the corresponding interactive component (`QuizViewer`, `FlashcardViewer`); otherwise, it displays the formatted text response.
 
@@ -83,25 +84,3 @@ A multi-stage solution was implemented to create a robust file processing pipeli
 3.  **Genkit Media Handling:** The `chatFlow` was architected to correctly pass the Data URI to the Gemini model. The `chat.send()` method in Genkit natively supports a `media` object, so the Data URI is passed as `{ media: { url: context } }`. This tells Genkit to handle the base64 decoding and present the file content to the model in an optimal format.
 
 This solution ensures that users can seamlessly upload documents, have them processed efficiently, and receive AI-generated insights based on the full context of their materials, which is the cornerstone of the FocusFlow AI experience.
-meow
-meow 2
-mcp
-meow 4
-meow 5
-meow 6
-ai tools prob
-meow 7 preferences
-chat working fine now with preferences
-added model chat
-meow 8, improved landing page
-fixed the sign in issues
-meow 9
-fixed personas and chat
-fixed harcoded persona
-removed footer from chat page
-add persona perma fix to readme
-notes feature
-dashboard and profile and seo oevrhaul
-exam feature
-snake
-brochacho
