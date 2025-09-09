@@ -5,7 +5,7 @@ import { z } from 'zod';
 // is not ideal. In a larger application, this persona data should be
 // sourced from a shared location or a database. For now, this is the
 // most direct way to access the persona prompts.
-import { defaultPersonas } from '@/hooks/use-persona-manager';
+import { defaultPersonas } from '@/lib/personas';
 import type { PersonaDetails } from '@/types/chat-types';
 
 const API_KEY = process.env.GEMINI_API_KEY;
