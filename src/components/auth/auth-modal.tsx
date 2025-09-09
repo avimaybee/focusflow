@@ -60,16 +60,15 @@ export function AuthModal() {
   });
 
   useEffect(() => {
-    // Only trigger success redirect if a REAL user is logged in.
-    if (user && !isGuest && isOpen) {
-      setFormState('success');
+    // Only trigger success redirect if a REAL user is logged in and the form is in the success state
+    if (user && !isGuest && isOpen && formState === 'success') {
       setTimeout(() => {
         onClose();
         router.push('/chat');
       }, 1500);
     }
-  }, [user, isGuest, isOpen, onClose, router]);
-  
+  }, [user, isGuest, isOpen, onClose, router, formState]);
+
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
@@ -90,6 +89,7 @@ export function AuthModal() {
     try {
       await action(values.email, values.password);
       toast({ title: 'Success!', description: successMessage });
+      setFormState('success');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Authentication Failed', description: error.message });
@@ -99,7 +99,10 @@ export function AuthModal() {
 
   const handleLogin = (values: LoginFormValues) => {
     handleAuthAction(
-      (email, password) => supabase.auth.signInWithPassword({ email, password }),
+      async (email, password) => {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      },
       values,
       "Welcome back!"
     );
