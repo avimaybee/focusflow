@@ -9,7 +9,7 @@ import { defaultPersonas } from '@/hooks/use-persona-manager';
 import type { PersonaDetails } from '@/types/chat-types';
 
 const API_KEY = process.env.GEMINI_API_KEY;
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`;
 
 const chatFlowInputSchema = z.object({
   message: z.string(),
