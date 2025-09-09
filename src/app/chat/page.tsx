@@ -99,8 +99,8 @@ export default function ChatPage() {
         role: 'user',
         text: await marked.parse(input.trim()),
         rawText: input.trim(),
-        userName: 'Guest',
-        userAvatar: null,
+        userName: user?.user_metadata?.displayName || user?.email || 'User',
+        userAvatar: user?.user_metadata?.avatar_url || null,
         createdAt: new Date(),
         attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.contentType, size: att.size }))
     };
@@ -185,7 +185,7 @@ export default function ChatPage() {
           <Sheet open={sidebarOpen} onOpenChange={handleSetSidebarOpen}>
             <SheetContent side="left" className="p-0 w-80">
               <ChatSidebar
-                user={null}
+                user={user}
                 chatHistory={chatHistory}
                 activeChatId={activeChatId}
                 onNewChat={handleNewChat}
@@ -204,7 +204,7 @@ export default function ChatPage() {
       
       <div className="hidden md:flex">
         <ChatSidebar
-            user={null}
+            user={user}
             chatHistory={chatHistory}
             activeChatId={activeChatId}
             onNewChat={handleNewChat}
@@ -220,7 +220,7 @@ export default function ChatPage() {
         <ChatHeader
           personaName={selectedPersona?.name || 'Default'}
           onSidebarToggle={() => handleSetSidebarOpen(true)}
-          isLoggedIn={false}
+          isLoggedIn={!!user}
           onNotesToggle={toggleContextHub}
         />
         
