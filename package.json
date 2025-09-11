@@ -59,6 +59,7 @@
     "eslint-config-next": "^15.4.5",
     "framer-motion": "^12.23.5",
     "fuse.js": "^7.1.0",
+    "genkit": "^1.17.0-rc.1",
     "highlight.js": "^11.11.1",
     "langchain": "^0.1.36",
     "lucide-react": "^0.475.0",
