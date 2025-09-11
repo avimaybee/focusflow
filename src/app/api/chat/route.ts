@@ -1,43 +1,14 @@
 // src/app/api/chat/route.ts
-export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 import { chatFlow } from '@/ai/flows/chat-flow';
-
-// This helper function is now a placeholder.
-// It will be replaced with Supabase auth later.
-async function getUserFromRequest(req: NextRequest): Promise<{ uid: string | null; isAnonymous: boolean }> {
-    // For now, we'll assume all users are guests.
-    return { uid: 'guest-user', isAnonymous: true };
-}
+import { runFlow } from 'genkit/beta';
 
 export async function POST(request: NextRequest) {
-  console.log('=== NEW CHAT REQUEST ===');
   try {
-    const { uid, isAnonymous } = await getUserFromRequest(request);
-    console.log(`[DEBUG] Authenticated User ID: ${uid || 'Guest'}, Is Anonymous: ${isAnonymous}`);
-
     const body = await request.json();
-    console.log("[DEBUG] Request Body:", JSON.stringify(body, null, 2));
 
-    if (!body.message) {
-      console.error("[ERROR] Missing required field: message");
-      return NextResponse.json({ error: 'Missing required field: message' }, { status: 400 });
-    }
-
-    const input = {
-      userId: uid || 'guest-user',
-      isGuest: isAnonymous, // Pass the guest status to the flow
-      message: body.message,
-      sessionId: body.sessionId,
-      personaId: body.personaId || 'neutral',
-      context: body.context,
-    };
-
-    console.log("[DEBUG] Calling chatFlow with input:", input);
-    
-    const result = await chatFlow(input);
-
-    console.log("[DEBUG] Received result from flow:", result);
+    // The Zod schema in the Genkit flow will handle validation.
+    const result = await runFlow(chatFlow, body);
     
     return NextResponse.json(result);
 

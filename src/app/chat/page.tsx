@@ -99,8 +99,8 @@ export default function ChatPage() {
         role: 'user',
         text: await marked.parse(input.trim()),
         rawText: input.trim(),
-        userName: 'Guest',
-        userAvatar: null,
+        userName: user?.user_metadata?.displayName || user?.email || 'User',
+        userAvatar: user?.user_metadata?.avatar_url || null,
         createdAt: new Date(),
         attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.contentType, size: att.size }))
     };
@@ -110,6 +110,7 @@ export default function ChatPage() {
   
     const chatInput = {
       message: input.trim(),
+      history: messages.map(msg => ({ role: msg.role, text: msg.rawText || '' })),
       sessionId: activeChatId || undefined,
       personaId: selectedPersonaId,
       context: attachments.length > 0 ? { url: attachments[0].url, filename: attachments[0].name } : undefined,
@@ -129,6 +130,13 @@ export default function ChatPage() {
       
       if (!response.ok) {
         throw { response, result };
+      }
+
+      // If this is the first message in a new chat, set the activeChatId
+      if (!activeChatId && result.sessionId) {
+        setActiveChatId(result.sessionId);
+        // Optionally, you might want to update the URL
+        // router.replace(`/chat/${result.sessionId}`);
       }
       
       const modelResponse: ChatMessageProps = {
@@ -185,7 +193,7 @@ export default function ChatPage() {
           <Sheet open={sidebarOpen} onOpenChange={handleSetSidebarOpen}>
             <SheetContent side="left" className="p-0 w-80">
               <ChatSidebar
-                user={null}
+                user={user}
                 chatHistory={chatHistory}
                 activeChatId={activeChatId}
                 onNewChat={handleNewChat}
@@ -204,7 +212,7 @@ export default function ChatPage() {
       
       <div className="hidden md:flex">
         <ChatSidebar
-            user={null}
+            user={user}
             chatHistory={chatHistory}
             activeChatId={activeChatId}
             onNewChat={handleNewChat}
@@ -220,7 +228,7 @@ export default function ChatPage() {
         <ChatHeader
           personaName={selectedPersona?.name || 'Default'}
           onSidebarToggle={() => handleSetSidebarOpen(true)}
-          isLoggedIn={false}
+          isLoggedIn={!!user}
           onNotesToggle={toggleContextHub}
         />
         

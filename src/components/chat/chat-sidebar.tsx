@@ -41,18 +41,10 @@ import type { ChatHistoryItem } from '@/hooks/use-chat-history';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useAuth } from '@/context/auth-context';
 import { motion } from 'framer-motion';
-
-// Using the MockUser type from auth-context
-type MockUser = {
-  uid: string;
-  isAnonymous: boolean;
-  displayName: string | null;
-  email: string | null;
-  photoURL: string | null;
-};
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface ChatSidebarProps {
-  user: MockUser | null;
+  user: SupabaseUser | null;
   chatHistory: ChatHistoryItem[];
   activeChatId: string | null;
   onNewChat: () => void;
@@ -80,7 +72,7 @@ const SidebarSkeleton = ({ isCollapsed }: { isCollapsed: boolean }) => (
 const UserMenuItems = () => {
     const router = useRouter();
     const { toast } = useToast();
-    const { user, isPremium, username } = useAuth();
+    const { user, isPremium, username, profile } = useAuth();
   
     const handleLogout = async () => {
       // Placeholder for logout
@@ -93,7 +85,7 @@ const UserMenuItems = () => {
   
     if (!user) return null;
   
-    const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+    const displayName = profile?.username || user.email?.split('@')[0] || 'User';
   
     return (
       <>
@@ -148,10 +140,10 @@ const UserMenuItems = () => {
     );
 };
 
-const UserMenu = ({ user, isCollapsed }: { user: MockUser | null, isCollapsed: boolean }) => {
+const UserMenu = ({ user, isCollapsed }: { user: SupabaseUser | null, isCollapsed: boolean }) => {
   const authModal = useAuthModal();
-  const { isPremium } = useAuth();
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
+  const { isPremium, profile } = useAuth();
+  const displayName = profile?.username || user?.email?.split('@')[0] || 'User';
   const initial = displayName.charAt(0).toUpperCase();
 
   if (!user) {
@@ -178,7 +170,7 @@ const UserMenu = ({ user, isCollapsed }: { user: MockUser | null, isCollapsed: b
             <div className="relative">
               <Avatar className="h-10 w-10">
                 <AvatarImage
-                  src={user?.photoURL || undefined}
+                  src={user?.user_metadata?.avatar_url || undefined}
                   data-ai-hint="person"
                 />
                 <AvatarFallback>{initial}</AvatarFallback>
@@ -213,6 +205,7 @@ const ChatSidebarComponent = ({
   isCollapsed,
   onToggle,
 }: ChatSidebarProps) => {
+  const { profile } = useAuth();
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -330,8 +323,8 @@ const ChatSidebarComponent = ({
                         <Button variant="ghost" className="w-full justify-center text-sm h-auto p-0 hover:bg-transparent">
                             <div className="relative">
                                 <Avatar className="h-10 w-10">
-                                    <AvatarImage src={user?.photoURL || undefined} data-ai-hint="person" />
-                                    <AvatarFallback>{user ? (user.displayName || 'U').charAt(0).toUpperCase() : <User />}</AvatarFallback>
+                                    <AvatarImage src={user?.user_metadata?.avatar_url || undefined} data-ai-hint="person" />
+                                    <AvatarFallback>{user ? (profile?.username || user.email || 'U').charAt(0).toUpperCase() : <User />}</AvatarFallback>
                                 </Avatar>
                                 {user && <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-secondary" />}
                             </div>

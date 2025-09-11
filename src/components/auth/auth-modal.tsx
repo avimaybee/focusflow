@@ -44,7 +44,7 @@ const GoogleIcon = () => (
 
 export function AuthModal() {
   const { isOpen, view, layoutId, setView, onClose } = useAuthModal();
-  const { user, isGuest } = useAuth();
+  const { user, isGuest, refreshAuthStatus } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -60,16 +60,19 @@ export function AuthModal() {
   });
 
   useEffect(() => {
-    // Only trigger success redirect if a REAL user is logged in.
+    // If the user is successfully logged in (not a guest),
+    // and the auth modal is open, it means they just logged in.
+    // So, we should close the modal and redirect them.
     if (user && !isGuest && isOpen) {
-      setFormState('success');
+      // We can keep the success message showing for a bit before redirecting.
+      setFormState('success'); // Ensure success UI is shown
       setTimeout(() => {
         onClose();
         router.push('/chat');
       }, 1500);
     }
   }, [user, isGuest, isOpen, onClose, router]);
-  
+
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
@@ -88,8 +91,13 @@ export function AuthModal() {
   ) => {
     setFormState('loading');
     try {
-      await action(values.email, values.password);
+      const { error } = await action(values.email, values.password);
+      if (error) throw error;
+
+      await refreshAuthStatus();
+
       toast({ title: 'Success!', description: successMessage });
+      setFormState('success');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Authentication Failed', description: error.message });
@@ -107,18 +115,15 @@ export function AuthModal() {
   
   const handleSignup = (values: SignupFormValues) => {
     handleAuthAction(
-      async (email, password) => {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              displayName: email.split('@')[0],
-            },
+      (email, password) => supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            displayName: email.split('@')[0],
           },
-        });
-        if (error) throw error;
-      },
+        },
+      }),
       values,
       "Welcome to FocusFlow AI!"
     );
@@ -163,7 +168,7 @@ export function AuthModal() {
                       <FormItem>
                           <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
                           <FormControl>
-                          <Input id={isSignup ? 'signup-email' : 'login-email'} type="email" placeholder="you@example.com" {...field} disabled={isLoading} />
+                          <Input id={isSignup ? 'signup-email' : 'login-email'} type="email" placeholder="you@example.com" {...field} disabled={isLoading} autoComplete="email" />
                           </FormControl>
                           <FormMessage />
                       </FormItem>
@@ -176,7 +181,7 @@ export function AuthModal() {
                       <FormItem>
                           <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
                           <FormControl>
-                          <Input id={isSignup ? 'signup-password' : 'login-password'} type="password" {...field} disabled={isLoading}/>
+                          <Input id={isSignup ? 'signup-password' : 'login-password'} type="password" {...field} disabled={isLoading} autoComplete={isSignup ? 'new-password' : 'current-password'}/>
                           </FormControl>
                           <FormMessage />
                       </FormItem>
