@@ -1,31 +1,39 @@
 // src/app/api/chat/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { chatFlow } from '@/ai/flows/chat-flow';
-import { runFlow } from 'genkit/beta';
+import { NextResponse } from 'next/server';
+import { ai } from '@/ai/flows/chat-flow';
+import { defaultPersonas } from '@/lib/personas';
 
-export async function POST(request: NextRequest) {
+// Set the runtime to Node.js, as required by Genkit's dependencies.
+export const runtime = 'nodejs';
+
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
+    const { sessionId, message, personaId } = await req.json();
 
-    // The Zod schema in the Genkit flow will handle validation.
-    const result = await runFlow(chatFlow, body);
-    
-    return NextResponse.json(result);
+    if (!message) {
+      return NextResponse.json({ error: 'Message is required.' }, { status: 400 });
+    }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const selectedPersona = defaultPersonas.find(p => p.id === personaId);
+    const personaPrompt = selectedPersona?.prompt || defaultPersonas.find(p => p.id === 'neutral')!.prompt;
+
+    const chat = ai.chat({
+      sessionId,
+      system: personaPrompt,
+      model: 'gemini-2.0-flash-lite',
+    });
+
+    const response = await chat.send(message);
+    const text = response.text();
+
+    return NextResponse.json({
+      sessionId: chat.sessionId,
+      response: text,
+    });
   } catch (error: any) {
-    console.error('=== FATAL API ROUTE ERROR ===');
-    console.error('Error Name:', error.name);
-    console.error('Error Message:', error.message);
-    console.error('Error Stack:', error.stack);
-    
-    const errorMessage = error.cause?.message || error.message || 'No further details available.';
-
+    console.error('=== CHAT API ERROR ===', error);
     return NextResponse.json(
-      { 
-        error: 'An internal server error occurred.',
-        details: errorMessage
-      },
+      { error: 'An internal server error occurred.', details: error.message },
       { status: 500 }
     );
   }
