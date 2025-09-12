@@ -43,7 +43,6 @@ export default function ChatPage() {
   const isMobile = useIsMobile();
 
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
@@ -71,7 +70,6 @@ export default function ChatPage() {
   };
 
   const handleNewChat = () => {
-    setActiveChatId(null);
     setMessages([]);
     setGuestMessageCount(0);
     router.push('/chat');
@@ -111,7 +109,6 @@ export default function ChatPage() {
     const chatInput = {
       message: input.trim(),
       history: messages.map(msg => ({ role: msg.role, text: msg.rawText || '' })),
-      sessionId: activeChatId || undefined,
       personaId: selectedPersonaId,
       context: attachments.length > 0 ? { url: attachments[0].url, filename: attachments[0].name } : undefined,
     };
@@ -130,13 +127,6 @@ export default function ChatPage() {
       
       if (!response.ok) {
         throw { response, result };
-      }
-
-      // If this is the first message in a new chat, set the activeChatId
-      if (!activeChatId && result.sessionId) {
-        setActiveChatId(result.sessionId);
-        // Optionally, you might want to update the URL
-        // router.replace(`/chat/${result.sessionId}`);
       }
       
       const modelResponse: ChatMessageProps = {
@@ -195,10 +185,10 @@ export default function ChatPage() {
               <ChatSidebar
                 user={user}
                 chatHistory={chatHistory}
-                activeChatId={activeChatId}
+                activeChatId={null}
                 onNewChat={handleNewChat}
                 onChatSelect={(id) => {
-                  setActiveChatId(id);
+                  // setActiveChatId(id); No longer needed for stateless chat
                   setSidebarOpen(false);
                 }}
                 onDeleteChat={handleDeleteChat}
@@ -214,9 +204,9 @@ export default function ChatPage() {
         <ChatSidebar
             user={user}
             chatHistory={chatHistory}
-            activeChatId={activeChatId}
+            activeChatId={null}
             onNewChat={handleNewChat}
-            onChatSelect={(id) => setActiveChatId(id)}
+            onChatSelect={(id) => { /* No longer needed for stateless chat */ }}
             onDeleteChat={handleDeleteChat}
             isLoading={isHistoryLoading}
             isCollapsed={isSidebarCollapsed}
@@ -250,7 +240,7 @@ export default function ChatPage() {
             <div className="w-full sm:max-w-3xl mx-auto px-4 pb-4">
               <MultimodalInput
                 ref={inputRef}
-                chatId={activeChatId || 'new'}
+                chatId={'new'}
                 messages={messages.map(msg => ({ id: msg.id || '', content: msg.rawText || '', role: msg.role }))}
                 attachments={attachments}
                 setAttachments={setAttachments}
