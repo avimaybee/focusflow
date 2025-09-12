@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { Button } from '@/components/ui/button';
 import { NotebookPen, Sparkles, Loader2 } from 'lucide-react';
-import { getExplanation } from '@/lib/explanation-actions';
 import { cn } from '@/lib/utils';
 
 interface TextSelectionMenuProps {
@@ -91,11 +90,30 @@ export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
     e.preventDefault();
     if (!selectedText) return;
     setExplanation({ status: 'loading', content: null });
-    const result = await getExplanation(selectedText);
-    setExplanation({
-      status: result.includes('text-destructive') ? 'error' : 'success',
-      content: result,
-    });
+
+    try {
+      const response = await fetch('/api/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ concept: selectedText }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const result = await response.json();
+      setExplanation({
+        status: 'success',
+        content: result.explanation,
+      });
+    } catch (error) {
+      console.error('Failed to fetch explanation:', error);
+      setExplanation({
+        status: 'error',
+        content: '<p class="text-destructive">Sorry, there was an error fetching the explanation.</p>',
+      });
+    }
   };
 
   const handleSendToNotes = async (e: React.MouseEvent) => {
