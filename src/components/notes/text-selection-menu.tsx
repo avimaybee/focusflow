@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { Button } from '@/components/ui/button';
 import { NotebookPen, Sparkles, Loader2 } from 'lucide-react';
-import { getExplanation } from '@/lib/ai-actions';
+import { getExplanation } from '@/lib/explanation-actions';
 import { cn } from '@/lib/utils';
 
 interface TextSelectionMenuProps {
