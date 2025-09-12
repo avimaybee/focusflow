@@ -14,6 +14,8 @@
     "script:migrate-profiles": "ts-node --project scripts/tsconfig.scripts.json scripts/migrate-public-profiles.ts"
   },
   "dependencies": {
+    "@genkit-ai/core": "^1.19.2",
+    "@genkit-ai/googleai": "^1.19.2",
     "@hookform/resolvers": "^4.1.3",
     "@langchain/community": "^0.2.14",
     "@number-flow/react": "^0.5.10",
