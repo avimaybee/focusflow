@@ -39,22 +39,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
     setSession(session);
-    setUser(session?.user ?? null);
+    const currentUser = session?.user ?? null;
+    setUser(currentUser);
 
-    if (session?.user) {
-        const { data, error } = await supabase
+    if (currentUser) {
+        let { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', session.user.id);
+            .eq('id', currentUser.id)
+            .single();
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 is "exact one row not found"
-            console.error('Error fetching profile on refresh:', error);
+        if (profileError && profileError.code === 'PGRST116') { // Not found, create it
+            const { data: newProfile, error: insertError } = await supabase
+                .from('profiles')
+                .insert({
+                    id: currentUser.id,
+                    username: currentUser.user_metadata?.displayName || currentUser.email,
+                })
+                .select()
+                .single();
+
+            if (insertError) {
+                console.error("Error creating profile:", insertError);
+                setProfile(null);
+            } else {
+                profileData = newProfile;
+            }
+        } else if (profileError) {
+            console.error('Error fetching profile on refresh:', profileError);
         }
 
-        // data will be an array. If a profile exists, it will be the first element.
-        setProfile(data?.[0] || null);
-        if (data?.favorite_prompts) {
-            setFavoritePrompts(data.favorite_prompts);
+        setProfile(profileData || null);
+        if (profileData?.favorite_prompts) {
+            setFavoritePrompts(profileData.favorite_prompts);
         }
     } else {
         setProfile(null);

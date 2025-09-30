@@ -12,6 +12,10 @@ export default defineConfig({
       'lucide-react':
         '/home/user/studio/src/lib/__mocks__/lucide-react.tsx',
     },
+    environmentMatchGlobs: [
+      ['src/app/api/**', 'node'],
+      ['src/ai/flows/**', 'node'],
+    ],
   },
 });
 
