@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/auth-context';
+import { getChatHistory } from '@/lib/chat-actions';
 
 export interface ChatHistoryItem {
   id: string;
   title: string;
   lastMessagePreview?: string;
-  createdAt: Date; // Replaced Timestamp with Date
+  createdAt: Date;
 }
 
 export function useChatHistory() {
@@ -15,11 +16,19 @@ export function useChatHistory() {
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const forceRefresh = useCallback(() => {
-    // Placeholder for fetching data from Supabase
-    setIsLoading(false);
-    setChatHistory([]);
-  }, []);
+  const forceRefresh = useCallback(async () => {
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      const history = await getChatHistory(user.id);
+      setChatHistory(history);
+    } catch (error) {
+      console.error("Failed to fetch chat history:", error);
+      setChatHistory([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     forceRefresh();

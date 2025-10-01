@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect, FormEvent } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
-import { useAuthModal } from '@/hooks/use-auth-modal';
+import { useAuthModal } => '@/hooks/use-auth-modal';
 import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
@@ -31,6 +31,7 @@ import {
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getChatMessages, createChatSession, addChatMessage } from '@/lib/chat-actions';
 
 const GUEST_MESSAGE_LIMIT = 10;
 
@@ -62,6 +63,23 @@ export default function ChatPage() {
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  useEffect(() => {
+    const chatId = params.chatId as string | undefined;
+    if (chatId) {
+      setActiveChatId(chatId);
+    }
+  }, [params.chatId]);
+
+  useEffect(() => {
+    async function loadMessages() {
+      if (activeChatId) {
+        const loadedMessages = await getChatMessages(activeChatId);
+        setMessages(loadedMessages);
+      }
+    }
+    loadMessages();
+  }, [activeChatId]);
+
   const handleSetSidebarOpen = (isOpen: boolean) => {
     setSidebarOpen(isOpen);
   };
@@ -92,7 +110,29 @@ export default function ChatPage() {
   const handleSendMessage = async ({ input, attachments }: { input: string; attachments: Attachment[] }) => {
     if (!input.trim() && attachments.length === 0 || isSending || authLoading ) return;
 
+    if (!user) {
+        openAuthModal();
+        return;
+    }
+
     setIsSending(true);
+
+    let currentChatId = activeChatId;
+
+    // Create a new chat session if it's the first message
+    if (!currentChatId) {
+        const newChatId = await createChatSession(user.id, input.substring(0, 30));
+        if (newChatId) {
+            currentChatId = newChatId;
+            setActiveChatId(newChatId);
+            router.push(`/chat/${newChatId}`);
+            forceRefresh();
+        } else {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not create a new chat session.' });
+            setIsSending(false);
+            return;
+        }
+    }
 
     const userMessage: ChatMessageProps = {
         id: `user-${Date.now()}`,
@@ -105,13 +145,14 @@ export default function ChatPage() {
         attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.contentType, size: att.size }))
     };
     setMessages(prev => [...prev, userMessage]);
+    await addChatMessage(currentChatId, 'user', input.trim());
 
     setGuestMessageCount(prev => prev + 1);
   
     const chatInput = {
       message: input.trim(),
       history: messages.map(msg => ({ role: msg.role, text: msg.rawText || '' })),
-      sessionId: activeChatId || undefined,
+      sessionId: currentChatId || undefined,
       personaId: selectedPersonaId,
       context: attachments.length > 0 ? { url: attachments[0].url, filename: attachments[0].name } : undefined,
     };
@@ -145,6 +186,7 @@ export default function ChatPage() {
           createdAt: new Date(),
       };
       setMessages(prev => [...prev, modelResponse]);
+      await addChatMessage(currentChatId, 'model', result.response);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -191,7 +233,7 @@ export default function ChatPage() {
                 activeChatId={activeChatId}
                 onNewChat={handleNewChat}
                 onChatSelect={(id) => {
-                  setActiveChatId(id);
+                  router.push(`/chat/${id}`);
                   setSidebarOpen(false);
                 }}
                 onDeleteChat={handleDeleteChat}
@@ -209,7 +251,7 @@ export default function ChatPage() {
             chatHistory={chatHistory}
             activeChatId={activeChatId}
             onNewChat={handleNewChat}
-            onChatSelect={(id) => setActiveChatId(id)}
+            onChatSelect={(id) => router.push(`/chat/${id}`)}
             onDeleteChat={handleDeleteChat}
             isLoading={isHistoryLoading}
             isCollapsed={isSidebarCollapsed}
