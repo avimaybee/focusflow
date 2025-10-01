@@ -1,49 +1,60 @@
-2025-10-01T08:04:38.913582Z	Cloning repository...
-2025-10-01T08:04:39.675201Z	From https://github.com/avimaybee/focusflow
-2025-10-01T08:04:39.675667Z	 * branch            eef550e6de5b9c98b29c8fa34896b31bec881751 -> FETCH_HEAD
-2025-10-01T08:04:39.6758Z	
-2025-10-01T08:04:39.715407Z	HEAD is now at eef550e Implement code changes to enhance functionality and improve performance
-2025-10-01T08:04:39.715806Z	
-2025-10-01T08:04:39.792636Z	
-2025-10-01T08:04:39.793119Z	Using v2 root directory strategy
-2025-10-01T08:04:39.815441Z	Success: Finished cloning repository files
-2025-10-01T08:04:41.535979Z	Checking for configuration in a Wrangler configuration file (BETA)
-2025-10-01T08:04:41.536622Z	
-2025-10-01T08:04:42.638897Z	No wrangler.toml file found. Continuing.
-2025-10-01T08:04:42.702808Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
-2025-10-01T08:04:42.703644Z	Installing project dependencies: npm clean-install --progress=false
-2025-10-01T08:04:45.104332Z	npm error code EUSAGE
-2025-10-01T08:04:45.104552Z	npm error
-2025-10-01T08:04:45.104702Z	npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
-2025-10-01T08:04:45.104873Z	npm error
-2025-10-01T08:04:45.105003Z	npm error Invalid: lock file's @smithy/eventstream-codec@4.2.0 does not satisfy @smithy/eventstream-codec@2.2.0
-2025-10-01T08:04:45.105116Z	npm error Missing: @aws-crypto/crc32@3.0.0 from lock file
-2025-10-01T08:04:45.105222Z	npm error Missing: @smithy/util-hex-encoding@2.2.0 from lock file
-2025-10-01T08:04:45.105324Z	npm error Missing: @smithy/eventstream-codec@4.2.0 from lock file
-2025-10-01T08:04:45.105415Z	npm error Missing: tslib@1.14.1 from lock file
-2025-10-01T08:04:45.105516Z	npm error
-2025-10-01T08:04:45.105665Z	npm error Clean install a project
-2025-10-01T08:04:45.106Z	npm error
-2025-10-01T08:04:45.106129Z	npm error Usage:
-2025-10-01T08:04:45.106257Z	npm error npm ci
-2025-10-01T08:04:45.106385Z	npm error
-2025-10-01T08:04:45.106492Z	npm error Options:
-2025-10-01T08:04:45.106613Z	npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
-2025-10-01T08:04:45.106744Z	npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
-2025-10-01T08:04:45.106855Z	npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
-2025-10-01T08:04:45.106958Z	npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
-2025-10-01T08:04:45.107057Z	npm error [--no-bin-links] [--no-fund] [--dry-run]
-2025-10-01T08:04:45.107154Z	npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-2025-10-01T08:04:45.107262Z	npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
-2025-10-01T08:04:45.107382Z	npm error
-2025-10-01T08:04:45.107488Z	npm error aliases: clean-install, ic, install-clean, isntall-clean
-2025-10-01T08:04:45.107602Z	npm error
-2025-10-01T08:04:45.107711Z	npm error Run "npm help ci" for more info
-2025-10-01T08:04:45.107887Z	npm error A complete log of this run can be found in: /opt/buildhome/.npm/_logs/2025-10-01T08_04_43_076Z-debug-0.log
-2025-10-01T08:04:45.128558Z	Error: Exit with error code: 1
-2025-10-01T08:04:45.128751Z	    at ChildProcess.<anonymous> (/snapshot/dist/run-build.js)
-2025-10-01T08:04:45.128878Z	    at Object.onceWrapper (node:events:652:26)
-2025-10-01T08:04:45.128983Z	    at ChildProcess.emit (node:events:537:28)
-2025-10-01T08:04:45.129079Z	    at ChildProcess._handle.onexit (node:internal/child_process:291:12)
-2025-10-01T08:04:45.163539Z	Failed: build command exited with code: 1
-2025-10-01T08:04:46.340184Z	Failed: error occurred while running build command
+2025-10-01T08:06:44.537593Z	Cloning repository...
+2025-10-01T08:06:45.192341Z	From https://github.com/avimaybee/focusflow
+2025-10-01T08:06:45.193141Z	 * branch            1be0176dcf5bb671cff10d514b538229658fb431 -> FETCH_HEAD
+2025-10-01T08:06:45.193273Z	
+2025-10-01T08:06:45.234252Z	HEAD is now at 1be0176 Implement code changes to enhance functionality and improve performance
+2025-10-01T08:06:45.234855Z	
+2025-10-01T08:06:45.313535Z	
+2025-10-01T08:06:45.314088Z	Using v2 root directory strategy
+2025-10-01T08:06:45.335407Z	Success: Finished cloning repository files
+2025-10-01T08:06:47.108849Z	Checking for configuration in a Wrangler configuration file (BETA)
+2025-10-01T08:06:47.109555Z	
+2025-10-01T08:06:48.212739Z	No wrangler.toml file found. Continuing.
+2025-10-01T08:06:48.276849Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+2025-10-01T08:06:48.277402Z	Installing project dependencies: npm clean-install --progress=false
+2025-10-01T08:07:03.481509Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
+2025-10-01T08:07:33.709501Z	
+2025-10-01T08:07:33.709787Z	added 1639 packages, and audited 1640 packages in 45s
+2025-10-01T08:07:33.709977Z	
+2025-10-01T08:07:33.710144Z	251 packages are looking for funding
+2025-10-01T08:07:33.710308Z	  run `npm fund` for details
+2025-10-01T08:07:33.784975Z	
+2025-10-01T08:07:33.785272Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
+2025-10-01T08:07:33.785439Z	
+2025-10-01T08:07:33.78557Z	To address issues that do not require attention, run:
+2025-10-01T08:07:33.785755Z	  npm audit fix
+2025-10-01T08:07:33.785917Z	
+2025-10-01T08:07:33.786061Z	To address all issues (including breaking changes), run:
+2025-10-01T08:07:33.786224Z	  npm audit fix --force
+2025-10-01T08:07:33.786342Z	
+2025-10-01T08:07:33.78647Z	Run `npm audit` for details.
+2025-10-01T08:07:33.835423Z	Executing user command: npm run build:cloudflare
+2025-10-01T08:07:34.207251Z	
+2025-10-01T08:07:34.207782Z	> nextn@0.1.0 build:cloudflare
+2025-10-01T08:07:34.207906Z	> opennextjs-cloudflare
+2025-10-01T08:07:34.208009Z	
+2025-10-01T08:07:35.15703Z	node:internal/modules/cjs/loader:1401
+2025-10-01T08:07:35.157408Z	  const err = new Error(message);
+2025-10-01T08:07:35.157566Z	              ^
+2025-10-01T08:07:35.157677Z	
+2025-10-01T08:07:35.15779Z	Error: Cannot find module '@ast-grep/napi-linux-x64-gnu'
+2025-10-01T08:07:35.157918Z	Require stack:
+2025-10-01T08:07:35.158042Z	- /opt/buildhome/repo/node_modules/@ast-grep/napi/index.js
+2025-10-01T08:07:35.158145Z	    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+2025-10-01T08:07:35.158295Z	    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+2025-10-01T08:07:35.158401Z	    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+2025-10-01T08:07:35.158494Z	    at Function._load (node:internal/modules/cjs/loader:1211:37)
+2025-10-01T08:07:35.158592Z	    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+2025-10-01T08:07:35.158693Z	    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+2025-10-01T08:07:35.158802Z	    at Module.require (node:internal/modules/cjs/loader:1487:12)
+2025-10-01T08:07:35.158915Z	    at require (node:internal/modules/helpers:135:16)
+2025-10-01T08:07:35.159059Z	    at Object.<anonymous> (/opt/buildhome/repo/node_modules/@ast-grep/napi/index.js:190:31)
+2025-10-01T08:07:35.159161Z	    at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2025-10-01T08:07:35.159277Z	  code: 'MODULE_NOT_FOUND',
+2025-10-01T08:07:35.159394Z	  requireStack: [ '/opt/buildhome/repo/node_modules/@ast-grep/napi/index.js' ]
+2025-10-01T08:07:35.159494Z	}
+2025-10-01T08:07:35.159603Z	
+2025-10-01T08:07:35.159683Z	Node.js v22.16.0
+2025-10-01T08:07:35.176655Z	Failed: Error while executing user command. Exited with error code: 1
+2025-10-01T08:07:35.188074Z	Failed: build command exited with code: 1
+2025-10-01T08:07:36.571082Z	Failed: error occurred while running build command
