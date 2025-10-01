@@ -1,3 +1,4 @@
 name = "focusflow-egl"
 compatibility_date = "2025-09-06"
 compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".next"
