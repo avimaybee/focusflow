@@ -30,6 +30,8 @@ pnpm-debug.log*
 .env*.local
 .env
 service-account.json
+variables
+cloudflare-log
 
 # vercel
 .vercel
