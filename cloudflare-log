@@ -1,14 +1,27 @@
-Deployment details
-https://5595b99e.focusflow-egl.pages.dev
-Repository:
-
-avimaybee/focusflow
-Branch:
-master
-f93e366
-Remove edge runtime export from various pages and layouts to resolve build issues with OpenNext. This includes updates to the following files: - src/app/blog/[slug]/page.tsx - src/app/chat/[chatId]/page.tsx - src/app/flashcards/[slug]/page.tsx - src/app/my-content/flashcardSets/[flashcardSetId]/layout.tsx - src/app/my-content/quizzes/[quizId]/layout.tsx - src/app/my-content/savedMessages/[messageId]/layout.tsx - src/app/my-content/studyPlans/[id]/layout.tsx - src/app/my-content/summaries/[summaryId]/layout.tsx - src/app/plans/[slug]/page.tsx - src/app/practice-exam/[id]/layout.tsx - src/app/practice-exam/[id]/review/layout.tsx - src/app/quizzes/[slug]/page.tsx - src/app/student/[username]/layout.tsx - src/app/study-plan/[id]/layout.tsx - src/app/summaries/[slug]/page.tsx
-Status:
-Success
-1:04PM October 1, 2025
-Duration:
-1m 41s
+2025-10-01T07:42:20.908389Z	Cloning repository...
+2025-10-01T07:42:21.657076Z	From https://github.com/avimaybee/focusflow
+2025-10-01T07:42:21.657522Z	 * branch            1784ecced4e0a120971285d11ecf780814949811 -> FETCH_HEAD
+2025-10-01T07:42:21.657633Z	
+2025-10-01T07:42:21.697415Z	HEAD is now at 1784ecc fix: Remove edge runtime exports and add build configuration for OpenNext
+2025-10-01T07:42:21.69781Z	
+2025-10-01T07:42:21.77669Z	
+2025-10-01T07:42:21.777184Z	Using v2 root directory strategy
+2025-10-01T07:42:21.798418Z	Success: Finished cloning repository files
+2025-10-01T07:42:23.600094Z	Checking for configuration in a Wrangler configuration file (BETA)
+2025-10-01T07:42:23.600778Z	
+2025-10-01T07:42:23.602341Z	Found wrangler.toml file. Reading build configuration...
+2025-10-01T07:42:24.704088Z	A wrangler.toml file was found but it does not appear to be valid. Did you mean to use wrangler.toml to configure Pages? If so, then make sure the file is valid and contains the `pages_build_output_dir` property. Skipping file and continuing.
+2025-10-01T07:42:24.771219Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+2025-10-01T07:42:24.771858Z	Installing project dependencies: npm clean-install --progress=false
+2025-10-01T07:42:26.696383Z	npm error code ETARGET
+2025-10-01T07:42:26.696644Z	npm error notarget No matching version found for @opennextjs/cloudflare@^3.1.3.
+2025-10-01T07:42:26.696774Z	npm error notarget In most cases you or one of your dependencies are requesting
+2025-10-01T07:42:26.696881Z	npm error notarget a package version that doesn't exist.
+2025-10-01T07:42:26.697782Z	npm error A complete log of this run can be found in: /opt/buildhome/.npm/_logs/2025-10-01T07_42_25_146Z-debug-0.log
+2025-10-01T07:42:26.721662Z	Error: Exit with error code: 1
+2025-10-01T07:42:26.722252Z	    at ChildProcess.<anonymous> (/snapshot/dist/run-build.js)
+2025-10-01T07:42:26.722467Z	    at Object.onceWrapper (node:events:652:26)
+2025-10-01T07:42:26.722574Z	    at ChildProcess.emit (node:events:537:28)
+2025-10-01T07:42:26.72272Z	    at ChildProcess._handle.onexit (node:internal/child_process:291:12)
+2025-10-01T07:42:26.73211Z	Failed: build command exited with code: 1
+2025-10-01T07:42:28.427225Z	Failed: error occurred while running build command
