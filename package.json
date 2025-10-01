@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:ui": "vitest --ui",
+    "build:cloudflare": "opennextjs-cloudflare",
     "script:migrate-users": "ts-node --project scripts/tsconfig.scripts.json scripts/migrate-users.ts",
     "script:migrate-profiles": "ts-node --project scripts/tsconfig.scripts.json scripts/migrate-public-profiles.ts"
   },
@@ -79,6 +80,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^3.1.3",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",

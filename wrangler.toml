@@ -1,0 +1,4 @@
+name = "focusflow-egl"
+main = ".open-next/worker/index.mjs"
+compatibility_date = "2024-04-05"
+compatibility_flags = ["nodejs_compat"]
