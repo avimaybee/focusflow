@@ -1,5 +1,5 @@
 // src/app/chat/[chatId]/page.tsx
-export const runtime = 'edge';
+
 
 // We keep the actual chat UI in a client component.
 // This server component wrapper exists to satisfy the Edge Runtime requirement for dynamic routes.

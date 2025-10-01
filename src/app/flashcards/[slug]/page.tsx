@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { FlashcardViewer } from '@/components/flashcard-viewer';

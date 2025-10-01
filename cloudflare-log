@@ -1,154 +1,154 @@
-2025-10-01T07:18:37.875701Z	Cloning repository...
-2025-10-01T07:18:38.548105Z	From https://github.com/avimaybee/focusflow
-2025-10-01T07:18:38.548954Z	 * branch            28a2399cd11d4ff42e2fa6a3091dfdc8efd19767 -> FETCH_HEAD
-2025-10-01T07:18:38.549088Z	
-2025-10-01T07:18:38.591515Z	HEAD is now at 28a2399 Remove wrangler configuration and add build configuration for Open Next
-2025-10-01T07:18:38.592219Z	
-2025-10-01T07:18:38.680988Z	
-2025-10-01T07:18:38.68143Z	Using v2 root directory strategy
-2025-10-01T07:18:38.702886Z	Success: Finished cloning repository files
-2025-10-01T07:18:40.458199Z	Checking for configuration in a Wrangler configuration file (BETA)
-2025-10-01T07:18:40.458993Z	
-2025-10-01T07:18:41.559172Z	No wrangler.toml file found. Continuing.
-2025-10-01T07:18:41.625432Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
-2025-10-01T07:18:41.625964Z	Installing project dependencies: npm clean-install --progress=false
-2025-10-01T07:18:45.025905Z	npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
-2025-10-01T07:18:45.949909Z	npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
-2025-10-01T07:18:46.920672Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
-2025-10-01T07:18:47.805505Z	npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
-2025-10-01T07:18:47.847772Z	npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
-2025-10-01T07:18:48.418334Z	npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
-2025-10-01T07:18:51.746662Z	npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
-2025-10-01T07:19:05.755613Z	
-2025-10-01T07:19:05.755935Z	added 904 packages, and audited 906 packages in 24s
-2025-10-01T07:19:05.75608Z	
-2025-10-01T07:19:05.756316Z	216 packages are looking for funding
-2025-10-01T07:19:05.756406Z	  run `npm fund` for details
-2025-10-01T07:19:05.822256Z	
-2025-10-01T07:19:05.822831Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
-2025-10-01T07:19:05.823235Z	
-2025-10-01T07:19:05.823927Z	To address issues that do not require attention, run:
-2025-10-01T07:19:05.824091Z	  npm audit fix
-2025-10-01T07:19:05.824204Z	
-2025-10-01T07:19:05.824364Z	To address all issues (including breaking changes), run:
-2025-10-01T07:19:05.824483Z	  npm audit fix --force
-2025-10-01T07:19:05.824583Z	
-2025-10-01T07:19:05.825111Z	Run `npm audit` for details.
-2025-10-01T07:19:05.865133Z	Executing user command: npx open-next build
-2025-10-01T07:19:07.368568Z	npm warn exec The following package was not found and will be installed: open-next@3.1.3
-2025-10-01T07:19:13.305147Z	Next.js version : 14.2.3
-2025-10-01T07:19:13.305453Z	OpenNext v3.1.3
-2025-10-01T07:19:13.306093Z	
-2025-10-01T07:19:13.306187Z	┌─────────────────────────────────┐
-2025-10-01T07:19:13.306276Z	│ OpenNext — Building Next.js app │
-2025-10-01T07:19:13.306547Z	└─────────────────────────────────┘
-2025-10-01T07:19:13.306686Z	
-2025-10-01T07:19:13.501668Z	
-2025-10-01T07:19:13.501966Z	> nextn@0.1.0 build
-2025-10-01T07:19:13.502131Z	> next build
-2025-10-01T07:19:13.502309Z	
-2025-10-01T07:19:14.153424Z	⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
-2025-10-01T07:19:14.157647Z	Attention: Next.js now collects completely anonymous telemetry regarding usage.
-2025-10-01T07:19:14.157815Z	This information is used to shape Next.js' roadmap and prioritize features.
-2025-10-01T07:19:14.157937Z	You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-2025-10-01T07:19:14.158046Z	https://nextjs.org/telemetry
-2025-10-01T07:19:14.15816Z	
-2025-10-01T07:19:14.216312Z	  ▲ Next.js 14.2.3
-2025-10-01T07:19:14.217179Z	
-2025-10-01T07:19:14.278249Z	   Creating an optimized production build ...
-2025-10-01T07:19:50.829939Z	 ✓ Compiled successfully
-2025-10-01T07:19:50.830986Z	   Skipping validation of types
-2025-10-01T07:19:50.831528Z	   Skipping linting
-2025-10-01T07:19:51.128469Z	   Collecting page data ...
-2025-10-01T07:19:52.628988Z	 ⚠ Using edge runtime on a page currently disables static generation for that page
-2025-10-01T07:19:54.074575Z	   Generating static pages (0/21) ...
-2025-10-01T07:19:54.983672Z	[PLACEHOLDER] getAllUsernames called
-2025-10-01T07:19:54.983995Z	[PLACEHOLDER] getPublicSummaries called
-2025-10-01T07:19:54.984122Z	[PLACEHOLDER] getPublicFlashcardSets called
-2025-10-01T07:19:54.98422Z	[PLACEHOLDER] getPublicQuizzes called
-2025-10-01T07:19:54.984325Z	[PLACEHOLDER] getPublicStudyPlans called
-2025-10-01T07:19:54.985953Z	   Generating static pages (5/21) 
-2025-10-01T07:19:55.244075Z	   Generating static pages (10/21) 
-2025-10-01T07:19:55.254772Z	   Generating static pages (15/21) 
-2025-10-01T07:19:55.317855Z	 ✓ Generating static pages (21/21)
-2025-10-01T07:19:55.536163Z	   Finalizing page optimization ...
-2025-10-01T07:19:55.5364Z	   Collecting build traces ...
-2025-10-01T07:20:05.673982Z	
-2025-10-01T07:20:05.677389Z	Route (app)                                     Size     First Load JS
-2025-10-01T07:20:05.67756Z	┌ ○ /                                           20.3 kB         249 kB
-2025-10-01T07:20:05.677744Z	├ ○ /_not-found                                 880 B          88.2 kB
-2025-10-01T07:20:05.677848Z	├ ○ /about                                      181 B          87.5 kB
-2025-10-01T07:20:05.677916Z	├ ƒ /api/chat                                   0 B                0 B
-2025-10-01T07:20:05.678065Z	├ ○ /blog                                       177 B          94.3 kB
-2025-10-01T07:20:05.678184Z	├ ƒ /blog/[slug]                                1.98 kB         144 kB
-2025-10-01T07:20:05.678331Z	├ ○ /chat                                       230 B           683 kB
-2025-10-01T07:20:05.678438Z	├ ƒ /chat/[chatId]                              230 B           683 kB
-2025-10-01T07:20:05.678557Z	├ ○ /contact                                    181 B          87.5 kB
-2025-10-01T07:20:05.678677Z	├ ○ /dashboard                                  17.4 kB         323 kB
-2025-10-01T07:20:05.678799Z	├ ○ /dashboard/analytics                        12.1 kB         240 kB
-2025-10-01T07:20:05.678925Z	├ ƒ /flashcards/[slug]                          6.01 kB         148 kB
-2025-10-01T07:20:05.67918Z	├ ○ /my-content                                 7.05 kB         196 kB
-2025-10-01T07:20:05.679341Z	├ ƒ /my-content/flashcardSets/[flashcardSetId]  5.82 kB         188 kB
-2025-10-01T07:20:05.679525Z	├ ƒ /my-content/quizzes/[quizId]                5.74 kB         195 kB
-2025-10-01T07:20:05.679656Z	├ ƒ /my-content/savedMessages/[messageId]       1.25 kB         205 kB
-2025-10-01T07:20:05.679852Z	├ ƒ /my-content/studyPlans/[id]                 2.39 kB         130 kB
-2025-10-01T07:20:05.679925Z	├ ○ /my-content/summaries                       4.96 kB         223 kB
-2025-10-01T07:20:05.680012Z	├ ƒ /my-content/summaries/[summaryId]           2.34 kB         206 kB
-2025-10-01T07:20:05.680109Z	├ ƒ /plans/[slug]                               2.47 kB         104 kB
-2025-10-01T07:20:05.680214Z	├ ƒ /practice-exam/[id]                         8.15 kB         187 kB
-2025-10-01T07:20:05.680277Z	├ ƒ /practice-exam/[id]/review                  394 B          87.7 kB
-2025-10-01T07:20:05.680333Z	├ ○ /practice-exam/new                          13.3 kB         208 kB
-2025-10-01T07:20:05.680396Z	├ ○ /preferences                                4.97 kB         187 kB
-2025-10-01T07:20:05.680452Z	├ ○ /preferences/profile                        5.42 kB         181 kB
-2025-10-01T07:20:05.680509Z	├ ○ /premium                                    3.27 kB         145 kB
-2025-10-01T07:20:05.680626Z	├ ○ /privacy                                    181 B          87.5 kB
-2025-10-01T07:20:05.68105Z	├ ƒ /quizzes/[slug]                             4.55 kB         154 kB
-2025-10-01T07:20:05.681151Z	├ ○ /sitemap.xml                                0 B                0 B
-2025-10-01T07:20:05.681216Z	├ ƒ /student/[username]                         7.61 kB         190 kB
-2025-10-01T07:20:05.681344Z	├ ƒ /study-plan/[id]                            3.61 kB         141 kB
-2025-10-01T07:20:05.681412Z	├ ○ /study-plan/new                             5.21 kB         180 kB
-2025-10-01T07:20:05.681472Z	├ ƒ /summaries/[slug]                           2.47 kB         104 kB
-2025-10-01T07:20:05.681529Z	└ ○ /terms                                      181 B          87.5 kB
-2025-10-01T07:20:05.681592Z	+ First Load JS shared by all                   87.3 kB
-2025-10-01T07:20:05.681676Z	  ├ chunks/3526-ee31b900b3a16fb9.js             31.6 kB
-2025-10-01T07:20:05.682024Z	  ├ chunks/fd9d1056-376cd1900f1dcb63.js         53.6 kB
-2025-10-01T07:20:05.682166Z	  └ other shared chunks (total)                 2.06 kB
-2025-10-01T07:20:05.682246Z	
-2025-10-01T07:20:05.682363Z	
-2025-10-01T07:20:05.682438Z	○  (Static)   prerendered as static content
-2025-10-01T07:20:05.682498Z	ƒ  (Dynamic)  server-rendered on demand
-2025-10-01T07:20:05.682553Z	
-2025-10-01T07:20:05.718396Z	
-2025-10-01T07:20:05.718642Z	┌──────────────────────────────┐
-2025-10-01T07:20:05.718855Z	│ OpenNext — Generating bundle │
-2025-10-01T07:20:05.719018Z	└──────────────────────────────┘
-2025-10-01T07:20:05.719146Z	
-2025-10-01T07:20:05.819088Z	Bundling middleware function...
-2025-10-01T07:20:05.819598Z	Bundling static assets...
-2025-10-01T07:20:05.84391Z	Bundling cache assets...
-2025-10-01T07:20:06.132221Z	Building server function: default...
-2025-10-01T07:20:06.151356Z	file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:53
-2025-10-01T07:20:06.151821Z	                throw new Error(`
-2025-10-01T07:20:06.151986Z	                      ^
-2025-10-01T07:20:06.152056Z	
-2025-10-01T07:20:06.152657Z	Error: 
-2025-10-01T07:20:06.152755Z	--------------------------------------------------------------------------------
-2025-10-01T07:20:06.15299Z	app/api/chat/route cannot use the edge runtime.
-2025-10-01T07:20:06.153111Z	OpenNext requires edge runtime function to be defined in a separate function. 
-2025-10-01T07:20:06.153225Z	See the docs for more information on how to bundle edge runtime functions.
-2025-10-01T07:20:06.153331Z	--------------------------------------------------------------------------------
-2025-10-01T07:20:06.153437Z	        
-2025-10-01T07:20:06.15353Z	    at computeCopyFilesForPage (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:53:23)
-2025-10-01T07:20:06.153631Z	    at file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:111:9
-2025-10-01T07:20:06.153754Z	    at Array.forEach (<anonymous>)
-2025-10-01T07:20:06.15386Z	    at copyTracedFiles (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:110:12)
-2025-10-01T07:20:06.153977Z	    at generateBundle (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/createServerBundle.js:112:11)
-2025-10-01T07:20:06.154088Z	    at createServerBundle (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/createServerBundle.js:72:11)
-2025-10-01T07:20:06.154202Z	    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-2025-10-01T07:20:06.154299Z	    at async build (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build.js:57:5)
-2025-10-01T07:20:06.154402Z	    at async file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/index.js:9:1
-2025-10-01T07:20:06.154559Z	
-2025-10-01T07:20:06.154639Z	Node.js v22.16.0
-2025-10-01T07:20:06.178004Z	Failed: Error while executing user command. Exited with error code: 1
-2025-10-01T07:20:06.189373Z	Failed: build command exited with code: 1
-2025-10-01T07:20:10.027253Z	Failed: error occurred while running build command
+2025-10-01T07:23:30.606999Z	Cloning repository...
+2025-10-01T07:23:31.330721Z	From https://github.com/avimaybee/focusflow
+2025-10-01T07:23:31.331181Z	 * branch            e54cf92219a8fd449b598b501d0ed2aecbfdb060 -> FETCH_HEAD
+2025-10-01T07:23:31.331287Z	
+2025-10-01T07:23:31.371914Z	HEAD is now at e54cf92 Remove edge runtime export from chat route
+2025-10-01T07:23:31.372374Z	
+2025-10-01T07:23:31.451111Z	
+2025-10-01T07:23:31.451569Z	Using v2 root directory strategy
+2025-10-01T07:23:31.473585Z	Success: Finished cloning repository files
+2025-10-01T07:23:33.454362Z	Checking for configuration in a Wrangler configuration file (BETA)
+2025-10-01T07:23:33.455248Z	
+2025-10-01T07:23:34.558198Z	No wrangler.toml file found. Continuing.
+2025-10-01T07:23:34.623236Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+2025-10-01T07:23:34.623873Z	Installing project dependencies: npm clean-install --progress=false
+2025-10-01T07:23:37.901734Z	npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2025-10-01T07:23:38.89423Z	npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2025-10-01T07:23:39.948871Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
+2025-10-01T07:23:40.798555Z	npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+2025-10-01T07:23:40.849061Z	npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+2025-10-01T07:23:41.359693Z	npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2025-10-01T07:23:44.655573Z	npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+2025-10-01T07:23:59.553601Z	
+2025-10-01T07:23:59.553903Z	added 904 packages, and audited 906 packages in 25s
+2025-10-01T07:23:59.554057Z	
+2025-10-01T07:23:59.554258Z	216 packages are looking for funding
+2025-10-01T07:23:59.55441Z	  run `npm fund` for details
+2025-10-01T07:23:59.623512Z	
+2025-10-01T07:23:59.623765Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
+2025-10-01T07:23:59.624011Z	
+2025-10-01T07:23:59.624165Z	To address issues that do not require attention, run:
+2025-10-01T07:23:59.624244Z	  npm audit fix
+2025-10-01T07:23:59.624348Z	
+2025-10-01T07:23:59.624456Z	To address all issues (including breaking changes), run:
+2025-10-01T07:23:59.624662Z	  npm audit fix --force
+2025-10-01T07:23:59.624749Z	
+2025-10-01T07:23:59.6249Z	Run `npm audit` for details.
+2025-10-01T07:23:59.663504Z	Executing user command: npx open-next build
+2025-10-01T07:24:01.379771Z	npm warn exec The following package was not found and will be installed: open-next@3.1.3
+2025-10-01T07:24:06.199422Z	Next.js version : 14.2.3
+2025-10-01T07:24:06.199844Z	OpenNext v3.1.3
+2025-10-01T07:24:06.200185Z	
+2025-10-01T07:24:06.200289Z	┌─────────────────────────────────┐
+2025-10-01T07:24:06.200388Z	│ OpenNext — Building Next.js app │
+2025-10-01T07:24:06.200471Z	└─────────────────────────────────┘
+2025-10-01T07:24:06.200551Z	
+2025-10-01T07:24:06.375106Z	
+2025-10-01T07:24:06.37546Z	> nextn@0.1.0 build
+2025-10-01T07:24:06.375645Z	> next build
+2025-10-01T07:24:06.375771Z	
+2025-10-01T07:24:07.008072Z	⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+2025-10-01T07:24:07.012148Z	Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2025-10-01T07:24:07.012376Z	This information is used to shape Next.js' roadmap and prioritize features.
+2025-10-01T07:24:07.012527Z	You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2025-10-01T07:24:07.012667Z	https://nextjs.org/telemetry
+2025-10-01T07:24:07.012789Z	
+2025-10-01T07:24:07.068985Z	  ▲ Next.js 14.2.3
+2025-10-01T07:24:07.069223Z	
+2025-10-01T07:24:07.12825Z	   Creating an optimized production build ...
+2025-10-01T07:24:43.139594Z	 ✓ Compiled successfully
+2025-10-01T07:24:43.140806Z	   Skipping validation of types
+2025-10-01T07:24:43.140973Z	   Skipping linting
+2025-10-01T07:24:43.423762Z	   Collecting page data ...
+2025-10-01T07:24:44.959552Z	 ⚠ Using edge runtime on a page currently disables static generation for that page
+2025-10-01T07:24:46.375457Z	   Generating static pages (0/22) ...
+2025-10-01T07:24:47.238871Z	[PLACEHOLDER] getAllUsernames called
+2025-10-01T07:24:47.239088Z	[PLACEHOLDER] getPublicSummaries called
+2025-10-01T07:24:47.239452Z	[PLACEHOLDER] getPublicFlashcardSets called
+2025-10-01T07:24:47.239752Z	[PLACEHOLDER] getPublicQuizzes called
+2025-10-01T07:24:47.239892Z	[PLACEHOLDER] getPublicStudyPlans called
+2025-10-01T07:24:47.305424Z	   Generating static pages (5/22) 
+2025-10-01T07:24:47.633411Z	   Generating static pages (10/22) 
+2025-10-01T07:24:47.634757Z	   Generating static pages (16/22) 
+2025-10-01T07:24:47.719191Z	 ✓ Generating static pages (22/22)
+2025-10-01T07:24:47.998169Z	   Finalizing page optimization ...
+2025-10-01T07:24:47.99847Z	   Collecting build traces ...
+2025-10-01T07:24:58.123133Z	
+2025-10-01T07:24:58.126407Z	Route (app)                                     Size     First Load JS
+2025-10-01T07:24:58.126851Z	┌ ○ /                                           20.3 kB         249 kB
+2025-10-01T07:24:58.127014Z	├ ○ /_not-found                                 880 B          88.2 kB
+2025-10-01T07:24:58.127352Z	├ ○ /about                                      180 B          87.5 kB
+2025-10-01T07:24:58.127567Z	├ ƒ /api/chat                                   0 B                0 B
+2025-10-01T07:24:58.127684Z	├ ○ /blog                                       177 B          94.3 kB
+2025-10-01T07:24:58.127787Z	├ ƒ /blog/[slug]                                1.98 kB         144 kB
+2025-10-01T07:24:58.127909Z	├ ○ /chat                                       230 B           683 kB
+2025-10-01T07:24:58.128012Z	├ ƒ /chat/[chatId]                              230 B           683 kB
+2025-10-01T07:24:58.128146Z	├ ○ /contact                                    180 B          87.5 kB
+2025-10-01T07:24:58.128325Z	├ ○ /dashboard                                  17.4 kB         323 kB
+2025-10-01T07:24:58.128452Z	├ ○ /dashboard/analytics                        12.1 kB         240 kB
+2025-10-01T07:24:58.128515Z	├ ƒ /flashcards/[slug]                          6.01 kB         148 kB
+2025-10-01T07:24:58.12861Z	├ ○ /my-content                                 7.05 kB         196 kB
+2025-10-01T07:24:58.128667Z	├ ƒ /my-content/flashcardSets/[flashcardSetId]  5.82 kB         188 kB
+2025-10-01T07:24:58.128727Z	├ ƒ /my-content/quizzes/[quizId]                5.74 kB         195 kB
+2025-10-01T07:24:58.128944Z	├ ƒ /my-content/savedMessages/[messageId]       1.25 kB         205 kB
+2025-10-01T07:24:58.129056Z	├ ƒ /my-content/studyPlans/[id]                 2.39 kB         130 kB
+2025-10-01T07:24:58.129328Z	├ ○ /my-content/summaries                       4.96 kB         223 kB
+2025-10-01T07:24:58.129457Z	├ ƒ /my-content/summaries/[summaryId]           2.34 kB         206 kB
+2025-10-01T07:24:58.129568Z	├ ƒ /plans/[slug]                               2.47 kB         104 kB
+2025-10-01T07:24:58.129676Z	├ ƒ /practice-exam/[id]                         8.15 kB         187 kB
+2025-10-01T07:24:58.129779Z	├ ƒ /practice-exam/[id]/review                  394 B          87.7 kB
+2025-10-01T07:24:58.12988Z	├ ○ /practice-exam/new                          13.3 kB         208 kB
+2025-10-01T07:24:58.12995Z	├ ○ /preferences                                4.97 kB         187 kB
+2025-10-01T07:24:58.130008Z	├ ○ /preferences/profile                        5.42 kB         181 kB
+2025-10-01T07:24:58.130063Z	├ ○ /premium                                    3.27 kB         145 kB
+2025-10-01T07:24:58.130117Z	├ ○ /privacy                                    180 B          87.5 kB
+2025-10-01T07:24:58.130549Z	├ ƒ /quizzes/[slug]                             4.55 kB         154 kB
+2025-10-01T07:24:58.130685Z	├ ○ /sitemap.xml                                0 B                0 B
+2025-10-01T07:24:58.130783Z	├ ƒ /student/[username]                         7.61 kB         190 kB
+2025-10-01T07:24:58.130888Z	├ ƒ /study-plan/[id]                            3.61 kB         141 kB
+2025-10-01T07:24:58.13099Z	├ ○ /study-plan/new                             5.21 kB         180 kB
+2025-10-01T07:24:58.131219Z	├ ƒ /summaries/[slug]                           2.47 kB         104 kB
+2025-10-01T07:24:58.131293Z	└ ○ /terms                                      180 B          87.5 kB
+2025-10-01T07:24:58.131351Z	+ First Load JS shared by all                   87.3 kB
+2025-10-01T07:24:58.131484Z	  ├ chunks/3526-ee31b900b3a16fb9.js             31.6 kB
+2025-10-01T07:24:58.131557Z	  ├ chunks/fd9d1056-376cd1900f1dcb63.js         53.6 kB
+2025-10-01T07:24:58.131678Z	  └ other shared chunks (total)                 2.06 kB
+2025-10-01T07:24:58.1318Z	
+2025-10-01T07:24:58.131934Z	
+2025-10-01T07:24:58.132077Z	○  (Static)   prerendered as static content
+2025-10-01T07:24:58.132221Z	ƒ  (Dynamic)  server-rendered on demand
+2025-10-01T07:24:58.132352Z	
+2025-10-01T07:24:58.163533Z	
+2025-10-01T07:24:58.163729Z	┌──────────────────────────────┐
+2025-10-01T07:24:58.163837Z	│ OpenNext — Generating bundle │
+2025-10-01T07:24:58.163933Z	└──────────────────────────────┘
+2025-10-01T07:24:58.164024Z	
+2025-10-01T07:24:58.265732Z	Bundling middleware function...
+2025-10-01T07:24:58.266187Z	Bundling static assets...
+2025-10-01T07:24:58.287666Z	Bundling cache assets...
+2025-10-01T07:24:58.588809Z	Building server function: default...
+2025-10-01T07:24:58.608875Z	file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:53
+2025-10-01T07:24:58.609059Z	                throw new Error(`
+2025-10-01T07:24:58.609317Z	                      ^
+2025-10-01T07:24:58.609436Z	
+2025-10-01T07:24:58.609543Z	Error: 
+2025-10-01T07:24:58.609622Z	--------------------------------------------------------------------------------
+2025-10-01T07:24:58.609702Z	app/blog/[slug]/page cannot use the edge runtime.
+2025-10-01T07:24:58.609782Z	OpenNext requires edge runtime function to be defined in a separate function. 
+2025-10-01T07:24:58.609864Z	See the docs for more information on how to bundle edge runtime functions.
+2025-10-01T07:24:58.610303Z	--------------------------------------------------------------------------------
+2025-10-01T07:24:58.610579Z	        
+2025-10-01T07:24:58.610682Z	    at computeCopyFilesForPage (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:53:23)
+2025-10-01T07:24:58.611028Z	    at file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:111:9
+2025-10-01T07:24:58.61116Z	    at Array.forEach (<anonymous>)
+2025-10-01T07:24:58.611274Z	    at copyTracedFiles (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:110:12)
+2025-10-01T07:24:58.611387Z	    at generateBundle (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/createServerBundle.js:112:11)
+2025-10-01T07:24:58.611484Z	    at createServerBundle (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/createServerBundle.js:72:11)
+2025-10-01T07:24:58.611583Z	    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-01T07:24:58.611669Z	    at async build (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build.js:57:5)
+2025-10-01T07:24:58.611758Z	    at async file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/index.js:9:1
+2025-10-01T07:24:58.611851Z	
+2025-10-01T07:24:58.611936Z	Node.js v22.16.0
+2025-10-01T07:24:58.632348Z	Failed: Error while executing user command. Exited with error code: 1
+2025-10-01T07:24:58.642436Z	Failed: build command exited with code: 1
+2025-10-01T07:24:59.851907Z	Failed: error occurred while running build command
