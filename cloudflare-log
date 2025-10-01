@@ -1,99 +1,109 @@
-2025-10-01T06:41:02.677084Z	Cloning repository...
-2025-10-01T06:41:03.434486Z	From https://github.com/avimaybee/focusflow
-2025-10-01T06:41:03.435142Z	 * branch            1ba1ea59eed66b4be9983b9ff590df5ec1b32a14 -> FETCH_HEAD
-2025-10-01T06:41:03.435272Z	
-2025-10-01T06:41:03.478836Z	HEAD is now at 1ba1ea5 supabase, persistance 1
-2025-10-01T06:41:03.479262Z	
-2025-10-01T06:41:03.560129Z	
-2025-10-01T06:41:03.560643Z	Using v2 root directory strategy
-2025-10-01T06:41:03.581641Z	Success: Finished cloning repository files
-2025-10-01T06:41:05.65424Z	Checking for configuration in a Wrangler configuration file (BETA)
-2025-10-01T06:41:05.654766Z	
-2025-10-01T06:41:05.656299Z	Found wrangler.toml file. Reading build configuration...
-2025-10-01T06:41:06.760426Z	A wrangler.toml file was found but it does not appear to be valid. Did you mean to use wrangler.toml to configure Pages? If so, then make sure the file is valid and contains the `pages_build_output_dir` property. Skipping file and continuing.
-2025-10-01T06:41:06.831349Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
-2025-10-01T06:41:06.831942Z	Installing project dependencies: npm clean-install --progress=false
-2025-10-01T06:41:10.218559Z	npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
-2025-10-01T06:41:11.127322Z	npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
-2025-10-01T06:41:12.140057Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
-2025-10-01T06:41:12.993891Z	npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
-2025-10-01T06:41:13.042478Z	npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
-2025-10-01T06:41:13.652212Z	npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
-2025-10-01T06:41:16.949671Z	npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
-2025-10-01T06:41:30.707355Z	
-2025-10-01T06:41:30.708035Z	added 904 packages, and audited 906 packages in 23s
-2025-10-01T06:41:30.70825Z	
-2025-10-01T06:41:30.715936Z	216 packages are looking for funding
-2025-10-01T06:41:30.716057Z	  run `npm fund` for details
-2025-10-01T06:41:30.776485Z	
-2025-10-01T06:41:30.776813Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
-2025-10-01T06:41:30.776992Z	
-2025-10-01T06:41:30.777147Z	To address issues that do not require attention, run:
-2025-10-01T06:41:30.777269Z	  npm audit fix
-2025-10-01T06:41:30.777836Z	
-2025-10-01T06:41:30.778025Z	To address all issues (including breaking changes), run:
-2025-10-01T06:41:30.778162Z	  npm audit fix --force
-2025-10-01T06:41:30.778276Z	
-2025-10-01T06:41:30.778768Z	Run `npm audit` for details.
-2025-10-01T06:41:30.817741Z	Executing user command: npx @cloudflare/next-on-pages@1
-2025-10-01T06:41:32.358624Z	npm warn exec The following package was not found and will be installed: @cloudflare/next-on-pages@1.13.16
-2025-10-01T06:41:46.557497Z	npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
-2025-10-01T06:41:47.876531Z	npm warn deprecated @cloudflare/next-on-pages@1.13.16: Please use the OpenNext adapter instead: https://opennext.js.org/cloudflare
-2025-10-01T06:41:56.119905Z	⚡️ @cloudflare/next-on-pages CLI v.1.13.16
-2025-10-01T06:41:56.289289Z	⚡️ Detected Package Manager: npm (10.9.2)
-2025-10-01T06:41:56.289559Z	⚡️ Preparing project...
-2025-10-01T06:41:56.292695Z	⚡️ Project is ready
-2025-10-01T06:41:56.292943Z	⚡️ Building project...
-2025-10-01T06:41:57.578178Z	▲  npm warn exec The following package was not found and will be installed: vercel@48.1.6
-2025-10-01T06:42:01.379326Z	▲  npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
-2025-10-01T06:42:03.340822Z	▲  Vercel CLI 48.1.6
-2025-10-01T06:42:03.345435Z	▲  > NOTE: The Vercel CLI now collects telemetry regarding usage of the CLI.
-2025-10-01T06:42:03.346415Z	▲  > This information is used to shape the CLI roadmap and prioritize features.
-2025-10-01T06:42:03.346537Z	▲  > You can learn more, including how to opt-out if you'd not like to participate in this program, by visiting the following URL:
-2025-10-01T06:42:03.346731Z	▲  > https://vercel.com/docs/cli/about-telemetry
-2025-10-01T06:42:03.455674Z	▲  WARN! Build not running on Vercel. System environment variables will not be available.
-2025-10-01T06:42:03.66701Z	▲  Installing dependencies...
-2025-10-01T06:42:05.338351Z	▲  up to date in 2s
-2025-10-01T06:42:05.338659Z	▲  216 packages are looking for funding
-2025-10-01T06:42:05.338883Z	▲  run `npm fund` for details
-2025-10-01T06:42:05.348126Z	▲  Detected Next.js version: 14.2.3
-2025-10-01T06:42:05.356042Z	▲  Running "npm run build"
-2025-10-01T06:42:05.557972Z	▲  > nextn@0.1.0 build
-2025-10-01T06:42:05.558247Z	▲  > next build
-2025-10-01T06:42:06.217519Z	▲  Attention: Next.js now collects completely anonymous telemetry regarding usage.
-2025-10-01T06:42:06.217841Z	▲  This information is used to shape Next.js' roadmap and prioritize features.
-2025-10-01T06:42:06.218014Z	▲  You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-2025-10-01T06:42:06.218263Z	▲  https://nextjs.org/telemetry
-2025-10-01T06:42:06.276899Z	▲  ▲ Next.js 14.2.3
-2025-10-01T06:42:06.277517Z	▲  
-2025-10-01T06:42:06.340556Z	▲  Creating an optimized production build ...
-2025-10-01T06:42:16.16068Z	▲  Failed to compile.
-2025-10-01T06:42:16.161266Z	▲  ./src/app/chat/page.tsx
-2025-10-01T06:42:16.1616Z	▲  Error: 
-2025-10-01T06:42:16.16178Z	▲   [31mx[0m Expected 'from', got '=>'
-2025-10-01T06:42:16.161933Z	▲     ,-[[36;1;4m/opt/buildhome/repo/src/app/chat/page.tsx[0m:4:1]
-2025-10-01T06:42:16.162062Z	▲  [2m 4[0m | import { useRouter, useParams } from 'next/navigation';
-2025-10-01T06:42:16.16221Z	▲  [2m 5[0m | import { motion, AnimatePresence } from 'framer-motion';
-2025-10-01T06:42:16.162397Z	▲  [2m 6[0m | import { useAuth } from '@/context/auth-context';
-2025-10-01T06:42:16.162481Z	▲  [2m 7[0m | import { useAuthModal } => '@/hooks/use-auth-modal';
-2025-10-01T06:42:16.16258Z	▲     : [31;1m                        ^^[0m
-2025-10-01T06:42:16.162759Z	▲  [2m 8[0m | import { useToast } from '@/hooks/use-toast';
-2025-10-01T06:42:16.162904Z	▲  [2m 9[0m | import { usePersonaManager } from '@/hooks/use-persona-manager';
-2025-10-01T06:42:16.163071Z	▲  [2m10[0m | import { useChatHistory } from '@/hooks/use-chat-history';
-2025-10-01T06:42:16.16324Z	▲     `----
-2025-10-01T06:42:16.163479Z	▲  
-2025-10-01T06:42:16.163584Z	▲  Caused by:
-2025-10-01T06:42:16.163659Z	▲     Syntax Error
-2025-10-01T06:42:16.16372Z	▲  
-2025-10-01T06:42:16.163779Z	▲  Import trace for requested module:
-2025-10-01T06:42:16.163843Z	▲  ./src/app/chat/page.tsx
-2025-10-01T06:42:16.182225Z	▲  
-2025-10-01T06:42:16.182415Z	▲  > Build failed because of webpack errors
-2025-10-01T06:42:16.20711Z	▲  Error: Command "npm run build" exited with 1
-2025-10-01T06:42:16.356212Z	
-2025-10-01T06:42:16.35654Z	⚡️ The Vercel build (`npx vercel build`) command failed. For more details see the Vercel logs above.
-2025-10-01T06:42:16.356639Z	⚡️ If you need help solving the issue, refer to the Vercel or Next.js documentation or their repositories.
-2025-10-01T06:42:16.357378Z	
-2025-10-01T06:42:16.395488Z	Failed: Error while executing user command. Exited with error code: 1
-2025-10-01T06:42:16.404722Z	Failed: build command exited with code: 1
-2025-10-01T06:42:17.575062Z	Failed: error occurred while running build command
+2025-10-01T06:50:12.808359Z	Cloning repository...
+2025-10-01T06:50:13.469315Z	From https://github.com/avimaybee/focusflow
+2025-10-01T06:50:13.469708Z	 * branch            5616cab52214774d3df56eb51326d2b78c9e8497 -> FETCH_HEAD
+2025-10-01T06:50:13.469805Z	
+2025-10-01T06:50:13.508343Z	HEAD is now at 5616cab Merge branch 'master' of https://github.com/avimaybee/focusflow
+2025-10-01T06:50:13.508781Z	
+2025-10-01T06:50:13.58958Z	
+2025-10-01T06:50:13.590168Z	Using v2 root directory strategy
+2025-10-01T06:50:13.613177Z	Success: Finished cloning repository files
+2025-10-01T06:50:15.39933Z	Checking for configuration in a Wrangler configuration file (BETA)
+2025-10-01T06:50:15.400128Z	
+2025-10-01T06:50:15.401717Z	Found wrangler.toml file. Reading build configuration...
+2025-10-01T06:50:15.407972Z	pages_build_output_dir: .next
+2025-10-01T06:50:15.408177Z	Build environment variables: (none found)
+2025-10-01T06:50:16.518661Z	Successfully read wrangler.toml file.
+2025-10-01T06:50:16.58485Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+2025-10-01T06:50:16.585523Z	Installing project dependencies: npm clean-install --progress=false
+2025-10-01T06:50:20.053098Z	npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2025-10-01T06:50:21.007149Z	npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2025-10-01T06:50:22.063995Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
+2025-10-01T06:50:22.877789Z	npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+2025-10-01T06:50:22.925774Z	npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+2025-10-01T06:50:23.48542Z	npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2025-10-01T06:50:26.787188Z	npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+2025-10-01T06:50:40.883518Z	
+2025-10-01T06:50:40.883804Z	added 904 packages, and audited 906 packages in 24s
+2025-10-01T06:50:40.883961Z	
+2025-10-01T06:50:40.884065Z	216 packages are looking for funding
+2025-10-01T06:50:40.884146Z	  run `npm fund` for details
+2025-10-01T06:50:40.954391Z	
+2025-10-01T06:50:40.95462Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
+2025-10-01T06:50:40.954701Z	
+2025-10-01T06:50:40.955155Z	To address issues that do not require attention, run:
+2025-10-01T06:50:40.955284Z	  npm audit fix
+2025-10-01T06:50:40.955538Z	
+2025-10-01T06:50:40.955632Z	To address all issues (including breaking changes), run:
+2025-10-01T06:50:40.955707Z	  npm audit fix --force
+2025-10-01T06:50:40.956059Z	
+2025-10-01T06:50:40.956146Z	Run `npm audit` for details.
+2025-10-01T06:50:40.998029Z	Executing user command: npx open-next build
+2025-10-01T06:50:42.475941Z	npm warn exec The following package was not found and will be installed: open-next@3.1.3
+2025-10-01T06:50:49.264931Z	Next.js version : 14.2.3
+2025-10-01T06:50:49.265585Z	OpenNext v3.1.3
+2025-10-01T06:50:49.265727Z	
+2025-10-01T06:50:49.266241Z	┌─────────────────────────────────┐
+2025-10-01T06:50:49.266334Z	│ OpenNext — Building Next.js app │
+2025-10-01T06:50:49.266398Z	└─────────────────────────────────┘
+2025-10-01T06:50:49.266998Z	
+2025-10-01T06:50:49.442977Z	
+2025-10-01T06:50:49.443505Z	> nextn@0.1.0 build
+2025-10-01T06:50:49.443638Z	> next build
+2025-10-01T06:50:49.443715Z	
+2025-10-01T06:50:50.084216Z	⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+2025-10-01T06:50:50.088121Z	Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2025-10-01T06:50:50.08838Z	This information is used to shape Next.js' roadmap and prioritize features.
+2025-10-01T06:50:50.088475Z	You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2025-10-01T06:50:50.088544Z	https://nextjs.org/telemetry
+2025-10-01T06:50:50.088719Z	
+2025-10-01T06:50:50.150709Z	  ▲ Next.js 14.2.3
+2025-10-01T06:50:50.151058Z	
+2025-10-01T06:50:50.21393Z	   Creating an optimized production build ...
+2025-10-01T06:50:59.81912Z	Failed to compile.
+2025-10-01T06:50:59.819376Z	
+2025-10-01T06:50:59.81954Z	./src/app/chat/page.tsx
+2025-10-01T06:50:59.819653Z	Error: 
+2025-10-01T06:50:59.819766Z	  [31mx[0m Expected 'from', got '=>'
+2025-10-01T06:50:59.819888Z	    ,-[[36;1;4m/opt/buildhome/repo/src/app/chat/page.tsx[0m:4:1]
+2025-10-01T06:50:59.820033Z	 [2m 4[0m | import { useRouter, useParams } from 'next/navigation';
+2025-10-01T06:50:59.820158Z	 [2m 5[0m | import { motion, AnimatePresence } from 'framer-motion';
+2025-10-01T06:50:59.820273Z	 [2m 6[0m | import { useAuth } from '@/context/auth-context';
+2025-10-01T06:50:59.820374Z	 [2m 7[0m | import { useAuthModal } => '@/hooks/use-auth-modal';
+2025-10-01T06:50:59.82071Z	    : [31;1m                        ^^[0m
+2025-10-01T06:50:59.820866Z	 [2m 8[0m | import { useToast } from '@/hooks/use-toast';
+2025-10-01T06:50:59.821104Z	 [2m 9[0m | import { usePersonaManager } from '@/hooks/use-persona-manager';
+2025-10-01T06:50:59.821219Z	 [2m10[0m | import { useChatHistory } from '@/hooks/use-chat-history';
+2025-10-01T06:50:59.821328Z	    `----
+2025-10-01T06:50:59.821428Z	
+2025-10-01T06:50:59.821529Z	Caused by:
+2025-10-01T06:50:59.821626Z	    Syntax Error
+2025-10-01T06:50:59.821739Z	
+2025-10-01T06:50:59.821858Z	Import trace for requested module:
+2025-10-01T06:50:59.82197Z	./src/app/chat/page.tsx
+2025-10-01T06:50:59.822073Z	
+2025-10-01T06:50:59.843932Z	
+2025-10-01T06:50:59.844133Z	> Build failed because of webpack errors
+2025-10-01T06:50:59.862763Z	node:internal/errors:983
+2025-10-01T06:50:59.863036Z	  const err = new Error(message);
+2025-10-01T06:50:59.863171Z	              ^
+2025-10-01T06:50:59.863279Z	
+2025-10-01T06:50:59.863471Z	Error: Command failed: npm run build
+2025-10-01T06:50:59.86359Z	    at genericNodeError (node:internal/errors:983:15)
+2025-10-01T06:50:59.86399Z	    at wrappedFn (node:internal/errors:537:14)
+2025-10-01T06:50:59.864338Z	    at checkExecSyncError (node:child_process:882:11)
+2025-10-01T06:50:59.864648Z	    at Object.execSync (node:child_process:954:15)
+2025-10-01T06:50:59.864772Z	    at buildNextjsApp (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build.js:120:8)
+2025-10-01T06:50:59.865083Z	    at build (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build.js:47:5)
+2025-10-01T06:50:59.865179Z	    at async file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/index.js:9:1 {
+2025-10-01T06:50:59.865242Z	  status: 1,
+2025-10-01T06:50:59.865302Z	  signal: null,
+2025-10-01T06:50:59.865359Z	  output: [ null, null, null ],
+2025-10-01T06:50:59.865415Z	  pid: 713,
+2025-10-01T06:50:59.86547Z	  stdout: null,
+2025-10-01T06:50:59.865526Z	  stderr: null
+2025-10-01T06:50:59.86558Z	}
+2025-10-01T06:50:59.865636Z	
+2025-10-01T06:50:59.86569Z	Node.js v22.16.0
+2025-10-01T06:50:59.890446Z	Failed: Error while executing user command. Exited with error code: 1
+2025-10-01T06:50:59.900559Z	Failed: build command exited with code: 1
+2025-10-01T06:51:01.319196Z	Failed: error occurred while running build command
