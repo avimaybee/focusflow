@@ -1,578 +1,154 @@
-2025-10-01T07:08:37.733929Z	Cloning repository...
-2025-10-01T07:08:38.55467Z	From https://github.com/avimaybee/focusflow
-2025-10-01T07:08:38.555283Z	 * branch            ae011b3dfdf746b061ad4ebd4d5f61e99ebbe84b -> FETCH_HEAD
-2025-10-01T07:08:38.555389Z	
-2025-10-01T07:08:38.598343Z	HEAD is now at ae011b3 fix: Correct import syntax for useAuthModal in ChatPage component
-2025-10-01T07:08:38.599032Z	
-2025-10-01T07:08:38.680145Z	
-2025-10-01T07:08:38.680807Z	Using v2 root directory strategy
-2025-10-01T07:08:38.705008Z	Success: Finished cloning repository files
-2025-10-01T07:08:40.693416Z	Checking for configuration in a Wrangler configuration file (BETA)
-2025-10-01T07:08:40.694154Z	
-2025-10-01T07:08:40.695815Z	Found wrangler.toml file. Reading build configuration...
-2025-10-01T07:08:40.702578Z	pages_build_output_dir: .next
-2025-10-01T07:08:40.702803Z	Build environment variables: (none found)
-2025-10-01T07:08:41.810592Z	Successfully read wrangler.toml file.
-2025-10-01T07:08:41.879875Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
-2025-10-01T07:08:41.880345Z	Installing project dependencies: npm clean-install --progress=false
-2025-10-01T07:08:45.516695Z	npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
-2025-10-01T07:08:46.486117Z	npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
-2025-10-01T07:08:47.562641Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
-2025-10-01T07:08:48.379733Z	npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
-2025-10-01T07:08:48.432426Z	npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
-2025-10-01T07:08:48.993632Z	npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
-2025-10-01T07:08:52.563969Z	npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
-2025-10-01T07:09:06.411905Z	
-2025-10-01T07:09:06.412185Z	added 904 packages, and audited 906 packages in 24s
-2025-10-01T07:09:06.412312Z	
-2025-10-01T07:09:06.412443Z	216 packages are looking for funding
-2025-10-01T07:09:06.412577Z	  run `npm fund` for details
-2025-10-01T07:09:06.480564Z	
-2025-10-01T07:09:06.480828Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
-2025-10-01T07:09:06.480927Z	
-2025-10-01T07:09:06.480989Z	To address issues that do not require attention, run:
-2025-10-01T07:09:06.481047Z	  npm audit fix
-2025-10-01T07:09:06.481107Z	
-2025-10-01T07:09:06.481164Z	To address all issues (including breaking changes), run:
-2025-10-01T07:09:06.48123Z	  npm audit fix --force
-2025-10-01T07:09:06.48132Z	
-2025-10-01T07:09:06.481377Z	Run `npm audit` for details.
-2025-10-01T07:09:06.518948Z	Executing user command: npx open-next build
-2025-10-01T07:09:08.123118Z	npm warn exec The following package was not found and will be installed: open-next@3.1.3
-2025-10-01T07:09:13.921672Z	Next.js version : 14.2.3
-2025-10-01T07:09:13.921937Z	OpenNext v3.1.3
-2025-10-01T07:09:13.922083Z	
-2025-10-01T07:09:13.922201Z	┌─────────────────────────────────┐
-2025-10-01T07:09:13.922352Z	│ OpenNext — Building Next.js app │
-2025-10-01T07:09:13.922479Z	└─────────────────────────────────┘
-2025-10-01T07:09:13.922698Z	
-2025-10-01T07:09:14.134778Z	
-2025-10-01T07:09:14.135035Z	> nextn@0.1.0 build
-2025-10-01T07:09:14.135205Z	> next build
-2025-10-01T07:09:14.135328Z	
-2025-10-01T07:09:14.81907Z	⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
-2025-10-01T07:09:14.823496Z	Attention: Next.js now collects completely anonymous telemetry regarding usage.
-2025-10-01T07:09:14.824068Z	This information is used to shape Next.js' roadmap and prioritize features.
-2025-10-01T07:09:14.82422Z	You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-2025-10-01T07:09:14.824336Z	https://nextjs.org/telemetry
-2025-10-01T07:09:14.82447Z	
-2025-10-01T07:09:14.882936Z	  ▲ Next.js 14.2.3
-2025-10-01T07:09:14.970684Z	
-2025-10-01T07:09:15.032111Z	   Creating an optimized production build ...
-2025-10-01T07:09:53.62263Z	 ✓ Compiled successfully
-2025-10-01T07:09:53.623843Z	   Skipping validation of types
-2025-10-01T07:09:53.624322Z	   Skipping linting
-2025-10-01T07:09:53.918023Z	   Collecting page data ...
-2025-10-01T07:09:55.411838Z	 ⚠ Using edge runtime on a page currently disables static generation for that page
-2025-10-01T07:09:56.985321Z	   Generating static pages (0/21) ...
-2025-10-01T07:09:57.788325Z	[PLACEHOLDER] getAllUsernames called
-2025-10-01T07:09:57.788974Z	[PLACEHOLDER] getPublicSummaries called
-2025-10-01T07:09:57.789113Z	[PLACEHOLDER] getPublicFlashcardSets called
-2025-10-01T07:09:57.790287Z	[PLACEHOLDER] getPublicQuizzes called
-2025-10-01T07:09:57.790645Z	[PLACEHOLDER] getPublicStudyPlans called
-2025-10-01T07:09:57.791091Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:57.791217Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:57.79131Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.794757Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:57.795092Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.795396Z	    at 19104 (/opt/buildhome/repo/.next/server/app/dashboard/analytics/page.js:1:5541)
-2025-10-01T07:09:57.797141Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.797351Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:57.798442Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:57.798633Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:57.79877Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106) {
-2025-10-01T07:09:57.798892Z	   Generating static pages (5/21) 
-2025-10-01T07:09:57.799001Z	  digest: '4092801542'
-2025-10-01T07:09:57.799096Z	}
-2025-10-01T07:09:57.799192Z	
-2025-10-01T07:09:57.799292Z	Error occurred prerendering page "/dashboard/analytics". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:57.799795Z	
-2025-10-01T07:09:57.80004Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:57.800148Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:57.800248Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.800695Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:57.800942Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.80112Z	    at 19104 (/opt/buildhome/repo/.next/server/app/dashboard/analytics/page.js:1:5541)
-2025-10-01T07:09:57.801319Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.801508Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:57.802132Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:57.802614Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:57.803018Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
-2025-10-01T07:09:57.803367Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:57.803879Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:57.804213Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.804909Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:57.805464Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.805932Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:57.806375Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.806929Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:57.807364Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:57.807811Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:57.808276Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974) {
-2025-10-01T07:09:57.808746Z	  digest: '801115258'
-2025-10-01T07:09:57.809366Z	}
-2025-10-01T07:09:57.809506Z	
-2025-10-01T07:09:57.814849Z	Error occurred prerendering page "/blog". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:57.815099Z	
-2025-10-01T07:09:57.815223Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:57.815329Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:57.815435Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.815572Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:57.815688Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.815827Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:57.816883Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.819199Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:57.819394Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:57.819516Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:57.819686Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974)
-2025-10-01T07:09:57.819906Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:57.820137Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:57.820364Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.820622Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:57.820873Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.821105Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:57.821216Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.821316Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:57.821411Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:57.821522Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:57.821658Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974) {
-2025-10-01T07:09:57.821942Z	  digest: '801115258'
-2025-10-01T07:09:57.822089Z	}
-2025-10-01T07:09:57.822194Z	
-2025-10-01T07:09:57.822305Z	Error occurred prerendering page "/contact". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:57.822397Z	
-2025-10-01T07:09:57.822511Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:57.82263Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:57.822726Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.822822Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:57.823104Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.823238Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:57.823386Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.823507Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:57.823631Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:57.823732Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:57.823832Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974)
-2025-10-01T07:09:57.823925Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:57.82402Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:57.824112Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.824203Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:57.824297Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.824387Z	    at 32169 (/opt/buildhome/repo/.next/server/app/my-content/page.js:1:5527)
-2025-10-01T07:09:57.824488Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.82462Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:57.824721Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:57.825099Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:57.825247Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106) {
-2025-10-01T07:09:57.825366Z	  digest: '588602409'
-2025-10-01T07:09:57.825512Z	}
-2025-10-01T07:09:57.825664Z	
-2025-10-01T07:09:57.825797Z	Error occurred prerendering page "/my-content". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:57.825929Z	
-2025-10-01T07:09:57.826072Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:57.826202Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:57.826313Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.826441Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:57.826988Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.827108Z	    at 32169 (/opt/buildhome/repo/.next/server/app/my-content/page.js:1:5527)
-2025-10-01T07:09:57.827211Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.827316Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:57.827414Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:57.827547Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:57.827662Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
-2025-10-01T07:09:57.82778Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:57.827887Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:57.827985Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.828079Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:57.828182Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.828276Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:57.829051Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.829334Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:57.829549Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:57.829684Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:57.829793Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974) {
-2025-10-01T07:09:57.829905Z	  digest: '801115258'
-2025-10-01T07:09:57.830016Z	}
-2025-10-01T07:09:57.830116Z	
-2025-10-01T07:09:57.83023Z	Error occurred prerendering page "/about". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:57.830328Z	
-2025-10-01T07:09:57.830418Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:57.830519Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:57.830636Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.830733Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:57.83082Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.830902Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:57.830989Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:57.831078Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:57.831162Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:57.831254Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:57.831343Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974)
-2025-10-01T07:09:58.046226Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.046523Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.046691Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.046806Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.046909Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.047032Z	    at 86054 (/opt/buildhome/repo/.next/server/app/preferences/page.js:1:5476)
-2025-10-01T07:09:58.047171Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.047293Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.047402Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.047525Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.047655Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106) {
-2025-10-01T07:09:58.047765Z	  digest: '100952756'
-2025-10-01T07:09:58.047872Z	}
-2025-10-01T07:09:58.048016Z	
-2025-10-01T07:09:58.048314Z	Error occurred prerendering page "/preferences". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.048514Z	
-2025-10-01T07:09:58.048768Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.048986Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.04917Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.049338Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.049738Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.049894Z	    at 86054 (/opt/buildhome/repo/.next/server/app/preferences/page.js:1:5476)
-2025-10-01T07:09:58.049997Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.050096Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.050196Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.050289Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.050399Z	   Generating static pages (10/21) 
-2025-10-01T07:09:58.050588Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
-2025-10-01T07:09:58.050764Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.050893Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.05101Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.051134Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.051385Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.051626Z	    at 19435 (/opt/buildhome/repo/.next/server/app/practice-exam/new/page.js:1:5750)
-2025-10-01T07:09:58.051929Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.052242Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.052513Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.052655Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.052784Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106) {
-2025-10-01T07:09:58.052896Z	  digest: '1222165034'
-2025-10-01T07:09:58.053013Z	}
-2025-10-01T07:09:58.053438Z	
-2025-10-01T07:09:58.053577Z	Error occurred prerendering page "/practice-exam/new". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.053944Z	
-2025-10-01T07:09:58.054072Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.054333Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.05447Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.054622Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.054736Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.054843Z	    at 19435 (/opt/buildhome/repo/.next/server/app/practice-exam/new/page.js:1:5750)
-2025-10-01T07:09:58.055932Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.056084Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.056636Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.05679Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.056905Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
-2025-10-01T07:09:58.057012Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.057121Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.057222Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.057326Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.057421Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.057519Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:58.057648Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.057779Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.057892Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.05801Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:58.05812Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974) {
-2025-10-01T07:09:58.058222Z	  digest: '801115258'
-2025-10-01T07:09:58.058329Z	}
-2025-10-01T07:09:58.058432Z	
-2025-10-01T07:09:58.058551Z	Error occurred prerendering page "/premium". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.058684Z	
-2025-10-01T07:09:58.058813Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.058953Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.059072Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.059184Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.059293Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.059401Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:58.059517Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.062826Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.06299Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.063107Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:58.06321Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974)
-2025-10-01T07:09:58.063332Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.063433Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.063577Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.063682Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.063776Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.063867Z	    at 99841 (/opt/buildhome/repo/.next/server/app/my-content/summaries/page.js:1:5539)
-2025-10-01T07:09:58.063965Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.064064Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.06416Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.064257Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.064345Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106) {
-2025-10-01T07:09:58.064433Z	  digest: '1486198209'
-2025-10-01T07:09:58.064554Z	}
-2025-10-01T07:09:58.064657Z	
-2025-10-01T07:09:58.06475Z	Error occurred prerendering page "/my-content/summaries". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.064844Z	
-2025-10-01T07:09:58.064938Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.065034Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.065138Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.065237Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.065335Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.065431Z	    at 99841 (/opt/buildhome/repo/.next/server/app/my-content/summaries/page.js:1:5539)
-2025-10-01T07:09:58.065557Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.065685Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.065794Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.065892Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.065989Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
-2025-10-01T07:09:58.066091Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.066212Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.066346Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.066465Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.066623Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.066735Z	    at 24193 (/opt/buildhome/repo/.next/server/app/page.js:31:31766)
-2025-10-01T07:09:58.066869Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.066996Z	    at 63886 (/opt/buildhome/repo/.next/server/app/page.js:31:10119)
-2025-10-01T07:09:58.067128Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.067253Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.067388Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362) {
-2025-10-01T07:09:58.067544Z	  digest: '138271998'
-2025-10-01T07:09:58.067699Z	}
-2025-10-01T07:09:58.067822Z	
-2025-10-01T07:09:58.068115Z	Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.068463Z	
-2025-10-01T07:09:58.069445Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.071292Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.071636Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.071844Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.072036Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.072268Z	    at 24193 (/opt/buildhome/repo/.next/server/app/page.js:31:31766)
-2025-10-01T07:09:58.072606Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.073588Z	    at 63886 (/opt/buildhome/repo/.next/server/app/page.js:31:10119)
-2025-10-01T07:09:58.073734Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.073804Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.073864Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.073919Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.07398Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.074046Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.074118Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.074176Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.074232Z	    at 43416 (/opt/buildhome/repo/.next/server/app/dashboard/page.js:1:6317)
-2025-10-01T07:09:58.074286Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.074341Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.074398Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.074452Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.074516Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106) {
-2025-10-01T07:09:58.07466Z	  digest: '84710448'
-2025-10-01T07:09:58.074719Z	}
-2025-10-01T07:09:58.074783Z	
-2025-10-01T07:09:58.074843Z	Error occurred prerendering page "/dashboard". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.074897Z	
-2025-10-01T07:09:58.074953Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.075009Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.075063Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.07512Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.075178Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.075235Z	    at 43416 (/opt/buildhome/repo/.next/server/app/dashboard/page.js:1:6317)
-2025-10-01T07:09:58.075289Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.075344Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.075398Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.075452Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.075518Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
-2025-10-01T07:09:58.075638Z	   Generating static pages (15/21) 
-2025-10-01T07:09:58.075772Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.075895Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.076006Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.076116Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.07623Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.076339Z	    at 49416 (/opt/buildhome/repo/.next/server/app/chat/page.js:1:22926)
-2025-10-01T07:09:58.076446Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.07661Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.076744Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.076863Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.076977Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106) {
-2025-10-01T07:09:58.077086Z	  digest: '2203508446'
-2025-10-01T07:09:58.077195Z	}
-2025-10-01T07:09:58.077306Z	
-2025-10-01T07:09:58.077418Z	Error occurred prerendering page "/chat". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.077809Z	
-2025-10-01T07:09:58.078027Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.078218Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.078377Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.078556Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.078721Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.078885Z	    at 49416 (/opt/buildhome/repo/.next/server/app/chat/page.js:1:22926)
-2025-10-01T07:09:58.079062Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.079266Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.079477Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.07962Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.079741Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
-2025-10-01T07:09:58.081551Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.081752Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.081889Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.082038Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.08221Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.082333Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:58.082548Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.082763Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.082898Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.083028Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:58.083144Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974) {
-2025-10-01T07:09:58.083254Z	  digest: '801115258'
-2025-10-01T07:09:58.083385Z	}
-2025-10-01T07:09:58.083501Z	
-2025-10-01T07:09:58.083648Z	Error occurred prerendering page "/_not-found". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.083777Z	
-2025-10-01T07:09:58.083881Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.083983Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.084083Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.084179Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.084272Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.084374Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:58.084468Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.084584Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.084685Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.084796Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:58.084893Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974)
-2025-10-01T07:09:58.084999Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.085137Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.085305Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.085418Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.085542Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.085661Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:58.085776Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.086159Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.086281Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.086736Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:58.08687Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974) {
-2025-10-01T07:09:58.08699Z	  digest: '801115258'
-2025-10-01T07:09:58.087191Z	}
-2025-10-01T07:09:58.087402Z	
-2025-10-01T07:09:58.087557Z	Error occurred prerendering page "/privacy". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.08767Z	
-2025-10-01T07:09:58.087773Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.087908Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.088092Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.088557Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.088901Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.089212Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:58.089312Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.089603Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.089685Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.09041Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:58.090773Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974)
-2025-10-01T07:09:58.090885Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.091382Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.091694Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.092044Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.092335Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.092445Z	    at 19570 (/opt/buildhome/repo/.next/server/app/preferences/profile/page.js:1:5531)
-2025-10-01T07:09:58.092988Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.093098Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.093612Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.093698Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.093984Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106) {
-2025-10-01T07:09:58.094077Z	  digest: '1027186999'
-2025-10-01T07:09:58.094356Z	}
-2025-10-01T07:09:58.094586Z	
-2025-10-01T07:09:58.094673Z	Error occurred prerendering page "/preferences/profile". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.094981Z	
-2025-10-01T07:09:58.095182Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.095368Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.095646Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.095851Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.096071Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.096271Z	    at 19570 (/opt/buildhome/repo/.next/server/app/preferences/profile/page.js:1:5531)
-2025-10-01T07:09:58.096428Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.096635Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.096723Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.096936Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.097028Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
-2025-10-01T07:09:58.097222Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.097365Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.097545Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.097682Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.097825Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.097969Z	    at 32426 (/opt/buildhome/repo/.next/server/app/study-plan/new/page.js:1:5736)
-2025-10-01T07:09:58.098115Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.098253Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.098359Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.098489Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.09863Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106) {
-2025-10-01T07:09:58.098786Z	  digest: '3272314103'
-2025-10-01T07:09:58.098888Z	}
-2025-10-01T07:09:58.098997Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.099103Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.099211Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.099395Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.099466Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.09971Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:58.09984Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.100056Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.100183Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.100303Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:58.100422Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974) {
-2025-10-01T07:09:58.100589Z	  digest: '801115258'
-2025-10-01T07:09:58.100894Z	}
-2025-10-01T07:09:58.108118Z	
-2025-10-01T07:09:58.108447Z	Error occurred prerendering page "/study-plan/new". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.108603Z	
-2025-10-01T07:09:58.108904Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.109255Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.109411Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.109664Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.109819Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.109909Z	    at 32426 (/opt/buildhome/repo/.next/server/app/study-plan/new/page.js:1:5736)
-2025-10-01T07:09:58.110017Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.110229Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.110337Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.110455Z	    at /opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
-2025-10-01T07:09:58.110668Z	    at F._fromJSON (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
-2025-10-01T07:09:58.121941Z	 ✓ Generating static pages (21/21)
-2025-10-01T07:09:58.122204Z	
-2025-10-01T07:09:58.122375Z	Error occurred prerendering page "/terms". Read more: https://nextjs.org/docs/messages/prerender-error
-2025-10-01T07:09:58.122498Z	
-2025-10-01T07:09:58.122638Z	Error: Missing Supabase URL or Anon Key environment variables.
-2025-10-01T07:09:58.12275Z	    at 2777 (/opt/buildhome/repo/.next/server/chunks/120.js:1:34345)
-2025-10-01T07:09:58.122854Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.122966Z	    at 68136 (/opt/buildhome/repo/.next/server/chunks/120.js:1:31399)
-2025-10-01T07:09:58.123079Z	    at t (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.123176Z	    at 5368 (/opt/buildhome/repo/.next/server/chunks/120.js:1:3559)
-2025-10-01T07:09:58.123291Z	    at Object.t [as require] (/opt/buildhome/repo/.next/server/webpack-runtime.js:1:143)
-2025-10-01T07:09:58.123402Z	    at require (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
-2025-10-01T07:09:58.12352Z	    at I (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
-2025-10-01T07:09:58.123744Z	    at C (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:92913)
-2025-10-01T07:09:58.123998Z	    at rP (/opt/buildhome/repo/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:33974)
-2025-10-01T07:09:58.132907Z	
-2025-10-01T07:09:58.13316Z	> Export encountered errors on following paths:
-2025-10-01T07:09:58.133283Z		/_not-found/page: /_not-found
-2025-10-01T07:09:58.133383Z		/about/page: /about
-2025-10-01T07:09:58.1335Z		/blog/page: /blog
-2025-10-01T07:09:58.133624Z		/chat/page: /chat
-2025-10-01T07:09:58.133736Z		/contact/page: /contact
-2025-10-01T07:09:58.133843Z		/dashboard/analytics/page: /dashboard/analytics
-2025-10-01T07:09:58.133967Z		/dashboard/page: /dashboard
-2025-10-01T07:09:58.134066Z		/my-content/page: /my-content
-2025-10-01T07:09:58.13415Z		/my-content/summaries/page: /my-content/summaries
-2025-10-01T07:09:58.13423Z		/page: /
-2025-10-01T07:09:58.134306Z		/practice-exam/new/page: /practice-exam/new
-2025-10-01T07:09:58.134388Z		/preferences/page: /preferences
-2025-10-01T07:09:58.134471Z		/preferences/profile/page: /preferences/profile
-2025-10-01T07:09:58.13461Z		/premium/page: /premium
-2025-10-01T07:09:58.134756Z		/privacy/page: /privacy
-2025-10-01T07:09:58.134846Z		/study-plan/new/page: /study-plan/new
-2025-10-01T07:09:58.134939Z		/terms/page: /terms
-2025-10-01T07:09:58.176063Z	node:internal/errors:983
-2025-10-01T07:09:58.176362Z	  const err = new Error(message);
-2025-10-01T07:09:58.176515Z	              ^
-2025-10-01T07:09:58.176651Z	
-2025-10-01T07:09:58.176764Z	Error: Command failed: npm run build
-2025-10-01T07:09:58.176875Z	    at genericNodeError (node:internal/errors:983:15)
-2025-10-01T07:09:58.176973Z	    at wrappedFn (node:internal/errors:537:14)
-2025-10-01T07:09:58.177071Z	    at checkExecSyncError (node:child_process:882:11)
-2025-10-01T07:09:58.177167Z	    at Object.execSync (node:child_process:954:15)
-2025-10-01T07:09:58.177266Z	    at buildNextjsApp (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build.js:120:8)
-2025-10-01T07:09:58.177367Z	    at build (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build.js:47:5)
-2025-10-01T07:09:58.177462Z	    at async file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/index.js:9:1 {
-2025-10-01T07:09:58.177579Z	  status: 1,
-2025-10-01T07:09:58.177684Z	  signal: null,
-2025-10-01T07:09:58.17779Z	  output: [ null, null, null ],
-2025-10-01T07:09:58.177894Z	  pid: 712,
-2025-10-01T07:09:58.177989Z	  stdout: null,
-2025-10-01T07:09:58.178077Z	  stderr: null
-2025-10-01T07:09:58.178174Z	}
-2025-10-01T07:09:58.178267Z	
-2025-10-01T07:09:58.178349Z	Node.js v22.16.0
-2025-10-01T07:09:58.19889Z	Failed: Error while executing user command. Exited with error code: 1
-2025-10-01T07:09:58.208612Z	Failed: build command exited with code: 1
-2025-10-01T07:09:59.642631Z	Failed: error occurred while running build command
+2025-10-01T07:18:37.875701Z	Cloning repository...
+2025-10-01T07:18:38.548105Z	From https://github.com/avimaybee/focusflow
+2025-10-01T07:18:38.548954Z	 * branch            28a2399cd11d4ff42e2fa6a3091dfdc8efd19767 -> FETCH_HEAD
+2025-10-01T07:18:38.549088Z	
+2025-10-01T07:18:38.591515Z	HEAD is now at 28a2399 Remove wrangler configuration and add build configuration for Open Next
+2025-10-01T07:18:38.592219Z	
+2025-10-01T07:18:38.680988Z	
+2025-10-01T07:18:38.68143Z	Using v2 root directory strategy
+2025-10-01T07:18:38.702886Z	Success: Finished cloning repository files
+2025-10-01T07:18:40.458199Z	Checking for configuration in a Wrangler configuration file (BETA)
+2025-10-01T07:18:40.458993Z	
+2025-10-01T07:18:41.559172Z	No wrangler.toml file found. Continuing.
+2025-10-01T07:18:41.625432Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+2025-10-01T07:18:41.625964Z	Installing project dependencies: npm clean-install --progress=false
+2025-10-01T07:18:45.025905Z	npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2025-10-01T07:18:45.949909Z	npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2025-10-01T07:18:46.920672Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
+2025-10-01T07:18:47.805505Z	npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+2025-10-01T07:18:47.847772Z	npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+2025-10-01T07:18:48.418334Z	npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2025-10-01T07:18:51.746662Z	npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+2025-10-01T07:19:05.755613Z	
+2025-10-01T07:19:05.755935Z	added 904 packages, and audited 906 packages in 24s
+2025-10-01T07:19:05.75608Z	
+2025-10-01T07:19:05.756316Z	216 packages are looking for funding
+2025-10-01T07:19:05.756406Z	  run `npm fund` for details
+2025-10-01T07:19:05.822256Z	
+2025-10-01T07:19:05.822831Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
+2025-10-01T07:19:05.823235Z	
+2025-10-01T07:19:05.823927Z	To address issues that do not require attention, run:
+2025-10-01T07:19:05.824091Z	  npm audit fix
+2025-10-01T07:19:05.824204Z	
+2025-10-01T07:19:05.824364Z	To address all issues (including breaking changes), run:
+2025-10-01T07:19:05.824483Z	  npm audit fix --force
+2025-10-01T07:19:05.824583Z	
+2025-10-01T07:19:05.825111Z	Run `npm audit` for details.
+2025-10-01T07:19:05.865133Z	Executing user command: npx open-next build
+2025-10-01T07:19:07.368568Z	npm warn exec The following package was not found and will be installed: open-next@3.1.3
+2025-10-01T07:19:13.305147Z	Next.js version : 14.2.3
+2025-10-01T07:19:13.305453Z	OpenNext v3.1.3
+2025-10-01T07:19:13.306093Z	
+2025-10-01T07:19:13.306187Z	┌─────────────────────────────────┐
+2025-10-01T07:19:13.306276Z	│ OpenNext — Building Next.js app │
+2025-10-01T07:19:13.306547Z	└─────────────────────────────────┘
+2025-10-01T07:19:13.306686Z	
+2025-10-01T07:19:13.501668Z	
+2025-10-01T07:19:13.501966Z	> nextn@0.1.0 build
+2025-10-01T07:19:13.502131Z	> next build
+2025-10-01T07:19:13.502309Z	
+2025-10-01T07:19:14.153424Z	⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+2025-10-01T07:19:14.157647Z	Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2025-10-01T07:19:14.157815Z	This information is used to shape Next.js' roadmap and prioritize features.
+2025-10-01T07:19:14.157937Z	You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2025-10-01T07:19:14.158046Z	https://nextjs.org/telemetry
+2025-10-01T07:19:14.15816Z	
+2025-10-01T07:19:14.216312Z	  ▲ Next.js 14.2.3
+2025-10-01T07:19:14.217179Z	
+2025-10-01T07:19:14.278249Z	   Creating an optimized production build ...
+2025-10-01T07:19:50.829939Z	 ✓ Compiled successfully
+2025-10-01T07:19:50.830986Z	   Skipping validation of types
+2025-10-01T07:19:50.831528Z	   Skipping linting
+2025-10-01T07:19:51.128469Z	   Collecting page data ...
+2025-10-01T07:19:52.628988Z	 ⚠ Using edge runtime on a page currently disables static generation for that page
+2025-10-01T07:19:54.074575Z	   Generating static pages (0/21) ...
+2025-10-01T07:19:54.983672Z	[PLACEHOLDER] getAllUsernames called
+2025-10-01T07:19:54.983995Z	[PLACEHOLDER] getPublicSummaries called
+2025-10-01T07:19:54.984122Z	[PLACEHOLDER] getPublicFlashcardSets called
+2025-10-01T07:19:54.98422Z	[PLACEHOLDER] getPublicQuizzes called
+2025-10-01T07:19:54.984325Z	[PLACEHOLDER] getPublicStudyPlans called
+2025-10-01T07:19:54.985953Z	   Generating static pages (5/21) 
+2025-10-01T07:19:55.244075Z	   Generating static pages (10/21) 
+2025-10-01T07:19:55.254772Z	   Generating static pages (15/21) 
+2025-10-01T07:19:55.317855Z	 ✓ Generating static pages (21/21)
+2025-10-01T07:19:55.536163Z	   Finalizing page optimization ...
+2025-10-01T07:19:55.5364Z	   Collecting build traces ...
+2025-10-01T07:20:05.673982Z	
+2025-10-01T07:20:05.677389Z	Route (app)                                     Size     First Load JS
+2025-10-01T07:20:05.67756Z	┌ ○ /                                           20.3 kB         249 kB
+2025-10-01T07:20:05.677744Z	├ ○ /_not-found                                 880 B          88.2 kB
+2025-10-01T07:20:05.677848Z	├ ○ /about                                      181 B          87.5 kB
+2025-10-01T07:20:05.677916Z	├ ƒ /api/chat                                   0 B                0 B
+2025-10-01T07:20:05.678065Z	├ ○ /blog                                       177 B          94.3 kB
+2025-10-01T07:20:05.678184Z	├ ƒ /blog/[slug]                                1.98 kB         144 kB
+2025-10-01T07:20:05.678331Z	├ ○ /chat                                       230 B           683 kB
+2025-10-01T07:20:05.678438Z	├ ƒ /chat/[chatId]                              230 B           683 kB
+2025-10-01T07:20:05.678557Z	├ ○ /contact                                    181 B          87.5 kB
+2025-10-01T07:20:05.678677Z	├ ○ /dashboard                                  17.4 kB         323 kB
+2025-10-01T07:20:05.678799Z	├ ○ /dashboard/analytics                        12.1 kB         240 kB
+2025-10-01T07:20:05.678925Z	├ ƒ /flashcards/[slug]                          6.01 kB         148 kB
+2025-10-01T07:20:05.67918Z	├ ○ /my-content                                 7.05 kB         196 kB
+2025-10-01T07:20:05.679341Z	├ ƒ /my-content/flashcardSets/[flashcardSetId]  5.82 kB         188 kB
+2025-10-01T07:20:05.679525Z	├ ƒ /my-content/quizzes/[quizId]                5.74 kB         195 kB
+2025-10-01T07:20:05.679656Z	├ ƒ /my-content/savedMessages/[messageId]       1.25 kB         205 kB
+2025-10-01T07:20:05.679852Z	├ ƒ /my-content/studyPlans/[id]                 2.39 kB         130 kB
+2025-10-01T07:20:05.679925Z	├ ○ /my-content/summaries                       4.96 kB         223 kB
+2025-10-01T07:20:05.680012Z	├ ƒ /my-content/summaries/[summaryId]           2.34 kB         206 kB
+2025-10-01T07:20:05.680109Z	├ ƒ /plans/[slug]                               2.47 kB         104 kB
+2025-10-01T07:20:05.680214Z	├ ƒ /practice-exam/[id]                         8.15 kB         187 kB
+2025-10-01T07:20:05.680277Z	├ ƒ /practice-exam/[id]/review                  394 B          87.7 kB
+2025-10-01T07:20:05.680333Z	├ ○ /practice-exam/new                          13.3 kB         208 kB
+2025-10-01T07:20:05.680396Z	├ ○ /preferences                                4.97 kB         187 kB
+2025-10-01T07:20:05.680452Z	├ ○ /preferences/profile                        5.42 kB         181 kB
+2025-10-01T07:20:05.680509Z	├ ○ /premium                                    3.27 kB         145 kB
+2025-10-01T07:20:05.680626Z	├ ○ /privacy                                    181 B          87.5 kB
+2025-10-01T07:20:05.68105Z	├ ƒ /quizzes/[slug]                             4.55 kB         154 kB
+2025-10-01T07:20:05.681151Z	├ ○ /sitemap.xml                                0 B                0 B
+2025-10-01T07:20:05.681216Z	├ ƒ /student/[username]                         7.61 kB         190 kB
+2025-10-01T07:20:05.681344Z	├ ƒ /study-plan/[id]                            3.61 kB         141 kB
+2025-10-01T07:20:05.681412Z	├ ○ /study-plan/new                             5.21 kB         180 kB
+2025-10-01T07:20:05.681472Z	├ ƒ /summaries/[slug]                           2.47 kB         104 kB
+2025-10-01T07:20:05.681529Z	└ ○ /terms                                      181 B          87.5 kB
+2025-10-01T07:20:05.681592Z	+ First Load JS shared by all                   87.3 kB
+2025-10-01T07:20:05.681676Z	  ├ chunks/3526-ee31b900b3a16fb9.js             31.6 kB
+2025-10-01T07:20:05.682024Z	  ├ chunks/fd9d1056-376cd1900f1dcb63.js         53.6 kB
+2025-10-01T07:20:05.682166Z	  └ other shared chunks (total)                 2.06 kB
+2025-10-01T07:20:05.682246Z	
+2025-10-01T07:20:05.682363Z	
+2025-10-01T07:20:05.682438Z	○  (Static)   prerendered as static content
+2025-10-01T07:20:05.682498Z	ƒ  (Dynamic)  server-rendered on demand
+2025-10-01T07:20:05.682553Z	
+2025-10-01T07:20:05.718396Z	
+2025-10-01T07:20:05.718642Z	┌──────────────────────────────┐
+2025-10-01T07:20:05.718855Z	│ OpenNext — Generating bundle │
+2025-10-01T07:20:05.719018Z	└──────────────────────────────┘
+2025-10-01T07:20:05.719146Z	
+2025-10-01T07:20:05.819088Z	Bundling middleware function...
+2025-10-01T07:20:05.819598Z	Bundling static assets...
+2025-10-01T07:20:05.84391Z	Bundling cache assets...
+2025-10-01T07:20:06.132221Z	Building server function: default...
+2025-10-01T07:20:06.151356Z	file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:53
+2025-10-01T07:20:06.151821Z	                throw new Error(`
+2025-10-01T07:20:06.151986Z	                      ^
+2025-10-01T07:20:06.152056Z	
+2025-10-01T07:20:06.152657Z	Error: 
+2025-10-01T07:20:06.152755Z	--------------------------------------------------------------------------------
+2025-10-01T07:20:06.15299Z	app/api/chat/route cannot use the edge runtime.
+2025-10-01T07:20:06.153111Z	OpenNext requires edge runtime function to be defined in a separate function. 
+2025-10-01T07:20:06.153225Z	See the docs for more information on how to bundle edge runtime functions.
+2025-10-01T07:20:06.153331Z	--------------------------------------------------------------------------------
+2025-10-01T07:20:06.153437Z	        
+2025-10-01T07:20:06.15353Z	    at computeCopyFilesForPage (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:53:23)
+2025-10-01T07:20:06.153631Z	    at file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:111:9
+2025-10-01T07:20:06.153754Z	    at Array.forEach (<anonymous>)
+2025-10-01T07:20:06.15386Z	    at copyTracedFiles (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/copyTracedFiles.js:110:12)
+2025-10-01T07:20:06.153977Z	    at generateBundle (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/createServerBundle.js:112:11)
+2025-10-01T07:20:06.154088Z	    at createServerBundle (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build/createServerBundle.js:72:11)
+2025-10-01T07:20:06.154202Z	    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-01T07:20:06.154299Z	    at async build (file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/build.js:57:5)
+2025-10-01T07:20:06.154402Z	    at async file:///opt/buildhome/.npm/_npx/023205fa7f8910ff/node_modules/open-next/dist/index.js:9:1
+2025-10-01T07:20:06.154559Z	
+2025-10-01T07:20:06.154639Z	Node.js v22.16.0
+2025-10-01T07:20:06.178004Z	Failed: Error while executing user command. Exited with error code: 1
+2025-10-01T07:20:06.189373Z	Failed: build command exited with code: 1
+2025-10-01T07:20:10.027253Z	Failed: error occurred while running build command
