@@ -24,6 +24,13 @@ const ChatMessageSchema = z.object({
 export type ChatSession = z.infer<typeof ChatSessionSchema>;
 export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 
+const createUndefinedSupabaseError = (context: string): PostgrestError => {
+    const message = `Supabase client returned an undefined result: ${context}`;
+    console.error(message);
+    return { message, details: 'The Supabase client did not return a response object. This may be due to a network issue or a problem with the Supabase service.', hint: 'Check network connectivity and Supabase status page.', code: 'SUPABASE_UNDEFINED_RESULT' };
+};
+
+
 // --- CHAT SESSION ACTIONS ---
 
 /**
@@ -33,11 +40,17 @@ export type ChatMessage = z.infer<typeof ChatMessageSchema>;
  * @returns The newly created chat session.
  */
 export async function createChatSession(userId: string, title?: string): Promise<{ data: ChatSession | null; error: PostgrestError | null }> {
-  const { data, error } = await supabase
+  const result = await supabase
     .from('chat_sessions')
     .insert({ user_id: userId, title: title || 'New Chat' })
     .select()
     .single();
+
+  if (!result) {
+    return { data: null, error: createUndefinedSupabaseError('when creating chat session') };
+  }
+
+  const { data, error } = result;
 
   if (error) {
     console.error('Error creating chat session:', error);
@@ -59,11 +72,17 @@ export async function createChatSession(userId: string, title?: string): Promise
  * @returns The requested chat session.
  */
 export async function getChatSession(sessionId: string): Promise<{ data: ChatSession | null; error: PostgrestError | null }> {
-  const { data, error } = await supabase
+  const result = await supabase
     .from('chat_sessions')
     .select('*')
     .eq('id', sessionId)
     .single();
+
+  if (!result) {
+    return { data: null, error: createUndefinedSupabaseError(`when fetching session ${sessionId}`) };
+  }
+
+  const { data, error } = result;
 
   if (error) {
     console.error(`Error fetching chat session ${sessionId}:`, error);
@@ -85,11 +104,17 @@ export async function getChatSession(sessionId: string): Promise<{ data: ChatSes
  * @returns A list of chat sessions.
  */
 export async function getChatSessions(userId: string): Promise<{ data: ChatSession[] | null; error: PostgrestError | null }> {
-  const { data, error } = await supabase
+  const result = await supabase
     .from('chat_sessions')
     .select('*')
     .eq('user_id', userId)
     .order('updated_at', { ascending: false });
+
+  if (!result) {
+    return { data: null, error: createUndefinedSupabaseError(`when fetching sessions for user ${userId}`) };
+  }
+
+  const { data, error } = result;
 
   if (error) {
     console.error(`Error fetching chat sessions for user ${userId}:`, error);
@@ -115,11 +140,17 @@ export async function getChatSessions(userId: string): Promise<{ data: ChatSessi
  * @returns The newly created chat message.
  */
 export async function addMessageToChat(sessionId: string, role: 'user' | 'model', content: string): Promise<{ data: ChatMessage | null; error: PostgrestError | null }> {
-  const { data, error } = await supabase
+  const result = await supabase
     .from('chat_messages')
     .insert({ session_id: sessionId, role, content })
     .select()
     .single();
+
+  if (!result) {
+    return { data: null, error: createUndefinedSupabaseError(`when adding message to session ${sessionId}`) };
+  }
+
+  const { data, error } = result;
 
   if (error) {
     console.error(`Error adding message to session ${sessionId}:`, error);
@@ -127,13 +158,13 @@ export async function addMessageToChat(sessionId: string, role: 'user' | 'model'
   }
 
   // Also update the updated_at timestamp of the parent session
-  const { error: updateError } = await supabase
+  const updateResult = await supabase
     .from('chat_sessions')
     .update({ updated_at: new Date().toISOString() })
     .eq('id', sessionId);
 
-  if (updateError) {
-    console.error(`Error updating session timestamp for ${sessionId}:`, updateError);
+  if (!updateResult || updateResult.error) {
+    console.error(`Error updating session timestamp for ${sessionId}:`, updateResult?.error);
     // Non-critical error, so we don't return it, just log it.
   }
 
@@ -152,11 +183,17 @@ export async function addMessageToChat(sessionId: string, role: 'user' | 'model'
  * @returns A list of chat messages.
  */
 export async function getMessagesForSession(sessionId: string): Promise<{ data: ChatMessage[] | null; error: PostgrestError | null }> {
-  const { data, error } = await supabase
+  const result = await supabase
     .from('chat_messages')
     .select('*')
     .eq('session_id', sessionId)
     .order('created_at', { ascending: true });
+
+  if (!result) {
+    return { data: null, error: createUndefinedSupabaseError(`when fetching messages for session ${sessionId}`) };
+  }
+
+  const { data, error } = result;
 
   if (error) {
     console.error(`Error fetching messages for session ${sessionId}:`, error);
