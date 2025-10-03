@@ -1,13 +1,31 @@
 // src/app/api/chat/route.ts
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { createClient } from '@supabase/ssr';
 import { chatFlow } from '@/ai/flows/chat-flow';
 
-// This helper function is now a placeholder.
-// It will be replaced with Supabase auth later.
 async function getUserFromRequest(req: NextRequest): Promise<{ uid: string | null; isAnonymous: boolean }> {
-    // For now, we'll assume all users are guests.
-    return { uid: 'guest-user', isAnonymous: true };
+  const cookieStore = cookies();
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    return { uid: user.id, isAnonymous: false };
+  }
+
+  return { uid: null, isAnonymous: true };
 }
 
 export async function POST(request: NextRequest) {

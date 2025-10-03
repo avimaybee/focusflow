@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect, FormEvent } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
-import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
+import { getMessagesForSession } from '@/lib/chat-actions';
 import { Attachment } from '@/types/chat-types';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
@@ -32,35 +32,76 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const GUEST_MESSAGE_LIMIT = 10;
-
 export default function ChatPage() {
   const { user, loading: authLoading } = useAuth();
-  const { onOpen: openAuthModal } = useAuthModal();
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
   const isMobile = useIsMobile();
 
+  const chatId = params.chatId as string | undefined;
+
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [activeChatId, setActiveChatId] = useState<string | null>(chatId || null);
+  const [messageLoadCounter, setMessageLoadCounter] = useState(0);
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
-  const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [chatToDelete, setChatToDelete] = useState<string | null>(null);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
-  
-  const [guestMessageCount, setGuestMessageCount] = useState(0);
 
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
   const { chatHistory, isLoading: isHistoryLoading, forceRefresh } = useChatHistory();
   const { isContextHubOpen, toggleContextHub: baseToggleContextHub, closeContextHub } = useContextHubStore();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Effect to sync activeChatId with URL
+  useEffect(() => {
+    setActiveChatId(chatId || null);
+  }, [chatId]);
+
+  // Effect to load messages when a chat is selected or a new message is sent
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (!activeChatId) {
+        setMessages([]);
+        return;
+      }
+
+      // Don't show loading indicator for manual refreshes, only for initial load
+      if (messages.length === 0) {
+        setIsSending(true);
+      }
+
+      try {
+        const { data, error } = await getMessagesForSession(activeChatId);
+        if (error) {
+          toast({ variant: 'destructive', title: 'Error', description: 'Failed to load chat history.' });
+          return;
+        }
+
+        if (data) {
+          const formattedMessages = await Promise.all(
+            data.map(async (msg) => ({
+              id: msg.id,
+              role: msg.role as 'user' | 'model',
+              text: await marked.parse(msg.content),
+              rawText: msg.content,
+              createdAt: new Date(msg.created_at),
+            }))
+          );
+          setMessages(formattedMessages);
+        }
+      } finally {
+        setIsSending(false);
+      }
+    };
+
+    loadMessages();
+  }, [activeChatId, toast, messageLoadCounter]);
 
   const handleSetSidebarOpen = (isOpen: boolean) => {
     setSidebarOpen(isOpen);
@@ -71,13 +112,10 @@ export default function ChatPage() {
   };
 
   const handleNewChat = () => {
-    setActiveChatId(null);
-    setMessages([]);
-    setGuestMessageCount(0);
     router.push('/chat');
   };
 
-  const handleDeleteChat = async (chatId: string) => {
+  const handleDeleteChat = async (chatIdToDelete: string) => {
     toast({ title: 'Coming Soon', description: 'Chat deletion will be re-enabled soon.' });
   };
 
@@ -89,12 +127,13 @@ export default function ChatPage() {
     toast({ title: 'Coming Soon', description: 'Message regeneration will be re-enabled soon.' });
   };
 
-  const handleSendMessage = async ({ input, attachments }: { input: string; attachments: Attachment[] }) => {
-    if (!input.trim() && attachments.length === 0 || isSending || authLoading ) return;
+  const handleSendMessage = async ({ input, attachments: currentAttachments }: { input: string; attachments: Attachment[] }) => {
+    if (!input.trim() && currentAttachments.length === 0 || isSending || authLoading ) return;
 
     setIsSending(true);
 
-    const userMessage: ChatMessageProps = {
+    // Optimistically add the user's message to the UI
+    const tempUserMessage: ChatMessageProps = {
         id: `user-${Date.now()}`,
         role: 'user',
         text: await marked.parse(input.trim()),
@@ -102,21 +141,18 @@ export default function ChatPage() {
         userName: user?.user_metadata?.displayName || user?.email || 'User',
         userAvatar: user?.user_metadata?.avatar_url || null,
         createdAt: new Date(),
-        attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.contentType, size: att.size }))
+        attachments: currentAttachments.map(att => ({ url: att.url, name: att.name, contentType: att.contentType, size: att.size }))
     };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prev => [...prev, tempUserMessage]);
 
-    setGuestMessageCount(prev => prev + 1);
-  
     const chatInput = {
       message: input.trim(),
       history: messages.map(msg => ({ role: msg.role, text: msg.rawText || '' })),
-      sessionId: activeChatId || undefined,
+      sessionId: activeChatId,
       personaId: selectedPersonaId,
-      context: attachments.length > 0 ? { url: attachments[0].url, filename: attachments[0].name } : undefined,
+      context: currentAttachments.length > 0 ? { url: currentAttachments[0].url, filename: currentAttachments[0].name } : undefined,
     };
   
-    setInput('');
     setAttachments([]);
   
     try {
@@ -129,56 +165,42 @@ export default function ChatPage() {
       const result = await response.json();
       
       if (!response.ok) {
-        throw { response, result };
+        throw new Error(result.error || 'API request failed');
       }
       
-      const modelResponse: ChatMessageProps = {
-          id: `guest-ai-${Date.now()}`,
-          role: 'model',
-          text: await marked.parse(result.response),
-          rawText: result.response,
-          flashcards: result.flashcards,
-          quiz: result.quiz,
-          source: result.source,
-          confidence: result.confidence,
-          persona: selectedPersona,
-          createdAt: new Date(),
-      };
-      setMessages(prev => [...prev, modelResponse]);
+      forceRefresh();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!activeChatId && result.sessionId) {
+        // New chat: redirecting will trigger the message load useEffect
+        router.push(`/chat/${result.sessionId}`);
+      } else {
+        // Existing chat: manually trigger a refresh of the full message list
+        setMessageLoadCounter(c => c + 1);
+      }
+
     } catch (error: any) {
       console.error("Client-side send message error:", error);
-      const description = error.result?.error || error.message || 'An unknown error occurred.';
-
       toast({
         variant: 'destructive',
         title: 'Message Failed',
-        description: description,
+        description: error.message || 'An unknown error occurred.',
       });
-  
-      const errorResponse: ChatMessageProps = {
-        id: `err-${Date.now()}`,
-        role: 'model',
-        text: `<p>Sorry, there was an error. Please try again.</p>`,
-        rawText: `Sorry, there was an error. Please try again.`,
-        isError: true,
-        createdAt: new Date(),
-      };
-      setMessages(prev => [...prev, errorResponse]);
+      // Remove the optimistic message on failure
+      setMessages(prev => prev.filter(m => m.id !== tempUserMessage.id));
     } finally {
       setIsSending(false);
     }
   };
 
   const handleFocusInput = () => {
-    if (sidebarOpen) {
-      setSidebarOpen(false);
-    }
-    if (isContextHubOpen) {
-      closeContextHub();
-    }
+    if (sidebarOpen) setSidebarOpen(false);
+    if (isContextHubOpen) closeContextHub();
   };
+
+  const handleSelectChat = useCallback((id: string) => {
+      router.push(`/chat/${id}`);
+      setSidebarOpen(false);
+  }, [router]);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-background via-background to-secondary/30 text-foreground">
@@ -190,10 +212,7 @@ export default function ChatPage() {
                 chatHistory={chatHistory}
                 activeChatId={activeChatId}
                 onNewChat={handleNewChat}
-                onChatSelect={(id) => {
-                  setActiveChatId(id);
-                  setSidebarOpen(false);
-                }}
+                onChatSelect={handleSelectChat}
                 onDeleteChat={handleDeleteChat}
                 isLoading={isHistoryLoading}
                 isCollapsed={false}
@@ -209,7 +228,7 @@ export default function ChatPage() {
             chatHistory={chatHistory}
             activeChatId={activeChatId}
             onNewChat={handleNewChat}
-            onChatSelect={(id) => setActiveChatId(id)}
+            onChatSelect={handleSelectChat}
             onDeleteChat={handleDeleteChat}
             isLoading={isHistoryLoading}
             isCollapsed={isSidebarCollapsed}
@@ -230,7 +249,7 @@ export default function ChatPage() {
         <MessageList
           messages={messages}
           isSending={isSending}
-          isHistoryLoading={isHistoryLoading && !!activeChatId}
+          isHistoryLoading={isHistoryLoading && messages.length === 0 && !!activeChatId}
           activeChatId={activeChatId}
           activePersona={selectedPersona}
           onSmartToolAction={(prompt) => {

@@ -1,12 +1,9 @@
 'use server';
 
 import { z } from 'zod';
-// NOTE: Importing from a client-side hook file into a server-side flow
-// is not ideal. In a larger application, this persona data should be
-// sourced from a shared location or a database. For now, this is the
-// most direct way to access the persona prompts.
 import { defaultPersonas } from '@/lib/personas';
 import type { PersonaDetails } from '@/types/chat-types';
+import { createChatSession, addMessageToChat } from '@/lib/chat-actions';
 
 const API_KEY = process.env.GEMINI_API_KEY;
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`;
@@ -28,24 +25,42 @@ type ChatFlowInput = z.infer<typeof chatFlowInputSchema>;
 
 export async function chatFlow(input: ChatFlowInput) {
   const validatedInput = chatFlowInputSchema.parse(input);
-  const { message, history, personaId } = validatedInput;
+  const { message, history, personaId, userId, isGuest } = validatedInput;
+  let { sessionId } = validatedInput;
 
   if (!API_KEY) {
     throw new Error('The GEMINI_API_KEY environment variable is not set.');
   }
 
+  // If it's a new chat for a logged-in user, create a session first.
+  if (!sessionId && !isGuest) {
+    // Use the first part of the message as a preliminary title.
+    const newTitle = message.length > 40 ? message.substring(0, 40) + '...' : message;
+    const { data: newSession, error } = await createChatSession(userId, newTitle);
+    if (error || !newSession) {
+      console.error("Error creating new chat session:", error);
+      throw new Error("Could not start a new chat session.");
+    }
+    sessionId = newSession.id;
+  }
+
+  // Save user message for logged-in users.
+  if (sessionId && !isGuest) {
+    const { error } = await addMessageToChat(sessionId, 'user', message);
+    if (error) {
+      // Log the error but don't block the chat flow.
+      console.error(`Error saving user message for session ${sessionId}:`, error);
+    }
+  }
+
   const selectedPersona: PersonaDetails | undefined = defaultPersonas.find(p => p.id === personaId);
   const personaPrompt = selectedPersona?.prompt || defaultPersonas.find(p => p.id === 'neutral')!.prompt;
 
-  // Construct the conversation history for the API
   const apiHistory = (history || []).map(h => ({
     role: h.role,
     parts: [{ text: h.text }],
   }));
 
-  // The persona prompt acts as a system instruction.
-  // We prepend it to the history, followed by a priming message from the model.
-  // This helps the model adopt the persona consistently.
   const contents = [
     { role: 'user', parts: [{ text: personaPrompt }] },
     { role: 'model', parts: [{ text: "Okay, I understand. I will act as that persona. What is the first question?" }] },
@@ -66,9 +81,7 @@ export async function chatFlow(input: ChatFlowInput) {
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestPayload),
     });
 
@@ -87,15 +100,23 @@ export async function chatFlow(input: ChatFlowInput) {
 
     const generatedText = responseData.candidates[0].content.parts[0].text;
 
+    // Save model response for logged-in users.
+    if (sessionId && !isGuest) {
+      const { error } = await addMessageToChat(sessionId, 'model', generatedText);
+      if (error) {
+        // Log the error but don't block the chat flow.
+        console.error(`Error saving model response for session ${sessionId}:`, error);
+      }
+    }
+
     return {
-      sessionId: validatedInput.sessionId || 'new-session',
+      sessionId: sessionId,
       response: generatedText,
       rawResponse: generatedText,
       persona: selectedPersona || defaultPersonas.find(p => p.id === 'neutral'),
     };
   } catch (error) {
     console.error('Error in chatFlow:', error);
-    // Re-throw the error to be caught by the API route's error handler
     throw error;
   }
 }

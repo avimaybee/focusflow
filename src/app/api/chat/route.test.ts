@@ -3,6 +3,24 @@ import { POST } from './route';
 import { NextRequest } from 'next/server';
 import { chatFlow } from '@/ai/flows/chat-flow';
 
+// Mock next/headers
+vi.mock('next/headers', () => ({
+  cookies: vi.fn(() => ({
+    get: vi.fn((name?: string) => {
+      // This can be customized in specific tests if needed
+      return undefined;
+    }),
+  })),
+}));
+
+vi.mock('@supabase/ssr', () => ({
+  createClient: vi.fn().mockReturnValue({
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user: null } }),
+    },
+  }),
+}));
+
 // Mock the chatFlow
 vi.mock('@/ai/flows/chat-flow', () => ({
   chatFlow: vi.fn(),
