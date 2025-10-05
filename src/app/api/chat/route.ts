@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
 import { createClient } from '@supabase/ssr';
 
 async function getUserFromRequest(req: NextRequest): Promise<{ uid: string | null; isAnonymous: boolean }> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
