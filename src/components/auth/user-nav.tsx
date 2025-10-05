@@ -11,12 +11,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/auth-context';
-import { supabase } from '@/lib/supabase';
+import { createSupabaseClient } from '@/lib/supabase';
 import Link from 'next/link';
 import { LayoutDashboard, LogOut, User as UserIcon } from 'lucide-react';
 
 export function UserNav() {
   const { user } = useAuth();
+  const supabase = createSupabaseClient();
 
   if (!user) {
     return null;

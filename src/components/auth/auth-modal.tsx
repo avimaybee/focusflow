@@ -8,7 +8,7 @@ import { useAuth } from '@/context/auth-context';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { supabase } from '@/lib/supabase';
+import { createSupabaseClient } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,6 +47,7 @@ export function AuthModal() {
   const { user, isGuest, refreshAuthStatus } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = createSupabaseClient();
 
   const [formState, setFormState] = useState<FormState>('idle');
 
