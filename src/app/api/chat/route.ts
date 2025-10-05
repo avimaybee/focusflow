@@ -4,11 +4,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { chatFlow } from '@/ai/flows/chat-flow';
 
 import { cookies } from 'next/headers';
-import * as supabaseSSR from '@supabase/ssr';
+import { createClient } from '@supabase/ssr';
 
 async function getUserFromRequest(req: NextRequest): Promise<{ uid: string | null; isAnonymous: boolean }> {
   const cookieStore = cookies();
-  const supabase = supabaseSSR.createClient(
+  const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
