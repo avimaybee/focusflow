@@ -1,9 +1,10 @@
 // src/app/api/chat/route.ts
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
+import { chatFlow } from '@/ai/flows/chat-flow';
+
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/ssr';
-import { chatFlow } from '@/ai/flows/chat-flow';
 
 async function getUserFromRequest(req: NextRequest): Promise<{ uid: string | null; isAnonymous: boolean }> {
   const cookieStore = cookies();

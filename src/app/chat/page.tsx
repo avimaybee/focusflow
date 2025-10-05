@@ -156,18 +156,42 @@ export default function ChatPage() {
     setAttachments([]);
   
     try {
-      const response = await fetch('/api/chat', {
+      const fetchUrl = '/api/chat';
+      console.log(`[CLIENT_DEBUG] Sending POST request to: ${fetchUrl}`);
+      const response = await fetch(fetchUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(chatInput),
       });
   
-      const result = await response.json();
-      
       if (!response.ok) {
-        throw new Error(result.error || 'API request failed');
+        const errorText = await response.text();
+        console.error("--- DETAILED CLIENT-SIDE ERROR ---");
+        console.error("Request failed with status:", response.status);
+        console.error("Status Text:", response.statusText);
+
+        const responseHeaders: {[key: string]: string} = {};
+        response.headers.forEach((value, key) => {
+            responseHeaders[key] = value;
+        });
+        console.error("Response Headers:", JSON.stringify(responseHeaders, null, 2));
+        console.error("Response Body:", errorText);
+        console.error("--- END DETAILED CLIENT-SIDE ERROR ---");
+
+        let errorMessage = 'API request failed';
+        try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.error || errorJson.details || errorMessage;
+        } catch (e) {
+            if (errorText.length < 100 && errorText.length > 0) {
+                errorMessage = errorText;
+            }
+        }
+        throw new Error(errorMessage);
       }
       
+      const result = await response.json();
+
       forceRefresh();
 
       if (!activeChatId && result.sessionId) {
@@ -179,7 +203,7 @@ export default function ChatPage() {
       }
 
     } catch (error: any) {
-      console.error("Client-side send message error:", error);
+      console.error("Client-side send message error:", error.message);
       toast({
         variant: 'destructive',
         title: 'Message Failed',
