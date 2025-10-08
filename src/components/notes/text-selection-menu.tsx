@@ -114,7 +114,7 @@ export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
             ? `> ${selectedText}\n\n${explanation.content?.replace(/<[^>]*>/g, '\n')}`
             : selectedText;
         
-        await appendToNotes(user.uid, contentToAppend);
+        await appendToNotes(user.id, contentToAppend);
         
         toast({
             title: 'Sent to Notes',

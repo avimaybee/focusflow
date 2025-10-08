@@ -63,7 +63,7 @@ export function PublishAsBlogModal({ isOpen, onOpenChange, contentItem, onSucces
         setIsPublishing(true);
         try {
             const tagsArray = values.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [];
-            const slug = await publishAsBlog(user.uid, contentItem.id, contentItem.type, { ...values, tags: tagsArray });
+            const slug = await publishAsBlog(user.id, contentItem.id, contentItem.type, { ...values, tags: tagsArray });
             
             toast({
                 title: "Published!",

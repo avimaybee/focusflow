@@ -134,6 +134,8 @@ export default function ChatPage() {
         }
     }
 
+    const historyForAI = messages.map(msg => ({ role: msg.role, text: msg.rawText || '' }));
+
     const userMessage: ChatMessageProps = {
         id: `user-${Date.now()}`,
         role: 'user',
@@ -151,7 +153,7 @@ export default function ChatPage() {
   
     const chatInput = {
       message: input.trim(),
-      history: messages.map(msg => ({ role: msg.role, text: msg.rawText || '' })),
+      history: historyForAI,
       sessionId: currentChatId || undefined,
       personaId: selectedPersonaId,
       context: attachments.length > 0 ? { url: attachments[0].url, filename: attachments[0].name } : undefined,
@@ -187,6 +189,11 @@ export default function ChatPage() {
       };
       setMessages(prev => [...prev, modelResponse]);
       await addChatMessage(currentChatId, 'model', result.response);
+      forceRefresh();
+      if (currentChatId) {
+        const loadedMessages = await getChatMessages(currentChatId);
+        setMessages(loadedMessages);
+      }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

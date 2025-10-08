@@ -35,7 +35,7 @@ export default function NewStudyPlanPage() {
 
     setIsGenerating(true);
     try {
-      const planId = await generateAndSaveStudyPlan(user.uid, {
+      const planId = await generateAndSaveStudyPlan(user.id, {
         topic,
         durationDays,
         examDate,

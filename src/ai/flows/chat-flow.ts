@@ -43,15 +43,16 @@ export async function chatFlow(input: ChatFlowInput) {
     parts: [{ text: h.text }],
   }));
 
-  // The persona prompt acts as a system instruction.
-  // We prepend it to the history, followed by a priming message from the model.
-  // This helps the model adopt the persona consistently.
-  const contents = [
-    { role: 'user', parts: [{ text: personaPrompt }] },
-    { role: 'model', parts: [{ text: "Okay, I understand. I will act as that persona. What is the first question?" }] },
-    ...apiHistory,
-    { role: 'user', parts: [{ text: message }] },
-  ];
+  const contents = apiHistory.length === 0
+    ? [
+        { role: 'user', parts: [{ text: personaPrompt }] },
+        { role: 'model', parts: [{ text: "Okay, I understand. I will act as that persona. What is the first question?" }] },
+        { role: 'user', parts: [{ text: message }] },
+      ]
+    : [
+        ...apiHistory,
+        { role: 'user', parts: [{ text: message }] },
+      ];
 
   const requestPayload = {
     contents,

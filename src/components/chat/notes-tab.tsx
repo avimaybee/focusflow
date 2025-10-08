@@ -28,7 +28,7 @@ export function NotesTab() {
   // Effect to fetch initial notes
   useEffect(() => {
     if (user && !isLoaded) {
-      getNotes(user.uid).then((initialContent) => {
+      getNotes(user.id).then((initialContent) => {
         setContent(initialContent);
         setIsLoaded(true);
       });
@@ -47,7 +47,7 @@ export function NotesTab() {
     }
 
     setSaveStatus('saving');
-    saveNotes(user.uid, debouncedContent)
+    saveNotes(user.id, debouncedContent)
       .then(() => {
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);

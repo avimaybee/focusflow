@@ -25,8 +25,8 @@ export default function NewPracticeExamPage() {
   const { toast } = useToast();
   const [topic, setTopic] = useState('');
   const [questionCount, setQuestionCount] = useState(10);
-  const [difficulty, setDifficulty] = useState('medium');
-  const [questionTypes, setQuestionTypes] = useState(['multiple-choice']);
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">('medium');
+  const [questionTypes, setQuestionTypes] = useState<("multiple-choice" | "short-answer" | "essay")[]>(['multiple-choice']);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateExam = async () => {
@@ -41,7 +41,7 @@ export default function NewPracticeExamPage() {
 
     setIsGenerating(true);
     try {
-      const examId = await generateAndSaveExam(user.uid, {
+      const examId = await generateAndSaveExam(user.id, {
         topic,
         questionCount,
         difficulty,
@@ -70,7 +70,7 @@ export default function NewPracticeExamPage() {
         </div>
         <div>
           <Label htmlFor="difficulty">Difficulty</Label>
-          <Select value={difficulty} onValueChange={setDifficulty}>
+          <Select value={difficulty} onValueChange={(value: "easy" | "medium" | "hard") => setDifficulty(value)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -84,7 +84,7 @@ export default function NewPracticeExamPage() {
         <div>
           <Label>Question Types</Label>
           <div className="flex items-center gap-4 mt-2">
-            {['multiple-choice', 'short-answer', 'essay'].map(type => (
+            {(['multiple-choice', 'short-answer', 'essay'] as const).map(type => (
               <div key={type} className="flex items-center gap-2">
                 <Checkbox
                   id={type}

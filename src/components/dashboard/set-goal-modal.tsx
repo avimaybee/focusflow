@@ -39,7 +39,7 @@ export function SetGoalModal({ isOpen, onOpenChange, onSuccess }: SetGoalModalPr
     setIsSaving(true);
     try {
       const weekStartDate = format(startOfWeek(new Date()), 'yyyy-MM-dd');
-      await setGoal(user.uid, {
+      await setGoal(user.id, {
         subject: subject.trim(),
         targetHours: Number(targetHours),
         weekStartDate,

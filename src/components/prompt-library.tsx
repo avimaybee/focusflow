@@ -49,7 +49,7 @@ export function PromptLibrary({ onSelectPrompt, children }: PromptLibraryProps) 
       : [...favoritePrompts, promptId];
     
     setFavoritePrompts(newFavorites);
-    await updateUserFavoritePrompts(user.uid, newFavorites);
+    await updateUserFavoritePrompts(user.id, newFavorites);
   };
 
   const categories = ['All', ...(user ? ['Favorites'] : []), ...Array.from(new Set(templates.map((t) => t.category)))];

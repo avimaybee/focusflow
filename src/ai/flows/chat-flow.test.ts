@@ -6,6 +6,7 @@ describe('chatFlow', () => {
     const input = {
       userId: 'test-user',
       message: 'Hello, world!',
+      isGuest: false,
     };
 
     const result = await chatFlow(input);
@@ -19,6 +20,7 @@ describe('chatFlow', () => {
       userId: 'test-user',
       message: 'Hello, again!',
       sessionId: 'existing-session-id',
+      isGuest: false,
     };
 
     const result = await chatFlow(input);

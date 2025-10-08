@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "module": "commonjs"
+    "module": "commonjs",
+    "types": ["vitest/globals"]
   },
   "include": ["vitest.config.ts", "vitest.setup.ts", "**/*.test.ts", "**/*.test.tsx"]
 }

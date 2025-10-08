@@ -10,7 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowLeft, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getPersonas, Persona, updateUserProfile, getUserProfile } from '@/lib/user-actions';
+import { getPersonas, updateUserProfile, getUserProfile } from '@/lib/user-actions';
+import type { Persona } from '@/types/chat-types';
 import Link from 'next/link';
 
 export default function PreferencesPage() {
@@ -22,17 +23,19 @@ export default function PreferencesPage() {
 
   const [learningGoals, setLearningGoals] = useState('');
   const [personas, setPersonas] = useState<Persona[]>([]);
-  const [selectedPersona, setSelectedPersona] = useState<string>('');
+  const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
 
   useEffect(() => {
     if (user) {
       setIsLoading(true);
       Promise.all([
-        getUserProfile(user.uid),
+        getUserProfile(user.id),
         getPersonas(),
-      ]).then(([profile, personasData]) => {
+      ]).then(([profileData, personasData]) => {
+        const profile = profileData as { learningGoals?: string; preferredPersona?: Persona['id']; };
         setLearningGoals(profile.learningGoals || '');
-        setSelectedPersona(profile.preferredPersona || 'neutral');
+        const initialPersona = personasData.find(p => p.id === (profile.preferredPersona || 'neutral'));
+        setSelectedPersona(initialPersona || null);
         setPersonas(personasData);
       }).catch((error) => {
         console.error('Failed to load preferences:', error);
@@ -51,9 +54,9 @@ export default function PreferencesPage() {
     if (!user) return;
     setIsSaving(true);
     try {
-      await updateUserProfile(user.uid, {
+      await updateUserProfile(user.id, {
         learningGoals,
-        preferredPersona: selectedPersona,
+        preferredPersona: selectedPersona?.id,
       });
       toast({
         title: 'Success!',
@@ -129,13 +132,13 @@ export default function PreferencesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {personas.map((persona) => (
+            {personas.map((persona: Persona) => (
               <div
                 key={persona.id}
-                onClick={() => setSelectedPersona(persona.id)}
+                onClick={() => setSelectedPersona(persona)}
                 className={cn(
                   'p-4 border rounded-lg cursor-pointer transition-all',
-                  selectedPersona === persona.id ? 'border-primary ring-2 ring-primary' : 'hover:border-primary/50'
+                  selectedPersona && selectedPersona.id === persona.id ? 'border-primary ring-2 ring-primary' : 'hover:border-primary/50'
                 )}
               >
                 <h3 className="font-semibold">{persona.name}</h3>

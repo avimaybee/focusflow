@@ -1,60 +1,60 @@
-2025-10-01T08:14:09.593228Z	Cloning repository...
-2025-10-01T08:14:10.274529Z	From https://github.com/avimaybee/focusflow
-2025-10-01T08:14:10.2751Z	 * branch            7d0e1e84dbac7d26f336d4a0c8b4319c3426cc81 -> FETCH_HEAD
-2025-10-01T08:14:10.275209Z	
-2025-10-01T08:14:10.32087Z	HEAD is now at 7d0e1e8 fix: remove unnecessary dependency '@ast-grep/napi-linux-x64-gnu' from package.json
-2025-10-01T08:14:10.32132Z	
-2025-10-01T08:14:10.408151Z	
-2025-10-01T08:14:10.408759Z	Using v2 root directory strategy
-2025-10-01T08:14:10.433781Z	Success: Finished cloning repository files
-2025-10-01T08:14:12.30215Z	Checking for configuration in a Wrangler configuration file (BETA)
-2025-10-01T08:14:12.303119Z	
-2025-10-01T08:14:13.412439Z	No wrangler.toml file found. Continuing.
-2025-10-01T08:14:13.48407Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
-2025-10-01T08:14:13.484643Z	Installing project dependencies: npm clean-install --progress=false
-2025-10-01T08:14:29.79503Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
-2025-10-01T08:14:59.894974Z	
-2025-10-01T08:14:59.895702Z	added 1639 packages, and audited 1640 packages in 46s
-2025-10-01T08:14:59.896153Z	
-2025-10-01T08:14:59.89627Z	251 packages are looking for funding
-2025-10-01T08:14:59.896401Z	  run `npm fund` for details
-2025-10-01T08:14:59.963593Z	
-2025-10-01T08:14:59.963956Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
-2025-10-01T08:14:59.964143Z	
-2025-10-01T08:14:59.964282Z	To address issues that do not require attention, run:
-2025-10-01T08:14:59.964489Z	  npm audit fix
-2025-10-01T08:14:59.964625Z	
-2025-10-01T08:14:59.964757Z	To address all issues (including breaking changes), run:
-2025-10-01T08:14:59.964956Z	  npm audit fix --force
-2025-10-01T08:14:59.965101Z	
-2025-10-01T08:14:59.965224Z	Run `npm audit` for details.
-2025-10-01T08:15:00.017105Z	Executing user command: npm run build:cloudflare
-2025-10-01T08:15:00.411737Z	
-2025-10-01T08:15:00.412084Z	> nextn@0.1.0 build:cloudflare
-2025-10-01T08:15:00.412295Z	> opennextjs-cloudflare
-2025-10-01T08:15:00.412406Z	
-2025-10-01T08:15:01.382544Z	node:internal/modules/cjs/loader:1401
-2025-10-01T08:15:01.382857Z	  const err = new Error(message);
-2025-10-01T08:15:01.383052Z	              ^
-2025-10-01T08:15:01.383194Z	
-2025-10-01T08:15:01.383319Z	Error: Cannot find module '@ast-grep/napi-linux-x64-gnu'
-2025-10-01T08:15:01.383467Z	Require stack:
-2025-10-01T08:15:01.383592Z	- /opt/buildhome/repo/node_modules/@ast-grep/napi/index.js
-2025-10-01T08:15:01.383705Z	    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
-2025-10-01T08:15:01.38381Z	    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
-2025-10-01T08:15:01.383945Z	    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
-2025-10-01T08:15:01.384065Z	    at Function._load (node:internal/modules/cjs/loader:1211:37)
-2025-10-01T08:15:01.384179Z	    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
-2025-10-01T08:15:01.384303Z	    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
-2025-10-01T08:15:01.384388Z	    at Module.require (node:internal/modules/cjs/loader:1487:12)
-2025-10-01T08:15:01.384456Z	    at require (node:internal/modules/helpers:135:16)
-2025-10-01T08:15:01.384539Z	    at Object.<anonymous> (/opt/buildhome/repo/node_modules/@ast-grep/napi/index.js:190:31)
-2025-10-01T08:15:01.384604Z	    at Module._compile (node:internal/modules/cjs/loader:1730:14) {
-2025-10-01T08:15:01.384667Z	  code: 'MODULE_NOT_FOUND',
-2025-10-01T08:15:01.384726Z	  requireStack: [ '/opt/buildhome/repo/node_modules/@ast-grep/napi/index.js' ]
-2025-10-01T08:15:01.384842Z	}
-2025-10-01T08:15:01.384967Z	
-2025-10-01T08:15:01.385081Z	Node.js v22.16.0
-2025-10-01T08:15:01.401337Z	Failed: Error while executing user command. Exited with error code: 1
-2025-10-01T08:15:01.412581Z	Failed: build command exited with code: 1
-2025-10-01T08:15:07.747536Z	Failed: error occurred while running build command
+2025-10-01T08:41:50.544816Z	Cloning repository...
+2025-10-01T08:41:51.315758Z	From https://github.com/avimaybee/focusflow
+2025-10-01T08:41:51.316249Z	 * branch            5e84b0a6f03c268af14c2ad40027c1361e3f42ab -> FETCH_HEAD
+2025-10-01T08:41:51.316352Z	
+2025-10-01T08:41:51.357697Z	HEAD is now at 5e84b0a fix: remove 'wrangler' from package.json and package-lock.json to resolve build issues
+2025-10-01T08:41:51.358148Z	
+2025-10-01T08:41:51.451022Z	
+2025-10-01T08:41:51.451551Z	Using v2 root directory strategy
+2025-10-01T08:41:51.476134Z	Success: Finished cloning repository files
+2025-10-01T08:41:53.330401Z	Checking for configuration in a Wrangler configuration file (BETA)
+2025-10-01T08:41:53.331346Z	
+2025-10-01T08:41:54.442396Z	No wrangler.toml file found. Continuing.
+2025-10-01T08:41:54.516039Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+2025-10-01T08:41:54.51688Z	Installing project dependencies: npm clean-install --progress=false
+2025-10-01T08:42:11.70842Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
+2025-10-01T08:42:45.410623Z	
+2025-10-01T08:42:45.410992Z	added 1639 packages, and audited 1640 packages in 50s
+2025-10-01T08:42:45.411135Z	
+2025-10-01T08:42:45.411306Z	251 packages are looking for funding
+2025-10-01T08:42:45.411433Z	  run `npm fund` for details
+2025-10-01T08:42:45.484629Z	
+2025-10-01T08:42:45.484883Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
+2025-10-01T08:42:45.485002Z	
+2025-10-01T08:42:45.485117Z	To address issues that do not require attention, run:
+2025-10-01T08:42:45.485306Z	  npm audit fix
+2025-10-01T08:42:45.485385Z	
+2025-10-01T08:42:45.485466Z	To address all issues (including breaking changes), run:
+2025-10-01T08:42:45.485593Z	  npm audit fix --force
+2025-10-01T08:42:45.485693Z	
+2025-10-01T08:42:45.485834Z	Run `npm audit` for details.
+2025-10-01T08:42:45.537178Z	Executing user command: npm run build:cloudflare
+2025-10-01T08:42:45.96878Z	
+2025-10-01T08:42:45.969403Z	> nextn@0.1.0 build:cloudflare
+2025-10-01T08:42:45.969575Z	> opennextjs-cloudflare
+2025-10-01T08:42:45.969931Z	
+2025-10-01T08:42:46.978583Z	node:internal/modules/cjs/loader:1401
+2025-10-01T08:42:46.97897Z	  const err = new Error(message);
+2025-10-01T08:42:46.979116Z	              ^
+2025-10-01T08:42:46.979252Z	
+2025-10-01T08:42:46.97934Z	Error: Cannot find module '@ast-grep/napi-linux-x64-gnu'
+2025-10-01T08:42:46.979451Z	Require stack:
+2025-10-01T08:42:46.979552Z	- /opt/buildhome/repo/node_modules/@ast-grep/napi/index.js
+2025-10-01T08:42:46.979637Z	    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+2025-10-01T08:42:46.979747Z	    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+2025-10-01T08:42:46.979829Z	    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+2025-10-01T08:42:46.979916Z	    at Function._load (node:internal/modules/cjs/loader:1211:37)
+2025-10-01T08:42:46.98032Z	    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+2025-10-01T08:42:46.980565Z	    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+2025-10-01T08:42:46.98072Z	    at Module.require (node:internal/modules/cjs/loader:1487:12)
+2025-10-01T08:42:46.980949Z	    at require (node:internal/modules/helpers:135:16)
+2025-10-01T08:42:46.98112Z	    at Object.<anonymous> (/opt/buildhome/repo/node_modules/@ast-grep/napi/index.js:190:31)
+2025-10-01T08:42:46.981262Z	    at Module._compile (node:internal/modules/cjs/loader:1730:14) {
+2025-10-01T08:42:46.981386Z	  code: 'MODULE_NOT_FOUND',
+2025-10-01T08:42:46.981475Z	  requireStack: [ '/opt/buildhome/repo/node_modules/@ast-grep/napi/index.js' ]
+2025-10-01T08:42:46.981555Z	}
+2025-10-01T08:42:46.981662Z	
+2025-10-01T08:42:46.981772Z	Node.js v22.16.0
+2025-10-01T08:42:47.003255Z	Failed: Error while executing user command. Exited with error code: 1
+2025-10-01T08:42:47.015855Z	Failed: build command exited with code: 1
+2025-10-01T08:42:48.344381Z	Failed: error occurred while running build command

@@ -19,7 +19,7 @@ async function getQuiz(slug: string) {
             title: 'Placeholder Quiz',
             questions: [
                 {
-                    question: 'What is the capital of France?',
+                    questionText: 'What is the capital of France?',
                     options: ['London', 'Berlin', 'Paris', 'Madrid'],
                     correctAnswer: 'Paris',
                     explanation: 'Paris is the capital of France.',

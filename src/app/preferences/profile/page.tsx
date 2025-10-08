@@ -7,11 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { updateUserProfile, isUsernameAvailable } from '@/lib/profile-actions';
+import { updateUserProfile, isUsernameAvailable, getPublicProfile } from '@/lib/profile-actions';
 import { useDebounce } from 'use-debounce';
 
 export default function EditProfilePage() {
-  const { user, username: currentUsername, publicProfile } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
@@ -23,18 +23,20 @@ export default function EditProfilePage() {
   const [debouncedUsername] = useDebounce(username, 500);
 
   useEffect(() => {
-    if (publicProfile) {
-      setDisplayName(publicProfile.displayName || '');
-      setBio(publicProfile.bio || '');
-      setSchool(publicProfile.school || '');
+    if (profile && profile.username) {
+      getPublicProfile(profile.username).then(data => {
+        if (data) {
+          setDisplayName(data.profile.displayName || '');
+          setBio(data.profile.bio || '');
+          setSchool(data.profile.school || '');
+        }
+      });
+      setUsername(profile.username || '');
     }
-    if (currentUsername) {
-      setUsername(currentUsername);
-    }
-  }, [publicProfile, currentUsername]);
+  }, [profile]);
 
   useEffect(() => {
-    if (debouncedUsername && debouncedUsername !== currentUsername) {
+    if (debouncedUsername && debouncedUsername !== profile?.username) {
       setUsernameStatus('checking');
       isUsernameAvailable(debouncedUsername).then(isAvailable => {
         setUsernameStatus(isAvailable ? 'available' : 'taken');
@@ -45,15 +47,15 @@ export default function EditProfilePage() {
   }, [debouncedUsername, currentUsername]);
 
   const handleSubmit = async () => {
-    if (!user || usernameStatus === 'taken') return;
+    if (!user || (usernameStatus === 'taken' && username !== profile?.username)) return;
 
     setIsSaving(true);
     try {
-      await updateUserProfile(user.uid, username, {
+      await updateUserProfile(user.id, username, {
         displayName,
         bio,
         school,
-        avatarUrl: user.photoURL || '',
+        avatarUrl: user.user_metadata.avatar_url || '',
       });
       toast({ title: 'Success!', description: 'Your profile has been updated.' });
     } catch (error) {

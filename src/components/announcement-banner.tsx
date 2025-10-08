@@ -24,6 +24,7 @@ export function AnnouncementBanner() {
   }
 
   const handleDismiss = () => {
+    if (!currentAnnouncement) return;
     localStorage.setItem(currentAnnouncement.id, 'true');
     setIsVisible(false);
   };

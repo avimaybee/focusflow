@@ -46,8 +46,8 @@ export type ChatMessageProps = {
   userName?: string;
   persona?: PersonaDetails;
   createdAt?: Date;
-  source?: any;
-  confidence?: any;
+  source?: unknown;
+  confidence?: unknown;
   isError?: boolean;
   isFirstInGroup?: boolean;
   isLastInGroup?: boolean;
@@ -100,7 +100,7 @@ export function ChatMessage({
       return;
     }
     try {
-      await saveChatMessage(user.uid, rawText);
+      await saveChatMessage(user.id, rawText);
       toast({
         title: 'Message Saved!',
         description: 'You can find it in your "My Content" page.',

@@ -34,7 +34,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
   }
 
   const { profile, content } = profileData;
-  const isOwner = user?.uid === profileData.userId;
+  const isOwner = user?.id === profileData.userId;
 
   return (
     <main className="container mx-auto px-4 py-12 max-w-4xl">

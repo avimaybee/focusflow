@@ -22,7 +22,7 @@ import { getPersonas } from '@/lib/user-actions';
 import type { Persona } from '@/types/chat-types';
 
 export const OnboardingModal = () => {
-  const { user, username: initialUsername, publicProfile } = useAuth();
+  const { user, username: initialUsername, profile } = useAuth();
   const { isOpen, onClose } = useOnboardingModal();
   const [step, setStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
@@ -39,10 +39,10 @@ export const OnboardingModal = () => {
     if (isOpen) {
       getPersonas().then((data) => setPersonas(data as unknown as Persona[]));
       setUsername(initialUsername || '');
-      setLearningGoals(publicProfile?.learningGoals || '');
-      setSelectedPersona(publicProfile?.preferredPersona || 'neutral');
+      setLearningGoals(profile?.learningGoals || '');
+      setSelectedPersona(profile?.preferredPersona || 'neutral');
     }
-  }, [isOpen, initialUsername, publicProfile]);
+  }, [isOpen, initialUsername, profile]);
 
   const handleFinish = async () => {
     if (!user) {
@@ -55,7 +55,7 @@ export const OnboardingModal = () => {
     }
     setIsSaving(true);
     try {
-      await updateUserProfile(user.uid, {
+      await updateUserProfile(user.id, {
           username: username || undefined,
           learningGoals,
           preferredPersona: selectedPersona,

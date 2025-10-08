@@ -45,7 +45,7 @@ export function AddToCollectionModal({
 
   useEffect(() => {
     if (isOpen && user) {
-      getCollections(user.uid).then(setCollections);
+      getCollections(user.id).then(setCollections);
     }
   }, [isOpen, user]);
 
@@ -53,7 +53,7 @@ export function AddToCollectionModal({
     if (!user || !contentItem || !selectedCollection) return;
     
     try {
-      await addContentToCollection(user.uid, selectedCollection, contentItem.id);
+      await addContentToCollection(user.id, selectedCollection, contentItem.id);
       toast({ title: 'Success', description: `Added to ${collections.find(c => c.id === selectedCollection)?.title}` });
       onSuccess();
       onOpenChange(false);
@@ -67,8 +67,8 @@ export function AddToCollectionModal({
     
     setIsCreating(true);
     try {
-      const newCollectionId = await createCollection(user.uid, newCollectionTitle.trim());
-      await addContentToCollection(user.uid, newCollectionId, contentItem.id);
+      const newCollectionId = await createCollection(user.id, newCollectionTitle.trim());
+      await addContentToCollection(user.id, newCollectionId, contentItem.id);
       toast({ title: 'Success', description: `Created collection and added item.` });
       onSuccess();
       onOpenChange(false);

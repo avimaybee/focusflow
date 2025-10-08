@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const dbBlogPosts = await getDbBlogPosts();
   const dbBlogPostUrls = dbBlogPosts
-    .filter(post => post && post.publicSlug)
+    .filter((post): post is { publicSlug: string; publishedAt: string } => !!(post && post.publicSlug && post.publishedAt))
     .map(post => ({
         url: `${baseUrl}/blog/${post.publicSlug}`,
         lastModified: new Date(post.publishedAt),
@@ -39,7 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Get all public summaries
   const summaries = await getPublicSummaries();
   const summaryUrls = summaries
-    .filter(summary => summary && summary.publicSlug)
+    .filter((summary): summary is { publicSlug: string; publishedAt: string } => !!(summary && summary.publicSlug && summary.publishedAt))
     .map(summary => ({
       url: `${baseUrl}/summaries/${summary.publicSlug}`,
       lastModified: new Date(summary.publishedAt),
@@ -50,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Get all public flashcard sets
   const flashcardSets = await getPublicFlashcardSets();
   const flashcardUrls = flashcardSets
-    .filter(set => set && set.publicSlug)
+    .filter((set): set is { publicSlug: string; publishedAt: string } => !!(set && set.publicSlug && set.publishedAt))
     .map(set => ({
       url: `${baseUrl}/flashcards/${set.publicSlug}`,
       lastModified: new Date(set.publishedAt),
@@ -61,7 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Get all public quizzes
   const quizzes = await getPublicQuizzes();
   const quizUrls = quizzes
-    .filter(quiz => quiz && quiz.publicSlug)
+    .filter((quiz): quiz is { publicSlug: string; publishedAt: string } => !!(quiz && quiz.publicSlug && quiz.publishedAt))
     .map(quiz => ({
       url: `${baseUrl}/quizzes/${quiz.publicSlug}`,
       lastModified: new Date(quiz.publishedAt),
@@ -72,7 +72,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Get all public study plans
   const studyPlans = await getPublicStudyPlans();
   const studyPlanUrls = studyPlans
-    .filter(plan => plan && plan.publicSlug)
+    .filter((plan): plan is { publicSlug: string; publishedAt: string } => !!(plan && plan.publicSlug && plan.publishedAt))
     .map(plan => ({
       url: `${baseUrl}/plans/${plan.publicSlug}`,
       lastModified: new Date(plan.publishedAt),
