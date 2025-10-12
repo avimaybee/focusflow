@@ -14,13 +14,18 @@ async function getUserFromRequest(req: NextRequest): Promise<{ uid: string | nul
 }
 
 export async function GET(request: NextRequest) {
+  const start = Date.now();
+  console.log('[API] GET /api/chat hit', { url: request.url, method: request.method });
   try {
     const url = new URL(request.url);
     const sessionId = url.searchParams.get('sessionId');
+    console.log('[API] GET /api/chat sessionId=', sessionId);
     if (!sessionId) {
+      console.log('[API] GET /api/chat no sessionId provided, returning empty array', { durationMs: Date.now() - start });
       return NextResponse.json([], { status: 200 });
     }
     const messages = await getChatMessages(sessionId);
+    console.log('[API] GET /api/chat returning messages count=', Array.isArray(messages) ? messages.length : typeof messages, { durationMs: Date.now() - start });
     return NextResponse.json(messages);
   } catch (err) {
     console.error('Error in GET /api/chat:', err);
@@ -29,51 +34,56 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  console.log('=== NEW CHAT REQUEST ===');
+  const start = Date.now();
+  console.log('=== NEW CHAT REQUEST ===', { method: request.method, url: request.url });
   try {
     const { uid, isAnonymous } = await getUserFromRequest(request);
-    console.log(`[DEBUG] Authenticated User ID: ${uid || 'Guest'}, Is Anonymous: ${isAnonymous}`);
+    console.log('[API] Authenticated User ID:', uid || 'Guest', 'isAnonymous:', isAnonymous);
 
-    const body = await request.json();
-    console.log("[DEBUG] Request Body:", JSON.stringify(body, null, 2));
+    // Log headers (avoid logging sensitive auth headers if present)
+    try {
+      const headers: Record<string, string> = {};
+      for (const [k, v] of request.headers) {
+        headers[k] = v;
+      }
+      console.log('[API] Request headers keys:', Object.keys(headers));
+    } catch (herr) {
+      console.warn('[API] Could not enumerate headers', herr);
+    }
 
-    if (!body.message) {
-      console.error("[ERROR] Missing required field: message");
+    const body = await request.text();
+    let parsed: any = null;
+    try {
+      parsed = body ? JSON.parse(body) : null;
+    } catch (e) {
+      console.warn('[API] Could not parse request body as JSON, raw body:', body);
+    }
+    console.log('[API] Request body (parsed):', parsed ? (Object.keys(parsed).length > 0 ? Object.fromEntries(Object.entries(parsed).slice(0, 20)) : parsed) : parsed);
+
+    if (!parsed || !parsed.message) {
+      console.error('[API] Missing required field: message');
       return NextResponse.json({ error: 'Missing required field: message' }, { status: 400 });
     }
 
     const input = {
       userId: uid || 'guest-user',
-      isGuest: isAnonymous, // Pass the guest status to the flow
-      message: body.message,
-      sessionId: body.sessionId,
-      personaId: body.personaId || 'neutral',
-      context: body.context,
+      isGuest: isAnonymous,
+      message: parsed.message,
+      sessionId: parsed.sessionId,
+      personaId: parsed.personaId || 'neutral',
+      context: parsed.context,
     };
 
-    console.log("[DEBUG] Calling chatFlow with input:", input);
-    
+    console.log('[API] Calling chatFlow with input keys:', Object.keys(input));
     const result = await chatFlow(input);
 
-    console.log("[DEBUG] Received result from flow:", result);
-    
+    console.log('[API] chatFlow result keys:', result ? Object.keys(result).slice(0, 20) : result, { durationMs: Date.now() - start });
     return NextResponse.json(result);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    console.error('=== FATAL API ROUTE ERROR ===');
-    console.error('Error Name:', error.name);
-    console.error('Error Message:', error.message);
-    console.error('Error Stack:', error.stack);
-    
-    const errorMessage = error.cause?.message || error.message || 'No further details available.';
-
-    return NextResponse.json(
-      { 
-        error: 'An internal server error occurred.',
-        details: errorMessage
-      },
-      { status: 500 }
-    );
+    console.error('=== FATAL API ROUTE ERROR ===', error);
+    console.error('Error stack:', error?.stack);
+    const errorMessage = error?.cause?.message || error?.message || 'No further details available.';
+    return NextResponse.json({ error: 'An internal server error occurred.', details: errorMessage }, { status: 500 });
   }
 }

@@ -142,12 +142,17 @@ export default function ChatPage() {
     // Create a new chat session if it's the first message
     if (!currentChatId) {
         try {
+          console.debug('[Client] Creating session - POST /api/chat/session', { userId: user.id, title: input.substring(0,30) });
+          const t0 = Date.now();
           const resp = await fetch('/api/chat/session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: user.id, title: input.substring(0, 30) }),
           });
+          console.debug('[Client] session POST finished', { status: resp.status, durationMs: Date.now() - t0 });
           if (!resp.ok) {
+            const text = await resp.text().catch(() => null);
+            console.error('[Client] session creation failed', resp.status, text);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not create a new chat session.' });
             setIsSending(false);
             return;
@@ -178,7 +183,13 @@ export default function ChatPage() {
         createdAt: new Date(),
         attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.contentType, size: att.size }))
     };
-  setMessages(prev => ([...(prev || []), userMessage]));
+    console.debug('[Client] Adding userMessage to messages', { id: userMessage.id, rawText: userMessage.rawText });
+    setMessages(prev => {
+      const next = ([...(prev || []), userMessage]);
+      // eslint-disable-next-line no-console
+      console.debug('[Client] messages length after user append:', next.length);
+      return next;
+    });
     // Save user message via API
     try {
       await fetch('/api/chat/message', {
@@ -204,11 +215,14 @@ export default function ChatPage() {
     setAttachments([]);
   
     try {
+      console.debug('[Client] POST /api/chat payload keys:', Object.keys(chatInput));
+      const tstart = Date.now();
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(chatInput),
       });
+      console.debug('[Client] POST /api/chat responded', { status: response.status, durationMs: Date.now() - tstart });
   
       let result: any = null;
       try {
@@ -236,24 +250,44 @@ export default function ChatPage() {
           persona: selectedPersona,
           createdAt: new Date(),
       };
-  setMessages(prev => ([...(prev || []), modelResponse]));
+  console.debug('[Client] Adding model response to messages', { id: modelResponse.id, rawText: modelResponse.rawText });
+  setMessages(prev => {
+    const next = ([...(prev || []), modelResponse]);
+    // eslint-disable-next-line no-console
+    console.debug('[Client] messages length after model append:', next.length);
+    return next;
+  });
       // Save model response via API
       try {
-        await fetch('/api/chat/message', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: currentChatId, role: 'model', content: result.response }),
-        });
+        try {
+          console.debug('[Client] Saving model message via POST /api/chat/message', { sessionId: currentChatId });
+          const tmsg = Date.now();
+          const r = await fetch('/api/chat/message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: currentChatId, role: 'model', content: result.response }),
+          });
+          console.debug('[Client] POST /api/chat/message finished', { status: r.status, durationMs: Date.now() - tmsg });
+        } catch (err) {
+          console.error('Error saving model message via API:', err);
+        }
       } catch (err) {
         console.error('Error saving model message via API:', err);
       }
       forceRefresh();
       if (currentChatId) {
         try {
+          console.debug('[Client] Reloading messages from GET /api/chat', { sessionId: currentChatId });
+          const tget = Date.now();
           const res = await fetch(`/api/chat?sessionId=${currentChatId}`);
+          console.debug('[Client] GET /api/chat returned', { status: res.status, durationMs: Date.now() - tget });
           if (res.ok) {
             const data = await res.json();
+            console.debug('[Client] Reloaded messages count:', Array.isArray(data) ? data.length : typeof data);
             setMessages(Array.isArray(data) ? data : []);
+          } else {
+            const body = await res.text().catch(() => null);
+            console.error('[Client] GET /api/chat failed', { status: res.status, body });
           }
         } catch (err) {
           console.error('Error reloading messages after AI response:', err);
