@@ -182,7 +182,7 @@ export function LandingPageChatV2() {
       role: 'user',
       content: await marked.parse(messageToSend.trim()),
     };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prev => ([...(prev || []), userMessage]));
     setGuestMessageCount(prev => prev + 1);
 
     setInput('');
@@ -207,7 +207,7 @@ export function LandingPageChatV2() {
         role: 'model',
         content: await marked.parse(result.response),
       };
-      setMessages(prev => [...prev, modelResponse]);
+    setMessages(prev => ([...(prev || []), modelResponse]));
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Message Failed', description: error.message });
@@ -216,7 +216,7 @@ export function LandingPageChatV2() {
         role: 'model',
         content: `<p>Sorry, there was an error. Please try again.</p>`,
       };
-      setMessages(prev => [...prev, errorResponse]);
+    setMessages(prev => ([...(prev || []), errorResponse]));
     } finally {
       setIsSending(false);
     }

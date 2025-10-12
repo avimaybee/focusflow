@@ -81,7 +81,8 @@ export default function ChatPage() {
             const data = await res.json();
             setMessages(Array.isArray(data) ? data : []);
           } else {
-            console.error('Failed to load messages:', res.status);
+            const text = await res.text().catch(() => 'Could not read response body');
+            console.error('Failed to load messages:', res.status, text);
             setMessages([]);
           }
         } catch (err) {
@@ -92,6 +93,12 @@ export default function ChatPage() {
     }
     loadMessages();
   }, [activeChatId]);
+
+  // Debug: log messages changes to help identify when messages becomes undefined or malformed
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.debug('[ChatPage] messages changed, length:', Array.isArray(messages) ? messages.length : typeof messages, messages && messages.slice ? messages.slice(-5) : messages);
+  }, [messages]);
 
   const handleSetSidebarOpen = (isOpen: boolean) => {
     setSidebarOpen(isOpen);
@@ -203,9 +210,17 @@ export default function ChatPage() {
         body: JSON.stringify(chatInput),
       });
   
-      const result = await response.json();
-      
+      let result: any = null;
+      try {
+        result = await response.json();
+      } catch (e) {
+        const text = await response.text().catch(() => null);
+        console.error('Could not parse JSON from /api/chat response:', text, e);
+        throw { response };
+      }
       if (!response.ok) {
+        const bodyText = typeof result === 'string' ? result : JSON.stringify(result);
+        console.error('/api/chat returned non-ok:', response.status, bodyText);
         throw { response, result };
       }
       
@@ -265,7 +280,7 @@ export default function ChatPage() {
         isError: true,
         createdAt: new Date(),
       };
-      setMessages(prev => [...prev, errorResponse]);
+  setMessages(prev => ([...(prev || []), errorResponse]));
     } finally {
       setIsSending(false);
     }
@@ -344,7 +359,7 @@ export default function ChatPage() {
               <MultimodalInput
                 ref={inputRef}
                 chatId={activeChatId || 'new'}
-                messages={messages.map(msg => ({ id: msg.id || '', content: msg.rawText || '', role: msg.role }))}
+                messages={(messages || []).map(msg => ({ id: msg.id || '', content: msg.rawText || '', role: msg.role }))}
                 attachments={attachments}
                 setAttachments={setAttachments}
                 onSendMessage={handleSendMessage}

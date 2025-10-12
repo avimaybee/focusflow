@@ -122,7 +122,7 @@ export function PreviewChatWidget({ onClose }: { onClose: () => void }) {
     if (!messageContent.trim() || isSending || limitRemaining === 0 || !guestUser) return;
 
     setIsSending(true);
-    setMessages(prev => [...prev, { role: 'user', content: messageContent }]);
+  setMessages(prev => ([...(prev || []), { role: 'user', content: messageContent }]));
     setInput('');
 
     try {
@@ -149,13 +149,13 @@ export function PreviewChatWidget({ onClose }: { onClose: () => void }) {
         const rawResponse = result.response || "Sorry, I couldn't think of anything to say!";
         const htmlResponse = await marked.parse(rawResponse);
         
-        setMessages(prev => [...prev, { role: 'assistant', content: htmlResponse }]);
+  setMessages(prev => ([...(prev || []), { role: 'assistant', content: htmlResponse }]));
         setLimitRemaining(prev => prev - 1);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         toast({ variant: 'destructive', title: 'Error', description: error.message });
-        setMessages(prev => prev.slice(0, -1));
+  setMessages(prev => ((prev || []).slice(0, -1)));
     } finally {
         setIsSending(false);
     }
