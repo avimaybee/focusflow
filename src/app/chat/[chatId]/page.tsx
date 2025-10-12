@@ -8,3 +8,6 @@ import ChatPage from '../page';
 export default function ChatWithIdPage() {
   return <ChatPage />;
 }
+
+// Ensure dynamic chat pages run on the Edge Runtime
+export const runtime = 'edge';

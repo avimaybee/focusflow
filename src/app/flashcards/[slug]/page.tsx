@@ -86,3 +86,6 @@ export default async function PublicFlashcardSetPage({ params }: Props) {
     </main>
   );
 }
+
+// Run this route on the Edge Runtime to satisfy Cloudflare Pages
+export const runtime = 'edge';

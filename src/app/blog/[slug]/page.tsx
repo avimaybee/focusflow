@@ -15,6 +15,9 @@ type Props = {
   params: { slug: string };
 };
 
+// Run this route on the Edge Runtime to satisfy Cloudflare Pages requirements
+export const runtime = 'edge';
+
 async function getPost(slug: string) {
     const localPost = getLocalPost(slug);
     if (localPost) {

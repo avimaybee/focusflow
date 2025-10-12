@@ -142,3 +142,6 @@ export default async function PublicSummaryPage({ params }: Props) {
     </>
   );
 }
+
+// Run this route on the Edge Runtime to satisfy Cloudflare Pages
+export const runtime = 'edge';

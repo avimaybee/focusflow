@@ -2,6 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { chatFlow } from '@/ai/flows/chat-flow';
 
+// Ensure this API route runs on the Edge Runtime for Cloudflare Pages
+export const runtime = 'edge';
+
 // This helper function is now a placeholder.
 // It will be replaced with Supabase auth later.
 async function getUserFromRequest(req: NextRequest): Promise<{ uid: string | null; isAnonymous: boolean }> {
