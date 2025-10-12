@@ -52,7 +52,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
-import type { UIMessage, Attachment } from '@/types/chat-types';
+import type { Attachment } from '@/types/chat-types';
+
+// Minimal UIMessage type used by this component (wasn't exported from chat-types)
+type UIMessage = { id: string; content: string; role: string };
 
 // Type Definitions
 type VisibilityType = 'public' | 'private' | 'unlisted' | string;
@@ -105,8 +108,12 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
     selectedPersonaId,
     setSelectedPersonaId,
   }, ref) => {
-    const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
-    React.useImperativeHandle(ref, () => internalTextareaRef.current!);
+    // useAutoResizeTextarea returns the textareaRef and adjustHeight helper
+    const { textareaRef: internalTextareaRef, adjustHeight } = useAutoResizeTextarea({
+      minHeight: 24,
+      maxHeight: 200,
+    });
+    React.useImperativeHandle(ref, () => internalTextareaRef.current! as HTMLTextAreaElement);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
     const formRef = useRef<HTMLFormElement>(null);
@@ -114,11 +121,7 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
     const [input, setInput] = useState('');
     const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
     
-    const { adjustHeight } = useAutoResizeTextarea({
-      textareaRef: internalTextareaRef,
-      minHeight: 24,
-      maxHeight: 200,
-    });
+    // adjustHeight is provided by the hook above; don't call the hook again
 
     const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       setInput(event.target.value);
@@ -228,8 +231,7 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
                 <CommandList>
                   <CommandEmpty>No persona found.</CommandEmpty>
                   <CommandGroup>
-            {(personas || []).map((p) => {
-          {(personas || []).map((p) => {
+                    {(personas || []).map((p) => {
                       const Icon = personaIcons[p.id] || Bot;
                       return (
                         <CommandItem

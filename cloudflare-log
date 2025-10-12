@@ -1,151 +1,95 @@
-2025-10-12T10:44:04.146939Z	Cloning repository...
-2025-10-12T10:44:04.877739Z	From https://github.com/avimaybee/focusflow
-2025-10-12T10:44:04.878153Z	 * branch            c69097f86c761be79ff99aeb3cb6cc3340245242 -> FETCH_HEAD
-2025-10-12T10:44:04.878254Z	
-2025-10-12T10:44:04.922836Z	HEAD is now at c69097f runtime edge fix
-2025-10-12T10:44:04.923328Z	
-2025-10-12T10:44:05.012226Z	
-2025-10-12T10:44:05.013069Z	Using v2 root directory strategy
-2025-10-12T10:44:05.038317Z	Success: Finished cloning repository files
-2025-10-12T10:44:06.915042Z	Checking for configuration in a Wrangler configuration file (BETA)
-2025-10-12T10:44:06.915818Z	
-2025-10-12T10:44:08.021677Z	No wrangler.toml file found. Continuing.
-2025-10-12T10:44:08.09003Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
-2025-10-12T10:44:08.090693Z	Installing project dependencies: npm clean-install --progress=false
-2025-10-12T10:44:51.126625Z	
-2025-10-12T10:44:51.127219Z	added 1381 packages, and audited 1382 packages in 43s
-2025-10-12T10:44:51.12765Z	
-2025-10-12T10:44:51.12781Z	220 packages are looking for funding
-2025-10-12T10:44:51.128015Z	  run `npm fund` for details
-2025-10-12T10:44:51.201444Z	
-2025-10-12T10:44:51.201745Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
-2025-10-12T10:44:51.202058Z	
-2025-10-12T10:44:51.202264Z	To address issues that do not require attention, run:
-2025-10-12T10:44:51.202393Z	  npm audit fix
-2025-10-12T10:44:51.202606Z	
-2025-10-12T10:44:51.202733Z	To address all issues (including breaking changes), run:
-2025-10-12T10:44:51.202835Z	  npm audit fix --force
-2025-10-12T10:44:51.20296Z	
-2025-10-12T10:44:51.203064Z	Run `npm audit` for details.
-2025-10-12T10:44:51.251826Z	Executing user command: npx @cloudflare/next-on-pages@1
-2025-10-12T10:44:53.415308Z	npm warn exec The following package was not found and will be installed: @cloudflare/next-on-pages@1.13.16
-2025-10-12T10:45:05.362246Z	npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
-2025-10-12T10:45:06.579262Z	npm warn deprecated @cloudflare/next-on-pages@1.13.16: Please use the OpenNext adapter instead: https://opennext.js.org/cloudflare
-2025-10-12T10:45:16.119581Z	⚡️ @cloudflare/next-on-pages CLI v.1.13.16
-2025-10-12T10:45:16.309979Z	⚡️ Detected Package Manager: npm (10.9.2)
-2025-10-12T10:45:16.310735Z	⚡️ Preparing project...
-2025-10-12T10:45:16.313825Z	⚡️ Project is ready
-2025-10-12T10:45:16.314189Z	⚡️ Building project...
-2025-10-12T10:45:18.24139Z	▲  npm warn exec The following package was not found and will be installed: vercel@48.2.9
-2025-10-12T10:45:21.667287Z	▲  npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
-2025-10-12T10:45:23.814479Z	▲  Vercel CLI 48.2.9
-2025-10-12T10:45:23.819713Z	▲  > NOTE: The Vercel CLI now collects telemetry regarding usage of the CLI.
-2025-10-12T10:45:23.820058Z	▲  > This information is used to shape the CLI roadmap and prioritize features.
-2025-10-12T10:45:23.820771Z	▲  > You can learn more, including how to opt-out if you'd not like to participate in this program, by visiting the following URL:
-2025-10-12T10:45:23.820925Z	▲  > https://vercel.com/docs/cli/about-telemetry
-2025-10-12T10:45:23.936521Z	▲  WARN! Build not running on Vercel. System environment variables will not be available.
-2025-10-12T10:45:24.135891Z	▲  Installing dependencies...
-2025-10-12T10:45:26.243073Z	▲  removed 1 package in 2s
-2025-10-12T10:45:26.243549Z	▲  220 packages are looking for funding
-2025-10-12T10:45:26.243741Z	▲  run `npm fund` for details
-2025-10-12T10:45:26.254621Z	▲  Detected Next.js version: 14.2.3
-2025-10-12T10:45:26.262419Z	▲  Running "npm run build"
-2025-10-12T10:45:26.456866Z	▲  > nextn@0.1.0 build
-2025-10-12T10:45:26.457286Z	▲  > next build
-2025-10-12T10:45:27.127922Z	▲  ⚠ Invalid next.config.mjs options detected:
-2025-10-12T10:45:27.128229Z	▲  ⚠     Unrecognized key(s) in object: 'runtime'
-2025-10-12T10:45:27.128396Z	▲  ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
-2025-10-12T10:45:27.135852Z	▲  Attention: Next.js now collects completely anonymous telemetry regarding usage.
-2025-10-12T10:45:27.136146Z	▲  This information is used to shape Next.js' roadmap and prioritize features.
-2025-10-12T10:45:27.136966Z	▲  You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-2025-10-12T10:45:27.137084Z	▲  https://nextjs.org/telemetry
-2025-10-12T10:45:27.198448Z	▲  ▲ Next.js 14.2.3
-2025-10-12T10:45:27.198776Z	▲  
-2025-10-12T10:45:27.264687Z	▲  Creating an optimized production build ...
-2025-10-12T10:46:06.906604Z	▲  ✓ Compiled successfully
-2025-10-12T10:46:06.907887Z	▲  Skipping validation of types
-2025-10-12T10:46:06.908207Z	▲  Skipping linting
-2025-10-12T10:46:07.216068Z	▲  Collecting page data ...
-2025-10-12T10:46:08.832929Z	▲  ⚠ Using edge runtime on a page currently disables static generation for that page
-2025-10-12T10:46:10.216365Z	▲  Generating static pages (0/21) ...
-2025-10-12T10:46:11.120757Z	▲  [PLACEHOLDER] getAllUsernames called
-2025-10-12T10:46:11.121052Z	▲  [PLACEHOLDER] getPublicSummaries called
-2025-10-12T10:46:11.121234Z	▲  [PLACEHOLDER] getPublicFlashcardSets called
-2025-10-12T10:46:11.121539Z	▲  [PLACEHOLDER] getPublicQuizzes called
-2025-10-12T10:46:11.121774Z	▲  [PLACEHOLDER] getPublicStudyPlans called
-2025-10-12T10:46:11.126313Z	▲  Generating static pages (5/21)
-2025-10-12T10:46:11.394363Z	▲  Generating static pages (10/21)
-2025-10-12T10:46:11.405843Z	▲  Generating static pages (15/21)
-2025-10-12T10:46:11.562487Z	▲  ✓ Generating static pages (21/21)
-2025-10-12T10:46:11.884063Z	▲  Finalizing page optimization ...
-2025-10-12T10:46:11.884516Z	▲  Collecting build traces ...
-2025-10-12T10:46:16.637563Z	▲  
-2025-10-12T10:46:16.652592Z	▲  Route (app)                                     Size     First Load JS
-2025-10-12T10:46:16.652918Z	▲  ┌ ○ /                                           20.3 kB         249 kB
-2025-10-12T10:46:16.653286Z	▲  ├ ○ /_not-found                                 880 B          88.2 kB
-2025-10-12T10:46:16.653467Z	▲  ├ ○ /about                                      181 B          87.5 kB
-2025-10-12T10:46:16.653614Z	▲  ├ ƒ /api/chat                                   0 B                0 B
-2025-10-12T10:46:16.653728Z	▲  ├ ○ /blog                                       177 B          94.3 kB
-2025-10-12T10:46:16.653818Z	▲  ├ ƒ /blog/[slug]                                1.98 kB         144 kB
-2025-10-12T10:46:16.65404Z	▲  ├ ○ /chat                                       230 B           683 kB
-2025-10-12T10:46:16.654153Z	▲  ├ ƒ /chat/[chatId]                              230 B           683 kB
-2025-10-12T10:46:16.654261Z	▲  ├ ○ /contact                                    181 B          87.5 kB
-2025-10-12T10:46:16.654363Z	▲  ├ ○ /dashboard                                  17.4 kB         323 kB
-2025-10-12T10:46:16.654462Z	▲  ├ ○ /dashboard/analytics                        12.1 kB         240 kB
-2025-10-12T10:46:16.65459Z	▲  ├ ƒ /flashcards/[slug]                          6.01 kB         148 kB
-2025-10-12T10:46:16.654687Z	▲  ├ ○ /my-content                                 7.05 kB         196 kB
-2025-10-12T10:46:16.654806Z	▲  ├ ƒ /my-content/flashcardSets/[flashcardSetId]  5.82 kB         188 kB
-2025-10-12T10:46:16.654908Z	▲  ├ ƒ /my-content/quizzes/[quizId]                5.74 kB         195 kB
-2025-10-12T10:46:16.655025Z	▲  ├ ƒ /my-content/savedMessages/[messageId]       1.25 kB         205 kB
-2025-10-12T10:46:16.655137Z	▲  ├ ƒ /my-content/studyPlans/[id]                 2.39 kB         130 kB
-2025-10-12T10:46:16.655238Z	▲  ├ ○ /my-content/summaries                       4.96 kB         223 kB
-2025-10-12T10:46:16.655334Z	▲  ├ ƒ /my-content/summaries/[summaryId]           2.34 kB         206 kB
-2025-10-12T10:46:16.655441Z	▲  ├ ƒ /plans/[slug]                               2.47 kB         104 kB
-2025-10-12T10:46:16.655594Z	▲  ├ ƒ /practice-exam/[id]                         8.15 kB         187 kB
-2025-10-12T10:46:16.655723Z	▲  ├ ƒ /practice-exam/[id]/review                  394 B          87.7 kB
-2025-10-12T10:46:16.655837Z	▲  ├ ○ /practice-exam/new                          13.3 kB         208 kB
-2025-10-12T10:46:16.655941Z	▲  ├ ○ /preferences                                4.99 kB         187 kB
-2025-10-12T10:46:16.656149Z	▲  ├ ○ /preferences/profile                        5.45 kB         181 kB
-2025-10-12T10:46:16.656264Z	▲  ├ ○ /premium                                    3.27 kB         145 kB
-2025-10-12T10:46:16.656383Z	▲  ├ ○ /privacy                                    181 B          87.5 kB
-2025-10-12T10:46:16.656494Z	▲  ├ ƒ /quizzes/[slug]                             4.55 kB         154 kB
-2025-10-12T10:46:16.656625Z	▲  ├ ○ /sitemap.xml                                0 B                0 B
-2025-10-12T10:46:16.656735Z	▲  ├ ƒ /student/[username]                         7.61 kB         190 kB
-2025-10-12T10:46:16.656881Z	▲  ├ ƒ /study-plan/[id]                            3.61 kB         141 kB
-2025-10-12T10:46:16.657045Z	▲  ├ ○ /study-plan/new                             5.21 kB         180 kB
-2025-10-12T10:46:16.657131Z	▲  ├ ƒ /summaries/[slug]                           2.47 kB         104 kB
-2025-10-12T10:46:16.657344Z	▲  └ ○ /terms                                      181 B          87.5 kB
-2025-10-12T10:46:16.657439Z	▲  + First Load JS shared by all                   87.3 kB
-2025-10-12T10:46:16.657612Z	▲  ├ chunks/3526-ee31b900b3a16fb9.js             31.6 kB
-2025-10-12T10:46:16.657719Z	▲  ├ chunks/fd9d1056-376cd1900f1dcb63.js         53.6 kB
-2025-10-12T10:46:16.65782Z	▲  └ other shared chunks (total)                 2.06 kB
-2025-10-12T10:46:16.657926Z	▲  ○  (Static)   prerendered as static content
-2025-10-12T10:46:16.658133Z	▲  ƒ  (Dynamic)  server-rendered on demand
-2025-10-12T10:46:17.006593Z	▲  Traced Next.js server files in: 246.087ms
-2025-10-12T10:46:17.132596Z	▲  Created all serverless functions in: 125.829ms
-2025-10-12T10:46:18.422619Z	▲  Collected static files (public/, static/, .next/static): 9.247ms
-2025-10-12T10:46:18.608053Z	▲  Build Completed in .vercel/output [55s]
-2025-10-12T10:46:18.776141Z	⚡️ Completed `npx vercel build`.
-2025-10-12T10:46:20.004496Z	
-2025-10-12T10:46:20.004832Z	⚡️ ERROR: Failed to produce a Cloudflare Pages build from the project.
-2025-10-12T10:46:20.004963Z	⚡️ 
-2025-10-12T10:46:20.005094Z	⚡️ 	The following routes were not configured to run with the Edge Runtime:
-2025-10-12T10:46:20.005205Z	⚡️ 	  - /my-content/flashcardSets/[flashcardSetId]
-2025-10-12T10:46:20.005323Z	⚡️ 	  - /my-content/quizzes/[quizId]
-2025-10-12T10:46:20.005447Z	⚡️ 	  - /my-content/savedMessages/[messageId]
-2025-10-12T10:46:20.005576Z	⚡️ 	  - /my-content/studyPlans/[id]
-2025-10-12T10:46:20.006114Z	⚡️ 	  - /my-content/summaries/[summaryId]
-2025-10-12T10:46:20.006314Z	⚡️ 	  - /practice-exam/[id]/review
-2025-10-12T10:46:20.006532Z	⚡️ 	  - /practice-exam/[id]
-2025-10-12T10:46:20.006725Z	⚡️ 	  - /student/[username]
-2025-10-12T10:46:20.006848Z	⚡️ 	  - /study-plan/[id]
-2025-10-12T10:46:20.006949Z	⚡️ 
-2025-10-12T10:46:20.007044Z	⚡️ 	Please make sure that all your non-static routes export the following edge runtime route segment config:
-2025-10-12T10:46:20.007135Z	⚡️ 	  export const runtime = 'edge';
-2025-10-12T10:46:20.007221Z	⚡️ 
-2025-10-12T10:46:20.007324Z	⚡️ 	You can read more about the Edge Runtime on the Next.js documentation:
-2025-10-12T10:46:20.007421Z	⚡️ 	  https://nextjs.org/docs/app/building-your-application/rendering/edge-and-nodejs-runtimes
-2025-10-12T10:46:20.007499Z	
-2025-10-12T10:46:20.035087Z	Failed: Error while executing user command. Exited with error code: 1
-2025-10-12T10:46:20.046975Z	Failed: build command exited with code: 1
-2025-10-12T10:46:21.514738Z	Failed: error occurred while running build command
+2025-10-12T12:01:33.697945Z	Cloning repository...
+2025-10-12T12:01:35.72028Z	From https://github.com/avimaybee/focusflow
+2025-10-12T12:01:35.720965Z	 * branch            e87c897f260dc2d39448856ae3231b8633f74c89 -> FETCH_HEAD
+2025-10-12T12:01:35.721129Z	
+2025-10-12T12:01:35.766353Z	HEAD is now at e87c897 smth related to maps
+2025-10-12T12:01:35.766769Z	
+2025-10-12T12:01:35.947096Z	
+2025-10-12T12:01:35.947559Z	Using v2 root directory strategy
+2025-10-12T12:01:36.011098Z	Success: Finished cloning repository files
+2025-10-12T12:01:39.63944Z	Checking for configuration in a Wrangler configuration file (BETA)
+2025-10-12T12:01:39.639947Z	
+2025-10-12T12:01:40.74368Z	No wrangler.toml file found. Continuing.
+2025-10-12T12:01:41.28575Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+2025-10-12T12:01:41.371877Z	Installing project dependencies: npm clean-install --progress=false
+2025-10-12T12:02:33.591286Z	
+2025-10-12T12:02:33.591518Z	added 1381 packages, and audited 1382 packages in 51s
+2025-10-12T12:02:33.591605Z	
+2025-10-12T12:02:33.591699Z	220 packages are looking for funding
+2025-10-12T12:02:33.591763Z	  run `npm fund` for details
+2025-10-12T12:02:33.664531Z	
+2025-10-12T12:02:33.664801Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
+2025-10-12T12:02:33.665064Z	
+2025-10-12T12:02:33.665225Z	To address issues that do not require attention, run:
+2025-10-12T12:02:33.665369Z	  npm audit fix
+2025-10-12T12:02:33.665546Z	
+2025-10-12T12:02:33.665692Z	To address all issues (including breaking changes), run:
+2025-10-12T12:02:33.665817Z	  npm audit fix --force
+2025-10-12T12:02:33.665957Z	
+2025-10-12T12:02:33.666096Z	Run `npm audit` for details.
+2025-10-12T12:02:33.724655Z	Executing user command: npx @cloudflare/next-on-pages@1
+2025-10-12T12:02:35.907576Z	npm warn exec The following package was not found and will be installed: @cloudflare/next-on-pages@1.13.16
+2025-10-12T12:02:46.423959Z	npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
+2025-10-12T12:02:47.925267Z	npm warn deprecated @cloudflare/next-on-pages@1.13.16: Please use the OpenNext adapter instead: https://opennext.js.org/cloudflare
+2025-10-12T12:03:00.471928Z	⚡️ @cloudflare/next-on-pages CLI v.1.13.16
+2025-10-12T12:03:00.640338Z	⚡️ Detected Package Manager: npm (10.9.2)
+2025-10-12T12:03:00.640669Z	⚡️ Preparing project...
+2025-10-12T12:03:00.643638Z	⚡️ Project is ready
+2025-10-12T12:03:00.643971Z	⚡️ Building project...
+2025-10-12T12:03:02.638943Z	▲  npm warn exec The following package was not found and will be installed: vercel@48.2.9
+2025-10-12T12:03:05.867668Z	▲  npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
+2025-10-12T12:03:07.819671Z	▲  Vercel CLI 48.2.9
+2025-10-12T12:03:07.824536Z	▲  > NOTE: The Vercel CLI now collects telemetry regarding usage of the CLI.
+2025-10-12T12:03:07.824752Z	▲  > This information is used to shape the CLI roadmap and prioritize features.
+2025-10-12T12:03:07.825648Z	▲  > You can learn more, including how to opt-out if you'd not like to participate in this program, by visiting the following URL:
+2025-10-12T12:03:07.825833Z	▲  > https://vercel.com/docs/cli/about-telemetry
+2025-10-12T12:03:07.931398Z	▲  WARN! Build not running on Vercel. System environment variables will not be available.
+2025-10-12T12:03:08.122549Z	▲  Installing dependencies...
+2025-10-12T12:03:09.993454Z	▲  removed 1 package in 2s
+2025-10-12T12:03:09.993876Z	▲  220 packages are looking for funding
+2025-10-12T12:03:09.994076Z	▲  run `npm fund` for details
+2025-10-12T12:03:10.003297Z	▲  Detected Next.js version: 14.2.3
+2025-10-12T12:03:10.01035Z	▲  Running "npm run build"
+2025-10-12T12:03:10.209163Z	▲  > nextn@0.1.0 build
+2025-10-12T12:03:10.209669Z	▲  > next build
+2025-10-12T12:03:10.845219Z	▲  ⚠ Invalid next.config.mjs options detected:
+2025-10-12T12:03:10.845446Z	▲  ⚠     Unrecognized key(s) in object: 'runtime'
+2025-10-12T12:03:10.845585Z	▲  ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+2025-10-12T12:03:10.85124Z	▲  Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2025-10-12T12:03:10.851686Z	▲  This information is used to shape Next.js' roadmap and prioritize features.
+2025-10-12T12:03:10.851914Z	▲  You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2025-10-12T12:03:10.852065Z	▲  https://nextjs.org/telemetry
+2025-10-12T12:03:10.910368Z	▲  ▲ Next.js 14.2.3
+2025-10-12T12:03:10.910688Z	▲  
+2025-10-12T12:03:10.972195Z	▲  Creating an optimized production build ...
+2025-10-12T12:03:22.017769Z	▲  Failed to compile.
+2025-10-12T12:03:22.018071Z	▲  ./src/components/chat/multimodal-input.tsx
+2025-10-12T12:03:22.018174Z	▲  Error: 
+2025-10-12T12:03:22.018359Z	▲   [31mx[0m Unexpected token `form`. Expected jsx identifier
+2025-10-12T12:03:22.018481Z	▲      ,-[[36;1;4m/opt/buildhome/repo/src/components/chat/multimodal-input.tsx[0m:174:1]
+2025-10-12T12:03:22.018548Z	▲  [2m174[0m |     };
+2025-10-12T12:03:22.018651Z	▲  [2m175[0m | 
+2025-10-12T12:03:22.018754Z	▲  [2m176[0m |     return (
+2025-10-12T12:03:22.01886Z	▲  [2m177[0m |       <form ref={formRef} className={cn("relative w-full", className)}>
+2025-10-12T12:03:22.019063Z	▲      : [31;1m       ^^^^[0m
+2025-10-12T12:03:22.01919Z	▲  [2m178[0m |         <input
+2025-10-12T12:03:22.019436Z	▲  [2m179[0m |           type="file"
+2025-10-12T12:03:22.019664Z	▲  [2m180[0m |           className="hidden"
+2025-10-12T12:03:22.019755Z	▲      `----
+2025-10-12T12:03:22.019887Z	▲  
+2025-10-12T12:03:22.020002Z	▲  Caused by:
+2025-10-12T12:03:22.020126Z	▲     Syntax Error
+2025-10-12T12:03:22.020215Z	▲  
+2025-10-12T12:03:22.020318Z	▲  Import trace for requested module:
+2025-10-12T12:03:22.020413Z	▲  ./src/components/chat/multimodal-input.tsx
+2025-10-12T12:03:22.0205Z	▲  ./src/app/chat/page.tsx
+2025-10-12T12:03:22.040385Z	▲  
+2025-10-12T12:03:22.040637Z	▲  > Build failed because of webpack errors
+2025-10-12T12:03:22.062164Z	▲  Error: Command "npm run build" exited with 1
+2025-10-12T12:03:22.215362Z	
+2025-10-12T12:03:22.215931Z	⚡️ The Vercel build (`npx vercel build`) command failed. For more details see the Vercel logs above.
+2025-10-12T12:03:22.216147Z	⚡️ If you need help solving the issue, refer to the Vercel or Next.js documentation or their repositories.
+2025-10-12T12:03:22.216259Z	
+2025-10-12T12:03:22.251194Z	Failed: Error while executing user command. Exited with error code: 1
+2025-10-12T12:03:22.26021Z	Failed: build command exited with code: 1
+2025-10-12T12:03:23.407584Z	Failed: error occurred while running build command
