@@ -228,7 +228,8 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
                 <CommandList>
                   <CommandEmpty>No persona found.</CommandEmpty>
                   <CommandGroup>
-                    {personas.map((p) => {
+            {(personas || []).map((p) => {
+          {(personas || []).map((p) => {
                       const Icon = personaIcons[p.id] || Bot;
                       return (
                         <CommandItem
