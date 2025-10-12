@@ -1,156 +1,163 @@
-2025-10-12T09:12:01.746494Z	Cloning repository...
-2025-10-12T09:12:02.41424Z	From https://github.com/avimaybee/focusflow
-2025-10-12T09:12:02.415095Z	 * branch            4bc36cde9266aa35aecc1ff1bc696ea9504df1e4 -> FETCH_HEAD
-2025-10-12T09:12:02.415206Z	
-2025-10-12T09:12:02.458118Z	HEAD is now at 4bc36cd preparing for deployment but with error
-2025-10-12T09:12:02.458631Z	
-2025-10-12T09:12:02.535388Z	
-2025-10-12T09:12:02.535942Z	Using v2 root directory strategy
-2025-10-12T09:12:02.556973Z	Success: Finished cloning repository files
-2025-10-12T09:12:04.621069Z	Checking for configuration in a Wrangler configuration file (BETA)
-2025-10-12T09:12:04.621892Z	
-2025-10-12T09:12:05.719894Z	No wrangler.toml file found. Continuing.
-2025-10-12T09:12:05.785816Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
-2025-10-12T09:12:05.786359Z	Installing project dependencies: npm clean-install --progress=false
-2025-10-12T09:12:21.482159Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
-2025-10-12T09:12:53.272063Z	
-2025-10-12T09:12:53.272382Z	added 1641 packages, and audited 1642 packages in 47s
-2025-10-12T09:12:53.272521Z	
-2025-10-12T09:12:53.27266Z	251 packages are looking for funding
-2025-10-12T09:12:53.272788Z	  run `npm fund` for details
-2025-10-12T09:12:53.349091Z	
-2025-10-12T09:12:53.350262Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
-2025-10-12T09:12:53.350467Z	
-2025-10-12T09:12:53.350997Z	To address issues that do not require attention, run:
-2025-10-12T09:12:53.351166Z	  npm audit fix
-2025-10-12T09:12:53.351413Z	
-2025-10-12T09:12:53.351561Z	To address all issues (including breaking changes), run:
-2025-10-12T09:12:53.351739Z	  npm audit fix --force
-2025-10-12T09:12:53.35195Z	
-2025-10-12T09:12:53.352278Z	Run `npm audit` for details.
-2025-10-12T09:12:53.402501Z	Executing user command: npx @cloudflare/next-on-pages@1
-2025-10-12T09:12:55.610555Z	npm warn exec The following package was not found and will be installed: @cloudflare/next-on-pages@1.13.16
-2025-10-12T09:13:06.293009Z	npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
-2025-10-12T09:13:07.497745Z	npm warn deprecated @cloudflare/next-on-pages@1.13.16: Please use the OpenNext adapter instead: https://opennext.js.org/cloudflare
-2025-10-12T09:13:17.336511Z	⚡️ @cloudflare/next-on-pages CLI v.1.13.16
-2025-10-12T09:13:17.569134Z	⚡️ Detected Package Manager: npm (10.9.2)
-2025-10-12T09:13:17.569619Z	⚡️ Preparing project...
-2025-10-12T09:13:17.572484Z	⚡️ Project is ready
-2025-10-12T09:13:17.572821Z	⚡️ Building project...
-2025-10-12T09:13:19.531439Z	▲  npm warn exec The following package was not found and will be installed: vercel@48.2.9
-2025-10-12T09:13:22.814936Z	▲  npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
-2025-10-12T09:13:24.779177Z	▲  Vercel CLI 48.2.9
-2025-10-12T09:13:24.783665Z	▲  > NOTE: The Vercel CLI now collects telemetry regarding usage of the CLI.
-2025-10-12T09:13:24.783899Z	▲  > This information is used to shape the CLI roadmap and prioritize features.
-2025-10-12T09:13:24.784176Z	▲  > You can learn more, including how to opt-out if you'd not like to participate in this program, by visiting the following URL:
-2025-10-12T09:13:24.784805Z	▲  > https://vercel.com/docs/cli/about-telemetry
-2025-10-12T09:13:24.896177Z	▲  WARN! Build not running on Vercel. System environment variables will not be available.
-2025-10-12T09:13:25.113301Z	▲  Installing dependencies...
-2025-10-12T09:13:27.478082Z	▲  removed 1 package in 2s
-2025-10-12T09:13:27.47845Z	▲  251 packages are looking for funding
-2025-10-12T09:13:27.478587Z	▲  run `npm fund` for details
-2025-10-12T09:13:27.488123Z	▲  Detected Next.js version: 14.2.3
-2025-10-12T09:13:27.495686Z	▲  Running "npm run build"
-2025-10-12T09:13:27.680268Z	▲  > nextn@0.1.0 build
-2025-10-12T09:13:27.680478Z	▲  > next build
-2025-10-12T09:13:28.320291Z	▲  Attention: Next.js now collects completely anonymous telemetry regarding usage.
-2025-10-12T09:13:28.320597Z	▲  This information is used to shape Next.js' roadmap and prioritize features.
-2025-10-12T09:13:28.320834Z	▲  You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-2025-10-12T09:13:28.320989Z	▲  https://nextjs.org/telemetry
-2025-10-12T09:13:28.321161Z	▲  
-2025-10-12T09:13:28.377937Z	▲  ▲ Next.js 14.2.3
-2025-10-12T09:13:28.378178Z	▲  
-2025-10-12T09:13:28.438344Z	▲  Creating an optimized production build ...
-2025-10-12T09:13:54.87767Z	▲  ✓ Compiled successfully
-2025-10-12T09:13:54.8786Z	▲  Skipping validation of types
-2025-10-12T09:13:54.87877Z	▲  Skipping linting
-2025-10-12T09:13:55.185776Z	▲  Collecting page data ...
-2025-10-12T09:13:58.179609Z	▲  Generating static pages (0/22) ...
-2025-10-12T09:13:58.801197Z	▲  [PLACEHOLDER] getAllUsernames called
-2025-10-12T09:13:58.801488Z	▲  [PLACEHOLDER] getPublicSummaries called
-2025-10-12T09:13:58.801643Z	▲  [PLACEHOLDER] getPublicFlashcardSets called
-2025-10-12T09:13:58.801746Z	▲  [PLACEHOLDER] getPublicQuizzes called
-2025-10-12T09:13:58.80187Z	▲  [PLACEHOLDER] getPublicStudyPlans called
-2025-10-12T09:13:58.802402Z	▲  Generating static pages (5/22)
-2025-10-12T09:13:59.123265Z	▲  Generating static pages (10/22)
-2025-10-12T09:13:59.146908Z	▲  Generating static pages (16/22)
-2025-10-12T09:13:59.225132Z	▲  ✓ Generating static pages (22/22)
-2025-10-12T09:13:59.503226Z	▲  Finalizing page optimization ...
-2025-10-12T09:13:59.503559Z	▲  Collecting build traces ...
-2025-10-12T09:14:04.135951Z	▲  
-2025-10-12T09:14:04.146385Z	▲  Route (app)                                     Size     First Load JS
-2025-10-12T09:14:04.146616Z	▲  ┌ ○ /                                           20.3 kB         249 kB
-2025-10-12T09:14:04.146783Z	▲  ├ ○ /_not-found                                 879 B          88.2 kB
-2025-10-12T09:14:04.146915Z	▲  ├ ○ /about                                      183 B          87.5 kB
-2025-10-12T09:14:04.14705Z	▲  ├ ƒ /api/chat                                   0 B                0 B
-2025-10-12T09:14:04.147158Z	▲  ├ ○ /blog                                       177 B          94.3 kB
-2025-10-12T09:14:04.147282Z	▲  ├ ƒ /blog/[slug]                                1.98 kB         144 kB
-2025-10-12T09:14:04.147383Z	▲  ├ ○ /chat                                       229 B           683 kB
-2025-10-12T09:14:04.147502Z	▲  ├ ƒ /chat/[chatId]                              229 B           683 kB
-2025-10-12T09:14:04.147688Z	▲  ├ ○ /contact                                    183 B          87.5 kB
-2025-10-12T09:14:04.147808Z	▲  ├ ○ /dashboard                                  17.4 kB         323 kB
-2025-10-12T09:14:04.147884Z	▲  ├ ○ /dashboard/analytics                        12.1 kB         240 kB
-2025-10-12T09:14:04.147945Z	▲  ├ ƒ /flashcards/[slug]                          6.01 kB         148 kB
-2025-10-12T09:14:04.148001Z	▲  ├ ○ /my-content                                 7.05 kB         196 kB
-2025-10-12T09:14:04.148055Z	▲  ├ ƒ /my-content/flashcardSets/[flashcardSetId]  5.82 kB         188 kB
-2025-10-12T09:14:04.148111Z	▲  ├ ƒ /my-content/quizzes/[quizId]                5.74 kB         195 kB
-2025-10-12T09:14:04.148176Z	▲  ├ ƒ /my-content/savedMessages/[messageId]       1.25 kB         205 kB
-2025-10-12T09:14:04.148241Z	▲  ├ ƒ /my-content/studyPlans/[id]                 2.39 kB         130 kB
-2025-10-12T09:14:04.1483Z	▲  ├ ○ /my-content/summaries                       4.96 kB         223 kB
-2025-10-12T09:14:04.148358Z	▲  ├ ƒ /my-content/summaries/[summaryId]           2.34 kB         206 kB
-2025-10-12T09:14:04.148414Z	▲  ├ ƒ /plans/[slug]                               2.47 kB         104 kB
-2025-10-12T09:14:04.148469Z	▲  ├ ƒ /practice-exam/[id]                         8.15 kB         187 kB
-2025-10-12T09:14:04.148537Z	▲  ├ ƒ /practice-exam/[id]/review                  394 B          87.7 kB
-2025-10-12T09:14:04.148613Z	▲  ├ ○ /practice-exam/new                          13.3 kB         208 kB
-2025-10-12T09:14:04.148693Z	▲  ├ ○ /preferences                                4.99 kB         187 kB
-2025-10-12T09:14:04.1488Z	▲  ├ ○ /preferences/profile                        5.45 kB         181 kB
-2025-10-12T09:14:04.148898Z	▲  ├ ○ /premium                                    3.26 kB         145 kB
-2025-10-12T09:14:04.149142Z	▲  ├ ○ /privacy                                    183 B          87.5 kB
-2025-10-12T09:14:04.149258Z	▲  ├ ƒ /quizzes/[slug]                             4.55 kB         154 kB
-2025-10-12T09:14:04.149364Z	▲  ├ ○ /sitemap.xml                                0 B                0 B
-2025-10-12T09:14:04.149471Z	▲  ├ ƒ /student/[username]                         7.61 kB         189 kB
-2025-10-12T09:14:04.149575Z	▲  ├ ƒ /study-plan/[id]                            3.61 kB         141 kB
-2025-10-12T09:14:04.149675Z	▲  ├ ○ /study-plan/new                             5.21 kB         180 kB
-2025-10-12T09:14:04.14979Z	▲  ├ ƒ /summaries/[slug]                           2.47 kB         104 kB
-2025-10-12T09:14:04.149898Z	▲  └ ○ /terms                                      182 B          87.5 kB
-2025-10-12T09:14:04.150006Z	▲  + First Load JS shared by all                   87.3 kB
-2025-10-12T09:14:04.150331Z	▲  ├ chunks/7023-854f25179ec07cb5.js             31.6 kB
-2025-10-12T09:14:04.150415Z	▲  ├ chunks/fd9d1056-376cd1900f1dcb63.js         53.6 kB
-2025-10-12T09:14:04.150474Z	▲  └ other shared chunks (total)                 2.04 kB
-2025-10-12T09:14:04.150577Z	▲  ○  (Static)   prerendered as static content
-2025-10-12T09:14:04.150671Z	▲  ƒ  (Dynamic)  server-rendered on demand
-2025-10-12T09:14:04.466933Z	▲  Traced Next.js server files in: 214.458ms
-2025-10-12T09:14:04.59655Z	▲  Created all serverless functions in: 129.429ms
-2025-10-12T09:14:04.612792Z	▲  Collected static files (public/, static/, .next/static): 10.514ms
-2025-10-12T09:14:04.699994Z	▲  Build Completed in .vercel/output [40s]
-2025-10-12T09:14:04.83795Z	⚡️ Completed `npx vercel build`.
-2025-10-12T09:14:06.097283Z	
-2025-10-12T09:14:06.097589Z	⚡️ ERROR: Failed to produce a Cloudflare Pages build from the project.
-2025-10-12T09:14:06.097695Z	⚡️ 
-2025-10-12T09:14:06.097781Z	⚡️ 	The following routes were not configured to run with the Edge Runtime:
-2025-10-12T09:14:06.09787Z	⚡️ 	  - /api/chat
-2025-10-12T09:14:06.098273Z	⚡️ 	  - /blog/[slug]
-2025-10-12T09:14:06.098361Z	⚡️ 	  - /chat/[chatId]
-2025-10-12T09:14:06.098456Z	⚡️ 	  - /flashcards/[slug]
-2025-10-12T09:14:06.098782Z	⚡️ 	  - /my-content/flashcardSets/[flashcardSetId]
-2025-10-12T09:14:06.099004Z	⚡️ 	  - /my-content/quizzes/[quizId]
-2025-10-12T09:14:06.099196Z	⚡️ 	  - /my-content/savedMessages/[messageId]
-2025-10-12T09:14:06.099308Z	⚡️ 	  - /my-content/studyPlans/[id]
-2025-10-12T09:14:06.09942Z	⚡️ 	  - /my-content/summaries/[summaryId]
-2025-10-12T09:14:06.099531Z	⚡️ 	  - /plans/[slug]
-2025-10-12T09:14:06.099623Z	⚡️ 	  - /practice-exam/[id]/review
-2025-10-12T09:14:06.099707Z	⚡️ 	  - /practice-exam/[id]
-2025-10-12T09:14:06.099825Z	⚡️ 	  - /quizzes/[slug]
-2025-10-12T09:14:06.099913Z	⚡️ 	  - /student/[username]
-2025-10-12T09:14:06.100007Z	⚡️ 	  - /study-plan/[id]
-2025-10-12T09:14:06.100098Z	⚡️ 	  - /summaries/[slug]
-2025-10-12T09:14:06.100191Z	⚡️ 
-2025-10-12T09:14:06.10029Z	⚡️ 	Please make sure that all your non-static routes export the following edge runtime route segment config:
-2025-10-12T09:14:06.10038Z	⚡️ 	  export const runtime = 'edge';
-2025-10-12T09:14:06.10051Z	⚡️ 
-2025-10-12T09:14:06.100608Z	⚡️ 	You can read more about the Edge Runtime on the Next.js documentation:
-2025-10-12T09:14:06.100707Z	⚡️ 	  https://nextjs.org/docs/app/building-your-application/rendering/edge-and-nodejs-runtimes
-2025-10-12T09:14:06.100829Z	
-2025-10-12T09:14:06.128599Z	Failed: Error while executing user command. Exited with error code: 1
-2025-10-12T09:14:06.137608Z	Failed: build command exited with code: 1
-2025-10-12T09:14:07.814654Z	Failed: error occurred while running build command
+2025-10-12T10:05:09.780654Z	Cloning repository...
+2025-10-12T10:05:10.395598Z	From https://github.com/avimaybee/focusflow
+2025-10-12T10:05:10.396094Z	 * branch            ac20cda48a1fdceb5cbf2f3c3680115affa50c3b -> FETCH_HEAD
+2025-10-12T10:05:10.396272Z	
+2025-10-12T10:05:10.43922Z	HEAD is now at ac20cda Regenerate lock file for Cloudflare deployment
+2025-10-12T10:05:10.439907Z	
+2025-10-12T10:05:10.51328Z	
+2025-10-12T10:05:10.513733Z	Using v2 root directory strategy
+2025-10-12T10:05:10.534198Z	Success: Finished cloning repository files
+2025-10-12T10:05:12.206846Z	Checking for configuration in a Wrangler configuration file (BETA)
+2025-10-12T10:05:12.207415Z	
+2025-10-12T10:05:13.307187Z	No wrangler.toml file found. Continuing.
+2025-10-12T10:05:13.373456Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+2025-10-12T10:05:13.374013Z	Installing project dependencies: npm clean-install --progress=false
+2025-10-12T10:05:49.49834Z	
+2025-10-12T10:05:49.498647Z	added 1379 packages, and audited 1380 packages in 36s
+2025-10-12T10:05:49.498789Z	
+2025-10-12T10:05:49.498897Z	220 packages are looking for funding
+2025-10-12T10:05:49.498995Z	  run `npm fund` for details
+2025-10-12T10:05:49.567618Z	
+2025-10-12T10:05:49.568026Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
+2025-10-12T10:05:49.568216Z	
+2025-10-12T10:05:49.568307Z	To address issues that do not require attention, run:
+2025-10-12T10:05:49.568409Z	  npm audit fix
+2025-10-12T10:05:49.568681Z	
+2025-10-12T10:05:49.568793Z	To address all issues (including breaking changes), run:
+2025-10-12T10:05:49.568858Z	  npm audit fix --force
+2025-10-12T10:05:49.568936Z	
+2025-10-12T10:05:49.568999Z	Run `npm audit` for details.
+2025-10-12T10:05:49.613683Z	Executing user command: npx @cloudflare/next-on-pages@1
+2025-10-12T10:05:51.85376Z	npm warn exec The following package was not found and will be installed: @cloudflare/next-on-pages@1.13.16
+2025-10-12T10:06:02.07795Z	npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
+2025-10-12T10:06:03.357411Z	npm warn deprecated @cloudflare/next-on-pages@1.13.16: Please use the OpenNext adapter instead: https://opennext.js.org/cloudflare
+2025-10-12T10:06:11.026355Z	⚡️ @cloudflare/next-on-pages CLI v.1.13.16
+2025-10-12T10:06:11.181945Z	⚡️ Detected Package Manager: npm (10.9.2)
+2025-10-12T10:06:11.18218Z	⚡️ Preparing project...
+2025-10-12T10:06:11.185083Z	⚡️ Project is ready
+2025-10-12T10:06:11.185316Z	⚡️ Building project...
+2025-10-12T10:06:12.878684Z	▲  npm warn exec The following package was not found and will be installed: vercel@48.2.9
+2025-10-12T10:06:18.110191Z	▲  npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
+2025-10-12T10:06:20.730532Z	▲  Vercel CLI 48.2.9
+2025-10-12T10:06:20.734734Z	▲  > NOTE: The Vercel CLI now collects telemetry regarding usage of the CLI.
+2025-10-12T10:06:20.734909Z	▲  > This information is used to shape the CLI roadmap and prioritize features.
+2025-10-12T10:06:20.735546Z	▲  > You can learn more, including how to opt-out if you'd not like to participate in this program, by visiting the following URL:
+2025-10-12T10:06:20.736028Z	▲  > https://vercel.com/docs/cli/about-telemetry
+2025-10-12T10:06:20.838724Z	▲  WARN! Build not running on Vercel. System environment variables will not be available.
+2025-10-12T10:06:21.024026Z	▲  Installing dependencies...
+2025-10-12T10:06:22.880811Z	▲  removed 1 package in 2s
+2025-10-12T10:06:22.881069Z	▲  220 packages are looking for funding
+2025-10-12T10:06:22.881557Z	▲  run `npm fund` for details
+2025-10-12T10:06:22.890798Z	▲  Detected Next.js version: 14.2.3
+2025-10-12T10:06:22.897266Z	▲  Running "npm run build"
+2025-10-12T10:06:23.074374Z	▲  > nextn@0.1.0 build
+2025-10-12T10:06:23.074674Z	▲  > next build
+2025-10-12T10:06:23.720951Z	▲  ⚠ Invalid next.config.mjs options detected:
+2025-10-12T10:06:23.721248Z	▲  ⚠     Unrecognized key(s) in object: 'runtime'
+2025-10-12T10:06:23.72137Z	▲  ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+2025-10-12T10:06:23.726878Z	▲  Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2025-10-12T10:06:23.727031Z	▲  This information is used to shape Next.js' roadmap and prioritize features.
+2025-10-12T10:06:23.727248Z	▲  You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2025-10-12T10:06:23.727365Z	▲  https://nextjs.org/telemetry
+2025-10-12T10:06:23.782332Z	▲  ▲ Next.js 14.2.3
+2025-10-12T10:06:23.782763Z	▲  
+2025-10-12T10:06:23.842074Z	▲  Creating an optimized production build ...
+2025-10-12T10:06:24.401491Z	▲  Downloading swc package @next/swc-linux-x64-gnu...
+2025-10-12T10:06:24.63046Z	▲  ⚠ Found lockfile missing swc dependencies, run next locally to automatically patch
+2025-10-12T10:06:25.863833Z	▲  Downloading swc package @next/swc-linux-x64-musl...
+2025-10-12T10:06:39.265452Z	▲  ⚠ Found lockfile missing swc dependencies, run next locally to automatically patch
+2025-10-12T10:06:40.340546Z	▲  ⚠ Found lockfile missing swc dependencies, run next locally to automatically patch
+2025-10-12T10:06:52.045143Z	▲  ✓ Compiled successfully
+2025-10-12T10:06:52.046092Z	▲  Skipping validation of types
+2025-10-12T10:06:52.046305Z	▲  Skipping linting
+2025-10-12T10:06:52.32901Z	▲  Collecting page data ...
+2025-10-12T10:06:53.721295Z	▲  ⚠ Found lockfile missing swc dependencies, run next locally to automatically patch
+2025-10-12T10:06:55.18708Z	▲  Generating static pages (0/22) ...
+2025-10-12T10:06:55.718982Z	▲  [PLACEHOLDER] getAllUsernames called
+2025-10-12T10:06:55.719333Z	▲  [PLACEHOLDER] getPublicSummaries called
+2025-10-12T10:06:55.719504Z	▲  [PLACEHOLDER] getPublicFlashcardSets called
+2025-10-12T10:06:55.720018Z	▲  [PLACEHOLDER] getPublicQuizzes called
+2025-10-12T10:06:55.720264Z	▲  [PLACEHOLDER] getPublicStudyPlans called
+2025-10-12T10:06:55.940153Z	▲  Generating static pages (5/22)
+2025-10-12T10:06:56.245233Z	▲  Generating static pages (10/22)
+2025-10-12T10:06:56.246773Z	▲  Generating static pages (16/22)
+2025-10-12T10:06:56.320868Z	▲  ✓ Generating static pages (22/22)
+2025-10-12T10:06:56.577567Z	▲  Finalizing page optimization ...
+2025-10-12T10:06:56.577891Z	▲  Collecting build traces ...
+2025-10-12T10:07:00.983926Z	▲  
+2025-10-12T10:07:00.994054Z	▲  Route (app)                                     Size     First Load JS
+2025-10-12T10:07:00.994279Z	▲  ┌ ○ /                                           20.3 kB         249 kB
+2025-10-12T10:07:00.994443Z	▲  ├ ○ /_not-found                                 879 B          88.2 kB
+2025-10-12T10:07:00.994579Z	▲  ├ ○ /about                                      181 B          87.5 kB
+2025-10-12T10:07:00.994706Z	▲  ├ ƒ /api/chat                                   0 B                0 B
+2025-10-12T10:07:00.994822Z	▲  ├ ○ /blog                                       177 B          94.3 kB
+2025-10-12T10:07:00.994927Z	▲  ├ ƒ /blog/[slug]                                1.98 kB         144 kB
+2025-10-12T10:07:00.99503Z	▲  ├ ○ /chat                                       229 B           683 kB
+2025-10-12T10:07:00.99515Z	▲  ├ ƒ /chat/[chatId]                              229 B           683 kB
+2025-10-12T10:07:00.995247Z	▲  ├ ○ /contact                                    181 B          87.5 kB
+2025-10-12T10:07:00.995354Z	▲  ├ ○ /dashboard                                  17.4 kB         323 kB
+2025-10-12T10:07:00.99547Z	▲  ├ ○ /dashboard/analytics                        12.1 kB         240 kB
+2025-10-12T10:07:00.99557Z	▲  ├ ƒ /flashcards/[slug]                          6.01 kB         148 kB
+2025-10-12T10:07:00.995686Z	▲  ├ ○ /my-content                                 7.05 kB         196 kB
+2025-10-12T10:07:00.995894Z	▲  ├ ƒ /my-content/flashcardSets/[flashcardSetId]  5.82 kB         188 kB
+2025-10-12T10:07:00.99597Z	▲  ├ ƒ /my-content/quizzes/[quizId]                5.74 kB         195 kB
+2025-10-12T10:07:00.996109Z	▲  ├ ƒ /my-content/savedMessages/[messageId]       1.25 kB         205 kB
+2025-10-12T10:07:00.996217Z	▲  ├ ƒ /my-content/studyPlans/[id]                 2.39 kB         130 kB
+2025-10-12T10:07:00.996344Z	▲  ├ ○ /my-content/summaries                       4.96 kB         223 kB
+2025-10-12T10:07:00.996492Z	▲  ├ ƒ /my-content/summaries/[summaryId]           2.34 kB         206 kB
+2025-10-12T10:07:00.996599Z	▲  ├ ƒ /plans/[slug]                               2.47 kB         104 kB
+2025-10-12T10:07:00.996739Z	▲  ├ ƒ /practice-exam/[id]                         8.15 kB         187 kB
+2025-10-12T10:07:00.996838Z	▲  ├ ƒ /practice-exam/[id]/review                  394 B          87.7 kB
+2025-10-12T10:07:00.996952Z	▲  ├ ○ /practice-exam/new                          13.3 kB         208 kB
+2025-10-12T10:07:00.997081Z	▲  ├ ○ /preferences                                4.99 kB         187 kB
+2025-10-12T10:07:00.997244Z	▲  ├ ○ /preferences/profile                        5.45 kB         181 kB
+2025-10-12T10:07:00.997587Z	▲  ├ ○ /premium                                    3.26 kB         145 kB
+2025-10-12T10:07:00.99773Z	▲  ├ ○ /privacy                                    181 B          87.5 kB
+2025-10-12T10:07:00.997832Z	▲  ├ ƒ /quizzes/[slug]                             4.55 kB         154 kB
+2025-10-12T10:07:00.997923Z	▲  ├ ○ /sitemap.xml                                0 B                0 B
+2025-10-12T10:07:00.998016Z	▲  ├ ƒ /student/[username]                         7.61 kB         189 kB
+2025-10-12T10:07:00.998127Z	▲  ├ ƒ /study-plan/[id]                            3.61 kB         141 kB
+2025-10-12T10:07:00.998231Z	▲  ├ ○ /study-plan/new                             5.21 kB         180 kB
+2025-10-12T10:07:00.998323Z	▲  ├ ƒ /summaries/[slug]                           2.47 kB         104 kB
+2025-10-12T10:07:00.998439Z	▲  └ ○ /terms                                      181 B          87.5 kB
+2025-10-12T10:07:00.998535Z	▲  + First Load JS shared by all                   87.3 kB
+2025-10-12T10:07:00.998621Z	▲  ├ chunks/7023-854f25179ec07cb5.js             31.6 kB
+2025-10-12T10:07:00.998706Z	▲  ├ chunks/fd9d1056-376cd1900f1dcb63.js         53.6 kB
+2025-10-12T10:07:00.998795Z	▲  └ other shared chunks (total)                 2.04 kB
+2025-10-12T10:07:00.998885Z	▲  ○  (Static)   prerendered as static content
+2025-10-12T10:07:00.999009Z	▲  ƒ  (Dynamic)  server-rendered on demand
+2025-10-12T10:07:01.312648Z	▲  Traced Next.js server files in: 219.469ms
+2025-10-12T10:07:01.43782Z	▲  Created all serverless functions in: 124.866ms
+2025-10-12T10:07:01.4533Z	▲  Collected static files (public/, static/, .next/static): 9.937ms
+2025-10-12T10:07:01.53607Z	▲  Build Completed in .vercel/output [41s]
+2025-10-12T10:07:01.665936Z	⚡️ Completed `npx vercel build`.
+2025-10-12T10:07:03.433938Z	
+2025-10-12T10:07:03.434221Z	⚡️ ERROR: Failed to produce a Cloudflare Pages build from the project.
+2025-10-12T10:07:03.434373Z	⚡️ 
+2025-10-12T10:07:03.434493Z	⚡️ 	The following routes were not configured to run with the Edge Runtime:
+2025-10-12T10:07:03.434628Z	⚡️ 	  - /api/chat
+2025-10-12T10:07:03.434738Z	⚡️ 	  - /blog/[slug]
+2025-10-12T10:07:03.434842Z	⚡️ 	  - /chat/[chatId]
+2025-10-12T10:07:03.434948Z	⚡️ 	  - /flashcards/[slug]
+2025-10-12T10:07:03.435067Z	⚡️ 	  - /my-content/flashcardSets/[flashcardSetId]
+2025-10-12T10:07:03.435186Z	⚡️ 	  - /my-content/quizzes/[quizId]
+2025-10-12T10:07:03.435294Z	⚡️ 	  - /my-content/savedMessages/[messageId]
+2025-10-12T10:07:03.435386Z	⚡️ 	  - /my-content/studyPlans/[id]
+2025-10-12T10:07:03.435468Z	⚡️ 	  - /my-content/summaries/[summaryId]
+2025-10-12T10:07:03.435545Z	⚡️ 	  - /plans/[slug]
+2025-10-12T10:07:03.435623Z	⚡️ 	  - /practice-exam/[id]/review
+2025-10-12T10:07:03.435701Z	⚡️ 	  - /practice-exam/[id]
+2025-10-12T10:07:03.435777Z	⚡️ 	  - /quizzes/[slug]
+2025-10-12T10:07:03.435851Z	⚡️ 	  - /student/[username]
+2025-10-12T10:07:03.435925Z	⚡️ 	  - /study-plan/[id]
+2025-10-12T10:07:03.436014Z	⚡️ 	  - /summaries/[slug]
+2025-10-12T10:07:03.436133Z	⚡️ 
+2025-10-12T10:07:03.436219Z	⚡️ 	Please make sure that all your non-static routes export the following edge runtime route segment config:
+2025-10-12T10:07:03.4363Z	⚡️ 	  export const runtime = 'edge';
+2025-10-12T10:07:03.436398Z	⚡️ 
+2025-10-12T10:07:03.436492Z	⚡️ 	You can read more about the Edge Runtime on the Next.js documentation:
+2025-10-12T10:07:03.436589Z	⚡️ 	  https://nextjs.org/docs/app/building-your-application/rendering/edge-and-nodejs-runtimes
+2025-10-12T10:07:03.436702Z	
+2025-10-12T10:07:03.462322Z	Failed: Error while executing user command. Exited with error code: 1
+2025-10-12T10:07:03.472306Z	Failed: build command exited with code: 1
+2025-10-12T10:07:04.59205Z	Failed: error occurred while running build command
