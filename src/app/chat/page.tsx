@@ -31,7 +31,9 @@ import {
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { getChatMessages, createChatSession, addChatMessage } from '@/lib/chat-actions';
+// Server functions moved to API routes to avoid importing server-only code into client bundle
+// We'll call the new API endpoints instead
+// import { getChatMessages, createChatSession, addChatMessage } from '@/lib/chat-actions';
 
 const GUEST_MESSAGE_LIMIT = 10;
 
@@ -73,8 +75,19 @@ export default function ChatPage() {
   useEffect(() => {
     async function loadMessages() {
       if (activeChatId) {
-        const loadedMessages = await getChatMessages(activeChatId);
-        setMessages(loadedMessages);
+        try {
+          const res = await fetch(`/api/chat?sessionId=${activeChatId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setMessages(Array.isArray(data) ? data : []);
+          } else {
+            console.error('Failed to load messages:', res.status);
+            setMessages([]);
+          }
+        } catch (err) {
+          console.error('Error fetching messages:', err);
+          setMessages([]);
+        }
       }
     }
     loadMessages();
@@ -121,20 +134,32 @@ export default function ChatPage() {
 
     // Create a new chat session if it's the first message
     if (!currentChatId) {
-        const newChatId = await createChatSession(user.id, input.substring(0, 30));
-        if (newChatId) {
-            currentChatId = newChatId;
-            setActiveChatId(newChatId);
-            router.push(`/chat/${newChatId}`);
-            forceRefresh();
-        } else {
+        try {
+          const resp = await fetch('/api/chat/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id, title: input.substring(0, 30) }),
+          });
+          if (!resp.ok) {
             toast({ variant: 'destructive', title: 'Error', description: 'Could not create a new chat session.' });
             setIsSending(false);
             return;
+          }
+          const data = await resp.json();
+          const newChatId = data.id;
+          currentChatId = newChatId;
+          setActiveChatId(newChatId);
+          router.push(`/chat/${newChatId}`);
+          forceRefresh();
+        } catch (err) {
+          console.error('Error creating chat session:', err);
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not create a new chat session.' });
+          setIsSending(false);
+          return;
         }
     }
 
-    const historyForAI = messages.map(msg => ({ role: msg.role, text: msg.rawText || '' }));
+  const historyForAI = (messages || []).map(msg => ({ role: msg.role, text: msg.rawText || '' }));
 
     const userMessage: ChatMessageProps = {
         id: `user-${Date.now()}`,
@@ -146,8 +171,17 @@ export default function ChatPage() {
         createdAt: new Date(),
         attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.contentType, size: att.size }))
     };
-    setMessages(prev => [...prev, userMessage]);
-    await addChatMessage(currentChatId, 'user', input.trim());
+  setMessages(prev => ([...(prev || []), userMessage]));
+    // Save user message via API
+    try {
+      await fetch('/api/chat/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: currentChatId, role: 'user', content: input.trim() }),
+      });
+    } catch (err) {
+      console.error('Error saving user message via API:', err);
+    }
 
     setGuestMessageCount(prev => prev + 1);
   
@@ -187,12 +221,29 @@ export default function ChatPage() {
           persona: selectedPersona,
           createdAt: new Date(),
       };
-      setMessages(prev => [...prev, modelResponse]);
-      await addChatMessage(currentChatId, 'model', result.response);
+  setMessages(prev => ([...(prev || []), modelResponse]));
+      // Save model response via API
+      try {
+        await fetch('/api/chat/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: currentChatId, role: 'model', content: result.response }),
+        });
+      } catch (err) {
+        console.error('Error saving model message via API:', err);
+      }
       forceRefresh();
       if (currentChatId) {
-        const loadedMessages = await getChatMessages(currentChatId);
-        setMessages(loadedMessages);
+        try {
+          const res = await fetch(`/api/chat?sessionId=${currentChatId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setMessages(Array.isArray(data) ? data : []);
+          }
+        } catch (err) {
+          console.error('Error reloading messages after AI response:', err);
+        }
+        
       }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -38,7 +38,15 @@ export function MessageList({
     );
   }
 
-  const showWelcomeScreen = !activeChatId && messages.length === 0 && !isSending;
+  if (!messages) {
+    // Defensive logging to help diagnose production issues where messages becomes undefined
+    // eslint-disable-next-line no-console
+    console.warn('MessageList received undefined messages');
+  }
+
+  const safeMessages = Array.isArray(messages) ? messages : [];
+
+  const showWelcomeScreen = !activeChatId && safeMessages.length === 0 && !isSending;
 
   const handleToolAction = (tool: SmartTool, text?: string) => {
     if (!text) return;
@@ -52,7 +60,7 @@ export function MessageList({
           <WelcomeScreen onSelectPrompt={onSmartToolAction} />
         ) : (
           <AIConversationContent className="p-3 md:p-4 space-y-2 max-w-3xl mx-auto">
-            {messages.map((msg, index) => (
+            {safeMessages.map((msg, index) => (
               <ChatMessage
                 key={msg.id || index}
                 {...msg}

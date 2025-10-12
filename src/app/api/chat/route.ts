@@ -1,6 +1,7 @@
 // src/app/api/chat/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { chatFlow } from '@/ai/flows/chat-flow';
+import { getChatMessages } from '@/lib/chat-actions';
 
 // Ensure this API route runs on the Edge Runtime for Cloudflare Pages
 export const runtime = 'edge';
@@ -10,6 +11,21 @@ export const runtime = 'edge';
 async function getUserFromRequest(req: NextRequest): Promise<{ uid: string | null; isAnonymous: boolean }> {
     // For now, we'll assume all users are guests.
     return { uid: 'guest-user', isAnonymous: true };
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const url = new URL(request.url);
+    const sessionId = url.searchParams.get('sessionId');
+    if (!sessionId) {
+      return NextResponse.json([], { status: 200 });
+    }
+    const messages = await getChatMessages(sessionId);
+    return NextResponse.json(messages);
+  } catch (err) {
+    console.error('Error in GET /api/chat:', err);
+    return NextResponse.json([], { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
