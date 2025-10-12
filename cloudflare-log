@@ -1,60 +1,156 @@
-2025-10-01T08:41:50.544816Z	Cloning repository...
-2025-10-01T08:41:51.315758Z	From https://github.com/avimaybee/focusflow
-2025-10-01T08:41:51.316249Z	 * branch            5e84b0a6f03c268af14c2ad40027c1361e3f42ab -> FETCH_HEAD
-2025-10-01T08:41:51.316352Z	
-2025-10-01T08:41:51.357697Z	HEAD is now at 5e84b0a fix: remove 'wrangler' from package.json and package-lock.json to resolve build issues
-2025-10-01T08:41:51.358148Z	
-2025-10-01T08:41:51.451022Z	
-2025-10-01T08:41:51.451551Z	Using v2 root directory strategy
-2025-10-01T08:41:51.476134Z	Success: Finished cloning repository files
-2025-10-01T08:41:53.330401Z	Checking for configuration in a Wrangler configuration file (BETA)
-2025-10-01T08:41:53.331346Z	
-2025-10-01T08:41:54.442396Z	No wrangler.toml file found. Continuing.
-2025-10-01T08:41:54.516039Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
-2025-10-01T08:41:54.51688Z	Installing project dependencies: npm clean-install --progress=false
-2025-10-01T08:42:11.70842Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
-2025-10-01T08:42:45.410623Z	
-2025-10-01T08:42:45.410992Z	added 1639 packages, and audited 1640 packages in 50s
-2025-10-01T08:42:45.411135Z	
-2025-10-01T08:42:45.411306Z	251 packages are looking for funding
-2025-10-01T08:42:45.411433Z	  run `npm fund` for details
-2025-10-01T08:42:45.484629Z	
-2025-10-01T08:42:45.484883Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
-2025-10-01T08:42:45.485002Z	
-2025-10-01T08:42:45.485117Z	To address issues that do not require attention, run:
-2025-10-01T08:42:45.485306Z	  npm audit fix
-2025-10-01T08:42:45.485385Z	
-2025-10-01T08:42:45.485466Z	To address all issues (including breaking changes), run:
-2025-10-01T08:42:45.485593Z	  npm audit fix --force
-2025-10-01T08:42:45.485693Z	
-2025-10-01T08:42:45.485834Z	Run `npm audit` for details.
-2025-10-01T08:42:45.537178Z	Executing user command: npm run build:cloudflare
-2025-10-01T08:42:45.96878Z	
-2025-10-01T08:42:45.969403Z	> nextn@0.1.0 build:cloudflare
-2025-10-01T08:42:45.969575Z	> opennextjs-cloudflare
-2025-10-01T08:42:45.969931Z	
-2025-10-01T08:42:46.978583Z	node:internal/modules/cjs/loader:1401
-2025-10-01T08:42:46.97897Z	  const err = new Error(message);
-2025-10-01T08:42:46.979116Z	              ^
-2025-10-01T08:42:46.979252Z	
-2025-10-01T08:42:46.97934Z	Error: Cannot find module '@ast-grep/napi-linux-x64-gnu'
-2025-10-01T08:42:46.979451Z	Require stack:
-2025-10-01T08:42:46.979552Z	- /opt/buildhome/repo/node_modules/@ast-grep/napi/index.js
-2025-10-01T08:42:46.979637Z	    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
-2025-10-01T08:42:46.979747Z	    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
-2025-10-01T08:42:46.979829Z	    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
-2025-10-01T08:42:46.979916Z	    at Function._load (node:internal/modules/cjs/loader:1211:37)
-2025-10-01T08:42:46.98032Z	    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
-2025-10-01T08:42:46.980565Z	    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
-2025-10-01T08:42:46.98072Z	    at Module.require (node:internal/modules/cjs/loader:1487:12)
-2025-10-01T08:42:46.980949Z	    at require (node:internal/modules/helpers:135:16)
-2025-10-01T08:42:46.98112Z	    at Object.<anonymous> (/opt/buildhome/repo/node_modules/@ast-grep/napi/index.js:190:31)
-2025-10-01T08:42:46.981262Z	    at Module._compile (node:internal/modules/cjs/loader:1730:14) {
-2025-10-01T08:42:46.981386Z	  code: 'MODULE_NOT_FOUND',
-2025-10-01T08:42:46.981475Z	  requireStack: [ '/opt/buildhome/repo/node_modules/@ast-grep/napi/index.js' ]
-2025-10-01T08:42:46.981555Z	}
-2025-10-01T08:42:46.981662Z	
-2025-10-01T08:42:46.981772Z	Node.js v22.16.0
-2025-10-01T08:42:47.003255Z	Failed: Error while executing user command. Exited with error code: 1
-2025-10-01T08:42:47.015855Z	Failed: build command exited with code: 1
-2025-10-01T08:42:48.344381Z	Failed: error occurred while running build command
+2025-10-12T09:12:01.746494Z	Cloning repository...
+2025-10-12T09:12:02.41424Z	From https://github.com/avimaybee/focusflow
+2025-10-12T09:12:02.415095Z	 * branch            4bc36cde9266aa35aecc1ff1bc696ea9504df1e4 -> FETCH_HEAD
+2025-10-12T09:12:02.415206Z	
+2025-10-12T09:12:02.458118Z	HEAD is now at 4bc36cd preparing for deployment but with error
+2025-10-12T09:12:02.458631Z	
+2025-10-12T09:12:02.535388Z	
+2025-10-12T09:12:02.535942Z	Using v2 root directory strategy
+2025-10-12T09:12:02.556973Z	Success: Finished cloning repository files
+2025-10-12T09:12:04.621069Z	Checking for configuration in a Wrangler configuration file (BETA)
+2025-10-12T09:12:04.621892Z	
+2025-10-12T09:12:05.719894Z	No wrangler.toml file found. Continuing.
+2025-10-12T09:12:05.785816Z	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+2025-10-12T09:12:05.786359Z	Installing project dependencies: npm clean-install --progress=false
+2025-10-12T09:12:21.482159Z	npm warn deprecated @types/marked@6.0.0: This is a stub types definition. marked provides its own type definitions, so you do not need this installed.
+2025-10-12T09:12:53.272063Z	
+2025-10-12T09:12:53.272382Z	added 1641 packages, and audited 1642 packages in 47s
+2025-10-12T09:12:53.272521Z	
+2025-10-12T09:12:53.27266Z	251 packages are looking for funding
+2025-10-12T09:12:53.272788Z	  run `npm fund` for details
+2025-10-12T09:12:53.349091Z	
+2025-10-12T09:12:53.350262Z	7 vulnerabilities (3 low, 2 moderate, 2 critical)
+2025-10-12T09:12:53.350467Z	
+2025-10-12T09:12:53.350997Z	To address issues that do not require attention, run:
+2025-10-12T09:12:53.351166Z	  npm audit fix
+2025-10-12T09:12:53.351413Z	
+2025-10-12T09:12:53.351561Z	To address all issues (including breaking changes), run:
+2025-10-12T09:12:53.351739Z	  npm audit fix --force
+2025-10-12T09:12:53.35195Z	
+2025-10-12T09:12:53.352278Z	Run `npm audit` for details.
+2025-10-12T09:12:53.402501Z	Executing user command: npx @cloudflare/next-on-pages@1
+2025-10-12T09:12:55.610555Z	npm warn exec The following package was not found and will be installed: @cloudflare/next-on-pages@1.13.16
+2025-10-12T09:13:06.293009Z	npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
+2025-10-12T09:13:07.497745Z	npm warn deprecated @cloudflare/next-on-pages@1.13.16: Please use the OpenNext adapter instead: https://opennext.js.org/cloudflare
+2025-10-12T09:13:17.336511Z	⚡️ @cloudflare/next-on-pages CLI v.1.13.16
+2025-10-12T09:13:17.569134Z	⚡️ Detected Package Manager: npm (10.9.2)
+2025-10-12T09:13:17.569619Z	⚡️ Preparing project...
+2025-10-12T09:13:17.572484Z	⚡️ Project is ready
+2025-10-12T09:13:17.572821Z	⚡️ Building project...
+2025-10-12T09:13:19.531439Z	▲  npm warn exec The following package was not found and will be installed: vercel@48.2.9
+2025-10-12T09:13:22.814936Z	▲  npm warn deprecated path-match@1.2.4: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
+2025-10-12T09:13:24.779177Z	▲  Vercel CLI 48.2.9
+2025-10-12T09:13:24.783665Z	▲  > NOTE: The Vercel CLI now collects telemetry regarding usage of the CLI.
+2025-10-12T09:13:24.783899Z	▲  > This information is used to shape the CLI roadmap and prioritize features.
+2025-10-12T09:13:24.784176Z	▲  > You can learn more, including how to opt-out if you'd not like to participate in this program, by visiting the following URL:
+2025-10-12T09:13:24.784805Z	▲  > https://vercel.com/docs/cli/about-telemetry
+2025-10-12T09:13:24.896177Z	▲  WARN! Build not running on Vercel. System environment variables will not be available.
+2025-10-12T09:13:25.113301Z	▲  Installing dependencies...
+2025-10-12T09:13:27.478082Z	▲  removed 1 package in 2s
+2025-10-12T09:13:27.47845Z	▲  251 packages are looking for funding
+2025-10-12T09:13:27.478587Z	▲  run `npm fund` for details
+2025-10-12T09:13:27.488123Z	▲  Detected Next.js version: 14.2.3
+2025-10-12T09:13:27.495686Z	▲  Running "npm run build"
+2025-10-12T09:13:27.680268Z	▲  > nextn@0.1.0 build
+2025-10-12T09:13:27.680478Z	▲  > next build
+2025-10-12T09:13:28.320291Z	▲  Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2025-10-12T09:13:28.320597Z	▲  This information is used to shape Next.js' roadmap and prioritize features.
+2025-10-12T09:13:28.320834Z	▲  You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2025-10-12T09:13:28.320989Z	▲  https://nextjs.org/telemetry
+2025-10-12T09:13:28.321161Z	▲  
+2025-10-12T09:13:28.377937Z	▲  ▲ Next.js 14.2.3
+2025-10-12T09:13:28.378178Z	▲  
+2025-10-12T09:13:28.438344Z	▲  Creating an optimized production build ...
+2025-10-12T09:13:54.87767Z	▲  ✓ Compiled successfully
+2025-10-12T09:13:54.8786Z	▲  Skipping validation of types
+2025-10-12T09:13:54.87877Z	▲  Skipping linting
+2025-10-12T09:13:55.185776Z	▲  Collecting page data ...
+2025-10-12T09:13:58.179609Z	▲  Generating static pages (0/22) ...
+2025-10-12T09:13:58.801197Z	▲  [PLACEHOLDER] getAllUsernames called
+2025-10-12T09:13:58.801488Z	▲  [PLACEHOLDER] getPublicSummaries called
+2025-10-12T09:13:58.801643Z	▲  [PLACEHOLDER] getPublicFlashcardSets called
+2025-10-12T09:13:58.801746Z	▲  [PLACEHOLDER] getPublicQuizzes called
+2025-10-12T09:13:58.80187Z	▲  [PLACEHOLDER] getPublicStudyPlans called
+2025-10-12T09:13:58.802402Z	▲  Generating static pages (5/22)
+2025-10-12T09:13:59.123265Z	▲  Generating static pages (10/22)
+2025-10-12T09:13:59.146908Z	▲  Generating static pages (16/22)
+2025-10-12T09:13:59.225132Z	▲  ✓ Generating static pages (22/22)
+2025-10-12T09:13:59.503226Z	▲  Finalizing page optimization ...
+2025-10-12T09:13:59.503559Z	▲  Collecting build traces ...
+2025-10-12T09:14:04.135951Z	▲  
+2025-10-12T09:14:04.146385Z	▲  Route (app)                                     Size     First Load JS
+2025-10-12T09:14:04.146616Z	▲  ┌ ○ /                                           20.3 kB         249 kB
+2025-10-12T09:14:04.146783Z	▲  ├ ○ /_not-found                                 879 B          88.2 kB
+2025-10-12T09:14:04.146915Z	▲  ├ ○ /about                                      183 B          87.5 kB
+2025-10-12T09:14:04.14705Z	▲  ├ ƒ /api/chat                                   0 B                0 B
+2025-10-12T09:14:04.147158Z	▲  ├ ○ /blog                                       177 B          94.3 kB
+2025-10-12T09:14:04.147282Z	▲  ├ ƒ /blog/[slug]                                1.98 kB         144 kB
+2025-10-12T09:14:04.147383Z	▲  ├ ○ /chat                                       229 B           683 kB
+2025-10-12T09:14:04.147502Z	▲  ├ ƒ /chat/[chatId]                              229 B           683 kB
+2025-10-12T09:14:04.147688Z	▲  ├ ○ /contact                                    183 B          87.5 kB
+2025-10-12T09:14:04.147808Z	▲  ├ ○ /dashboard                                  17.4 kB         323 kB
+2025-10-12T09:14:04.147884Z	▲  ├ ○ /dashboard/analytics                        12.1 kB         240 kB
+2025-10-12T09:14:04.147945Z	▲  ├ ƒ /flashcards/[slug]                          6.01 kB         148 kB
+2025-10-12T09:14:04.148001Z	▲  ├ ○ /my-content                                 7.05 kB         196 kB
+2025-10-12T09:14:04.148055Z	▲  ├ ƒ /my-content/flashcardSets/[flashcardSetId]  5.82 kB         188 kB
+2025-10-12T09:14:04.148111Z	▲  ├ ƒ /my-content/quizzes/[quizId]                5.74 kB         195 kB
+2025-10-12T09:14:04.148176Z	▲  ├ ƒ /my-content/savedMessages/[messageId]       1.25 kB         205 kB
+2025-10-12T09:14:04.148241Z	▲  ├ ƒ /my-content/studyPlans/[id]                 2.39 kB         130 kB
+2025-10-12T09:14:04.1483Z	▲  ├ ○ /my-content/summaries                       4.96 kB         223 kB
+2025-10-12T09:14:04.148358Z	▲  ├ ƒ /my-content/summaries/[summaryId]           2.34 kB         206 kB
+2025-10-12T09:14:04.148414Z	▲  ├ ƒ /plans/[slug]                               2.47 kB         104 kB
+2025-10-12T09:14:04.148469Z	▲  ├ ƒ /practice-exam/[id]                         8.15 kB         187 kB
+2025-10-12T09:14:04.148537Z	▲  ├ ƒ /practice-exam/[id]/review                  394 B          87.7 kB
+2025-10-12T09:14:04.148613Z	▲  ├ ○ /practice-exam/new                          13.3 kB         208 kB
+2025-10-12T09:14:04.148693Z	▲  ├ ○ /preferences                                4.99 kB         187 kB
+2025-10-12T09:14:04.1488Z	▲  ├ ○ /preferences/profile                        5.45 kB         181 kB
+2025-10-12T09:14:04.148898Z	▲  ├ ○ /premium                                    3.26 kB         145 kB
+2025-10-12T09:14:04.149142Z	▲  ├ ○ /privacy                                    183 B          87.5 kB
+2025-10-12T09:14:04.149258Z	▲  ├ ƒ /quizzes/[slug]                             4.55 kB         154 kB
+2025-10-12T09:14:04.149364Z	▲  ├ ○ /sitemap.xml                                0 B                0 B
+2025-10-12T09:14:04.149471Z	▲  ├ ƒ /student/[username]                         7.61 kB         189 kB
+2025-10-12T09:14:04.149575Z	▲  ├ ƒ /study-plan/[id]                            3.61 kB         141 kB
+2025-10-12T09:14:04.149675Z	▲  ├ ○ /study-plan/new                             5.21 kB         180 kB
+2025-10-12T09:14:04.14979Z	▲  ├ ƒ /summaries/[slug]                           2.47 kB         104 kB
+2025-10-12T09:14:04.149898Z	▲  └ ○ /terms                                      182 B          87.5 kB
+2025-10-12T09:14:04.150006Z	▲  + First Load JS shared by all                   87.3 kB
+2025-10-12T09:14:04.150331Z	▲  ├ chunks/7023-854f25179ec07cb5.js             31.6 kB
+2025-10-12T09:14:04.150415Z	▲  ├ chunks/fd9d1056-376cd1900f1dcb63.js         53.6 kB
+2025-10-12T09:14:04.150474Z	▲  └ other shared chunks (total)                 2.04 kB
+2025-10-12T09:14:04.150577Z	▲  ○  (Static)   prerendered as static content
+2025-10-12T09:14:04.150671Z	▲  ƒ  (Dynamic)  server-rendered on demand
+2025-10-12T09:14:04.466933Z	▲  Traced Next.js server files in: 214.458ms
+2025-10-12T09:14:04.59655Z	▲  Created all serverless functions in: 129.429ms
+2025-10-12T09:14:04.612792Z	▲  Collected static files (public/, static/, .next/static): 10.514ms
+2025-10-12T09:14:04.699994Z	▲  Build Completed in .vercel/output [40s]
+2025-10-12T09:14:04.83795Z	⚡️ Completed `npx vercel build`.
+2025-10-12T09:14:06.097283Z	
+2025-10-12T09:14:06.097589Z	⚡️ ERROR: Failed to produce a Cloudflare Pages build from the project.
+2025-10-12T09:14:06.097695Z	⚡️ 
+2025-10-12T09:14:06.097781Z	⚡️ 	The following routes were not configured to run with the Edge Runtime:
+2025-10-12T09:14:06.09787Z	⚡️ 	  - /api/chat
+2025-10-12T09:14:06.098273Z	⚡️ 	  - /blog/[slug]
+2025-10-12T09:14:06.098361Z	⚡️ 	  - /chat/[chatId]
+2025-10-12T09:14:06.098456Z	⚡️ 	  - /flashcards/[slug]
+2025-10-12T09:14:06.098782Z	⚡️ 	  - /my-content/flashcardSets/[flashcardSetId]
+2025-10-12T09:14:06.099004Z	⚡️ 	  - /my-content/quizzes/[quizId]
+2025-10-12T09:14:06.099196Z	⚡️ 	  - /my-content/savedMessages/[messageId]
+2025-10-12T09:14:06.099308Z	⚡️ 	  - /my-content/studyPlans/[id]
+2025-10-12T09:14:06.09942Z	⚡️ 	  - /my-content/summaries/[summaryId]
+2025-10-12T09:14:06.099531Z	⚡️ 	  - /plans/[slug]
+2025-10-12T09:14:06.099623Z	⚡️ 	  - /practice-exam/[id]/review
+2025-10-12T09:14:06.099707Z	⚡️ 	  - /practice-exam/[id]
+2025-10-12T09:14:06.099825Z	⚡️ 	  - /quizzes/[slug]
+2025-10-12T09:14:06.099913Z	⚡️ 	  - /student/[username]
+2025-10-12T09:14:06.100007Z	⚡️ 	  - /study-plan/[id]
+2025-10-12T09:14:06.100098Z	⚡️ 	  - /summaries/[slug]
+2025-10-12T09:14:06.100191Z	⚡️ 
+2025-10-12T09:14:06.10029Z	⚡️ 	Please make sure that all your non-static routes export the following edge runtime route segment config:
+2025-10-12T09:14:06.10038Z	⚡️ 	  export const runtime = 'edge';
+2025-10-12T09:14:06.10051Z	⚡️ 
+2025-10-12T09:14:06.100608Z	⚡️ 	You can read more about the Edge Runtime on the Next.js documentation:
+2025-10-12T09:14:06.100707Z	⚡️ 	  https://nextjs.org/docs/app/building-your-application/rendering/edge-and-nodejs-runtimes
+2025-10-12T09:14:06.100829Z	
+2025-10-12T09:14:06.128599Z	Failed: Error while executing user command. Exited with error code: 1
+2025-10-12T09:14:06.137608Z	Failed: build command exited with code: 1
+2025-10-12T09:14:07.814654Z	Failed: error occurred while running build command
