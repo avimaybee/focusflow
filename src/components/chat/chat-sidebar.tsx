@@ -264,7 +264,7 @@ const ChatSidebarComponent = ({
               <SidebarSkeleton isCollapsed={isCollapsed} />
             ) : (
               <div className="space-y-1">
-                {chatHistory.map((chat) => (
+                {(chatHistory || []).map((chat) => (
                   <Tooltip key={chat.id}>
                     <TooltipTrigger asChild>
                       <div

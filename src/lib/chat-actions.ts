@@ -21,6 +21,11 @@ export async function getChatHistory(userId: string): Promise<ChatHistoryItem[]>
     return [];
   }
 
+  if (!data) {
+    console.warn('getChatHistory: No data returned for userId:', userId);
+    return [];
+  }
+
   return data.map(item => ({
     id: item.id,
     title: item.title || 'Untitled Chat',
@@ -39,6 +44,11 @@ export async function getChatMessages(sessionId: string): Promise<ChatMessagePro
 
     if (error) {
         console.error('Error fetching chat messages:', error);
+        return [];
+    }
+
+    if (!data) {
+        console.warn('getChatMessages: No data returned for sessionId:', sessionId);
         return [];
     }
 
