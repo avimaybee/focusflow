@@ -7,8 +7,9 @@ export async function POST(request: NextRequest) {
   console.log('[API] POST /api/chat/message');
   try {
     const raw = await request.text();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let parsed: any = null;
-    try { parsed = raw ? JSON.parse(raw) : null; } catch (e) { console.warn('[API] message route could not parse JSON body', raw); }
+    try { parsed = raw ? JSON.parse(raw) : null; } catch { console.warn('[API] message route could not parse JSON body', raw); }
     console.log('[API] message body keys:', parsed ? Object.keys(parsed) : null);
     const { sessionId, role, content } = parsed || {};
     if (!sessionId || !role || typeof content !== 'string') {
