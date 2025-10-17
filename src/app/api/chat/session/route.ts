@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createChatSession } from '@/lib/chat-actions';
+import { createChatSession } from '@/lib/chat-actions-edge';
 
 export const runtime = 'edge';
 
@@ -16,7 +16,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
     }
 
-    const id = await createChatSession(userId, title || 'Untitled Chat');
+    // Get auth token for RLS
+    const authHeader = request.headers.get('authorization');
+    const id = await createChatSession(userId, title || 'Untitled Chat', authHeader || undefined);
     if (!id) {
       console.error('[API] createChatSession returned null/undefined');
       return NextResponse.json({ error: 'Could not create session' }, { status: 500 });

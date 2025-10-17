@@ -1,7 +1,7 @@
 // src/app/api/chat/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { chatFlow } from '@/ai/flows/chat-flow';
-import { getChatMessages } from '@/lib/chat-actions';
+import { getChatMessages } from '@/lib/chat-actions-edge';
 import { getUserFromRequest } from '@/lib/auth-helpers';
 
 // Ensure this API route runs on the Edge Runtime for Cloudflare Pages
@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
       console.log('[API] GET /api/chat no sessionId provided, returning empty array', { durationMs: Date.now() - start });
       return NextResponse.json([], { status: 200 });
     }
-    const messages = await getChatMessages(sessionId);
+    
+    // Get auth token for RLS
+    const authHeader = request.headers.get('authorization');
+    const messages = await getChatMessages(sessionId, authHeader || undefined);
     console.log('[API] GET /api/chat returning messages count=', Array.isArray(messages) ? messages.length : typeof messages, { durationMs: Date.now() - start });
     return NextResponse.json(messages);
   } catch (err) {

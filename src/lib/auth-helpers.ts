@@ -57,14 +57,31 @@ export async function getAuthHeaders(): Promise<Record<string, string>> {
     const { data: { session } } = await clientSupabase.auth.getSession();
     
     if (!session?.access_token) {
-      return {};
+      return { 'Content-Type': 'application/json' };
     }
 
     return {
+      'Content-Type': 'application/json',
       'Authorization': `Bearer ${session.access_token}`,
     };
   } catch (error) {
     console.error('[Auth] Error getting auth headers:', error);
-    return {};
+    return { 'Content-Type': 'application/json' };
   }
+}
+
+/**
+ * Make an authenticated fetch request.
+ * Automatically includes auth headers from the current session.
+ */
+export async function authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const headers = await getAuthHeaders();
+  
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...headers,
+      ...(options.headers || {}),
+    },
+  });
 }

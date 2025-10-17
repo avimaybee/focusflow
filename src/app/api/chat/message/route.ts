@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { addChatMessage } from '@/lib/chat-actions';
+import { addChatMessage } from '@/lib/chat-actions-edge';
 
 export const runtime = 'edge';
 
@@ -16,7 +16,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    await addChatMessage(sessionId, role, content);
+    // Get auth token for RLS
+    const authHeader = request.headers.get('authorization');
+    const success = await addChatMessage(sessionId, role, content, authHeader || undefined);
+    if (!success) {
+      console.error('[API] Failed to save message for sessionId=', sessionId);
+      return NextResponse.json({ error: 'Failed to save message' }, { status: 500 });
+    }
+    
     console.log('[API] message saved for sessionId=', sessionId);
     return NextResponse.json({ ok: true });
   } catch (err) {

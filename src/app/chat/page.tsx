@@ -76,7 +76,9 @@ export default function ChatPage() {
     async function loadMessages() {
       if (activeChatId) {
         try {
-          const res = await fetch(`/api/chat?sessionId=${activeChatId}`);
+          // Import auth helper dynamically to avoid issues
+          const { authenticatedFetch } = await import('@/lib/auth-helpers');
+          const res = await authenticatedFetch(`/api/chat?sessionId=${activeChatId}`);
           if (res.ok) {
             const data = await res.json();
             setMessages(Array.isArray(data) ? data : []);
@@ -144,9 +146,9 @@ export default function ChatPage() {
         try {
           console.debug('[Client] Creating session - POST /api/chat/session', { userId: user.id, title: input.substring(0,30) });
           const t0 = Date.now();
-          const resp = await fetch('/api/chat/session', {
+          const { authenticatedFetch } = await import('@/lib/auth-helpers');
+          const resp = await authenticatedFetch('/api/chat/session', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: user.id, title: input.substring(0, 30) }),
           });
           console.debug('[Client] session POST finished', { status: resp.status, durationMs: Date.now() - t0 });
@@ -192,9 +194,9 @@ export default function ChatPage() {
     });
     // Save user message via API
     try {
-      await fetch('/api/chat/message', {
+      const { authenticatedFetch } = await import('@/lib/auth-helpers');
+      await authenticatedFetch('/api/chat/message', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: currentChatId, role: 'user', content: input.trim() }),
       });
     } catch (err) {
@@ -217,9 +219,9 @@ export default function ChatPage() {
     try {
       console.debug('[Client] POST /api/chat payload keys:', Object.keys(chatInput));
       const tstart = Date.now();
-      const response = await fetch('/api/chat', {
+      const { authenticatedFetch } = await import('@/lib/auth-helpers');
+      const response = await authenticatedFetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(chatInput),
       });
       console.debug('[Client] POST /api/chat responded', { status: response.status, durationMs: Date.now() - tstart });
@@ -259,18 +261,14 @@ export default function ChatPage() {
   });
       // Save model response via API
       try {
-        try {
-          console.debug('[Client] Saving model message via POST /api/chat/message', { sessionId: currentChatId });
-          const tmsg = Date.now();
-          const r = await fetch('/api/chat/message', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId: currentChatId, role: 'model', content: result.response }),
-          });
-          console.debug('[Client] POST /api/chat/message finished', { status: r.status, durationMs: Date.now() - tmsg });
-        } catch (err) {
-          console.error('Error saving model message via API:', err);
-        }
+        console.debug('[Client] Saving model message via POST /api/chat/message', { sessionId: currentChatId });
+        const tmsg = Date.now();
+        const { authenticatedFetch } = await import('@/lib/auth-helpers');
+        const r = await authenticatedFetch('/api/chat/message', {
+          method: 'POST',
+          body: JSON.stringify({ sessionId: currentChatId, role: 'model', content: result.response }),
+        });
+        console.debug('[Client] POST /api/chat/message finished', { status: r.status, durationMs: Date.now() - tmsg });
       } catch (err) {
         console.error('Error saving model message via API:', err);
       }
@@ -279,7 +277,8 @@ export default function ChatPage() {
         try {
           console.debug('[Client] Reloading messages from GET /api/chat', { sessionId: currentChatId });
           const tget = Date.now();
-          const res = await fetch(`/api/chat?sessionId=${currentChatId}`);
+          const { authenticatedFetch } = await import('@/lib/auth-helpers');
+          const res = await authenticatedFetch(`/api/chat?sessionId=${currentChatId}`);
           console.debug('[Client] GET /api/chat returned', { status: res.status, durationMs: Date.now() - tget });
           if (res.ok) {
             const data = await res.json();
