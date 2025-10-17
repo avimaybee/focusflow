@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useAuth } from '@/context/auth-context';
 import { getNotes, saveNotes } from '@/lib/notes-actions';
@@ -22,6 +22,7 @@ export function NotesTab() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [searchQuery, setSearchQuery] = useState('');
+  const hasLoadedRef = useRef(false);
   
   const [debouncedContent] = useDebounce(content, 1500);
 
@@ -41,9 +42,10 @@ export function NotesTab() {
       return;
     }
 
-    // Don't trigger save on initial load
-    if (saveStatus === 'idle' && isLoaded && content === debouncedContent) {
-        return;
+    // Don't trigger save on initial load (first time debouncedContent updates after loading)
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      return;
     }
 
     setSaveStatus('saving');
