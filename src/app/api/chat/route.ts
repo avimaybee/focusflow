@@ -19,12 +19,13 @@ export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const sessionId = url.searchParams.get('sessionId');
-    console.log('[API] GET /api/chat sessionId=', sessionId);
+    const accessToken = url.searchParams.get('accessToken');
+    console.log('[API] GET /api/chat sessionId=', sessionId, 'hasToken=', !!accessToken);
     if (!sessionId) {
       console.log('[API] GET /api/chat no sessionId provided, returning empty array', { durationMs: Date.now() - start });
       return NextResponse.json([], { status: 200 });
     }
-    const messages = await getChatMessages(sessionId);
+    const messages = await getChatMessages(sessionId, accessToken || undefined);
     console.log('[API] GET /api/chat returning messages count=', Array.isArray(messages) ? messages.length : typeof messages, { durationMs: Date.now() - start });
     return NextResponse.json(messages);
   } catch (err) {

@@ -38,7 +38,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 const GUEST_MESSAGE_LIMIT = 10;
 
 export default function ChatPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const { onOpen: openAuthModal } = useAuthModal();
   const { toast } = useToast();
   const router = useRouter();
@@ -74,9 +74,13 @@ export default function ChatPage() {
 
   useEffect(() => {
     async function loadMessages() {
-      if (activeChatId) {
+      if (activeChatId && session) {
         try {
-          const res = await fetch(`/api/chat?sessionId=${activeChatId}`);
+          const accessToken = session.access_token;
+          const url = accessToken 
+            ? `/api/chat?sessionId=${activeChatId}&accessToken=${encodeURIComponent(accessToken)}`
+            : `/api/chat?sessionId=${activeChatId}`;
+          const res = await fetch(url);
           if (res.ok) {
             const data = await res.json();
             setMessages(Array.isArray(data) ? data : []);
@@ -92,7 +96,7 @@ export default function ChatPage() {
       }
     }
     loadMessages();
-  }, [activeChatId]);
+  }, [activeChatId, session]);
 
   // Debug: log messages changes to help identify when messages becomes undefined or malformed
   useEffect(() => {
@@ -142,12 +146,21 @@ export default function ChatPage() {
     // Create a new chat session if it's the first message
     if (!currentChatId) {
         try {
-          console.debug('[Client] Creating session - POST /api/chat/session', { userId: user.id, title: input.substring(0,30) });
+          // Get the access token from the session
+          const accessToken = session?.access_token;
+          if (!accessToken) {
+            console.error('[Client] No access token available in session');
+            toast({ variant: 'destructive', title: 'Error', description: 'Authentication error. Please sign in again.' });
+            setIsSending(false);
+            return;
+          }
+
+          console.debug('[Client] Creating session - POST /api/chat/session', { userId: user.id, title: input.substring(0,30), hasToken: !!accessToken });
           const t0 = Date.now();
           const resp = await fetch('/api/chat/session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: user.id, title: input.substring(0, 30) }),
+            body: JSON.stringify({ userId: user.id, title: input.substring(0, 30), accessToken }),
           });
           console.debug('[Client] session POST finished', { status: resp.status, durationMs: Date.now() - t0 });
           if (!resp.ok) {
@@ -192,10 +205,11 @@ export default function ChatPage() {
     });
     // Save user message via API
     try {
+      const accessToken = session?.access_token;
       await fetch('/api/chat/message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: currentChatId, role: 'user', content: input.trim() }),
+        body: JSON.stringify({ sessionId: currentChatId, role: 'user', content: input.trim(), accessToken }),
       });
     } catch (err) {
       console.error('Error saving user message via API:', err);
@@ -260,12 +274,13 @@ export default function ChatPage() {
       // Save model response via API
       try {
         try {
+          const accessToken = session?.access_token;
           console.debug('[Client] Saving model message via POST /api/chat/message', { sessionId: currentChatId });
           const tmsg = Date.now();
           const r = await fetch('/api/chat/message', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId: currentChatId, role: 'model', content: result.response }),
+            body: JSON.stringify({ sessionId: currentChatId, role: 'model', content: result.response, accessToken }),
           });
           console.debug('[Client] POST /api/chat/message finished', { status: r.status, durationMs: Date.now() - tmsg });
         } catch (err) {

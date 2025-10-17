@@ -1,7 +1,8 @@
 
 'use server';
 
-import { supabase } from './supabase';
+import { supabase, createAuthenticatedSupabaseClient } from './supabase';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { ChatHistoryItem } from '@/hooks/use-chat-history';
 import { ChatMessageProps } from '@/components/chat/chat-message';
@@ -28,10 +29,12 @@ export async function getChatHistory(userId: string): Promise<ChatHistoryItem[]>
   }));
 }
 
-export async function getChatMessages(sessionId: string): Promise<ChatMessageProps[]> {
+export async function getChatMessages(sessionId: string, accessToken?: string): Promise<ChatMessageProps[]> {
     if (!sessionId) return [];
 
-    const { data, error } = await supabase
+    const client = accessToken ? createAuthenticatedSupabaseClient(accessToken) : supabase;
+
+    const { data, error } = await client
         .from('chat_messages')
         .select('id, role, content, created_at')
         .eq('session_id', sessionId)
@@ -53,27 +56,50 @@ export async function getChatMessages(sessionId: string): Promise<ChatMessagePro
     return messages;
 }
 
-export async function createChatSession(userId: string, title: string): Promise<string | null> {
-    if (!userId) return null;
+/**
+ * Create a new chat session for the authenticated user.
+ * @param userId - The user's ID
+ * @param title - The chat session title
+ * @param accessToken - Optional access token for authenticated requests (required for Edge runtime)
+ * @returns The new session ID or null on failure
+ */
+export async function createChatSession(userId: string, title: string, accessToken?: string): Promise<string | null> {
+    if (!userId) {
+        console.error('[createChatSession] Missing userId');
+        return null;
+    }
 
-    const { data, error } = await supabase
+    const client = accessToken ? createAuthenticatedSupabaseClient(accessToken) : supabase;
+
+    console.log('[createChatSession] Attempting to create session', { userId, title, hasToken: !!accessToken });
+
+    const { data, error } = await client
         .from('chat_sessions')
         .insert({ user_id: userId, title: title })
         .select('id')
         .single();
 
     if (error) {
-        console.error('Error creating chat session:', error);
+        console.error('[createChatSession] Error creating chat session:', error);
+        console.error('[createChatSession] Error details:', {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+        });
         return null;
     }
 
+    console.log('[createChatSession] Successfully created session', { sessionId: data.id });
     return data.id;
 }
 
-export async function addChatMessage(sessionId: string, role: 'user' | 'model', content: string) {
+export async function addChatMessage(sessionId: string, role: 'user' | 'model', content: string, accessToken?: string) {
     if (!sessionId) return;
 
-    const { error } = await supabase
+    const client = accessToken ? createAuthenticatedSupabaseClient(accessToken) : supabase;
+
+    const { error } = await client
         .from('chat_messages')
         .insert({ session_id: sessionId, role, content });
 
