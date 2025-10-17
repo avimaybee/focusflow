@@ -133,7 +133,8 @@ export default function ChatPage() {
   };
 
   const handleSendMessage = async ({ input, attachments }: { input: string; attachments: Attachment[] }) => {
-    if (!input.trim() && attachments.length === 0 || isSending || authLoading ) return;
+    // Prevent sending if no content, already sending, or auth is loading
+    if ((!input.trim() && attachments.length === 0) || isSending || authLoading) return;
 
     if (!user) {
         openAuthModal();
