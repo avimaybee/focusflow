@@ -68,7 +68,7 @@ export function MessageList({
                 onRegenerate={onRegenerate}
               />
             ))}
-            {isSending && messages.at(-1)?.role === 'user' && (
+            {isSending && safeMessages.at(-1)?.role === 'user' && (
                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}

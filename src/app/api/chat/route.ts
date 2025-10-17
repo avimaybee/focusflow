@@ -2,16 +2,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { chatFlow } from '@/ai/flows/chat-flow';
 import { getChatMessages } from '@/lib/chat-actions';
+import { getUserFromRequest } from '@/lib/auth-helpers';
 
 // Ensure this API route runs on the Edge Runtime for Cloudflare Pages
 export const runtime = 'edge';
-
-// This helper function is now a placeholder.
-// It will be replaced with Supabase auth later.
-async function getUserFromRequest(req: NextRequest): Promise<{ uid: string | null; isAnonymous: boolean }> {
-    // For now, we'll assume all users are guests.
-    return { uid: 'guest-user', isAnonymous: true };
-}
 
 export async function GET(request: NextRequest) {
   const start = Date.now();
@@ -37,7 +31,7 @@ export async function POST(request: NextRequest) {
   const start = Date.now();
   console.log('=== NEW CHAT REQUEST ===', { method: request.method, url: request.url });
   try {
-    const { uid, isAnonymous } = await getUserFromRequest(request);
+    const { userId: uid, isAnonymous } = await getUserFromRequest(request);
     console.log('[API] Authenticated User ID:', uid || 'Guest', 'isAnonymous:', isAnonymous);
 
     // Log headers (avoid logging sensitive auth headers if present)
