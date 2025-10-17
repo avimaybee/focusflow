@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createChatSession } from '@/lib/chat-actions';
+import { createChatSession } from '@/lib/chat-actions-edge';
 
 export const runtime = 'edge';
 
@@ -7,8 +7,9 @@ export async function POST(request: NextRequest) {
   console.log('[API] POST /api/chat/session');
   try {
     const raw = await request.text();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let parsed: any = null;
-    try { parsed = raw ? JSON.parse(raw) : null; } catch (e) { console.warn('[API] session route could not parse JSON body', raw); }
+    try { parsed = raw ? JSON.parse(raw) : null; } catch { console.warn('[API] session route could not parse JSON body', raw); }
     console.log('[API] session body keys:', parsed ? Object.keys(parsed) : null);
     const { userId, title } = parsed || {};
     if (!userId) {
@@ -16,7 +17,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
     }
 
-    const id = await createChatSession(userId, title || 'Untitled Chat');
+    // Get auth token for RLS
+    const authHeader = request.headers.get('authorization');
+    const id = await createChatSession(userId, title || 'Untitled Chat', authHeader || undefined);
     if (!id) {
       console.error('[API] createChatSession returned null/undefined');
       return NextResponse.json({ error: 'Could not create session' }, { status: 500 });

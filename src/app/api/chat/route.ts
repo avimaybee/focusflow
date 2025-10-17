@@ -1,17 +1,11 @@
 // src/app/api/chat/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { chatFlow } from '@/ai/flows/chat-flow';
-import { getChatMessages } from '@/lib/chat-actions';
+import { getChatMessages } from '@/lib/chat-actions-edge';
+import { getUserFromRequest } from '@/lib/auth-helpers';
 
 // Ensure this API route runs on the Edge Runtime for Cloudflare Pages
 export const runtime = 'edge';
-
-// This helper function is now a placeholder.
-// It will be replaced with Supabase auth later.
-async function getUserFromRequest(req: NextRequest): Promise<{ uid: string | null; isAnonymous: boolean }> {
-    // For now, we'll assume all users are guests.
-    return { uid: 'guest-user', isAnonymous: true };
-}
 
 export async function GET(request: NextRequest) {
   const start = Date.now();
@@ -24,7 +18,10 @@ export async function GET(request: NextRequest) {
       console.log('[API] GET /api/chat no sessionId provided, returning empty array', { durationMs: Date.now() - start });
       return NextResponse.json([], { status: 200 });
     }
-    const messages = await getChatMessages(sessionId);
+    
+    // Get auth token for RLS
+    const authHeader = request.headers.get('authorization');
+    const messages = await getChatMessages(sessionId, authHeader || undefined);
     console.log('[API] GET /api/chat returning messages count=', Array.isArray(messages) ? messages.length : typeof messages, { durationMs: Date.now() - start });
     return NextResponse.json(messages);
   } catch (err) {
@@ -37,7 +34,7 @@ export async function POST(request: NextRequest) {
   const start = Date.now();
   console.log('=== NEW CHAT REQUEST ===', { method: request.method, url: request.url });
   try {
-    const { uid, isAnonymous } = await getUserFromRequest(request);
+    const { userId: uid, isAnonymous } = await getUserFromRequest(request);
     console.log('[API] Authenticated User ID:', uid || 'Guest', 'isAnonymous:', isAnonymous);
 
     // Log headers (avoid logging sensitive auth headers if present)
@@ -52,10 +49,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.text();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let parsed: any = null;
     try {
       parsed = body ? JSON.parse(body) : null;
-    } catch (e) {
+    } catch {
       console.warn('[API] Could not parse request body as JSON, raw body:', body);
     }
     console.log('[API] Request body (parsed):', parsed ? (Object.keys(parsed).length > 0 ? Object.fromEntries(Object.entries(parsed).slice(0, 20)) : parsed) : parsed);
@@ -80,6 +78,7 @@ export async function POST(request: NextRequest) {
     console.log('[API] chatFlow result keys:', result ? Object.keys(result).slice(0, 20) : result, { durationMs: Date.now() - start });
     return NextResponse.json(result);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('=== FATAL API ROUTE ERROR ===', error);
     console.error('Error stack:', error?.stack);
