@@ -7,8 +7,9 @@ import { Button } from './button';
 import { cn } from '@/lib/utils';
 import { Textarea } from './textarea';
 import { useToast } from '@/hooks/use-toast';
-import { signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+// MIGRATED TO SUPABASE - Firebase imports removed
+// import { signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
+// import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 import { marked } from 'marked';
 
