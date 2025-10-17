@@ -1,6 +1,5 @@
-
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from './firebase';
+// MIGRATED TO SUPABASE - This feature is being migrated
+// Firebase imports have been removed as part of migration to Supabase
 
 export interface AiMemory {
   topics: string[];
@@ -18,16 +17,9 @@ const initialMemory: AiMemory = {
  * @returns The AiMemory object, or an initial empty object if not found.
  */
 export async function getMemory(uid: string): Promise<AiMemory> {
-  if (!uid) return initialMemory;
-
-  const memoryRef = doc(db, 'users', uid, 'memory', 'data');
-  const docSnap = await getDoc(memoryRef);
-
-  if (docSnap.exists()) {
-    return (docSnap.data() as AiMemory) || initialMemory;
-  } else {
-    return initialMemory;
-  }
+  console.log('[MIGRATED] getMemory called - returning initial memory');
+  // TODO: Implement with Supabase when needed
+  return initialMemory;
 }
 
 /**
@@ -36,11 +28,6 @@ export async function getMemory(uid: string): Promise<AiMemory> {
  * @param memory The AiMemory object to save.
  */
 export async function saveMemory(uid: string, memory: AiMemory): Promise<void> {
-  if (!uid) throw new Error('User ID is required.');
-  
-  const memoryRef = doc(db, 'users', uid, 'memory', 'data');
-  await setDoc(memoryRef, {
-    ...memory,
-    updatedAt: serverTimestamp(),
-  }, { merge: true });
+  console.log('[MIGRATED] saveMemory called - not yet implemented with Supabase');
+  // TODO: Implement with Supabase when needed
 }

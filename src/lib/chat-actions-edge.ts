@@ -5,11 +5,19 @@ import { createClient } from '@supabase/supabase-js';
 import { ChatMessageProps } from '@/components/chat/chat-message';
 import { marked } from 'marked';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Helper function to get Supabase credentials with error checking
+function getSupabaseCredentials() {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase URL or Anon Key environment variables.');
+    if (!supabaseUrl || !supabaseAnonKey) {
+        console.error('[Supabase] Missing environment variables!');
+        console.error('[Supabase] NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'SET' : 'MISSING');
+        console.error('[Supabase] NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'SET' : 'MISSING');
+        throw new Error('Missing Supabase URL or Anon Key environment variables.');
+    }
+
+    return { supabaseUrl, supabaseAnonKey };
 }
 
 /**
@@ -22,6 +30,8 @@ export async function getChatMessages(sessionId: string, authToken?: string): Pr
     }
 
     try {
+        const { supabaseUrl, supabaseAnonKey } = getSupabaseCredentials();
+        
         // Create a Supabase client with optional auth token
         const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, 
             authToken ? {
@@ -75,6 +85,10 @@ export async function createChatSession(userId: string, title: string, authToken
     }
 
     try {
+        console.log('[createChatSession] Creating session for userId:', userId, 'with title:', title, 'hasToken:', !!authToken);
+        
+        const { supabaseUrl, supabaseAnonKey } = getSupabaseCredentials();
+        
         // Create a Supabase client with optional auth token
         const supabaseClient = createClient(supabaseUrl, supabaseAnonKey,
             authToken ? {
@@ -86,6 +100,32 @@ export async function createChatSession(userId: string, title: string, authToken
             } : undefined
         );
 
+        // First, verify the profile exists for this user
+        const { data: profileData, error: profileError } = await supabaseClient
+            .from('profiles')
+            .select('id')
+            .eq('id', userId)
+            .maybeSingle();
+
+        if (profileError) {
+            console.error('[createChatSession] Error checking profile:', profileError);
+        }
+
+        if (!profileData) {
+            console.error('[createChatSession] Profile not found for userId:', userId);
+            console.error('[createChatSession] This user may need to have their profile created first');
+            // Try to create the profile
+            const { error: createProfileError } = await supabaseClient
+                .from('profiles')
+                .insert({ id: userId, username: null });
+            
+            if (createProfileError) {
+                console.error('[createChatSession] Failed to create profile:', createProfileError);
+            } else {
+                console.log('[createChatSession] Successfully created missing profile for user:', userId);
+            }
+        }
+
         const { data, error } = await supabaseClient
             .from('chat_sessions')
             .insert({ user_id: userId, title: title })
@@ -94,6 +134,20 @@ export async function createChatSession(userId: string, title: string, authToken
 
         if (error) {
             console.error('[createChatSession] Error creating chat session:', error);
+            console.error('[createChatSession] Error code:', error.code, 'Message:', error.message, 'Details:', error.details);
+            
+            // Additional debugging
+            if (error.code === '42501') { // PostgreSQL insufficient privilege error
+                console.error('[createChatSession] RLS policy may be rejecting the insert. Check:');
+                console.error('[createChatSession] 1. Is the auth token valid?');
+                console.error('[createChatSession] 2. Does auth.uid() match userId?', userId);
+            }
+            
+            return null;
+        }
+
+        if (!data) {
+            console.error('[createChatSession] No data returned from insert');
             return null;
         }
 
@@ -101,6 +155,10 @@ export async function createChatSession(userId: string, title: string, authToken
         return data.id;
     } catch (error) {
         console.error('[createChatSession] Unexpected error:', error);
+        if (error instanceof Error) {
+            console.error('[createChatSession] Error message:', error.message);
+            console.error('[createChatSession] Error stack:', error.stack);
+        }
         return null;
     }
 }
@@ -115,6 +173,8 @@ export async function addChatMessage(sessionId: string, role: 'user' | 'model', 
     }
 
     try {
+        const { supabaseUrl, supabaseAnonKey } = getSupabaseCredentials();
+        
         // Create a Supabase client with optional auth token
         const supabaseClient = createClient(supabaseUrl, supabaseAnonKey,
             authToken ? {

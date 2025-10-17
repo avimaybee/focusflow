@@ -12,7 +12,6 @@ import React, {
   memo,
 } from 'react';
 
-import equal from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2 as LoaderIcon, X as XIcon } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
