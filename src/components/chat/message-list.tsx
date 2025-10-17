@@ -6,7 +6,6 @@ import { AIConversation, AIConversationContent, AIConversationScrollButton } fro
 import { ChatMessage, ChatMessageProps } from '@/components/chat/chat-message';
 import { Loader2 } from 'lucide-react';
 import { WelcomeScreen } from './welcome-screen';
-import { RefObject } from 'react';
 import { ChatMessageSkeleton } from './chat-message-skeleton';
 import type { SmartTool } from '@/components/smart-tools-menu';
 import type { PersonaDetails } from '@/types/chat-types';

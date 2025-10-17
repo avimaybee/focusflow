@@ -49,10 +49,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.text();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let parsed: any = null;
     try {
       parsed = body ? JSON.parse(body) : null;
-    } catch (e) {
+    } catch {
       console.warn('[API] Could not parse request body as JSON, raw body:', body);
     }
     console.log('[API] Request body (parsed):', parsed ? (Object.keys(parsed).length > 0 ? Object.fromEntries(Object.entries(parsed).slice(0, 20)) : parsed) : parsed);
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
     console.log('[API] chatFlow result keys:', result ? Object.keys(result).slice(0, 20) : result, { durationMs: Date.now() - start });
     return NextResponse.json(result);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('=== FATAL API ROUTE ERROR ===', error);
     console.error('Error stack:', error?.stack);
