@@ -74,13 +74,14 @@ export default function ChatPage() {
 
   useEffect(() => {
     async function loadMessages() {
-      if (activeChatId && session) {
+      if (activeChatId) {
         try {
-          const accessToken = session.access_token;
-          const url = accessToken 
-            ? `/api/chat?sessionId=${activeChatId}&accessToken=${encodeURIComponent(accessToken)}`
-            : `/api/chat?sessionId=${activeChatId}`;
-          const res = await fetch(url);
+          // Prefer Authorization header when session is present
+          const accessToken = session?.access_token;
+          const url = `/api/chat?sessionId=${activeChatId}` + (accessToken ? `&accessToken=${encodeURIComponent(accessToken)}` : '');
+          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+          if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+          const res = await fetch(url, { headers });
           if (res.ok) {
             const data = await res.json();
             setMessages(Array.isArray(data) ? data : []);
@@ -157,10 +158,12 @@ export default function ChatPage() {
 
           console.debug('[Client] Creating session - POST /api/chat/session', { userId: user.id, title: input.substring(0,30), hasToken: !!accessToken });
           const t0 = Date.now();
+          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+          if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
           const resp = await fetch('/api/chat/session', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: user.id, title: input.substring(0, 30), accessToken }),
+            headers,
+            body: JSON.stringify({ userId: user.id, title: input.substring(0, 30) }),
           });
           console.debug('[Client] session POST finished', { status: resp.status, durationMs: Date.now() - t0 });
           if (!resp.ok) {
@@ -204,13 +207,15 @@ export default function ChatPage() {
       return next;
     });
     // Save user message via API
-    try {
-      const accessToken = session?.access_token;
-      await fetch('/api/chat/message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: currentChatId, role: 'user', content: input.trim(), accessToken }),
-      });
+  try {
+  const accessToken = session?.access_token;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+  await fetch('/api/chat/message', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ sessionId: currentChatId, role: 'user', content: input.trim() }),
+  });
     } catch (err) {
       console.error('Error saving user message via API:', err);
     }
@@ -231,9 +236,9 @@ export default function ChatPage() {
     try {
       console.debug('[Client] POST /api/chat payload keys:', Object.keys(chatInput));
       const tstart = Date.now();
-      const response = await fetch('/api/chat', {
+      const { authenticatedFetch } = await import('@/lib/auth-helpers');
+      const response = await authenticatedFetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(chatInput),
       });
       console.debug('[Client] POST /api/chat responded', { status: response.status, durationMs: Date.now() - tstart });
@@ -273,19 +278,17 @@ export default function ChatPage() {
   });
       // Save model response via API
       try {
-        try {
-          const accessToken = session?.access_token;
-          console.debug('[Client] Saving model message via POST /api/chat/message', { sessionId: currentChatId });
-          const tmsg = Date.now();
-          const r = await fetch('/api/chat/message', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId: currentChatId, role: 'model', content: result.response, accessToken }),
-          });
-          console.debug('[Client] POST /api/chat/message finished', { status: r.status, durationMs: Date.now() - tmsg });
-        } catch (err) {
-          console.error('Error saving model message via API:', err);
-        }
+        const accessToken = session?.access_token;
+        console.debug('[Client] Saving model message via POST /api/chat/message', { sessionId: currentChatId });
+        const tmsg = Date.now();
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+        const r = await fetch('/api/chat/message', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ sessionId: currentChatId, role: 'model', content: result.response }),
+        });
+        console.debug('[Client] POST /api/chat/message finished', { status: r.status, durationMs: Date.now() - tmsg });
       } catch (err) {
         console.error('Error saving model message via API:', err);
       }
@@ -294,7 +297,11 @@ export default function ChatPage() {
         try {
           console.debug('[Client] Reloading messages from GET /api/chat', { sessionId: currentChatId });
           const tget = Date.now();
-          const res = await fetch(`/api/chat?sessionId=${currentChatId}`);
+          const accessToken = session?.access_token;
+          const url = `/api/chat?sessionId=${currentChatId}` + (accessToken ? `&accessToken=${encodeURIComponent(accessToken)}` : '');
+          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+          if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+          const res = await fetch(url, { headers });
           console.debug('[Client] GET /api/chat returned', { status: res.status, durationMs: Date.now() - tget });
           if (res.ok) {
             const data = await res.json();

@@ -22,6 +22,11 @@ export async function getChatHistory(userId: string): Promise<ChatHistoryItem[]>
     return [];
   }
 
+  if (!data) {
+    console.warn('getChatHistory: No data returned for userId:', userId);
+    return [];
+  }
+
   return data.map(item => ({
     id: item.id,
     title: item.title || 'Untitled Chat',
@@ -42,6 +47,11 @@ export async function getChatMessages(sessionId: string, accessToken?: string): 
 
     if (error) {
         console.error('Error fetching chat messages:', error);
+        return [];
+    }
+
+    if (!data) {
+        console.warn('getChatMessages: No data returned for sessionId:', sessionId);
         return [];
     }
 
@@ -95,15 +105,25 @@ export async function createChatSession(userId: string, title: string, accessTok
 }
 
 export async function addChatMessage(sessionId: string, role: 'user' | 'model', content: string, accessToken?: string) {
-    if (!sessionId) return;
+    if (!sessionId) return false;
 
     const client = accessToken ? createAuthenticatedSupabaseClient(accessToken) : supabase;
 
-    const { error } = await client
+    const { data, error } = await client
         .from('chat_messages')
-        .insert({ session_id: sessionId, role, content });
+        .insert({ session_id: sessionId, role, content })
+        .select('id')
+        .single();
 
     if (error) {
         console.error('Error adding chat message:', error);
+        return false;
     }
+
+    if (!data) {
+        console.warn('addChatMessage: insert returned no data for sessionId:', sessionId);
+        return false;
+    }
+
+    return true;
 }
