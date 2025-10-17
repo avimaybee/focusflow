@@ -133,7 +133,8 @@ export default function ChatPage() {
   };
 
   const handleSendMessage = async ({ input, attachments }: { input: string; attachments: Attachment[] }) => {
-    if (!input.trim() && attachments.length === 0 || isSending || authLoading ) return;
+    // Prevent sending if no content, already sending, or auth is loading
+    if ((!input.trim() && attachments.length === 0) || isSending || authLoading) return;
 
     if (!user) {
         openAuthModal();
@@ -177,7 +178,8 @@ export default function ChatPage() {
           const newChatId = data.id;
           currentChatId = newChatId;
           setActiveChatId(newChatId);
-          router.push(`/chat/${newChatId}`);
+          // Update URL without navigation to prevent page refresh
+          window.history.replaceState(null, '', `/chat/${newChatId}`);
           forceRefresh();
         } catch (err) {
           console.error('Error creating chat session:', err);
@@ -243,6 +245,7 @@ export default function ChatPage() {
       });
       console.debug('[Client] POST /api/chat responded', { status: response.status, durationMs: Date.now() - tstart });
   
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let result: any = null;
       try {
         result = await response.json();
@@ -292,30 +295,8 @@ export default function ChatPage() {
       } catch (err) {
         console.error('Error saving model message via API:', err);
       }
+      // Refresh chat history to show the new chat in the sidebar
       forceRefresh();
-      if (currentChatId) {
-        try {
-          console.debug('[Client] Reloading messages from GET /api/chat', { sessionId: currentChatId });
-          const tget = Date.now();
-          const accessToken = session?.access_token;
-          const url = `/api/chat?sessionId=${currentChatId}` + (accessToken ? `&accessToken=${encodeURIComponent(accessToken)}` : '');
-          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-          if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-          const res = await fetch(url, { headers });
-          console.debug('[Client] GET /api/chat returned', { status: res.status, durationMs: Date.now() - tget });
-          if (res.ok) {
-            const data = await res.json();
-            console.debug('[Client] Reloaded messages count:', Array.isArray(data) ? data.length : typeof data);
-            setMessages(Array.isArray(data) ? data : []);
-          } else {
-            const body = await res.text().catch(() => null);
-            console.error('[Client] GET /api/chat failed', { status: res.status, body });
-          }
-        } catch (err) {
-          console.error('Error reloading messages after AI response:', err);
-        }
-        
-      }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

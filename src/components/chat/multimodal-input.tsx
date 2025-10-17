@@ -176,7 +176,14 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
     };
 
     return (
-      <form ref={formRef} className={cn("relative w-full", className)}>
+      <form 
+        ref={formRef} 
+        className={cn("relative w-full", className)}
+        onSubmit={(e) => {
+          e.preventDefault();
+          submitForm();
+        }}
+      >
         <input
           type="file"
           className="hidden"
