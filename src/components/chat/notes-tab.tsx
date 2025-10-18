@@ -4,7 +4,6 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useAuth } from '@/context/auth-context';
-import { getNotes, saveNotes } from '@/lib/notes-actions';
 import { Loader2, CheckCircle, AlertTriangle, Search, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
@@ -16,7 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export function NotesTab() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { toast } = useToast();
   const [content, setContent] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
@@ -28,33 +27,65 @@ export function NotesTab() {
 
   // Effect to fetch initial notes
   useEffect(() => {
-    if (user && !isLoaded) {
-      getNotes(user.id).then((initialContent) => {
-        setContent(initialContent);
+    async function loadNotes() {
+      if (!user || !session?.access_token || isLoaded) return;
+
+      try {
+        const response = await fetch(`/api/notes?userId=${user.id}`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setContent(data.content || '');
+        } else {
+          console.error('Failed to load notes:', response.status);
+        }
+      } catch (err) {
+        console.error('Error loading notes:', err);
+      } finally {
         setIsLoaded(true);
-      });
+      }
     }
-  }, [user, isLoaded]);
+
+    loadNotes();
+  }, [user, session, isLoaded]);
 
   // Effect to save notes when debounced content changes
   useEffect(() => {
-    if (!isLoaded || !user) {
-      return;
-    }
+    async function saveNotesToServer() {
+      if (!isLoaded || !user || !session?.access_token) {
+        return;
+      }
 
-    // Don't trigger save on initial load (first time debouncedContent updates after loading)
-    if (!hasLoadedRef.current) {
-      hasLoadedRef.current = true;
-      return;
-    }
+      // Don't trigger save on initial load (first time debouncedContent updates after loading)
+      if (!hasLoadedRef.current) {
+        hasLoadedRef.current = true;
+        return;
+      }
 
-    setSaveStatus('saving');
-    saveNotes(user.id, debouncedContent)
-      .then(() => {
-        setSaveStatus('saved');
-        setTimeout(() => setSaveStatus('idle'), 2000);
-      })
-      .catch(() => {
+      setSaveStatus('saving');
+      
+      try {
+        const response = await fetch('/api/notes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ userId: user.id, content: debouncedContent }),
+        });
+
+        if (response.ok) {
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus('idle'), 2000);
+        } else {
+          throw new Error('Failed to save notes');
+        }
+      } catch (err) {
+        console.error('Error saving notes:', err);
         setSaveStatus('error');
         toast({
           variant: 'destructive',
@@ -62,9 +93,12 @@ export function NotesTab() {
           description: 'Failed to save your notes. Please try again.',
         });
         setTimeout(() => setSaveStatus('idle'), 2000);
-      });
+      }
+    }
+
+    saveNotesToServer();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedContent, user, isLoaded, toast]);
+  }, [debouncedContent, user, session, isLoaded, toast]);
   
   const searchResults = useMemo(() => {
     if (!searchQuery) return null;
