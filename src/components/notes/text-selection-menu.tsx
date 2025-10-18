@@ -4,7 +4,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
-import { appendToNotes } from '@/lib/notes-actions';
 import { useToast } from '@/hooks/use-toast';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,7 @@ type ExplanationState = {
 };
 
 export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { toast } = useToast();
   const { toggleContextHub, isContextHubOpen } = useContextHubStore();
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
@@ -114,7 +113,32 @@ export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
             ? `> ${selectedText}\n\n${explanation.content?.replace(/<[^>]*>/g, '\n')}`
             : selectedText;
         
-        await appendToNotes(user.id, contentToAppend);
+        // Use the API route instead of server action
+        if (!session?.access_token) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Session expired. Please sign in again.',
+            });
+            return;
+        }
+
+        const response = await fetch('/api/notes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ 
+                userId: user.id, 
+                append: true,
+                snippet: contentToAppend 
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save notes');
+        }
         
         toast({
             title: 'Sent to Notes',
