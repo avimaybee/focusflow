@@ -40,7 +40,7 @@ A personalized dashboard tracks user activity and progress.
 - **Gamification:** Features a "Study Streak" counter and unlockable badges to motivate consistent learning.
 
 ### g. Authentication & Content Persistence
-- **Secure Authentication:** Supports Email/Password and Google Sign-In via **Supabase**.
+- **Secure Authentication:** Supports Email/Password authentication via **Supabase**.
 - **Personalized Content:** Logged-in users have their generated summaries, quizzes, flashcard sets, study plans, and notes automatically saved to their personal "My Content" area, powered by **Supabase**.
 - **Feature Gating:** The application supports a premium tier. A user's `isPremium` status, stored in their Supabase profile, controls access to advanced features and lifts usage limits on core tools.
 
@@ -53,7 +53,7 @@ A personalized dashboard tracks user activity and progress.
 - **Styling:** Tailwind CSS, ShadCN UI, Framer Motion
 - **Backend & Database:** Supabase (Authentication, Database)
 - **Deployment:** Cloudflare
-- **AI:** Google Genkit, Google Gemini Models (e.g., `gemini-1.5-flash` for most tasks)
+- **AI:** Google Genkit, Google Gemini Models (e.g., `gemini-2.0-flash-lite` for most tasks)
 
 ### b. Core Chat Flow
 1.  **User Input:** The user sends a message or selects a tool from the `ChatPage` UI. They can also attach a file (like a PDF), which is converted to a Data URI on the client-side.
@@ -65,22 +65,3 @@ A personalized dashboard tracks user activity and progress.
 7.  **Data Persistence:** If a tool was used, the `chatFlow` saves the generated content to the user's Supabase database (e.g., in a `quizzes` table). The notepad content is saved to a dedicated `notepad` table, with a debounced server action ensuring changes are saved automatically.
 8.  **Response to Client:** The flow returns a response object containing the AI's text and any structured data (like the quiz object).
 9.  **Frontend Rendering:** The `ChatPage` receives the response. If structured data is present, it renders the corresponding interactive component (`QuizViewer`, `FlashcardViewer`); otherwise, it displays the formatted text response.
-
----
-
-## 4. Key Development Challenge & Resolution
-
-A significant challenge was ensuring that large file contexts, especially from multi-page PDFs, were reliably processed and understood by the AI model. Simply passing a large Data URI was not enough; it required a robust, end-to-end data handling strategy.
-
-### The Problem:
-- **Client-Side Processing:** Reading large files into memory as Data URIs on the client can be slow and memory-intensive, potentially crashing the browser tab.
-- **API Payload Limits:** Sending large Data URIs in a JSON payload to the API route risks exceeding server payload size limits.
-- **AI Context Window:** The AI model needs to receive the file content in a format it can interpret within its context window, alongside the user's prompt and other instructions.
-
-### The Solution:
-A multi-stage solution was implemented to create a robust file processing pipeline:
-1.  **Client-Side Validation & Conversion:** The `useFileUpload` hook was refined to include strict checks on file size (e.g., under 10MB) and type (PDF, image, text) before attempting to read the file. It efficiently converts the validated file into a `data:mime/type;base64,...` Data URI.
-2.  **Streamlined API Handling:** The Next.js API route at `/api/chat` was configured to handle large request bodies. It receives the entire JSON payload, including the Data URI.
-3.  **Genkit Media Handling:** The `chatFlow` was architected to correctly pass the Data URI to the Gemini model. The `chat.send()` method in Genkit natively supports a `media` object, so the Data URI is passed as `{ media: { url: context } }`. This tells Genkit to handle the base64 decoding and present the file content to the model in an optimal format.
-
-This solution ensures that users can seamlessly upload documents, have them processed efficiently, and receive AI-generated insights based on the full context of their materials, which is the cornerstone of the FocusFlow AI experience.

@@ -39,7 +39,7 @@ A personalized dashboard tracks user activity and progress.
 - **Gamification:** Features a "Study Streak" counter and unlockable badges to motivate consistent learning.
 
 ### g. Authentication & Content Persistence
-- **Secure Authentication:** Supports Email/Password and Google Sign-In via **Firebase Authentication**.
+- **Secure Authentication:** Supports Email/Password authentication via **Supabase Authentication**.
 - **Personalized Content:** Logged-in users have their generated summaries, quizzes, flashcard sets, study plans, and notes automatically saved to their personal "My Content" area, powered by **Firestore**.
 - **Feature Gating:** The application supports a premium tier. A user's `isPremium` status, stored in their Firestore document, controls access to advanced features and lifts usage limits on core tools.
 
