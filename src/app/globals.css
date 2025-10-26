@@ -124,6 +124,15 @@
     @apply h-full w-full rounded-[7px] bg-secondary/50;
   }
 
+  /* Hide scrollbars but keep functionality */
+  .scrollbar-hidden {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+
   /* Vertical Scrolling Heading Text Styles */
   .flip-heading {
     display: flex;

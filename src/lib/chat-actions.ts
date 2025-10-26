@@ -127,3 +127,60 @@ export async function addChatMessage(sessionId: string, role: 'user' | 'model', 
 
     return true;
 }
+
+/**
+ * Delete a chat session and all its messages
+ * @param userId - The user's ID
+ * @param chatId - The chat session ID to delete
+ * @param accessToken - Optional access token for authenticated requests
+ * @returns Success status
+ */
+export async function deleteChatSession(userId: string, chatId: string, accessToken?: string): Promise<{ success: boolean; error?: string }> {
+    if (!userId || !chatId) {
+        console.error('[deleteChatSession] Missing userId or chatId');
+        return { success: false, error: 'Missing required parameters' };
+    }
+
+    const client = accessToken ? createAuthenticatedSupabaseClient(accessToken) : supabase;
+
+    console.log('[deleteChatSession] Attempting to delete session', { userId, chatId, hasToken: !!accessToken });
+
+    // First verify the chat belongs to the user
+    const { data: session, error: fetchError } = await client
+        .from('chat_sessions')
+        .select('id')
+        .eq('id', chatId)
+        .eq('user_id', userId)
+        .single();
+
+    if (fetchError || !session) {
+        console.error('[deleteChatSession] Chat not found or unauthorized:', fetchError);
+        return { success: false, error: 'Chat not found or unauthorized' };
+    }
+
+    // Delete all messages in the chat session (cascade should handle this, but being explicit)
+    const { error: messagesError } = await client
+        .from('chat_messages')
+        .delete()
+        .eq('session_id', chatId);
+
+    if (messagesError) {
+        console.error('[deleteChatSession] Error deleting messages:', messagesError);
+        // Continue anyway, cascade delete should handle it
+    }
+
+    // Delete the chat session
+    const { error: sessionError } = await client
+        .from('chat_sessions')
+        .delete()
+        .eq('id', chatId)
+        .eq('user_id', userId);
+
+    if (sessionError) {
+        console.error('[deleteChatSession] Error deleting chat session:', sessionError);
+        return { success: false, error: sessionError.message };
+    }
+
+    console.log('[deleteChatSession] Successfully deleted chat:', chatId);
+    return { success: true };
+}

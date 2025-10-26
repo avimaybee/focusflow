@@ -52,62 +52,56 @@ export function SmartToolsMenu({ onAction }: SmartToolsMenuProps) {
   return (
     <TooltipProvider>
       <motion.div
-        layout
-        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        className={cn(
-            "flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border",
-            isOpen ? "w-auto" : "w-auto"
-        )}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="flex items-center gap-1"
         onMouseLeave={() => setIsOpen(false)}
         role="toolbar"
         aria-label="Smart Tools"
       >
-            <Tooltip delayDuration={300}>
-                <TooltipTrigger asChild>
-                    <motion.div layoutId="smart-tools-button">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 rounded-full"
-                            onClick={() => setIsOpen(!isOpen)}
-                            aria-label="Open Smart Tools"
-                        >
-                            <Sparkles className="h-4 w-4" />
-                        </Button>
-                    </motion.div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>Smart Tools</p>
-                </TooltipContent>
-            </Tooltip>
+        <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-full"
+                onClick={() => setIsOpen(!isOpen)}
+                aria-label="Open Smart Tools"
+              >
+                <Sparkles className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Smart Tools</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
         
         <AnimatePresence>
             {isOpen && (
-                 <motion.div
-                    className="flex items-center gap-1"
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto', transition: { delay: 0.1 } }}
-                    exit={{ opacity: 0, width: 0 }}
-                 >
-                    {smartTools.map((tool) => (
-                        <Tooltip key={tool.name} delayDuration={300}>
-                        <TooltipTrigger asChild>
-                            <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 rounded-full"
-                            onClick={() => onAction(tool)}
-                            >
-                            {tool.icon}
-                            <span className="sr-only">{tool.name}</span>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>{tool.name}</p>
-                        </TooltipContent>
-                        </Tooltip>
-                    ))}
-                </motion.div>
+              <motion.div
+                className="flex flex-wrap items-center gap-1 max-w-md"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+              >
+                {smartTools.map((tool) => (
+                  <Button
+                    key={tool.name}
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 rounded-full text-xs gap-1.5 hover:bg-primary hover:text-primary-foreground transition-colors"
+                    onClick={() => {
+                      onAction(tool);
+                      setIsOpen(false);
+                    }}
+                  >
+                    {tool.icon}
+                    <span>{tool.name}</span>
+                  </Button>
+                ))}
+              </motion.div>
             )}
         </AnimatePresence>
       </motion.div>

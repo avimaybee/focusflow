@@ -212,11 +212,10 @@ export function ChatMessage({
   return (
     <>
       <motion.div
-        layout
-        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -10, scale: 0.95 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -5 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
         className={cn(
           'group flex items-start gap-3',
           isUser && 'justify-end'
@@ -235,7 +234,7 @@ export function ChatMessage({
           <div
             ref={contentRef}
             className={cn(
-              'relative max-w-full sm:max-w-xl p-3 text-base shadow-sm',
+              'relative max-w-full sm:max-w-xl px-3 py-2 text-sm shadow-sm',
               'rounded-xl',
               isUser
                 ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'

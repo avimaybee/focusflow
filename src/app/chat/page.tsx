@@ -126,11 +126,58 @@ export default function ChatPage() {
   };
 
   const handleDeleteChat = async (chatId: string) => {
-    toast({ title: 'Coming Soon', description: 'Chat deletion will be re-enabled soon.' });
+    setChatToDelete(chatId);
+    setDialogOpen(true);
   };
 
   const confirmDeleteChat = async () => {
-    // Placeholder
+    if (!chatToDelete || !user) return;
+
+    try {
+      const accessToken = session?.access_token;
+      const url = `/api/chat/delete?chatId=${chatToDelete}&userId=${user.id}` + 
+        (accessToken ? `&accessToken=${encodeURIComponent(accessToken)}` : '');
+      
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+
+      const res = await fetch(url, { 
+        method: 'DELETE',
+        headers 
+      });
+
+      if (res.ok) {
+        toast({ 
+          title: 'Chat Deleted', 
+          description: 'The conversation has been removed.' 
+        });
+
+        // If we deleted the active chat, go to a new chat
+        if (chatToDelete === activeChatId) {
+          handleNewChat();
+        }
+
+        // Refresh chat history
+        forceRefresh();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast({ 
+          title: 'Error', 
+          description: data.error || 'Failed to delete chat',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+      toast({ 
+        title: 'Error', 
+        description: 'Failed to delete chat',
+        variant: 'destructive'
+      });
+    } finally {
+      setDialogOpen(false);
+      setChatToDelete(null);
+    }
   };
 
   const handleRegenerate = () => {

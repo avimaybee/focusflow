@@ -109,19 +109,14 @@ export function PersonaSelector({
           size="icon"
           disabled={disabled}
           className={cn(
-            "h-9 w-9 shrink-0 rounded-full transition-all duration-200",
-            "hover:scale-105 hover:bg-muted",
-            open && "bg-muted ring-2 ring-primary/30",
+            "h-9 w-9 shrink-0 rounded-full transition-colors",
+            "hover:bg-muted",
+            open && "bg-muted",
             disabled && "opacity-50 cursor-not-allowed",
             className
           )}
         >
-          <motion.div
-            animate={{ rotate: open ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Icon className="h-5 w-5 text-muted-foreground" />
-          </motion.div>
+          <Icon className="h-5 w-5 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
       
@@ -132,19 +127,14 @@ export function PersonaSelector({
           variant === 'compact' ? 'w-[300px]' : 'w-[380px]'
         )}
       >
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15 }}
-        >
-          <Command className="rounded-lg">
-            <div className="flex items-center border-b px-3 bg-muted/30">
-              <Sparkles className="mr-2 h-4 w-4 text-primary" />
-              <CommandInput 
-                placeholder="Choose your AI persona..." 
-                className="border-0 focus:ring-0"
-              />
-            </div>
+        <Command className="rounded-lg">
+          <div className="flex items-center border-b px-3 bg-muted/30">
+            <Sparkles className="mr-2 h-4 w-4 text-primary" />
+            <CommandInput 
+              placeholder="Choose your AI persona..." 
+              className="border-0 focus:ring-0"
+            />
+          </div>
             <CommandList className="max-h-[400px]">
               <CommandEmpty>
                 <div className="flex flex-col items-center gap-2 py-6">
@@ -155,39 +145,31 @@ export function PersonaSelector({
                 </div>
               </CommandEmpty>
               <CommandGroup className="p-2">
-                <AnimatePresence mode="popLayout">
-                  {(personas || []).map((persona, index) => {
+                  {(personas || []).map((persona) => {
                     const PersonaIcon = personaIcons[persona.id] || Bot;
                     const colorScheme = personaColors[persona.id] || 'from-gray-500/20 to-slate-500/20 border-gray-500/30';
                     const isSelected = selectedPersonaId === persona.id;
                     
                     return (
-                      <motion.div
+                      <CommandItem
                         key={persona.id}
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
-                        transition={{ delay: index * 0.02 }}
+                        value={persona.id}
+                        onSelect={() => {
+                          onSelect(persona.id);
+                          setOpen(false);
+                        }}
+                        className={cn(
+                          "group relative flex items-start gap-3 cursor-pointer rounded-lg p-3 mb-2",
+                          "transition-colors duration-150",
+                          "hover:bg-gradient-to-r hover:shadow-md",
+                          isSelected 
+                            ? `bg-gradient-to-r ${colorScheme} shadow-sm` 
+                            : "hover:bg-muted/50"
+                        )}
                       >
-                        <CommandItem
-                          value={persona.id}
-                          onSelect={() => {
-                            onSelect(persona.id);
-                            setOpen(false);
-                          }}
-                          className={cn(
-                            "group relative flex items-start gap-3 cursor-pointer rounded-lg p-3 mb-2",
-                            "transition-all duration-200",
-                            "hover:bg-gradient-to-r hover:shadow-md",
-                            isSelected 
-                              ? `bg-gradient-to-r ${colorScheme} shadow-sm` 
-                              : "hover:bg-muted/50"
-                          )}
-                        >
                           {/* Icon with colored background */}
                           <div className={cn(
-                            "flex items-center justify-center h-10 w-10 rounded-full shrink-0",
-                            "transition-transform duration-200 group-hover:scale-110",
+                            "flex items-center justify-center h-10 w-10 rounded-full shrink-0 transition-colors",
                             isSelected 
                               ? "bg-primary/10 ring-2 ring-primary/30" 
                               : "bg-muted group-hover:bg-primary/5"
@@ -212,18 +194,12 @@ export function PersonaSelector({
                                 {persona.displayName || persona.name}
                               </p>
                               {isSelected && (
-                                <motion.div
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  transition={{ type: "spring", stiffness: 500 }}
+                                <Badge 
+                                  variant="default" 
+                                  className="h-5 px-1.5 text-[10px] font-medium bg-primary/10 text-primary border-primary/30"
                                 >
-                                  <Badge 
-                                    variant="default" 
-                                    className="h-5 px-1.5 text-[10px] font-medium bg-primary/10 text-primary border-primary/30"
-                                  >
-                                    Active
-                                  </Badge>
-                                </motion.div>
+                                  Active
+                                </Badge>
                               )}
                             </div>
                             {persona.description && (
@@ -239,28 +215,17 @@ export function PersonaSelector({
                           </div>
                           
                           {/* Checkmark */}
-                          <AnimatePresence>
-                            {isSelected && (
-                              <motion.div
-                                initial={{ scale: 0, rotate: -180 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                exit={{ scale: 0, rotate: 180 }}
-                                transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                                className="shrink-0"
-                              >
-                                <Check className="h-5 w-5 text-primary" />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                          {isSelected && (
+                            <div className="shrink-0">
+                              <Check className="h-5 w-5 text-primary" />
+                            </div>
+                          )}
                         </CommandItem>
-                      </motion.div>
                     );
                   })}
-                </AnimatePresence>
               </CommandGroup>
             </CommandList>
           </Command>
-        </motion.div>
       </PopoverContent>
     </Popover>
   );
