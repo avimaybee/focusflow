@@ -86,6 +86,7 @@ interface PersonaSelectorProps {
   onSelect: (personaId: string) => void;
   variant?: 'default' | 'compact';
   className?: string;
+  disabled?: boolean;
 }
 
 export function PersonaSelector({
@@ -94,6 +95,7 @@ export function PersonaSelector({
   onSelect,
   variant = 'default',
   className,
+  disabled = false,
 }: PersonaSelectorProps) {
   const [open, setOpen] = React.useState(false);
   const selectedPersona = personas.find((p) => p.id === selectedPersonaId);
@@ -105,10 +107,12 @@ export function PersonaSelector({
         <Button
           variant="ghost"
           size="icon"
+          disabled={disabled}
           className={cn(
             "h-9 w-9 shrink-0 rounded-full transition-all duration-200",
             "hover:scale-105 hover:bg-muted",
             open && "bg-muted ring-2 ring-primary/30",
+            disabled && "opacity-50 cursor-not-allowed",
             className
           )}
         >
@@ -145,7 +149,9 @@ export function PersonaSelector({
               <CommandEmpty>
                 <div className="flex flex-col items-center gap-2 py-6">
                   <Bot className="h-8 w-8 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">No persona found.</p>
+                  <p className="text-sm text-muted-foreground">
+                    {personas.length === 0 ? 'Loading personas...' : 'No persona found.'}
+                  </p>
                 </div>
               </CommandEmpty>
               <CommandGroup className="p-2">

@@ -10,6 +10,8 @@ function convertToPersonaDetails(persona: Persona) {
   return {
     id: persona.id,
     name: persona.display_name,
+    displayName: persona.display_name,
+    description: persona.description,
     avatarUrl: persona.avatar_emoji || persona.avatar_url || '',
     prompt: persona.prompt,
   };
@@ -20,6 +22,8 @@ export function usePersonaManager(initialPersonaId?: string) {
   const [personas, setPersonas] = useState<Array<{
     id: string;
     name: string;
+    displayName: string;
+    description: string;
     avatarUrl: string;
     prompt: string;
   }>>([]);

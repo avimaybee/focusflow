@@ -124,9 +124,14 @@ export function LandingPageChatV2() {
     return personaIds[Math.floor(Math.random() * personaIds.length)];
   });
   
-  const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager(randomPersonaId);
+  const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId, isLoading } = usePersonaManager(randomPersonaId);
   const authModal = useAuthModal();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Debug: log personas when they load
+  useEffect(() => {
+    console.log('Landing page personas loaded:', personas.length, personas);
+  }, [personas]);
 
   // Removed auto-scrolling behavior as per user request.
 
@@ -247,6 +252,7 @@ export function LandingPageChatV2() {
                     onSelect={setSelectedPersonaId}
                     variant="compact"
                     className="rounded-full flex-shrink-0 text-muted-foreground hover:bg-muted"
+                    disabled={isLoading}
                 />
                 <input
                     type="text"

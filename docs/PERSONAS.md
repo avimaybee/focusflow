@@ -23,18 +23,21 @@ Files of interest
 The table below is the single reference for persona ids, display names, and the assigned human-name
 that is injected or referenced in the persona prompts (if applicable).
 
+**IMPORTANT**: After running the ID migration (06_update_persona_ids_and_names.sql), the IDs changed
+to display-friendly format. The table below reflects the current state after that migration.
+
 | id (primary key) | display_name | human_name | short description |
 |------------------|--------------|------------|-------------------|
-| gurt | Gurt | Gurt | Friendly default guide; versatile conversational assistant. |
-| eli5 | ELI5 | Milo | Explains concepts simply, like you're 5. Playful analogies. |
-| straight-shooter | Straight Shooter | Frank | Concise no-nonsense answers (1–2 sentences). |
-| essay-writer | Essay Writer | Clairo | Academic, structured writing (600-word default). |
-| in-depth-explainer | Deep Dive Dynamo | Syd | Thorough explanations designed for retention. |
-| sassy-eva | Sassy Eva | Lexi | Energetic, Gen Z style, emoji-forward teaching voice. |
-| brainstormer | Idea Fountain | The Chef | Generates multiple creative ideas and categories them. |
-| memory-coach | Cram Master | Remi | Mnemonics, memory palace, rapid memorization. |
-| coding-guru | CodeMaster | Dex | Programming mentor; always uses code blocks. |
-| exam-strategist | Test Ace | Theo | Exam strategies, time management, and stress reduction. |
+| Gurt | Gurt - The Guide | Gurt | Friendly default guide; versatile conversational assistant. |
+| Im a baby | ELI5 - The Simplifier | Milo | Explains concepts simply, like you're 5. Playful analogies. |
+| straight shooter | The Direct Answer | Frank | Concise no-nonsense answers (1–2 sentences). |
+| essay writer | The Academic Wordsmith | Clairo | Academic, structured writing (600-word default). |
+| lore master | The Understanding Builder | Syd | Thorough explanations designed for retention. |
+| sassy tutor | The Fun Diva Teacher | Lexi | Energetic, Gen Z style, emoji-forward teaching voice. |
+| idea cook | The Creative Catalyst | The Chef | Generates multiple creative ideas and categories them. |
+| memory coach | The Speed Learner | Remi | Mnemonics, memory palace, rapid memorization. |
+| code nerd | The Programming Mentor | Dex | Programming mentor; always uses code blocks. |
+| exam strategist | The Exam Strategist | Theo | Exam strategies, time management, and stress reduction. |
 
 Notes:
 - `id` is the persona primary key and used in chat messages and user preferences. Do not change ids
