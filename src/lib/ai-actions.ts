@@ -24,7 +24,7 @@ export async function getExplanation(concept: string): Promise<string> {
       userId: 'guest-user-for-explanation',
       isGuest: true,
       message: message,
-      personaId: 'neutral', // Use a neutral persona for a straightforward explanation
+      personaId: 'gurt', // Use the default persona for a straightforward explanation
     });
     
     // The flow's response will contain the formatted text.

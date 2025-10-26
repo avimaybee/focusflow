@@ -1,12 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-// NOTE: Importing from a client-side hook file into a server-side flow
-// is not ideal. In a larger application, this persona data should be
-// sourced from a shared location or a database. For now, this is the
-// most direct way to access the persona prompts.
-import { defaultPersonas } from '@/lib/personas';
-import type { PersonaDetails } from '@/types/chat-types';
+import { getPersonaById, getDefaultPersona } from '@/lib/persona-actions';
 
 const API_KEY = process.env.GEMINI_API_KEY;
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
@@ -34,8 +29,12 @@ export async function chatFlow(input: ChatFlowInput) {
     throw new Error('The GEMINI_API_KEY environment variable is not set.');
   }
 
-  const selectedPersona: PersonaDetails | undefined = defaultPersonas.find(p => p.id === personaId);
-  const personaPrompt = selectedPersona?.prompt || defaultPersonas.find(p => p.id === 'neutral')!.prompt;
+  // Fetch persona from database
+  const selectedPersona = personaId 
+    ? await getPersonaById(personaId) 
+    : await getDefaultPersona();
+  
+  const personaPrompt = selectedPersona?.prompt || 'You are a helpful AI assistant.';
 
   // Construct the conversation history for the API
   const apiHistory = (history || []).map(h => ({
@@ -92,7 +91,7 @@ export async function chatFlow(input: ChatFlowInput) {
       sessionId: validatedInput.sessionId || 'new-session',
       response: generatedText,
       rawResponse: generatedText,
-      persona: selectedPersona || defaultPersonas.find(p => p.id === 'neutral'),
+      persona: selectedPersona || await getDefaultPersona(),
     };
   } catch (error) {
     console.error('Error in chatFlow:', error);

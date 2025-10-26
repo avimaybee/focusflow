@@ -1,0 +1,14 @@
+/**
+ * @deprecated This file is no longer used. Personas are now stored in Supabase.
+ * 
+ * Migration completed: 2024
+ * - Personas moved to `personas` table in Supabase
+ * - Server actions in `src/lib/persona-actions.ts`
+ * - Client hook updated in `src/hooks/use-persona-manager.ts`
+ * - Chat flow updated in `src/ai/flows/chat-flow.ts`
+ * 
+ * This file is kept for reference only and can be safely deleted.
+ * See: PERSONA_MIGRATION_GUIDE.md and docs/PERSONAS_GUIDE.md
+ */
+
+export const DEPRECATED_MESSAGE = 'Personas are now managed via Supabase. See persona-actions.ts';

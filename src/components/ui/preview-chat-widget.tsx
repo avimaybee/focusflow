@@ -137,7 +137,7 @@ export function PreviewChatWidget({ onClose }: { onClose: () => void }) {
             body: JSON.stringify({ 
               message: messageContent, 
               userId: guestUser.uid,
-              personaId: 'casual' // Explicitly set the persona for the preview
+              personaId: 'gurt' // Use the default persona for the preview
             }),
         });
 

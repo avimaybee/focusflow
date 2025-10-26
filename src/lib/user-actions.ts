@@ -1,6 +1,7 @@
 'use server';
 import { isUsernameAvailable as checkUsernameAvailability } from './profile-actions'; // Renamed to avoid conflict
 import type { Persona } from '@/types/chat-types';
+import { getPersonas as fetchPersonasFromDB } from './persona-actions';
 
 export interface UserProfile {
     username?: string;
@@ -9,12 +10,10 @@ export interface UserProfile {
     onboardingCompleted?: boolean;
 }
 
-export const getPersonas = async (): Promise<Persona[]> => {
-    console.log('[PLACEHOLDER] getPersonas called');
-    return [
-        { id: 'neutral', name: 'Neutral', prompt: 'You are a helpful AI study assistant.' },
-        { id: 'socratic', name: 'Socratic', prompt: 'You are a Socratic tutor.' },
-    ];
+export const getPersonas = async () => {
+    console.log('[PLACEHOLDER] getPersonas called - fetching from database');
+    const dbPersonas = await fetchPersonasFromDB();
+    return dbPersonas;
 };
 
 export const getUserProfile = async (userId: string): Promise<UserProfile> => {
@@ -22,7 +21,7 @@ export const getUserProfile = async (userId: string): Promise<UserProfile> => {
     return {
         username: 'placeholder-user',
         learningGoals: 'Placeholder learning goals.',
-        preferredPersona: 'neutral',
+        preferredPersona: 'gurt',
         onboardingCompleted: true,
     };
 };
