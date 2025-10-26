@@ -47,6 +47,7 @@ export default function ChatPage() {
 
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [isNewChat, setIsNewChat] = useState(false);
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
@@ -74,30 +75,33 @@ export default function ChatPage() {
 
   useEffect(() => {
     async function loadMessages() {
-      if (activeChatId) {
-        try {
-          // Prefer Authorization header when session is present
-          const accessToken = session?.access_token;
-          const url = `/api/chat?sessionId=${activeChatId}` + (accessToken ? `&accessToken=${encodeURIComponent(accessToken)}` : '');
-          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-          if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-          const res = await fetch(url, { headers });
-          if (res.ok) {
-            const data = await res.json();
-            setMessages(Array.isArray(data) ? data : []);
-          } else {
-            const text = await res.text().catch(() => 'Could not read response body');
-            console.error('Failed to load messages:', res.status, text);
-            setMessages([]);
-          }
-        } catch (err) {
-          console.error('Error fetching messages:', err);
+      // Don't load messages when we're creating a new chat and adding messages locally
+      if (isNewChat || !activeChatId) {
+        return;
+      }
+      
+      try {
+        // Prefer Authorization header when session is present
+        const accessToken = session?.access_token;
+        const url = `/api/chat?sessionId=${activeChatId}` + (accessToken ? `&accessToken=${encodeURIComponent(accessToken)}` : '');
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+        const res = await fetch(url, { headers });
+        if (res.ok) {
+          const data = await res.json();
+          setMessages(Array.isArray(data) ? data : []);
+        } else {
+          const text = await res.text().catch(() => 'Could not read response body');
+          console.error('Failed to load messages:', res.status, text);
           setMessages([]);
         }
+      } catch (err) {
+        console.error('Error fetching messages:', err);
+        setMessages([]);
       }
     }
     loadMessages();
-  }, [activeChatId, session]);
+  }, [activeChatId, session, isNewChat]);
 
   // Debug: log messages changes to help identify when messages becomes undefined or malformed
   useEffect(() => {
@@ -117,6 +121,7 @@ export default function ChatPage() {
     setActiveChatId(null);
     setMessages([]);
     setGuestMessageCount(0);
+    setIsNewChat(false);
     router.push('/chat');
   };
 
@@ -177,8 +182,9 @@ export default function ChatPage() {
           const data = await resp.json();
           const newChatId = data.id;
           currentChatId = newChatId;
+          setIsNewChat(true); // Mark as new chat to prevent loading from DB
           setActiveChatId(newChatId);
-          // Update URL without navigation to prevent page refresh
+          // Update URL without causing a re-render
           window.history.replaceState(null, '', `/chat/${newChatId}`);
           forceRefresh();
         } catch (err) {
@@ -297,6 +303,8 @@ export default function ChatPage() {
       }
       // Refresh chat history to show the new chat in the sidebar
       forceRefresh();
+      // Reset isNewChat flag now that messages are saved
+      setIsNewChat(false);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

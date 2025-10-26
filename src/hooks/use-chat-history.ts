@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { getChatHistory } from '@/lib/chat-actions';
 
 export interface ChatHistoryItem {
   id: string;
@@ -12,23 +11,43 @@ export interface ChatHistoryItem {
 }
 
 export function useChatHistory() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const forceRefresh = useCallback(async () => {
-    if (!user) return;
+    if (!user || !session?.access_token) {
+      setIsLoading(false);
+      return;
+    }
+    
     setIsLoading(true);
     try {
-      const history = await getChatHistory(user.id);
-      setChatHistory(history);
+      const response = await fetch(`/api/chat/history?userId=${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const history = data.map((item: { id: string; title: string; createdAt: string }) => ({
+          id: item.id,
+          title: item.title,
+          createdAt: new Date(item.createdAt),
+        }));
+        setChatHistory(history);
+      } else {
+        console.error('Failed to fetch chat history:', response.status);
+        setChatHistory([]);
+      }
     } catch (error) {
       console.error("Failed to fetch chat history:", error);
       setChatHistory([]);
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, session]);
 
   useEffect(() => {
     forceRefresh();
