@@ -20,21 +20,21 @@
     --foreground: 210 40% 98%; /* Off-white for text */
     --card: 224 10% 12%; /* Slightly lighter charcoal for cards */
     --card-foreground: 210 40% 98%;
-    --popover: 224 10% 10%;
+    --popover: 224 10% 12%; /* Lighter for better contrast */
     --popover-foreground: 210 40% 98%;
     --primary: 217 91% 60%; /* #3B82F6 - Vibrant Blue */
     --primary-foreground: 210 40% 98%; /* Off-white for high contrast */
-    --secondary: 224 10% 15%; /* Darker shade for secondary elements */
+    --secondary: 224 10% 18%; /* Lighter for better contrast */
     --secondary-foreground: 210 40% 98%;
-    --muted: 224 10% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 224 10% 18%; /* Lighter for better contrast */
+    --muted-foreground: 215 25% 70%; /* Increased lightness for better readability */
     --accent: 265 60% 75%; /* #B788E6 - Muted Purple */
     --accent-foreground: 224 10% 10%; /* Dark charcoal for high contrast */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 224 10% 20%; /* Border color */
+    --border: 224 10% 25%; /* Lighter border for visibility */
     --dot-background: 224 10% 25%;
-    --input: 224 10% 15%;
+    --input: 224 10% 18%;
     --ring: 217 91% 60%; /* Ring color to match primary */
     --radius: 0.75rem;
   }
@@ -44,21 +44,21 @@
     --foreground: 210 40% 98%; /* Off-white for text */
     --card: 224 10% 12%; /* Slightly lighter charcoal for cards */
     --card-foreground: 210 40% 98%;
-    --popover: 224 10% 10%;
+    --popover: 224 10% 12%; /* Lighter for better contrast */
     --popover-foreground: 210 40% 98%;
     --primary: 217 91% 60%; /* #3B82F6 - Vibrant Blue */
     --primary-foreground: 210 40% 98%; /* Off-white for high contrast */
-    --secondary: 224 10% 15%; /* Darker shade for secondary elements */
+    --secondary: 224 10% 18%; /* Lighter for better contrast */
     --secondary-foreground: 210 40% 98%;
-    --muted: 224 10% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 224 10% 18%; /* Lighter for better contrast */
+    --muted-foreground: 215 25% 70%; /* Increased lightness for better readability */
     --accent: 265 60% 75%; /* #B788E6 - Muted Purple */
     --accent-foreground: 224 10% 10%; /* Dark charcoal for high contrast */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 224 10% 20%; /* Border color */
+    --border: 224 10% 25%; /* Lighter border for visibility */
     --dot-background: 224 10% 25%;
-    --input: 224 10% 15%;
+    --input: 224 10% 18%;
     --ring: 217 91% 60%; /* Ring color to match primary */
   }
 }
@@ -191,7 +191,9 @@
 
 
 .prose-styles {
-  @apply prose prose-invert max-w-none prose-p:font-body prose-headings:font-heading prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-foreground;
+  @apply prose prose-invert max-w-none prose-sm prose-p:font-body prose-headings:font-heading prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-foreground;
+  font-size: 0.875rem; /* 14px - match text-sm */
+  line-height: 1.5;
 }
 
 /* Remove top/bottom margin from first/last elements in AI message bubbles */
@@ -205,5 +207,21 @@
 .prose-styles p,
 .prose-styles ul,
 .prose-styles ol {
-    line-height: 1.4;
+    line-height: 1.5;
+    font-size: 0.875rem; /* 14px */
+}
+
+.prose-styles h1,
+.prose-styles h2,
+.prose-styles h3,
+.prose-styles h4,
+.prose-styles h5,
+.prose-styles h6 {
+    font-size: 1rem; /* 16px for headings */
+    margin-top: 0.75em;
+    margin-bottom: 0.5em;
+}
+
+.prose-styles code {
+    font-size: 0.8125rem; /* 13px */
 }

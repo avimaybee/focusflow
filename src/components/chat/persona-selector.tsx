@@ -161,7 +161,6 @@ export function PersonaSelector({
                         className={cn(
                           "group relative flex items-start gap-3 cursor-pointer rounded-lg p-3 mb-2",
                           "transition-colors duration-150",
-                          "hover:bg-gradient-to-r hover:shadow-md",
                           isSelected 
                             ? `bg-gradient-to-r ${colorScheme} shadow-sm` 
                             : "hover:bg-muted/50"
