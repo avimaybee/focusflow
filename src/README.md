@@ -1,3 +1,38 @@
+# Personas (developer quick reference)
+
+This file documents where and how the project uses personas and how to update them.
+
+Where personas live
+- Database: `public.personas` (Supabase)
+- Migration: `supabase/migrations/04_create_personas_table.sql`
+
+Primary code paths
+- Server actions: `src/lib/persona-actions.ts` — canonical place to fetch/modify personas.
+- Client hook: `src/hooks/use-persona-manager.ts` — React hook used by UI components to fetch and cache personas.
+- Constants: `src/lib/constants.ts` — `PersonaIDs` constant used to avoid hard-coded strings.
+- Types: `src/types/chat-types.ts` — `validPersonas` and default persona values.
+- Chat flow: `src/ai/flows/chat-flow.ts` — resolves persona prompt for AI system messages.
+- Key UI components:
+  - `src/components/chat/persona-selector.tsx`
+  - `src/components/chat/multimodal-input.tsx`
+  - `src/components/landing/landing-page-chat-v2.tsx`
+
+How to add a persona (high-level)
+1. Create an INSERT migration or add the row via Supabase SQL editor (see `supabase/migrations/04_create_personas_table.sql`).
+2. (Optional) Add the id to `src/lib/constants.ts` to make it easy to reference in code.
+3. Add the id to `src/types/chat-types.ts` `validPersonas` array to keep TypeScript strict.
+4. Test locally: run dev server, select the persona in the UI, and send a chat message.
+
+Best practices
+- Prefer adding personas via DB so they can be updated without redeploys.
+- Avoid hard-coded string ids across components; use `PersonaIDs` constant.
+- If you must rename an id, follow a migration strategy to preserve chat history (create new row, migrate existing references, then remove old row).
+
+Common troubleshooting
+- Personas not showing: ensure `getPersonas()` returns rows and `is_active` is true.
+- Unexpected persona behavior: inspect `prompt` field in DB for the persona and check `chat-flow` usage.
+
+If you need a longer developer doc, update `docs/PERSONAS.md` (canonical) and link it here.
 # FocusFlow AI: Project Overview
 
 This document provides a comprehensive overview of the FocusFlow AI application, detailing its features, technical implementation, design philosophy, and key development challenges.

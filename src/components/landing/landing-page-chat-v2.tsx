@@ -7,53 +7,17 @@ import { useToast } from '@/hooks/use-toast';
 import { marked } from 'marked';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
+import { PersonaSelector } from '@/components/chat/persona-selector';
 import {
     Send,
     Sparkles,
     Bot,
     User,
-    Users,
-    Check,
-    Baby,
-    MessageSquare,
-    Zap,
-    ThumbsDown,
-    List,
-    GraduationCap,
-    Lightbulb,
-    Clock,
-    Drama
 } from 'lucide-react';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { PersonaIDs } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { ChatMessageProps } from '@/types/chat';
-
-const personaIcons: { [key: string]: React.ElementType } = {
-  neutral: Bot,
-  'five-year-old': Baby,
-  casual: MessageSquare,
-  entertaining: Zap,
-  'brutally-honest': ThumbsDown,
-  'straight-shooter': List,
-  'essay-sharpshooter': GraduationCap,
-  'idea-generator': Lightbulb,
-  'cram-buddy': Clock,
-  sassy: Drama,
-};
+import type { ChatMessageProps } from '@/components/chat/chat-message';
 
 const suggestedPrompts = [
   "Explain the theory of relativity like I'm five",
@@ -65,13 +29,13 @@ const suggestedPrompts = [
 const welcomeMessage: ChatMessageProps = {
     id: 'welcome-1',
     role: 'model',
-    content: 'Hey there! I\'m FocusFlow, your AI study buddy. Think of me as that friend who\'s weirdly good at explaining things. I can help you summarize stuff, make quizzes, create flashcards, you name it. <br/><br/> So, what are we diving into today? Pick a suggestion below or just tell me what you need!',
+    text: 'Hey there! I\'m FocusFlow, your AI study buddy. Think of me as that friend who\'s weirdly good at explaining things. I can help you summarize stuff, make quizzes, create flashcards, you name it. <br/><br/> So, what are we diving into today? Pick a suggestion below or just tell me what you need!',
 };
 
 const limitMessage: ChatMessageProps = {
     id: 'limit-1',
     role: 'model',
-    content: 'Looks like you\'re getting the hang of it! You\'ve reached the demo limit. <br/><br/> Please sign up or log in to continue our chat—it\'s free and you\'ll get access to all the features!',
+    text: 'Looks like you\'re getting the hang of it! You\'ve reached the demo limit. <br/><br/> Please sign up or log in to continue our chat—it\'s free and you\'ll get access to all the features!',
 }
 
 const Message = ({ message }: { message: ChatMessageProps }) => {
@@ -92,7 +56,7 @@ const Message = ({ message }: { message: ChatMessageProps }) => {
                     'p-3 rounded-lg max-w-lg prose prose-sm',
                     isModel ? 'bg-muted' : 'bg-primary text-primary-foreground'
                 )}
-                dangerouslySetInnerHTML={{ __html: message.content }}
+                dangerouslySetInnerHTML={{ __html: typeof message.text === 'string' ? message.text : '' }}
             ></div>
              {!isModel && (
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground">
@@ -153,8 +117,14 @@ export function LandingPageChatV2() {
   const [sessionId] = useState<string>(uuidv4());
   const [guestId] = useState<string>(uuidv4());
   const { toast } = useToast();
-  const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager(PersonaIDs.CASUAL);
-  const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
+  
+  // Select a random persona on page load for the demo
+  const [randomPersonaId] = useState(() => {
+    const personaIds = Object.values(PersonaIDs);
+    return personaIds[Math.floor(Math.random() * personaIds.length)];
+  });
+  
+  const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager(randomPersonaId);
   const authModal = useAuthModal();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -180,7 +150,7 @@ export function LandingPageChatV2() {
     const userMessage: ChatMessageProps = {
       id: `user-${Date.now()}`,
       role: 'user',
-      content: await marked.parse(messageToSend.trim()),
+      text: await marked.parse(messageToSend.trim()),
     };
     setMessages(prev => ([...(prev || []), userMessage]));
     setGuestMessageCount(prev => prev + 1);
@@ -205,7 +175,7 @@ export function LandingPageChatV2() {
       const modelResponse: ChatMessageProps = {
         id: `guest-ai-${Date.now()}`,
         role: 'model',
-        content: await marked.parse(result.response),
+        text: await marked.parse(result.response),
       };
     setMessages(prev => ([...(prev || []), modelResponse]));
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -214,7 +184,7 @@ export function LandingPageChatV2() {
       const errorResponse: ChatMessageProps = {
         id: `err-${Date.now()}`,
         role: 'model',
-        content: `<p>Sorry, there was an error. Please try again.</p>`,
+        text: `<p>Sorry, there was an error. Please try again.</p>`,
       };
     setMessages(prev => ([...(prev || []), errorResponse]));
     } finally {
@@ -271,59 +241,13 @@ export function LandingPageChatV2() {
             </AnimatePresence>
 
             <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
-                    <PopoverTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full flex-shrink-0 text-muted-foreground hover:bg-muted"
-                    >
-                        <Users className="h-5 w-5" />
-                    </Button>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-[340px] p-0 mb-2">
-                    <Command>
-                        <CommandInput placeholder="Select a persona..." />
-                        <CommandList>
-                        <CommandEmpty>No persona found.</CommandEmpty>
-                        <CommandGroup>
-                            {personas.map((p) => {
-                            const Icon = personaIcons[p.id] || Bot;
-                            return (
-                                <CommandItem
-                                key={p.id}
-                                value={p.id}
-                                onSelect={() => {
-                                    setSelectedPersonaId(p.id);
-                                    setPersonaMenuOpen(false);
-                                }}
-                                className="group flex items-start gap-3 cursor-pointer py-2.5"
-                                >
-                                <Icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
-                                <div className="text-left flex-1">
-                                    <p className="font-semibold text-sm text-foreground">
-                                    {p.name}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground group-hover:text-foreground/80">
-                                    {p.description}
-                                    </p>
-                                </div>
-                                <Check
-                                    className={cn(
-                                    'h-4 w-4 mr-2',
-                                    selectedPersonaId === p.id
-                                        ? 'opacity-100'
-                                        : 'opacity-0'
-                                    )}
-                                />
-                                </CommandItem>
-                            );
-                            })}
-                        </CommandGroup>
-                        </CommandList>
-                    </Command>
-                    </PopoverContent>
-                </Popover>
+                <PersonaSelector
+                    personas={personas}
+                    selectedPersonaId={selectedPersonaId}
+                    onSelect={setSelectedPersonaId}
+                    variant="compact"
+                    className="rounded-full flex-shrink-0 text-muted-foreground hover:bg-muted"
+                />
                 <input
                     type="text"
                     value={input}

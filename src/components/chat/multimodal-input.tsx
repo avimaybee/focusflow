@@ -16,35 +16,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2 as LoaderIcon, X as XIcon } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { PersonaSelector } from '@/components/chat/persona-selector';
 
 import {
-  Users,
-  Check,
-  Bot,
-  Baby,
-  MessageSquare,
-  Zap,
-  ThumbsDown,
-  List,
-  GraduationCap,
-  Lightbulb,
-  Clock,
-  Drama,
   Paperclip,
   Send,
   File as FileIcon
@@ -58,20 +34,6 @@ type UIMessage = { id: string; content: string; role: string };
 
 // Type Definitions
 type VisibilityType = 'public' | 'private' | 'unlisted' | string;
-
-// Mapping persona IDs to icons
-const personaIcons: { [key: string]: React.ElementType } = {
-  neutral: Bot,
-  'five-year-old': Baby,
-  casual: MessageSquare,
-  entertaining: Zap,
-  'brutally-honest': ThumbsDown,
-  'straight-shooter': List,
-  'essay-sharpshooter': GraduationCap,
-  'idea-generator': Lightbulb,
-  'cram-buddy': Clock,
-  sassy: Drama,
-};
 
 // Main Component
 
@@ -118,7 +80,6 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
     const formRef = useRef<HTMLFormElement>(null);
 
     const [input, setInput] = useState('');
-    const [personaMenuOpen, setPersonaMenuOpen] = useState(false);
     
     // adjustHeight is provided by the hook above; don't call the hook again
 
@@ -221,54 +182,12 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
         </AnimatePresence>
 
         <div className="relative flex items-end rounded-xl border bg-secondary/80 shadow-sm focus-within:ring-2 focus-within:ring-primary/50 p-2 transition-shadow">
-          <Popover open={personaMenuOpen} onOpenChange={setPersonaMenuOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-muted"
-              >
-                <Users className="h-5 w-5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-[340px] p-0 mb-2">
-              <Command>
-                <CommandInput placeholder="Select a persona..." />
-                <CommandList>
-                  <CommandEmpty>No persona found.</CommandEmpty>
-                  <CommandGroup>
-                    {(personas || []).map((p) => {
-                      const Icon = personaIcons[p.id] || Bot;
-                      return (
-                        <CommandItem
-                          key={p.id}
-                          value={p.id}
-                          onSelect={() => {
-                            setSelectedPersonaId(p.id);
-                            setPersonaMenuOpen(false);
-                          }}
-                          className="group flex items-start gap-3 cursor-pointer py-2.5"
-                        >
-                          <Icon className="h-5 w-5 mt-0.5 text-muted-foreground group-hover:text-foreground" />
-                          <div className="text-left flex-1">
-                            <p className="font-semibold text-sm">
-                              {p.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground group-hover:text-accent-foreground/80">
-                              {p.description}
-                            </p>
-                          </div>
-                          {selectedPersonaId === p.id && (
-                            <Check className="h-4 w-4 mr-2 opacity-100" />
-                          )}
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
+          <PersonaSelector
+            personas={personas || []}
+            selectedPersonaId={selectedPersonaId}
+            onSelect={setSelectedPersonaId}
+            className="text-muted-foreground hover:bg-muted"
+          />
 
           <Button
             asChild
