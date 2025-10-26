@@ -21,7 +21,7 @@ export const getUserProfile = async (userId: string): Promise<UserProfile> => {
     return {
         username: 'placeholder-user',
         learningGoals: 'Placeholder learning goals.',
-        preferredPersona: 'gurt',
+        preferredPersona: 'Gurt',
         onboardingCompleted: true,
     };
 };

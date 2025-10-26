@@ -16,16 +16,16 @@ export interface PersonaDetails {
 }
 
 export const validPersonas = [
-  'gurt',
-  'eli5',
-  'straight-shooter',
-  'essay-writer',
-  'in-depth-explainer',
-  'sassy-eva',
-  'brainstormer',
-  'memory-coach',
-  'coding-guru',
-  'exam-strategist',
+  'Gurt',
+  'Im a baby',
+  'straight shooter',
+  'essay writer',
+  'lore master',
+  'sassy tutor',
+  'idea cook',
+  'memory coach',
+  'code nerd',
+  'exam strategist',
 ] as const;
 
 export type Persona = (typeof validPersonas)[number];
@@ -39,7 +39,7 @@ export const ChatHistoryMessageSchema = z.object({
 export const ChatInputSchema = z.object({
   message: z.string(),
   sessionId: z.string().optional(),
-  persona: PersonaSchema.optional().default('gurt'),
+  persona: PersonaSchema.optional().default('Gurt'),
   isPremium: z.boolean().optional(),
   context: z.string().optional(),
   image: z.string().optional(),

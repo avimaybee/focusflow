@@ -58,7 +58,7 @@ export async function getPersonaById(id: string): Promise<Persona | null> {
  * Get the default persona (Gurt)
  */
 export async function getDefaultPersona(): Promise<Persona | null> {
-  return getPersonaById('gurt');
+  return getPersonaById('Gurt');
 }
 
 /**

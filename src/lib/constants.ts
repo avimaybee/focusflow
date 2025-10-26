@@ -4,16 +4,16 @@
  */
 
 export const PersonaIDs = {
-  GURT: 'gurt',
-  ELI5: 'eli5',
-  STRAIGHT_SHOOTER: 'straight-shooter',
-  ESSAY_WRITER: 'essay-writer',
-  IN_DEPTH_EXPLAINER: 'in-depth-explainer',
-  SASSY_EVA: 'sassy-eva',
-  BRAINSTORMER: 'brainstormer',
-  MEMORY_COACH: 'memory-coach',
-  CODING_GURU: 'coding-guru',
-  EXAM_STRATEGIST: 'exam-strategist',
+  GURT: 'Gurt',
+  IM_A_BABY: 'Im a baby',
+  STRAIGHT_SHOOTER: 'straight shooter',
+  ESSAY_WRITER: 'essay writer',
+  LORE_MASTER: 'lore master',
+  SASSY_TUTOR: 'sassy tutor',
+  IDEA_COOK: 'idea cook',
+  MEMORY_COACH: 'memory coach',
+  CODE_NERD: 'code nerd',
+  EXAM_STRATEGIST: 'exam strategist',
 } as const;
 
 export const SmartToolActions = {
