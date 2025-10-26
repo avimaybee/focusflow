@@ -134,7 +134,7 @@ export function ChatMessage({
       return <QuizViewer quiz={quiz} />;
     }
     return (
-      <div className={cn("prose-styles prose-sm leading-relaxed", isUser && "prose-p:my-0")}>
+      <div className={cn("prose-styles", isUser && "prose-p:my-0")}>
         {typeof text === 'string' ? (
           <MarkdownRenderer
             content={text}
