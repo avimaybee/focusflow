@@ -9,7 +9,7 @@ import { defaultPersonas } from '@/lib/personas';
 import type { PersonaDetails } from '@/types/chat-types';
 
 const API_KEY = process.env.GEMINI_API_KEY;
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`;
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
 
 const chatFlowInputSchema = z.object({
   message: z.string(),
@@ -60,7 +60,7 @@ export async function chatFlow(input: ChatFlowInput) {
       temperature: 0.7,
       topK: 1,
       topP: 1,
-      maxOutputTokens: 8192,
+      maxOutputTokens: 65536, // Increased from 8192 for longer, detailed student responses
     },
   };
 

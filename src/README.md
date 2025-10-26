@@ -50,17 +50,18 @@ A personalized dashboard tracks user activity and progress.
 ### a. Technology Stack
 - **Frontend:** Next.js (App Router), React, TypeScript
 - **Styling:** Tailwind CSS, ShadCN UI, Framer Motion
-- **Backend & Database:** Firebase (Authentication, Firestore, Functions)
-- **AI:** Google Genkit, Google Gemini Models (e.g., `gemini-1.5-flash` for most tasks)
+- **Backend & Database:** Supabase (Authentication, PostgreSQL Database)
+- **Deployment:** Cloudflare Pages (Edge Runtime)
+- **AI:** Google Gemini API (using `gemini-2.5-flash` model with 65,536 max output tokens)
 
 ### b. Core Chat Flow
 1.  **User Input:** The user sends a message or selects a tool from the `ChatPage` UI. They can also attach a file (like a PDF), which is converted to a Data URI on the client-side.
 2.  **API Route:** A request is made to the `/api/chat` Next.js server route, containing the message, user auth token, and any contextual data (like a file's data URI or a selected persona).
-3.  **Genkit Flow (`chatFlow`):** The API route invokes the main Genkit flow (`src/ai/flows/chat-flow.ts`).
-4.  **Usage Check (for Tools):** Before executing a protected tool (like `createQuizTool`), the flow checks the user's `isPremium` status and their monthly usage count in Firestore. If a free user exceeds their limit, the flow returns an error.
-5.  **Tool Dispatch:** The flow, powered by a Gemini model, determines user intent. It either formulates a direct conversational response or calls a specific, predefined **Genkit Tool** (e.g., `createQuizTool`, `summarizeNotesTool`). The file's Data URI is passed along, allowing the AI to "read" the document.
+3.  **Chat Flow (`chatFlow`):** The API route invokes the main chat flow function (`src/ai/flows/chat-flow.ts`).
+4.  **Usage Check (for Tools):** Before executing a protected tool (like `createQuizTool`), the flow checks the user's `isPremium` status and their monthly usage count in the Supabase database. If a free user exceeds their limit, the flow returns an error.
+5.  **AI Processing:** The flow makes a direct API call to Google Gemini 2.0 Flash Lite model. It processes the user's message along with conversation history and persona context, formulating a conversational response or triggering specific AI tools (e.g., `createQuizTool`, `summarizeNotesTool`).
 6.  **Structured Output:** Tools are designed to return structured JSON data (e.g., an array of flashcard objects, a quiz object with questions and answers).
-7.  **Data Persistence:** If a tool was used, the `chatFlow` saves the generated content to the user's Firestore `My Content` subcollection (e.g., `/users/{userId}/quizzes/{quizId}`). The notepad content is saved to a dedicated `notepad` subcollection, with a debounced server action ensuring changes are saved automatically.
+7.  **Data Persistence:** If a tool was used, the `chatFlow` saves the generated content to the user's Supabase database tables (e.g., `summaries`, `quizzes`, `flashcards`). The notepad content is saved to the `user_notes` table, with a debounced server action ensuring changes are saved automatically.
 8.  **Response to Client:** The flow returns a response object containing the AI's text and any structured data (like the quiz object).
 9.  **Frontend Rendering:** The `ChatPage` receives the response. If structured data is present, it renders the corresponding interactive component (`QuizViewer`, `FlashcardViewer`); otherwise, it displays the formatted text response.
 
@@ -79,7 +80,7 @@ A significant challenge was ensuring that large file contexts, especially from m
 A multi-stage solution was implemented to create a robust file processing pipeline:
 1.  **Client-Side Validation & Conversion:** The `useFileUpload` hook was refined to include strict checks on file size (e.g., under 10MB) and type (PDF, image, text) before attempting to read the file. It efficiently converts the validated file into a `data:mime/type;base64,...` Data URI.
 2.  **Streamlined API Handling:** The Next.js API route at `/api/chat` was configured to handle large request bodies. It receives the entire JSON payload, including the Data URI.
-3.  **Genkit Media Handling:** The `chatFlow` was architected to correctly pass the Data URI to the Gemini model. The `chat.send()` method in Genkit natively supports a `media` object, so the Data URI is passed as `{ media: { url: context } }`. This tells Genkit to handle the base64 decoding and present the file content to the model in an optimal format.
+3.  **Direct Gemini API Integration:** The `chatFlow` function makes direct fetch requests to the Gemini API with the conversation context. File content can be included in the request payload for multimodal processing.
 
 This solution ensures that users can seamlessly upload documents, have them processed efficiently, and receive AI-generated insights based on the full context of their materials, which is the cornerstone of the FocusFlow AI experience.
 meow

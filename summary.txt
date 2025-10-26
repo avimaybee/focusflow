@@ -20,7 +20,7 @@ Backend & Infrastructure
 Runtime: Edge Runtime (Cloudflare Pages compatible)
 Database: Supabase (PostgreSQL)
 Authentication: Supabase Auth (Email/Password + Google OAuth)
-AI Integration: Google Gemini API (gemini-2.0-flash-lite)
+AI Integration: Google Gemini API (gemini-2.5-flash with 65,536 max output tokens)
 Storage: Supabase Storage for file uploads
 Deployment Architecture
 🔑 Core Features Breakdown

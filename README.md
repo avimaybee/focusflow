@@ -53,14 +53,14 @@ A personalized dashboard tracks user activity and progress.
 - **Styling:** Tailwind CSS, ShadCN UI, Framer Motion
 - **Backend & Database:** Supabase (Authentication, Database)
 - **Deployment:** Cloudflare
-- **AI:** Google Genkit, Google Gemini Models (e.g., `gemini-2.0-flash-lite` for most tasks)
+- **AI:** Google Gemini API (using `gemini-2.5-flash` model with 65,536 max output tokens)
 
 ### b. Core Chat Flow
 1.  **User Input:** The user sends a message or selects a tool from the `ChatPage` UI. They can also attach a file (like a PDF), which is converted to a Data URI on the client-side.
 2.  **API Route:** A request is made to the `/api/chat` Next.js server route, containing the message, user auth token, and any contextual data (like a file's data URI or a selected persona).
-3.  **Genkit Flow (`chatFlow`):** The API route invokes the main Genkit flow (`src/ai/flows/chat-flow.ts`).
+3.  **Chat Flow (`chatFlow`):** The API route invokes the main chat flow function (`src/ai/flows/chat-flow.ts`).
 4.  **Usage Check (for Tools):** Before executing a protected tool (like `createQuizTool`), the flow checks the user's `isPremium` status and their monthly usage count in the Supabase database. If a free user exceeds their limit, the flow returns an error.
-5.  **Tool Dispatch:** The flow, powered by a Gemini model, determines user intent. It either formulates a direct conversational response or calls a specific, predefined **Genkit Tool** (e.g., `createQuizTool`, `summarizeNotesTool`). The file's Data URI is passed along, allowing the AI to "read" the document.
+5.  **AI Processing:** The flow, powered by the Gemini 2.0 Flash Lite model, processes the user's message along with conversation history and persona context. It formulates a conversational response or triggers specific AI tools (e.g., `createQuizTool`, `summarizeNotesTool`). The file's Data URI is passed along, allowing the AI to "read" the document.
 6.  **Structured Output:** Tools are designed to return structured JSON data (e.g., an array of flashcard objects, a quiz object with questions and answers).
 7.  **Data Persistence:** If a tool was used, the `chatFlow` saves the generated content to the user's Supabase database (e.g., in a `quizzes` table). The notepad content is saved to a dedicated `notepad` table, with a debounced server action ensuring changes are saved automatically.
 8.  **Response to Client:** The flow returns a response object containing the AI's text and any structured data (like the quiz object).
