@@ -48,6 +48,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isNewChat, setIsNewChat] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
@@ -68,9 +69,9 @@ export default function ChatPage() {
 
   useEffect(() => {
     const chatId = params.chatId as string | undefined;
-    if (chatId) {
-      setActiveChatId(chatId);
-    }
+    setActiveChatId(chatId || null);
+    // Clear messages when switching chats to prevent showing stale data
+    setMessages([]);
   }, [params.chatId]);
 
   useEffect(() => {
@@ -80,6 +81,7 @@ export default function ChatPage() {
         return;
       }
       
+      setIsLoadingMessages(true);
       try {
         // Prefer Authorization header when session is present
         const accessToken = session?.access_token;
@@ -98,6 +100,8 @@ export default function ChatPage() {
       } catch (err) {
         console.error('Error fetching messages:', err);
         setMessages([]);
+      } finally {
+        setIsLoadingMessages(false);
       }
     }
     loadMessages();
@@ -122,6 +126,7 @@ export default function ChatPage() {
     setMessages([]);
     setGuestMessageCount(0);
     setIsNewChat(false);
+    setIsLoadingMessages(false);
     router.push('/chat');
   };
 
@@ -437,7 +442,7 @@ export default function ChatPage() {
         <MessageList
           messages={messages}
           isSending={isSending}
-          isHistoryLoading={isHistoryLoading && !!activeChatId}
+          isHistoryLoading={isLoadingMessages}
           activeChatId={activeChatId}
           activePersona={selectedPersona}
           onSmartToolAction={(prompt) => {
