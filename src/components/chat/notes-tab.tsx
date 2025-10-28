@@ -55,7 +55,7 @@ export function NotesTab() {
 
   // Effect to save notes when debounced content changes
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: number | null = null;
 
     async function saveNotesToServer() {
       if (!isLoaded || !user || !session?.access_token) {
@@ -82,7 +82,7 @@ export function NotesTab() {
 
         if (response.ok) {
           setSaveStatus('saved');
-          timeoutId = setTimeout(() => setSaveStatus('idle'), 2000);
+          timeoutId = window.setTimeout(() => setSaveStatus('idle'), 2000);
         } else {
           throw new Error('Failed to save notes');
         }
@@ -94,7 +94,7 @@ export function NotesTab() {
           title: 'Error',
           description: 'Failed to save your notes. Please try again.',
         });
-        timeoutId = setTimeout(() => setSaveStatus('idle'), 2000);
+        timeoutId = window.setTimeout(() => setSaveStatus('idle'), 2000);
       }
     }
 
@@ -102,7 +102,7 @@ export function NotesTab() {
 
     // Cleanup function to clear timeout if component unmounts
     return () => {
-      if (timeoutId) {
+      if (timeoutId !== null) {
         clearTimeout(timeoutId);
       }
     };
