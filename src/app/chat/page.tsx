@@ -231,8 +231,8 @@ export default function ChatPage() {
           currentChatId = newChatId;
           setIsNewChat(true); // Mark as new chat to prevent loading from DB
           setActiveChatId(newChatId);
-          // Update URL using Next.js router to properly update params
-          router.replace(`/chat/${newChatId}`);
+          // Update URL without navigation to prevent page refresh
+          window.history.replaceState(null, '', `/chat/${newChatId}`);
           forceRefresh();
         } catch (err) {
           console.error('Error creating chat session:', err);
