@@ -55,6 +55,8 @@ export function NotesTab() {
 
   // Effect to save notes when debounced content changes
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+
     async function saveNotesToServer() {
       if (!isLoaded || !user || !session?.access_token) {
         return;
@@ -80,7 +82,7 @@ export function NotesTab() {
 
         if (response.ok) {
           setSaveStatus('saved');
-          setTimeout(() => setSaveStatus('idle'), 2000);
+          timeoutId = setTimeout(() => setSaveStatus('idle'), 2000);
         } else {
           throw new Error('Failed to save notes');
         }
@@ -92,11 +94,18 @@ export function NotesTab() {
           title: 'Error',
           description: 'Failed to save your notes. Please try again.',
         });
-        setTimeout(() => setSaveStatus('idle'), 2000);
+        timeoutId = setTimeout(() => setSaveStatus('idle'), 2000);
       }
     }
 
     saveNotesToServer();
+
+    // Cleanup function to clear timeout if component unmounts
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedContent, user, session, isLoaded, toast]);
   
