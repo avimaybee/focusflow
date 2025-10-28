@@ -69,21 +69,15 @@ export default function ChatPage() {
 
   useEffect(() => {
     const chatId = params.chatId as string | undefined;
-    if (chatId) {
-      setActiveChatId(chatId);
-      // Clear messages when switching chats to prevent showing stale data
-      setMessages([]);
-    } else {
-      setActiveChatId(null);
-      setMessages([]);
-    }
+    setActiveChatId(chatId || null);
+    // Clear messages when switching chats to prevent showing stale data
+    setMessages([]);
   }, [params.chatId]);
 
   useEffect(() => {
     async function loadMessages() {
       // Don't load messages when we're creating a new chat and adding messages locally
       if (isNewChat || !activeChatId) {
-        setIsLoadingMessages(false);
         return;
       }
       
