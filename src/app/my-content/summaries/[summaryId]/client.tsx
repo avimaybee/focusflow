@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { useParams, notFound, useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useParams, notFound } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, Share2, Printer, Save, Pencil } from 'lucide-react';
@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { marked } from 'marked';
-import { BackButton } from '@/components/ui/back-button';
 
 interface Summary {
   id: string;
@@ -26,9 +25,8 @@ interface Summary {
 }
 
 export default function SummaryDetailPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const params = useParams();
-  const router = useRouter();
   const { toast } = useToast();
   const summaryId = params.summaryId as string;
 
@@ -108,72 +106,86 @@ export default function SummaryDetailPage() {
   }
 
   return (
-    <main className="flex-grow bg-secondary/30">
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
-          <div className="flex justify-between items-center mb-4">
-              <BackButton href="/my-content" label="Back to My Content" />
-              <div className="flex gap-2">
-                <Button onClick={handleToggleEdit} disabled={isSaving}>
-                    {editMode ? (
-                        isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />
-                    ) : (
-                        <Pencil className="mr-2 h-4 w-4" />
-                    )}
-                    {editMode ? 'Save' : 'Edit'}
-                </Button>
-              </div>
-          </div>
-          <Card>
-            <CardHeader>
-              {editMode ? (
-                <Input 
-                    value={title}
-                    onChange={(e) => { setTitle(e.target.value); setHasChanges(true); }}
-                    className="text-3xl font-bold border-none focus-visible:ring-0 p-0"
-                />
-              ) : (
-                <h1 className="text-3xl font-bold">{title}</h1>
-              )}
-              <CardDescription>
-                Created on {format(summary.createdAt, 'MMMM dd, yyyy')}
-              </CardDescription>
-              <div className="flex gap-2 pt-2">
-                {summary.keywords && summary.keywords.map(keyword => (
-                    <Badge key={keyword} variant="secondary">{keyword}</Badge>
-                ))}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {editMode ? (
-                <Textarea
-                    value={content}
-                    onChange={(e) => { setContent(e.target.value); setHasChanges(true); }}
-                    className="w-full h-auto min-h-[400px] border rounded-md p-2 bg-transparent text-base focus-visible:ring-1"
-                />
-              ) : (
-                <div
-                    className="prose-styles min-h-[400px]"
-                    dangerouslySetInnerHTML={{ __html: renderedContent }}
-                />
-              )}
-            </CardContent>
-          </Card>
-           <div className="mt-4 flex gap-2">
-            {summary.isPublic && summary.publicSlug ? (
-              <Button asChild>
-                <Link href={`/summaries/${summary.publicSlug}`} target="_blank">
-                  View Public Page
-                </Link>
-              </Button>
+    <div className="mx-auto w-full max-w-3xl space-y-6">
+      <Card>
+        <CardHeader className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {editMode ? (
+              <Input
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  setHasChanges(true);
+                }}
+                className="border-none p-0 text-3xl font-bold focus-visible:ring-0"
+              />
             ) : (
-              <Button onClick={handleShare} disabled={isSharing}>
-                {isSharing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Share2 className="mr-2 h-4 w-4" />}
-                Publish & Share
-              </Button>
+              <h1 className="text-3xl font-bold">{title}</h1>
             )}
-            <Button variant="outline" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4"/> Print</Button>
+            <Button onClick={handleToggleEdit} disabled={isSaving}>
+              {editMode ? (
+                isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )
+              ) : (
+                <Pencil className="mr-2 h-4 w-4" />
+              )}
+              {editMode ? 'Save' : 'Edit'}
+            </Button>
           </div>
-        </div>
-    </main>
+          <CardDescription>
+            Created on {format(summary.createdAt, 'MMMM dd, yyyy')}
+          </CardDescription>
+          <div className="flex flex-wrap gap-2 pt-2">
+            {summary.keywords &&
+              summary.keywords.map((keyword) => (
+                <Badge key={keyword} variant="secondary">
+                  {keyword}
+                </Badge>
+              ))}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {editMode ? (
+            <Textarea
+              value={content}
+              onChange={(e) => {
+                setContent(e.target.value);
+                setHasChanges(true);
+              }}
+              className="h-auto min-h-[400px] w-full rounded-md border bg-transparent p-2 text-base focus-visible:ring-1"
+            />
+          ) : (
+            <div
+              className="prose-styles min-h-[400px]"
+              dangerouslySetInnerHTML={{ __html: renderedContent }}
+            />
+          )}
+        </CardContent>
+      </Card>
+      <div className="flex flex-wrap gap-2">
+        {summary.isPublic && summary.publicSlug ? (
+          <Button asChild>
+            <Link href={`/summaries/${summary.publicSlug}`} target="_blank">
+              View Public Page
+            </Link>
+          </Button>
+        ) : (
+          <Button onClick={handleShare} disabled={isSharing}>
+            {isSharing ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Share2 className="mr-2 h-4 w-4" />
+            )}
+            Publish & Share
+          </Button>
+        )}
+        <Button variant="outline" onClick={() => window.print()}>
+          <Printer className="mr-2 h-4 w-4" /> Print
+        </Button>
+      </div>
+    </div>
   );
 }

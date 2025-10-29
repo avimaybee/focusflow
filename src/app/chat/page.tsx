@@ -576,7 +576,7 @@ export default function ChatPage() {
         />
       </div>
 
-      <main className="flex-1 flex flex-col h-screen min-w-0 bg-surface-muted/20">
+  <main className="flex-1 flex flex-col h-screen min-w-0 bg-background">
         <ChatHeader
           personaName={selectedPersona?.displayName || selectedPersona?.name || 'Default'}
           personaDescription={selectedPersona?.description}
@@ -588,7 +588,7 @@ export default function ChatPage() {
         
         <AnnouncementBanner />
 
-        <div className="flex-1 overflow-hidden pt-2">
+        <div className="flex-1 min-h-0 pt-2 flex">
           <MessageList
             messages={messages}
             isSending={isSending}
@@ -600,12 +600,12 @@ export default function ChatPage() {
               inputRef.current?.focus();
             }}
             onRegenerate={handleRegenerate}
-            className="bg-surface-soft/85 backdrop-blur-sm border-y border-stroke-subtle/60"
+            className="flex-1 min-h-0"
             contentClassName="px-4 md:px-8 py-6 space-y-6"
           />
         </div>
 
-        <div className="sticky bottom-0 w-full border-t border-stroke-subtle/60 bg-surface-soft/95 backdrop-blur">
+        <div className="sticky bottom-0 w-full pt-3">
             <div className="mx-auto w-full px-4 pb-4 sm:max-w-3xl">
               <MultimodalInput
                 ref={inputRef}

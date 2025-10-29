@@ -1,13 +1,11 @@
 "use client";
 
 import { Loader2 } from 'lucide-react';
-import Link from 'next/link';
-import { useParams, notFound, useRouter } from 'next/navigation';
+import { useParams, notFound } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { useEffect, useState } from 'react';
 import { QuizViewer } from '@/components/quiz-viewer';
-import { Button } from '@/components/ui/button';
-import { BackButton } from '@/components/ui/back-button';
+import { format } from 'date-fns';
 
 interface Quiz {
     title: string;
@@ -17,9 +15,8 @@ interface Quiz {
 }
 
 export default function QuizDetailPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const params = useParams();
-  const router = useRouter();
   const quizId = params.quizId as string;
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,15 +56,20 @@ export default function QuizDetailPage() {
   }
 
   return (
-    <main className="flex-grow bg-secondary/30">
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
-            <BackButton href="/my-content" label="Back to My Content" className="mb-4" />
-            {quiz.quiz ? (
-                <QuizViewer quiz={quiz.quiz} />
-            ) : (
-                <p>This quiz could not be loaded.</p>
-            )}
+    <div className="mx-auto w-full max-w-3xl space-y-6">
+      <header className="space-y-1">
+        <h1 className="text-3xl font-bold">{quiz.title}</h1>
+        <p className="text-sm text-muted-foreground">
+          Created on {format(quiz.createdAt, 'MMMM dd, yyyy')}
+        </p>
+      </header>
+      {quiz.quiz ? (
+        <QuizViewer quiz={quiz.quiz} />
+      ) : (
+        <div className="rounded-xl border border-dashed border-border/70 bg-secondary/30 px-6 py-12 text-center text-sm text-muted-foreground">
+          This quiz could not be loaded right now.
         </div>
-    </main>
+      )}
+    </div>
   );
 }

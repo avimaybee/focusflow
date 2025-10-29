@@ -232,7 +232,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
           )}
         </AnimatePresence>
 
-        <div className="relative flex items-end gap-2 rounded-2xl border border-stroke-subtle bg-surface-soft/95 px-3 py-2 shadow-[0_1px_0_0_var(--stroke-subtle),0_12px_30px_-24px_rgba(15,23,42,0.45)] focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30 transition-all">
+  <div className="relative flex items-end gap-2 rounded-2xl border border-border/60 bg-transparent px-3 py-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25 transition-all">
           <PersonaSelector
             personas={personas || []}
             selectedPersonaId={selectedPersonaId}

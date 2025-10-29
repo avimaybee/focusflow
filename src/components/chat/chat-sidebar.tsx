@@ -104,10 +104,10 @@ const groupChatHistory = (history: ChatHistoryItem[]): Array<{ key: ChatGroupKey
 };
 
 const chatAvatarPalettes = [
-  'bg-surface-soft text-foreground ring-1 ring-stroke-subtle shadow-surface',
-  'bg-surface-muted text-foreground ring-1 ring-stroke-medium shadow-surface',
-  'bg-secondary text-foreground ring-1 ring-stroke-subtle shadow-surface',
-  'bg-card text-foreground ring-1 ring-stroke-medium shadow-surface',
+  'bg-surface-soft text-foreground ring-1 ring-stroke-subtle',
+  'bg-surface-muted text-foreground ring-1 ring-stroke-medium',
+  'bg-secondary text-foreground ring-1 ring-stroke-subtle',
+  'bg-card text-foreground ring-1 ring-stroke-medium',
 ];
 
 const computePaletteIndex = (title: string) => {
@@ -492,7 +492,7 @@ const ChatSidebarComponent = ({
         )}
 
         <ScrollArea className="flex-1">
-          <div className="py-2 px-4 space-y-1">
+          <div className={cn('py-2 space-y-1', isCollapsed ? 'px-2' : 'px-4')}>
             {isLoading && user ? (
               <SidebarSkeleton isCollapsed={isCollapsed} />
             ) : (
@@ -530,13 +530,13 @@ const ChatSidebarComponent = ({
                           role="button"
                           aria-current={isActive ? 'true' : undefined}
                           className={cn(
-                            'flex w-full items-center font-normal py-2 px-3 rounded-lg cursor-pointer text-foreground transition-all duration-200 group/item',
+                            'flex w-full items-center font-normal rounded-lg cursor-pointer text-foreground transition-all duration-200 group/item',
                             isActive
                               ? 'bg-muted ring-1 ring-primary/30'
                               : 'hover:bg-muted/80',
                             isCollapsed
-                              ? 'justify-center items-center h-10 w-10 p-0'
-                              : 'justify-between gap-3',
+                              ? 'h-12 w-12 justify-center p-0'
+                              : 'justify-between gap-3 py-2 px-3',
                             isEditing && 'ring-1 ring-primary/40 bg-muted'
                           )}
                           onClick={() => {

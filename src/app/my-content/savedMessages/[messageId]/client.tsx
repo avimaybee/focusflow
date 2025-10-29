@@ -2,16 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { useParams, notFound, useRouter } from 'next/navigation';
+import { useParams, notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Save, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
-import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { marked } from 'marked';
-import { BackButton } from '@/components/ui/back-button';
 
 interface SavedMessage {
   content: string;
@@ -19,9 +17,8 @@ interface SavedMessage {
 }
 
 export default function SavedMessageDetailPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const params = useParams();
-  const router = useRouter();
   const { toast } = useToast();
   const messageId = params.messageId as string;
 
@@ -35,18 +32,18 @@ export default function SavedMessageDetailPage() {
 
   useEffect(() => {
     // Placeholder for fetching data from Supabase
-  if (messageId) {
-    const placeholderMessage = {
-      content: 'This is a placeholder saved message.',
-      createdAt: new Date(),
-    };
-    setMessage(placeholderMessage);
-    setContent(placeholderMessage.content);
-    (async () => {
-      const rendered = await marked.parse(placeholderMessage.content);
-      setRenderedContent(rendered as string);
-    })();
-  }
+    if (messageId) {
+      const placeholderMessage = {
+        content: 'This is a placeholder saved message.',
+        createdAt: new Date(),
+      };
+      setMessage(placeholderMessage);
+      setContent(placeholderMessage.content);
+      (async () => {
+        const rendered = await marked.parse(placeholderMessage.content);
+        setRenderedContent(rendered as string);
+      })();
+    }
     setIsLoading(false);
   }, [messageId]);
 
@@ -92,43 +89,46 @@ export default function SavedMessageDetailPage() {
   }
 
   return (
-    <main className="flex-grow bg-secondary/30">
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="flex justify-between items-center mb-4">
-          <BackButton href="/my-content" label="Back to My Content" />
-          <Button onClick={handleToggleEdit} disabled={isSaving}>
-            {editMode ? (
-                isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />
-            ) : (
+    <div className="mx-auto w-full max-w-3xl">
+      <Card>
+        <CardHeader className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-3xl font-bold">Saved Message</CardTitle>
+              <CardDescription>
+                Saved on {format(message.createdAt, 'MMMM dd, yyyy')}
+              </CardDescription>
+            </div>
+            <Button onClick={handleToggleEdit} disabled={isSaving}>
+              {editMode ? (
+                isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )
+              ) : (
                 <Pencil className="mr-2 h-4 w-4" />
-            )}
-            {editMode ? 'Save' : 'Edit'}
-          </Button>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold">Saved Message</CardTitle>
-            <CardDescription>
-              Saved on {format(message.createdAt, 'MMMM dd, yyyy')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {editMode ? (
-                <Textarea
-                    value={content}
-                    onChange={handleContentChange}
-                    className="w-full h-auto min-h-[400px] border rounded-md p-2 bg-transparent text-base focus-visible:ring-1"
-                    placeholder="Start writing..."
-                />
-            ) : (
-                 <div
-                    className="prose-styles min-h-[400px]"
-                    dangerouslySetInnerHTML={{ __html: renderedContent }}
-                />
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </main>
+              )}
+              {editMode ? 'Save' : 'Edit'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {editMode ? (
+            <Textarea
+              value={content}
+              onChange={handleContentChange}
+              className="h-auto min-h-[400px] w-full rounded-md border bg-transparent p-2 text-base focus-visible:ring-1"
+              placeholder="Start writing..."
+            />
+          ) : (
+            <div
+              className="prose-styles min-h-[400px]"
+              dangerouslySetInnerHTML={{ __html: renderedContent }}
+            />
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

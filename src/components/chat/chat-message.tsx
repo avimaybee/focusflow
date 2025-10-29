@@ -134,7 +134,14 @@ export function ChatMessage({
       return <QuizViewer quiz={quiz} />;
     }
     return (
-      <div className={cn("prose-styles", isUser && "prose-p:my-0")}>
+      <div
+        className={cn(
+          'prose-styles',
+          isUser
+            ? 'prose-p:my-0 prose-headings:text-primary-foreground prose-p:text-primary-foreground prose-strong:text-primary-foreground prose-li:text-primary-foreground prose-code:text-primary-foreground prose-a:text-primary'
+            : undefined
+        )}
+      >
         {typeof text === 'string' ? (
           <MarkdownRenderer
             content={text}
