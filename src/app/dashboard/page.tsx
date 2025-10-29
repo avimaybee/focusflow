@@ -11,17 +11,35 @@ import { WeeklySummaryCard } from '@/components/dashboard/weekly-summary-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { SetGoalModal } from '@/components/dashboard/set-goal-modal';
+import { getStudyStreak } from '@/lib/dashboard-actions';
 import Link from 'next/link';
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const [streakCount, setStreakCount] = useState(0);
 
   useEffect(() => {
-    // Placeholder for fetching data from Supabase
-    setIsLoading(false);
-  }, [user, authLoading]);
+    async function fetchDashboardData() {
+      if (!user?.id) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // Fetch real study streak from database
+        const streak = await getStudyStreak(user.id);
+        setStreakCount(streak);
+      } catch (error) {
+        console.error('[Dashboard] Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchDashboardData();
+  }, [user]);
 
   if (isLoading || authLoading) {
     return (
@@ -42,51 +60,47 @@ export default function DashboardPage() {
         </div>
         
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5 mb-6">
-            <StreakCalendar streakCount={0} />
-            <Link href="/my-content?tab=Summaries">
-                <Card className="hover:border-primary/80 hover:bg-muted transition-all">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Summaries Made</CardTitle>
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">0</div>
-                    </CardContent>
-                </Card>
-            </Link>
-            <Link href="/my-content?tab=Quizzes">
-                <Card className="hover:border-primary/80 hover:bg-muted transition-all">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Quizzes Taken</CardTitle>
-                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">0</div>
-                    </CardContent>
-                </Card>
-            </Link>
-            <Link href="/my-content?tab=Flashcards">
-                <Card className="hover:border-primary/80 hover:bg-muted transition-all">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Flashcard Sets</CardTitle>
-                        <BrainCircuit className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">0</div>
-                    </CardContent>
-                </Card>
-            </Link>
-            <Link href="/my-content?tab=Study Plans">
-                <Card className="hover:border-primary/80 hover:bg-muted transition-all">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Study Plans</CardTitle>
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">0</div>
-                    </CardContent>
-                </Card>
-            </Link>
+            <StreakCalendar streakCount={streakCount} />
+            <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer" onClick={() => window.location.href = '/chat'}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Summaries Made</CardTitle>
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold text-muted-foreground">0</div>
+                    <p className="text-xs text-muted-foreground mt-1">Chat to create your first!</p>
+                </CardContent>
+            </Card>
+            <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer" onClick={() => window.location.href = '/chat'}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Quizzes Taken</CardTitle>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold text-muted-foreground">0</div>
+                    <p className="text-xs text-muted-foreground mt-1">Generate your first quiz!</p>
+                </CardContent>
+            </Card>
+            <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer" onClick={() => window.location.href = '/chat'}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Flashcard Sets</CardTitle>
+                    <BrainCircuit className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold text-muted-foreground">0</div>
+                    <p className="text-xs text-muted-foreground mt-1">Create flashcards in chat!</p>
+                </CardContent>
+            </Card>
+            <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer" onClick={() => window.location.href = '/study-plan/new'}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Study Plans</CardTitle>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold text-muted-foreground">0</div>
+                    <p className="text-xs text-muted-foreground mt-1">Build your first plan!</p>
+                </CardContent>
+            </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -5,7 +5,6 @@ import React from 'react';
 import { Menu, Notebook } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ChatHeaderProps {
@@ -26,25 +25,6 @@ const ChatHeaderComponent = ({
   onNotesToggle,
 }: ChatHeaderProps) => {
 
-  const renderPersonaAvatar = () => {
-    if (!personaAvatar) {
-      return <AvatarFallback>{personaName.charAt(0)}</AvatarFallback>;
-    }
-
-    const isImage = personaAvatar.startsWith('http') || personaAvatar.startsWith('data:');
-
-    if (isImage) {
-      return (
-        <>
-          <AvatarImage src={personaAvatar} alt={personaName} />
-          <AvatarFallback>{personaName.charAt(0)}</AvatarFallback>
-        </>
-      );
-    }
-
-    return <AvatarFallback>{personaAvatar}</AvatarFallback>;
-  };
-
   return (
     <header className="sticky top-0 z-10 h-16 px-4 md:px-6 flex justify-between items-center w-full border-b border-border/60 bg-background/95 backdrop-blur-sm">
       <div className="flex items-center gap-2">
@@ -61,22 +41,19 @@ const ChatHeaderComponent = ({
           <TooltipProvider>
             <Tooltip delayDuration={200}>
               <TooltipTrigger asChild>
-                <div className="text-sm text-muted-foreground -mt-1 flex items-center gap-2 rounded-full border border-border/50 bg-secondary/60 px-2 py-1">
-                  <span className="text-xs uppercase tracking-wide">With</span>
+                <div className="text-sm text-muted-foreground -mt-1 flex items-center gap-1.5">
+                  with
                   <AnimatePresence mode="wait">
-                    <motion.div
+                    <motion.span
                       key={personaName}
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ duration: 0.2 }}
-                      className="flex items-center gap-2"
+                      className="font-medium text-foreground"
                     >
-                      <Avatar className="h-6 w-6">
-                        {renderPersonaAvatar()}
-                      </Avatar>
-                      <span className="font-medium text-foreground text-sm">{personaName}</span>
-                    </motion.div>
+                      {personaName}
+                    </motion.span>
                   </AnimatePresence>
                 </div>
               </TooltipTrigger>

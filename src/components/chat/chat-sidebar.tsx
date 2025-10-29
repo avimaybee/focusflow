@@ -19,6 +19,7 @@ import {
   X,
   Loader2,
   Search,
+  Pencil,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -642,7 +643,7 @@ const ChatSidebarComponent = ({
                                       handleStartRename(chat);
                                     }}
                                   >
-                                    Rename
+                                    <Pencil className="mr-2 h-4 w-4" /> Rename
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={(event) => {

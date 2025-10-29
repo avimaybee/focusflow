@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, Fragment } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
@@ -36,49 +36,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 // import { getChatMessages, createChatSession, addChatMessage } from '@/lib/chat-actions';
 
 const GUEST_MESSAGE_LIMIT = 10;
-
-function ShortcutPill({ keys, label }: { keys: string[]; label: string }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1">
-        {keys.map((key, index) => (
-          <Fragment key={`${key}-${index}`}>
-            <kbd className="rounded border border-border/60 bg-muted/40 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-foreground">
-              {key}
-            </kbd>
-            {index < keys.length - 1 && (
-              <span className="text-[10px] text-muted-foreground/70">+</span>
-            )}
-          </Fragment>
-        ))}
-      </div>
-      <span className="text-xs text-muted-foreground">{label}</span>
-    </div>
-  );
-}
-
-function ShortcutLegend() {
-  const [isMac, setIsMac] = useState(false);
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined') return;
-    const platform = navigator.platform || navigator.userAgent;
-    if (platform.toLowerCase().includes('mac')) {
-      setIsMac(true);
-    }
-  }, []);
-
-  const modifier = isMac ? '⌘' : 'Ctrl';
-
-  return (
-    <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-muted-foreground">
-      <ShortcutPill keys={[modifier, 'Enter']} label="Send message" />
-      <ShortcutPill keys={['Shift', 'Enter']} label="New line" />
-      <ShortcutPill keys={[modifier, 'N']} label="New chat" />
-      <ShortcutPill keys={[modifier, 'K']} label="Search chats" />
-    </div>
-  );
-}
 
 export default function ChatPage() {
   const { user, session, loading: authLoading } = useAuth();
@@ -662,7 +619,6 @@ export default function ChatPage() {
                 selectedPersonaId={selectedPersonaId}
                 setSelectedPersonaId={setSelectedPersonaId}
               />
-              <ShortcutLegend />
             </div>
         </div>
         <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
