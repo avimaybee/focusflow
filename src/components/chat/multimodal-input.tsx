@@ -80,18 +80,27 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
   }, ref) => {
     // useAutoResizeTextarea returns the textareaRef and adjustHeight helper
     const { textareaRef: internalTextareaRef, adjustHeight } = useAutoResizeTextarea({
-      minHeight: 24,
-      maxHeight: 200,
+      minHeight: 40,
+      maxHeight: 220,
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
     const formRef = useRef<HTMLFormElement>(null);
 
     const [input, setInput] = useState('');
+    const scheduleAdjustHeight = useCallback(() => {
+      if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+        window.requestAnimationFrame(() => adjustHeight());
+        return;
+      }
+      adjustHeight();
+    }, [adjustHeight]);
     
     // adjustHeight is provided by the hook above; don't call the hook again
 
     const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setInput(event.target.value);
+      const nextValue = event.target.value;
+      setInput(nextValue);
+      scheduleAdjustHeight();
     };
     
     const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -164,13 +173,18 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
         adjustHeight(true);
       },
       getTextarea: () => internalTextareaRef.current,
-  }), [adjustHeight, internalTextareaRef, setAttachments, submitForm]);
+    }), [adjustHeight, internalTextareaRef, scheduleAdjustHeight, setAttachments, submitForm]);
+
+    useEffect(() => {
+      scheduleAdjustHeight();
+    }, [input, scheduleAdjustHeight]);
 
     const handleFocus = () => {
         if (onFocus) onFocus();
         if(formRef.current) {
             formRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+        scheduleAdjustHeight();
     };
 
     return (
@@ -218,19 +232,19 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
           )}
         </AnimatePresence>
 
-        <div className="relative flex items-end rounded-xl border bg-secondary/80 shadow-sm focus-within:ring-2 focus-within:ring-primary/50 p-2 transition-shadow">
+        <div className="relative flex items-end gap-2 rounded-2xl border border-stroke-subtle bg-surface-soft/95 px-3 py-2 shadow-[0_1px_0_0_var(--stroke-subtle),0_12px_30px_-24px_rgba(15,23,42,0.45)] focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30 transition-all">
           <PersonaSelector
             personas={personas || []}
             selectedPersonaId={selectedPersonaId}
             onSelect={setSelectedPersonaId}
-            className="text-muted-foreground hover:bg-muted"
+            className="h-9 w-9 rounded-full text-muted-foreground hover:bg-muted"
           />
 
           <Button
             asChild
             variant="ghost"
             size="icon"
-            className="h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:bg-muted"
+            className="h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             <label>
               <Paperclip className="w-5 h-5" />
@@ -250,7 +264,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
             value={input}
             onChange={handleInput}
             onFocus={handleFocus}
-            className="flex-1"
+            className="flex-1 resize-none border-none bg-transparent px-0 text-sm leading-6 text-foreground placeholder:text-muted-foreground/80 focus-visible:ring-0 focus-visible:ring-offset-0"
             rows={1}
             disabled={!canSend || isGenerating}
             onKeyDown={(event) => {

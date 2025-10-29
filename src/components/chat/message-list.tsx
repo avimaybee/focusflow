@@ -9,6 +9,7 @@ import { WelcomeScreen } from './welcome-screen';
 import { ChatMessageSkeleton } from './chat-message-skeleton';
 import type { SmartTool } from '@/components/smart-tools-menu';
 import type { PersonaDetails } from '@/types/chat-types';
+import { cn } from '@/lib/utils';
 
 interface MessageListProps {
   messages: ChatMessageProps[];
@@ -18,6 +19,8 @@ interface MessageListProps {
   activePersona: PersonaDetails | undefined;
   onSmartToolAction: (prompt: string) => void;
   onRegenerate: () => void;
+  className?: string;
+  contentClassName?: string;
 }
 
 export function MessageList({
@@ -28,6 +31,8 @@ export function MessageList({
   activePersona,
   onSmartToolAction,
   onRegenerate,
+  className,
+  contentClassName,
 }: MessageListProps) {
   if (isHistoryLoading) {
     return (
@@ -54,11 +59,16 @@ export function MessageList({
   };
 
   return (
-    <AIConversation className="flex-1 overflow-y-auto">
+    <AIConversation className={cn('flex-1', className)}>
         {showWelcomeScreen ? (
           <WelcomeScreen onSelectPrompt={onSmartToolAction} />
         ) : (
-          <AIConversationContent className="p-3 md:p-4 space-y-4 md:space-y-6 max-w-3xl mx-auto">
+          <AIConversationContent
+            className={cn(
+              'max-w-3xl mx-auto space-y-4 md:space-y-6 p-3 md:p-6',
+              contentClassName
+            )}
+          >
             {safeMessages.map((msg, index) => (
               <ChatMessage
                 key={msg.id || index}

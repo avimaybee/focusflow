@@ -104,10 +104,10 @@ const groupChatHistory = (history: ChatHistoryItem[]): Array<{ key: ChatGroupKey
 };
 
 const chatAvatarPalettes = [
-  'bg-surface-soft text-text-secondary ring-1 ring-stroke-subtle shadow-surface',
-  'bg-surface-muted text-text-secondary ring-1 ring-stroke-medium shadow-surface',
-  'bg-secondary text-text-secondary ring-1 ring-stroke-subtle shadow-surface',
-  'bg-card text-text-secondary ring-1 ring-stroke-medium shadow-surface',
+  'bg-surface-soft text-foreground ring-1 ring-stroke-subtle shadow-surface',
+  'bg-surface-muted text-foreground ring-1 ring-stroke-medium shadow-surface',
+  'bg-secondary text-foreground ring-1 ring-stroke-subtle shadow-surface',
+  'bg-card text-foreground ring-1 ring-stroke-medium shadow-surface',
 ];
 
 const computePaletteIndex = (title: string) => {
@@ -415,7 +415,7 @@ const ChatSidebarComponent = ({
       <motion.aside
         animate={{ width: isCollapsed ? 80 : 320 }}
         transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-        className='flex-col bg-secondary/30 border-r border-border/50 flex'
+  className='flex-col bg-surface-soft/90 border-r border-border/60 backdrop-blur-sm flex'
       >
         <div
           className={cn(
@@ -436,7 +436,7 @@ const ChatSidebarComponent = ({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 hidden md:inline-flex"
+            className="hidden h-10 w-10 rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/40 md:inline-flex"
             onClick={onToggle}
           >
             {isCollapsed ? (
@@ -451,25 +451,25 @@ const ChatSidebarComponent = ({
           <Button
             variant="outline"
             className={cn(
-              'w-full rounded-xl h-10',
-              isCollapsed && 'w-10 h-10 p-0 flex items-center justify-center'
+              'w-full h-11 rounded-2xl border-stroke-subtle bg-surface-soft text-foreground shadow-[0_1px_0_0_var(--stroke-subtle)] transition hover:bg-surface-soft/80',
+              isCollapsed && 'flex h-11 w-11 items-center justify-center p-0'
             )}
             onClick={onNewChat}
           >
-            <Plus className="h-4 w-4" />
-            <span className={cn('ml-2', isCollapsed && 'hidden')}>New Chat</span>
+            <Plus className="h-5 w-5" />
+            <span className={cn('ml-2 text-sm font-semibold', isCollapsed && 'hidden')}>New Chat</span>
           </Button>
         </div>
 
         {!isCollapsed && (
           <div className="px-4 mb-2">
             <div className="relative">
-              <Search className="h-4 w-4 absolute left-3 top-2.5 text-muted-foreground" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               {searchTerm && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 absolute right-2 top-1.5 text-muted-foreground hover:text-foreground"
+                  className="absolute right-2 top-1.5 h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                   onClick={() => {
                     setSearchTerm('');
                     searchInputRef.current?.focus();
@@ -484,7 +484,7 @@ const ChatSidebarComponent = ({
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search chats"
-                className="pl-9 pr-9 h-9 bg-secondary/60 border-border/50"
+                className="h-10 rounded-xl border-stroke-subtle bg-surface-soft pl-10 pr-10 text-sm placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-primary/30"
                 aria-label="Search chat history"
               />
             </div>
@@ -546,10 +546,10 @@ const ChatSidebarComponent = ({
                           title={!isCollapsed && !isEditing ? chat.title : undefined}
                         >
                           <div className={cn('flex items-center gap-3 flex-1 min-w-0', isCollapsed && 'justify-center')}>
-                            <Avatar className={cn('h-8 w-8 shrink-0 transition-all duration-200', isActive && !isEditing && 'ring-1 ring-primary/50 shadow-sm')}>
+                            <Avatar className={cn('h-10 w-10 shrink-0 transition-all duration-200', isActive && !isEditing && 'ring-2 ring-primary/40 shadow-sm')}>
                               <AvatarFallback
                                 className={cn(
-                                  'h-full w-full text-[11px] font-semibold uppercase tracking-wide flex items-center justify-center',
+                                  'flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide',
                                   getChatAvatarClasses(chat.title)
                                 )}
                               >
@@ -579,8 +579,8 @@ const ChatSidebarComponent = ({
                                 />
                               ) : (
                                 <>
-                                  <p className="truncate font-medium text-sm">{chat.title}</p>
-                                  <p className="truncate text-xs text-muted-foreground">{relativeTime}</p>
+                                  <p className="truncate text-sm font-semibold text-foreground">{chat.title}</p>
+                                  <p className="truncate text-xs text-muted-foreground/80">{relativeTime}</p>
                                 </>
                               )}
                             </div>
@@ -591,7 +591,7 @@ const ChatSidebarComponent = ({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-7 w-7"
+                                  className="h-8 w-8 rounded-lg text-primary hover:bg-primary/10"
                                   onClick={(event) => {
                                     event.stopPropagation();
                                     handleRenameSubmit(chat.id);
@@ -608,7 +608,7 @@ const ChatSidebarComponent = ({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-7 w-7"
+                                  className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted/70"
                                   onClick={(event) => {
                                     event.stopPropagation();
                                     handleCancelRename();
@@ -625,7 +625,7 @@ const ChatSidebarComponent = ({
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-6 w-6"
+                                    className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                                     onClick={(event) => event.stopPropagation()}
                                     aria-label="Chat actions"
                                   >
@@ -639,7 +639,7 @@ const ChatSidebarComponent = ({
                                       handleStartRename(chat);
                                     }}
                                   >
-                                    <Pencil className="mr-2 h-4 w-4" /> Rename
+                                    <Pencil className="mr-2 h-4 w-4 text-muted-foreground" /> Rename
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={(event) => {
@@ -650,7 +650,7 @@ const ChatSidebarComponent = ({
                                       onDeleteChat(chat.id);
                                     }}
                                   >
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                    <Trash2 className="mr-2 h-4 w-4 text-destructive" /> Delete
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -676,33 +676,35 @@ const ChatSidebarComponent = ({
           </div>
         </ScrollArea>
 
-        <div className="py-2 mt-auto px-4 border-t">
-            <div className={cn(isCollapsed ? 'opacity-0 hidden' : 'opacity-100 transition-opacity duration-200')}>
-                 <UserMenu user={user} isCollapsed={false} />
-            </div>
-            {isCollapsed && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-center text-sm h-auto p-0 hover:bg-transparent">
-                            <div className="relative">
-                                <Avatar className="h-10 w-10">
-                                    <AvatarImage src={user?.user_metadata?.avatar_url || undefined} data-ai-hint="person" />
-                                    <AvatarFallback>{user ? (profile?.username || user.email || 'U').charAt(0).toUpperCase() : <User />}</AvatarFallback>
-                                </Avatar>
-                                {user && <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-state-success ring-2 ring-surface-soft" />}
-                            </div>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-64 mb-2" side="top" align="start">
-                        {user ? <UserMenuItems /> : (
-                            <DropdownMenuItem onClick={() => useAuthModal.getState().onOpen('login')}>
-                                <LogIn className="mr-2 h-4 w-4" />
-                                Log In
-                            </DropdownMenuItem>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+    <div className="mt-auto border-t border-border/60 bg-surface-soft/70 px-4 py-3">
+      <div className={cn(isCollapsed ? 'hidden opacity-0' : 'opacity-100 transition-opacity duration-200')}>
+         <UserMenu user={user} isCollapsed={false} />
+      </div>
+      {isCollapsed && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-sm hover:border-stroke-subtle hover:bg-muted/70">
+              <div className="relative">
+                <Avatar className="h-11 w-11">
+                  <AvatarImage src={user?.user_metadata?.avatar_url || undefined} data-ai-hint="person" />
+                  <AvatarFallback className="text-base font-semibold">
+                    {user ? (profile?.username || user.email || 'U').charAt(0).toUpperCase() : <User />}
+                  </AvatarFallback>
+                </Avatar>
+                {user && <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-state-success ring-2 ring-surface-soft" />}
+              </div>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="mb-2 w-64" side="top" align="start">
+            {user ? <UserMenuItems /> : (
+              <DropdownMenuItem onClick={() => useAuthModal.getState().onOpen('login')}>
+                <LogIn className="mr-2 h-4 w-4" />
+                Log In
+              </DropdownMenuItem>
             )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
         </div>
       </motion.aside>
     </TooltipProvider>

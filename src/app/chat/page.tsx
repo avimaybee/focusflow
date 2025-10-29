@@ -538,7 +538,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
+  <div className="flex h-screen bg-background text-foreground">
       {isMobile && (
           <Sheet open={sidebarOpen} onOpenChange={handleSetSidebarOpen}>
             <SheetContent side="left" className="p-0 w-80">
@@ -576,7 +576,7 @@ export default function ChatPage() {
         />
       </div>
 
-      <main className="flex-1 flex flex-col h-screen min-w-0">
+      <main className="flex-1 flex flex-col h-screen min-w-0 bg-surface-muted/20">
         <ChatHeader
           personaName={selectedPersona?.displayName || selectedPersona?.name || 'Default'}
           personaDescription={selectedPersona?.description}
@@ -588,21 +588,25 @@ export default function ChatPage() {
         
         <AnnouncementBanner />
 
-        <MessageList
-          messages={messages}
-          isSending={isSending}
-          isHistoryLoading={isHistoryLoading && !!activeChatId}
-          activeChatId={activeChatId}
-          activePersona={selectedPersona}
-          onSmartToolAction={(prompt) => {
-            inputRef.current?.setDraft(prompt);
-            inputRef.current?.focus();
-          }}
-          onRegenerate={handleRegenerate}
-        />
+        <div className="flex-1 overflow-hidden pt-2">
+          <MessageList
+            messages={messages}
+            isSending={isSending}
+            isHistoryLoading={isHistoryLoading && !!activeChatId}
+            activeChatId={activeChatId}
+            activePersona={selectedPersona}
+            onSmartToolAction={(prompt) => {
+              inputRef.current?.setDraft(prompt);
+              inputRef.current?.focus();
+            }}
+            onRegenerate={handleRegenerate}
+            className="bg-surface-soft/85 backdrop-blur-sm border-y border-stroke-subtle/60"
+            contentClassName="px-4 md:px-8 py-6 space-y-6"
+          />
+        </div>
 
-        <div className="w-full bg-background/50 backdrop-blur-sm sticky bottom-0">
-            <div className="w-full sm:max-w-3xl mx-auto px-4 pb-4">
+        <div className="sticky bottom-0 w-full border-t border-stroke-subtle/60 bg-surface-soft/95 backdrop-blur">
+            <div className="mx-auto w-full px-4 pb-4 sm:max-w-3xl">
               <MultimodalInput
                 ref={inputRef}
                 chatId={activeChatId || 'new'}

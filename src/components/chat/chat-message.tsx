@@ -234,13 +234,17 @@ export function ChatMessage({
           <div
             ref={contentRef}
             className={cn(
-              'relative max-w-full sm:max-w-xl px-3 py-2 text-sm shadow-surface',
-              'rounded-xl border',
+              'relative max-w-full sm:max-w-2xl px-4 py-3 text-sm leading-6',
+              'rounded-2xl border shadow-[0_18px_40px_-30px_rgba(15,23,42,0.72)] transition-shadow duration-300',
               isUser
-                ? 'bg-primary text-primary-foreground border-stroke-subtle/40'
-                : 'bg-surface-soft text-text-secondary border-stroke-subtle',
-              isUser ? (isFirstInGroup ? 'rounded-tr-xl' : 'rounded-tr-md') : (isFirstInGroup ? 'rounded-tl-xl' : 'rounded-tl-md'),
-              isUser ? (isLastInGroup ? 'rounded-br-xl' : 'rounded-br-md') : (isLastInGroup ? 'rounded-bl-xl' : 'rounded-bl-md'),
+                ? 'bg-primary text-primary-foreground border-stroke-subtle/20'
+                : 'bg-surface-muted/85 text-foreground border-stroke-subtle/70 backdrop-blur-sm',
+              isUser
+                ? (isFirstInGroup ? 'rounded-tr-2xl' : 'rounded-tr-xl')
+                : (isFirstInGroup ? 'rounded-tl-2xl' : 'rounded-tl-xl'),
+              isUser
+                ? (isLastInGroup ? 'rounded-br-3xl' : 'rounded-br-xl')
+                : (isLastInGroup ? 'rounded-bl-3xl' : 'rounded-bl-xl'),
               isError && 'bg-destructive/20 border border-destructive text-destructive-foreground'
             )}
           >
@@ -248,15 +252,15 @@ export function ChatMessage({
             {renderContent()}
           </div>
           {!isUser && !isError && (
-            <div className="flex items-center gap-1.5 transition-opacity duration-200">
+            <div className="flex items-center gap-2 transition-opacity duration-200">
               <TooltipProvider>
-                <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
+                <div className="flex items-center gap-1.5 rounded-full border border-stroke-subtle/70 bg-surface-soft/90 px-1.5 py-1 shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset]">
                   <Tooltip delayDuration={300}>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 rounded-full"
+                        className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary/40"
                         onClick={handleCopy}
                         aria-label="Copy message"
                       >
@@ -271,7 +275,7 @@ export function ChatMessage({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 rounded-full"
+                          className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary/40"
                           onClick={onRegenerate}
                           aria-label="Regenerate response"
                         >
@@ -287,7 +291,7 @@ export function ChatMessage({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 rounded-full"
+                          className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary/40"
                           onClick={handleSave}
                           aria-label="Save to My Content"
                         >
@@ -304,8 +308,8 @@ export function ChatMessage({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 rounded-full"
-                            onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "'\''\''${text}'\''\''"`)}
+                            className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary/40"
+                            onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards that cover the key concepts from this response:\n${text}`)}
                             aria-label="Create flashcards from response"
                           >
                             <Album className="h-4 w-4" />
@@ -318,8 +322,8 @@ export function ChatMessage({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 rounded-full"
-                            onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "'\''\''${text}'\''\''"`)}
+                            className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary/40"
+                            onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz (medium difficulty) using this response as source material:\n${text}`)}
                             aria-label="Create quiz from response"
                           >
                             <HelpCircle className="h-4 w-4" />
