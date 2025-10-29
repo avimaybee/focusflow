@@ -523,6 +523,7 @@ export default function ChatPage() {
                 isLoading={isHistoryLoading}
                 isCollapsed={false}
                 onToggle={() => handleSetSidebarOpen(false)}
+                onRefreshHistory={forceRefresh}
               />
             </SheetContent>
           </Sheet>
@@ -539,6 +540,7 @@ export default function ChatPage() {
             isLoading={isHistoryLoading}
             isCollapsed={isSidebarCollapsed}
             onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
+      onRefreshHistory={forceRefresh}
         />
       </div>
 

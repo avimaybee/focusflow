@@ -8,6 +8,14 @@ import { ChatHistoryItem } from '@/hooks/use-chat-history';
 import { ChatMessageProps } from '@/components/chat/chat-message';
 import { marked } from 'marked';
 
+const renameChatSchema = z.object({
+    title: z
+        .string({ required_error: 'Title is required.' })
+        .trim()
+        .min(1, 'Title cannot be empty.')
+        .max(120, 'Title must be 120 characters or fewer.'),
+});
+
 export async function getChatHistory(userId: string): Promise<ChatHistoryItem[]> {
   if (!userId) return [];
 
@@ -183,4 +191,48 @@ export async function deleteChatSession(userId: string, chatId: string, accessTo
 
     console.log('[deleteChatSession] Successfully deleted chat:', chatId);
     return { success: true };
+}
+
+export async function renameChatSession(
+    userId: string,
+    chatId: string,
+    newTitle: string,
+    accessToken?: string,
+): Promise<{ success: boolean; error?: string; title?: string }> {
+    if (!userId || !chatId) {
+        return { success: false, error: 'Missing required parameters.' };
+    }
+
+    const parsed = renameChatSchema.safeParse({ title: newTitle });
+    if (!parsed.success) {
+        const message = parsed.error.errors[0]?.message ?? 'Invalid title.';
+        return { success: false, error: message };
+    }
+
+    const client = accessToken ? createAuthenticatedSupabaseClient(accessToken) : supabase;
+
+    try {
+        const { data, error } = await client
+            .from('chat_sessions')
+            .update({ title: parsed.data.title })
+            .eq('id', chatId)
+            .eq('user_id', userId)
+            .select('title')
+            .single();
+
+        if (error) {
+            console.error('[renameChatSession] Supabase error:', error);
+            return { success: false, error: error.message || 'Failed to rename chat.' };
+        }
+
+        if (!data) {
+            console.error('[renameChatSession] No data returned after update', { chatId, userId });
+            return { success: false, error: 'Chat not found or unauthorized.' };
+        }
+
+        return { success: true, title: data.title ?? parsed.data.title };
+    } catch (error) {
+        console.error('[renameChatSession] Unexpected error:', error);
+        return { success: false, error: 'Unexpected error renaming chat.' };
+    }
 }

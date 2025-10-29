@@ -63,7 +63,7 @@ Error fetching personas: TypeError: Cannot read properties of undefined (reading
 2. Ensure scroll-to-bottom on new message
 3. Add optimistic UI updates for user messages
 
-**Status Update:** Implemented guarded message loading with abortable retries and immediate server resync in `src/app/chat/page.tsx` to keep optimism in sync with Supabase writes. Regression test on real data still pending.
+**Status Update:** Partial client-side safeguards added (`src/app/chat/page.tsx`) but the UI still requires a manual refresh before model responses appear. Deferring the deeper fix until after higher-priority items.
 
 ---
 
@@ -80,6 +80,8 @@ Failed to load resource: the server responded with a status of 404
 - Some content resources failing to load
 - Showing placeholder data instead of actual user content
 - Unclear if this is intentional or broken
+
+**Status Update:** Rewired the placeholder cards to link to real detail routes (e.g. `/my-content/summaries/[id]`) so Next.js no longer prefetches nonexistent `placeholder` paths. 404 requests have stopped; the section still uses stub content until Supabase integration lands.
 
 ---
 
@@ -118,6 +120,8 @@ Failed to load resource: the server responded with a status of 404
 - Add context menu for delete, rename, archive
 - Consider grouping: "Today", "Yesterday", "This Week"
 
+**Status Update:** Sidebar entries now reveal full titles via tooltip, show relative timestamps, highlight the active chat, group sessions by recency, and render color-coded initials for each chat to avoid identical icons. Added an overflow menu for rename/delete with inline editing (`src/components/chat/chat-sidebar.tsx` + `src/app/chat/page.tsx`). Still open: archiving UX (if needed).
+
 ---
 
 ### 6. **Modal/Dialog Accessibility Problems**
@@ -131,6 +135,8 @@ Failed to load resource: the server responded with a status of 404
 **Fix:**
 - Add close button (X) in top-right + announce it for screen readers
 - Add ESC key handler
+
+**Status Update:** Implemented an accessible close control and Escape-to-dismiss handling in `src/components/auth/auth-modal.tsx`; modal now clearly exposes an exit affordance and respects keyboard users.
 
 
 ---

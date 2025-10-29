@@ -12,10 +12,12 @@ import {
   LayoutDashboard,
   PanelLeftClose,
   PanelRightClose,
-  MessageSquare,
   User,
   Trash2,
-  BrainCircuit,
+  EllipsisVertical,
+  Check,
+  X,
+  Loader2,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -42,6 +44,95 @@ import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useAuth } from '@/context/auth-context';
 import { motion } from 'framer-motion';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { formatDistanceToNow, differenceInCalendarDays } from 'date-fns';
+import { Input } from '@/components/ui/input';
+import { authenticatedFetch } from '@/lib/auth-helpers';
+
+type ChatGroupKey = 'today' | 'yesterday' | 'thisWeek' | 'older';
+
+const chatGroupLabels: Record<ChatGroupKey, string> = {
+  today: 'Today',
+  yesterday: 'Yesterday',
+  thisWeek: 'Earlier This Week',
+  older: 'Older',
+};
+
+const groupChatHistory = (history: ChatHistoryItem[]): Array<{ key: ChatGroupKey; label: string; items: ChatHistoryItem[] }> => {
+  if (!history || history.length === 0) {
+    return [];
+  }
+
+  const buckets: Record<ChatGroupKey, ChatHistoryItem[]> = {
+    today: [],
+    yesterday: [],
+    thisWeek: [],
+    older: [],
+  };
+
+  const now = new Date();
+
+  [...history]
+    .sort((a, b) => {
+      const aTime = a.createdAt ? a.createdAt.getTime() : 0;
+      const bTime = b.createdAt ? b.createdAt.getTime() : 0;
+      return bTime - aTime;
+    })
+    .forEach((item) => {
+      const createdAt = item.createdAt;
+      if (!createdAt) {
+        buckets.older.push(item);
+        return;
+      }
+
+      const diff = differenceInCalendarDays(now, createdAt);
+      if (diff === 0) {
+        buckets.today.push(item);
+      } else if (diff === 1) {
+        buckets.yesterday.push(item);
+      } else if (diff < 7) {
+        buckets.thisWeek.push(item);
+      } else {
+        buckets.older.push(item);
+      }
+    });
+
+  return (Object.keys(buckets) as ChatGroupKey[])
+    .map((key) => ({ key, label: chatGroupLabels[key], items: buckets[key] }))
+    .filter((group) => group.items.length > 0);
+};
+
+const chatAvatarPalettes = [
+  'bg-sky-500/15 text-sky-100 ring-1 ring-sky-500/30',
+  'bg-emerald-500/15 text-emerald-100 ring-1 ring-emerald-500/30',
+  'bg-purple-500/15 text-purple-100 ring-1 ring-purple-500/30',
+  'bg-amber-500/15 text-amber-100 ring-1 ring-amber-500/30',
+  'bg-rose-500/15 text-rose-100 ring-1 ring-rose-500/30',
+  'bg-cyan-500/15 text-cyan-100 ring-1 ring-cyan-500/30',
+  'bg-violet-500/15 text-violet-100 ring-1 ring-violet-500/30',
+  'bg-lime-500/15 text-lime-100 ring-1 ring-lime-500/30',
+];
+
+const computePaletteIndex = (title: string) => {
+  const safeTitle = title || 'Chat';
+  let hash = 0;
+  for (let i = 0; i < safeTitle.length; i += 1) {
+    hash = (hash << 5) - hash + safeTitle.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+  return Math.abs(hash) % chatAvatarPalettes.length;
+};
+
+const getChatAvatarClasses = (title: string) => chatAvatarPalettes[computePaletteIndex(title)];
+
+const getChatInitials = (title: string) => {
+  const safeTitle = title?.trim() || 'Chat';
+  const words = safeTitle.split(/\s+/).filter(Boolean);
+  if (words.length === 0) return 'C';
+  if (words.length === 1) {
+    return words[0].slice(0, 2).toUpperCase();
+  }
+  return (words[0][0] + words[1][0]).toUpperCase();
+};
 
 interface ChatSidebarProps {
   user: SupabaseUser | null;
@@ -53,6 +144,7 @@ interface ChatSidebarProps {
   isLoading: boolean;
   isCollapsed: boolean;
   onToggle: () => void;
+  onRefreshHistory: () => Promise<void> | void;
 }
 
 const SidebarSkeleton = ({ isCollapsed }: { isCollapsed: boolean }) => (
@@ -204,8 +296,85 @@ const ChatSidebarComponent = ({
   isLoading,
   isCollapsed,
   onToggle,
+  onRefreshHistory,
 }: ChatSidebarProps) => {
   const { profile } = useAuth();
+  const { toast } = useToast();
+
+  const [editingChatId, setEditingChatId] = React.useState<string | null>(null);
+  const [renameValue, setRenameValue] = React.useState('');
+  const [isRenaming, setIsRenaming] = React.useState(false);
+  const renameInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  React.useEffect(() => {
+    if (editingChatId) {
+      renameInputRef.current?.focus();
+      renameInputRef.current?.select();
+    }
+  }, [editingChatId]);
+
+  const handleStartRename = React.useCallback((chat: ChatHistoryItem) => {
+    setEditingChatId(chat.id);
+    setRenameValue(chat.title || '');
+  }, []);
+
+  const handleCancelRename = React.useCallback(() => {
+    if (isRenaming) return;
+    setEditingChatId(null);
+    setRenameValue('');
+  }, [isRenaming]);
+
+  const handleRenameSubmit = React.useCallback(async (chatId: string) => {
+    const nextTitle = renameValue.trim();
+    if (!nextTitle) {
+      toast({
+        title: 'Title required',
+        description: 'Please enter a name for your chat before saving.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (isRenaming) return;
+
+    setIsRenaming(true);
+    try {
+      const response = await authenticatedFetch('/api/chat/rename', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chatId, title: nextTitle }),
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(result?.error || 'Unable to rename chat.');
+      }
+
+      await Promise.resolve(onRefreshHistory());
+
+      toast({
+        title: 'Chat renamed',
+        description: 'Your chat title was updated successfully.',
+      });
+
+      setEditingChatId(null);
+      setRenameValue('');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unexpected error occurred.';
+      toast({
+        title: 'Rename failed',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRenaming(false);
+    }
+  }, [isRenaming, onRefreshHistory, renameValue, toast]);
+
+  const groupedChatHistory = React.useMemo(() => groupChatHistory(chatHistory || []), [chatHistory]);
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -264,49 +433,174 @@ const ChatSidebarComponent = ({
               <SidebarSkeleton isCollapsed={isCollapsed} />
             ) : (
               <div className="space-y-1">
-                {(chatHistory || []).map((chat) => (
-                  <Tooltip key={chat.id}>
-                    <TooltipTrigger asChild>
-                      <div
-                        role="button"
-                        className={cn(
-                          'flex w-full items-center font-normal py-2 px-3 rounded-lg cursor-pointer text-foreground transition-all duration-200 transform group/item',
-                          activeChatId === chat.id 
-                            ? 'bg-muted ring-1 ring-primary/20' 
-                            : 'hover:bg-muted/80',
-                          isCollapsed ? 'justify-center items-center h-10 w-10 p-0 flex items-center justify-center' : 'justify-between gap-3'
-                        )}
-                        onClick={() => {
-                          onChatSelect(chat.id);
-                        }}
-                      >
-                        <div className={cn('flex items-center gap-3 flex-1 min-w-0', isCollapsed && 'justify-center')}>
-                            <MessageSquare className="h-5 w-5 shrink-0" />
-                            <div className={cn('flex-1 min-w-0', isCollapsed && 'hidden')}>
-                                <p className="truncate font-medium text-sm">{chat.title}</p>
-                                <p className="truncate text-xs text-muted-foreground">{chat.lastMessagePreview}</p>
-                            </div>
-                        </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className={cn("h-6 w-6 shrink-0", isCollapsed && "hidden")}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDeleteChat(chat.id);
-                            }}
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TooltipTrigger>
-                    {isCollapsed && (
-                      <TooltipContent side="right" align="center">
-                        <p className="font-medium">{chat.title}</p>
-                        <p className="text-sm text-muted-foreground">{chat.lastMessagePreview}</p>
-                      </TooltipContent>
+                {groupedChatHistory.length === 0 && (chatHistory || []).length === 0 && (
+                  <p className="text-sm text-muted-foreground px-2 py-4 text-center">
+                    Start a conversation to see it appear here.
+                  </p>
+                )}
+                {groupedChatHistory.map((group, groupIndex) => (
+                  <div key={group.key} className="space-y-1">
+                    {isCollapsed ? (
+                      groupIndex > 0 && <div className="mx-auto my-2 h-px w-6 bg-border/50" />
+                    ) : (
+                      <p className="px-2 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        {group.label}
+                      </p>
                     )}
-                  </Tooltip>
+                    {group.items.map((chat) => {
+                  const relativeTime = chat.createdAt
+                    ? formatDistanceToNow(chat.createdAt, { addSuffix: true })
+                    : '';
+                  const isActive = activeChatId === chat.id;
+                  const isEditing = editingChatId === chat.id;
+
+                  return (
+                    <Tooltip key={chat.id}>
+                      <TooltipTrigger asChild>
+                        <div
+                          role="button"
+                          aria-current={isActive ? 'true' : undefined}
+                          className={cn(
+                            'flex w-full items-center font-normal py-2 px-3 rounded-lg cursor-pointer text-foreground transition-all duration-200 group/item',
+                            isActive
+                              ? 'bg-muted ring-1 ring-primary/30'
+                              : 'hover:bg-muted/80',
+                            isCollapsed
+                              ? 'justify-center items-center h-10 w-10 p-0'
+                              : 'justify-between gap-3',
+                            isEditing && 'ring-1 ring-primary/40 bg-muted'
+                          )}
+                          onClick={() => {
+                            if (isEditing || isRenaming) return;
+                            onChatSelect(chat.id);
+                          }}
+                          title={!isCollapsed && !isEditing ? chat.title : undefined}
+                        >
+                          <div className={cn('flex items-center gap-3 flex-1 min-w-0', isCollapsed && 'justify-center')}>
+                            <Avatar className={cn('h-8 w-8 shrink-0 transition-all duration-200', isActive && !isEditing && 'ring-1 ring-primary/50 shadow-sm')}>
+                              <AvatarFallback
+                                className={cn(
+                                  'h-full w-full text-[11px] font-semibold uppercase tracking-wide flex items-center justify-center',
+                                  getChatAvatarClasses(chat.title)
+                                )}
+                              >
+                                {getChatInitials(chat.title)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className={cn('flex-1 min-w-0', isCollapsed && 'hidden')}>
+                              {isEditing ? (
+                                <Input
+                                  ref={editingChatId === chat.id ? renameInputRef : undefined}
+                                  value={renameValue}
+                                  onChange={(event) => setRenameValue(event.target.value)}
+                                  onClick={(event) => event.stopPropagation()}
+                                  onKeyDown={(event) => {
+                                    if (event.key === 'Enter') {
+                                      event.preventDefault();
+                                      handleRenameSubmit(chat.id);
+                                    }
+                                    if (event.key === 'Escape') {
+                                      event.preventDefault();
+                                      handleCancelRename();
+                                    }
+                                  }}
+                                  placeholder="Chat title"
+                                  className="h-8"
+                                  disabled={isRenaming}
+                                />
+                              ) : (
+                                <>
+                                  <p className="truncate font-medium text-sm">{chat.title}</p>
+                                  <p className="truncate text-xs text-muted-foreground">{relativeTime}</p>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className={cn('flex items-center gap-2', isCollapsed && 'hidden')}>
+                            {isEditing ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleRenameSubmit(chat.id);
+                                  }}
+                                  disabled={isRenaming || !renameValue.trim()}
+                                  aria-label="Save chat title"
+                                >
+                                  {isRenaming ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Check className="h-4 w-4" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleCancelRename();
+                                  }}
+                                  disabled={isRenaming}
+                                  aria-label="Cancel chat rename"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </>
+                            ) : (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={(event) => event.stopPropagation()}
+                                    aria-label="Chat actions"
+                                  >
+                                    <EllipsisVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" side="right">
+                                  <DropdownMenuItem
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      handleStartRename(chat);
+                                    }}
+                                  >
+                                    Rename
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      if (editingChatId === chat.id) {
+                                        handleCancelRename();
+                                      }
+                                      onDeleteChat(chat.id);
+                                    }}
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
+                        </div>
+                      </TooltipTrigger>
+                      {(isCollapsed || chat.title.length > 26) && !isEditing && (
+                        <TooltipContent side="right" align="center">
+                          <p className="font-medium">{chat.title}</p>
+                          {relativeTime && (
+                            <p className="text-sm text-muted-foreground">{relativeTime}</p>
+                          )}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  );
+                    })}
+                  </div>
                 ))}
               </div>
             )}

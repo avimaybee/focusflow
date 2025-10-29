@@ -2,20 +2,15 @@
 
 import * as React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useSearchParams } from 'next/navigation';
 import Fuse from 'fuse.js';
-import { PublishAsBlogModal } from '@/components/publish-as-blog-modal';
-import { AddToCollectionModal } from '@/components/add-to-collection-modal';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
-import { Loader2, FileText, HelpCircle, BookOpen, Save, Calendar, Star, Folder, Plus, LayoutGrid, Search, FolderPlus, MessageSquare } from 'lucide-react';
+import { Loader2, FileText, HelpCircle, BookOpen, Save, Calendar, Star, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
-import { ExpandedTabs } from '@/components/ui/expanded-tabs';
-import { formatDistanceToNow } from 'date-fns';
 
 const contentIcons: { [key: string]: React.ElementType } = {
   summary: FileText,
@@ -65,11 +60,26 @@ const placeholderContent: ContentItem[] = [
     },
 ];
 
+const getContentLink = (item: ContentItem): string | undefined => {
+  switch (item.type) {
+    case 'summary':
+      return `/my-content/summaries/${item.id}`;
+    case 'quiz':
+      return `/my-content/quizzes/${item.id}`;
+    case 'flashcardSet':
+      return `/my-content/flashcardSets/${item.id}`;
+    case 'savedMessage':
+      return `/my-content/savedMessages/${item.id}`;
+    case 'studyPlan':
+      return `/my-content/studyPlans/${item.id}`;
+    default:
+      return undefined;
+  }
+};
+
 function MyContentPageContent() {
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = React.useState('All');
   const [allContent, setAllContent] = React.useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -80,22 +90,14 @@ function MyContentPageContent() {
     setIsLoading(false);
   }, []);
 
-  const tabFilteredContent = allContent.filter((item) => {
-    if (activeTab === 'All') return true;
-    if (activeTab === 'Favorites') return item.isFavorited;
-    if (activeTab === 'Summaries') return item.type === 'summary';
-    if (activeTab === 'Quizzes') return item.type === 'quiz';
-    return false;
-  });
-
-  const fuse = new Fuse(tabFilteredContent, {
+  const fuse = new Fuse(allContent, {
     keys: ['title', 'description', 'tags'],
     threshold: 0.3,
   });
 
   const searchFilteredContent = searchQuery
     ? fuse.search(searchQuery).map(result => result.item)
-    : tabFilteredContent;
+    : allContent;
 
   const renderContent = () => {
     if (isLoading || authLoading) {
@@ -106,7 +108,7 @@ function MyContentPageContent() {
         <AnimatePresence>
             {searchFilteredContent.map((item) => {
               const Icon = contentIcons[item.type];
-              const linkHref = `/my-content/placeholder`;
+              const linkHref = getContentLink(item);
 
               return (
                 <motion.div
@@ -138,9 +140,15 @@ function MyContentPageContent() {
                       </CardDescription>
                       </CardContent>
                       <CardFooter className="p-4 pt-0 flex flex-col gap-2">
-                          <Button asChild className="w-full">
-                            <Link href={linkHref}>View & Edit</Link>
-                          </Button>
+                          {linkHref ? (
+                            <Button className="w-full" asChild>
+                              <Link href={linkHref}>View & Edit</Link>
+                            </Button>
+                          ) : (
+                            <Button className="w-full" disabled>
+                              Coming Soon
+                            </Button>
+                          )}
                       </CardFooter>
                   </Card>
                 </motion.div>
