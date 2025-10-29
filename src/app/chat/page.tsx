@@ -136,6 +136,18 @@ export default function ChatPage() {
           return prev && prev.length > 0 ? prev : [];
         }
 
+        const prevList = prev || [];
+        const fetchedIds = new Set(fetched.map((msg) => msg.id));
+        const hasMissingOptimistic = prevList.some((msg) => {
+          const optimistic = (msg.id ?? '').startsWith('user-') || (msg.id ?? '').startsWith('guest-ai-') || (msg.id ?? '').startsWith('err-');
+          return optimistic && msg.id && !fetchedIds.has(msg.id);
+        });
+
+        if ((hasMissingOptimistic || fetched.length < prevList.length) && attempt < 5) {
+          shouldRetry = true;
+          return prev;
+        }
+
         return fetched;
       });
 
