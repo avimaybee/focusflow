@@ -199,6 +199,8 @@ Tools now surface on hover; the menu disappears when the cursor leaves and immed
 - Increase line-height to 1.6-1.8 for readability
 - Use font-weight strategically: 400 (body), 500 (emphasis), 700 (headings)
 
+**Status Update:** Chat conversation typography now uses a 15px base size with 1.65 line-height via `src/app/globals.css`, easing readability while we roll the broader type scale across the app.
+
 ---
 
 ### 10. **Color Contrast Strategy**
@@ -233,6 +235,8 @@ Tools now surface on hover; the menu disappears when the cursor leaves and immed
 - Define spacing scale: 4px, 8px, 16px, 24px, 32px, 48px
 - Use consistent container padding: desktop (48px), mobile (16px)
 - Align grid items properly with gap utilities
+
+**Status Update:** Chat timeline spacing increased to 16-24px between messages (see `src/components/chat/message-list.tsx`), giving each exchange more breathing room while we audit remaining screens.
 
 ---
 
@@ -329,6 +333,8 @@ Start your first chat to begin your streak! 🔥
 3. **Visual elements** - illustrations for empty states
 4. **Onboarding hints** - "Try creating your first summary!"
 
+**Status Update:** The My Content hub now swaps the blank grid for motivational empty states with direct CTAs to chat or the dashboard, plus a search-specific fallback that offers quick filter resets (`src/app/my-content/page.tsx`).
+
 ---
 
 ### 18. **No User Onboarding**
@@ -364,7 +370,7 @@ New users thrown into dashboard with no guidance
 - Search chat history
 - Search notes
 
-**Status Update:** Added real-time filtering for chat history with a search bar (toggle with Cmd/Ctrl + K) so users can quickly find past sessions (`src/components/chat/chat-sidebar.tsx`). Global app-wide search and note/content search remain outstanding.
+**Status Update:** Added real-time filtering for chat history with a search bar (toggle with Cmd/Ctrl + K) so users can quickly find past sessions (`src/components/chat/chat-sidebar.tsx`). The My Content hub now ships responsive search with type filters, a `/` keyboard focus shortcut, and zero-result guidance (`src/app/my-content/page.tsx`). Global app-wide search and note/content search remain outstanding.
 
 ---
 
@@ -391,6 +397,8 @@ New users thrown into dashboard with no guidance
 1. Sync header pill and chat bubble avatars with selected persona
 2. Fix landing demo fetch (see Critical Bug #1)
 3. Surface quick persona info without opening the full menu
+
+**Status Update:** The chat header now mirrors the active persona with an avatar chip, animated name swap, and tooltip description so users can confirm who they&apos;re talking to at a glance (`src/components/chat/chat-header.tsx`, `src/app/chat/page.tsx`).
 
 
 
@@ -703,6 +711,8 @@ Currently: None visible
 - `Esc` - Close modals
 - `/` - Focus search
 - Arrow keys - Navigate chat history
+
+**Status Update:** Chat now supports `Cmd/Ctrl + N` (new conversation) and `Cmd/Ctrl + K` (focus chat search) to speed up power users (`src/app/chat/page.tsx`, `src/components/chat/chat-sidebar.tsx`). Remaining shortcuts still to be implemented globally. A new inline legend below the composer surfaces `Cmd/Ctrl + Enter`, `Shift + Enter`, and related combos so users discover the shortcuts in context.
 
 ---
 

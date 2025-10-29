@@ -43,6 +43,7 @@ export interface MultimodalInputHandle {
   setDraft: (value: string) => void;
   submit: () => void;
   clear: () => void;
+  getTextarea: () => HTMLTextAreaElement | null;
 }
 
 interface MultimodalInputProps {
@@ -162,6 +163,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
         setAttachments([]);
         adjustHeight(true);
       },
+      getTextarea: () => internalTextareaRef.current,
   }), [adjustHeight, internalTextareaRef, setAttachments, submitForm]);
 
     const handleFocus = () => {

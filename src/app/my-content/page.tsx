@@ -6,7 +6,7 @@ import Fuse from 'fuse.js';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
-import { Loader2, FileText, HelpCircle, BookOpen, Save, Calendar, Star, Search } from 'lucide-react';
+import { Loader2, FileText, HelpCircle, BookOpen, Save, Calendar, Star, Search, Sparkles, Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
@@ -32,6 +32,14 @@ export interface ContentItem {
     isFavorited: boolean;
     lastViewed: Date;
 }
+
+const contentTypeOptions: { value: ContentItem['type']; label: string; helper: string }[] = [
+  { value: 'summary', label: 'Summaries', helper: 'AI-generated study notes' },
+  { value: 'quiz', label: 'Quizzes', helper: 'Auto-built practice questions' },
+  { value: 'flashcardSet', label: 'Flashcards', helper: 'Key terms to drill' },
+  { value: 'savedMessage', label: 'Saved Messages', helper: 'Pinned chat insights' },
+  { value: 'studyPlan', label: 'Study Plans', helper: 'Structured schedules' },
+];
 
 const placeholderContent: ContentItem[] = [
     {
@@ -83,6 +91,8 @@ function MyContentPageContent() {
   const [allContent, setAllContent] = React.useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [activeTypes, setActiveTypes] = React.useState<ContentItem['type'][]>([]);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     // Placeholder for fetching data
@@ -90,23 +100,111 @@ function MyContentPageContent() {
     setIsLoading(false);
   }, []);
 
-  const fuse = new Fuse(allContent, {
-    keys: ['title', 'description', 'tags'],
-    threshold: 0.3,
-  });
+  const fuse = React.useMemo(() => {
+    return new Fuse(allContent, {
+      keys: ['title', 'description', 'tags'],
+      threshold: 0.3,
+    });
+  }, [allContent]);
 
-  const searchFilteredContent = searchQuery
-    ? fuse.search(searchQuery).map(result => result.item)
-    : allContent;
+  const filteredContent = React.useMemo(() => {
+    const base = searchQuery.trim()
+      ? fuse.search(searchQuery.trim()).map(result => result.item)
+      : allContent;
+
+    if (!activeTypes.length) {
+      return base;
+    }
+
+    return base.filter((item) => activeTypes.includes(item.type));
+  }, [searchQuery, fuse, allContent, activeTypes]);
+
+  const hasAnyContent = allContent.length > 0;
+  const hasResults = filteredContent.length > 0;
+  const isFiltering = activeTypes.length > 0 || searchQuery.trim().length > 0;
+
+  const toggleType = (type: ContentItem['type']) => {
+    setActiveTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
+
+  const resetFilters = () => {
+    setActiveTypes([]);
+    setSearchQuery('');
+    requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+    });
+  };
+
+  React.useEffect(() => {
+    const handleSlashFocus = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
+      if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
+      event.preventDefault();
+      searchInputRef.current?.focus();
+    };
+
+    window.addEventListener('keydown', handleSlashFocus);
+    return () => window.removeEventListener('keydown', handleSlashFocus);
+  }, []);
 
   const renderContent = () => {
     if (isLoading || authLoading) {
         return <div className="col-span-full flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
     }
 
+    if (!hasAnyContent) {
+      return (
+        <div className="col-span-full">
+          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border/70 bg-secondary/40 px-6 py-16 text-center">
+            <Sparkles className="h-10 w-10 text-primary" />
+            <div className="space-y-1">
+              <h3 className="text-xl font-semibold">You haven&apos;t created anything yet</h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Start a chat or launch a smart tool to generate summaries, flashcards, and quizzes. Everything you create will land here automatically.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button asChild className="min-w-[160px]">
+                <Link href="/chat">Open Chat</Link>
+              </Button>
+              <Button variant="outline" asChild className="min-w-[160px]">
+                <Link href="/dashboard">Explore Dashboard</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (!hasResults) {
+      return (
+        <div className="col-span-full">
+          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border/70 bg-secondary/30 px-6 py-12 text-center">
+            <Inbox className="h-9 w-9 text-muted-foreground" />
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold">No matches yet</h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Try a different keyword or clear your filters to see everything you&apos;ve saved.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button onClick={resetFilters} className="min-w-[140px]">Clear Filters</Button>
+              <Button variant="outline" asChild className="min-w-[140px]">
+                <Link href="/chat">Generate new content</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
         <AnimatePresence>
-            {searchFilteredContent.map((item) => {
+            {filteredContent.map((item: ContentItem) => {
               const Icon = contentIcons[item.type];
               const linkHref = getContentLink(item);
 
@@ -168,15 +266,48 @@ function MyContentPageContent() {
           </p>
         </div>
 
-        <div className="mb-6 flex flex-col md:flex-row items-center gap-4">
-            <div className="relative w-full md:w-1/2 lg:w-1/3">
+        <div className="mb-6 flex flex-col gap-4">
+            <div className="relative w-full md:w-2/3 lg:w-1/2">
                 <Input 
+                    ref={searchInputRef}
                     placeholder="Search your materials..."
                     className="pl-10"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    aria-label="Search saved content"
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Filter by type</span>
+              {contentTypeOptions.map(({ value, label, helper }) => {
+                const isActive = activeTypes.includes(value);
+                return (
+                  <Button
+                    key={value}
+                    type="button"
+                    variant={isActive ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleType(value)}
+                    className="rounded-full"
+                    aria-pressed={isActive}
+                    aria-label={`${isActive ? 'Remove' : 'Include'} ${label} results${helper ? ` (${helper})` : ''}`}
+                  >
+                    {label}
+                  </Button>
+                );
+              })}
+              {isFiltering && (
+                <Button variant="ghost" size="sm" onClick={resetFilters}>
+                  Reset
+                </Button>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
+              <span>Showing {filteredContent.length} of {allContent.length} items</span>
+              <span>Press <kbd className="rounded border border-border/60 bg-secondary/80 px-1">/</kbd> to focus search</span>
             </div>
         </div>
 

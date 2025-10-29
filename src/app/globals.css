@@ -192,8 +192,8 @@
 
 .prose-styles {
   @apply prose prose-invert max-w-none prose-sm prose-p:font-body prose-headings:font-heading prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-foreground;
-  font-size: 0.875rem; /* 14px - match text-sm */
-  line-height: 1.5;
+  font-size: 0.9375rem; /* 15px for improved readability */
+  line-height: 1.65;
 }
 
 /* Remove top/bottom margin from first/last elements in AI message bubbles */
@@ -207,8 +207,8 @@
 .prose-styles p,
 .prose-styles ul,
 .prose-styles ol {
-    line-height: 1.5;
-    font-size: 0.875rem; /* 14px */
+  line-height: 1.65;
+  font-size: 0.9375rem; /* 15px */
 }
 
 .prose-styles h1,
