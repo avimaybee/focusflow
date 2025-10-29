@@ -18,6 +18,7 @@ import {
   Check,
   X,
   Loader2,
+  Search,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -305,6 +306,8 @@ const ChatSidebarComponent = ({
   const [renameValue, setRenameValue] = React.useState('');
   const [isRenaming, setIsRenaming] = React.useState(false);
   const renameInputRef = React.useRef<HTMLInputElement | null>(null);
+  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [searchTerm, setSearchTerm] = React.useState('');
 
   React.useEffect(() => {
     if (editingChatId) {
@@ -374,7 +377,41 @@ const ChatSidebarComponent = ({
     }
   }, [isRenaming, onRefreshHistory, renameValue, toast]);
 
-  const groupedChatHistory = React.useMemo(() => groupChatHistory(chatHistory || []), [chatHistory]);
+  const filteredChatHistory = React.useMemo(() => {
+    if (!chatHistory) return [];
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return chatHistory;
+    return chatHistory.filter((item) => {
+      const title = item.title || '';
+      return title.toLowerCase().includes(term);
+    });
+  }, [chatHistory, searchTerm]);
+
+  const groupedChatHistory = React.useMemo(() => groupChatHistory(filteredChatHistory || []), [filteredChatHistory]);
+
+  React.useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey)) return;
+      if (event.shiftKey) return;
+      if (event.key.toLowerCase() !== 'k') return;
+
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
+
+      event.preventDefault();
+      if (isCollapsed) {
+        onToggle();
+        setTimeout(() => searchInputRef.current?.focus(), 120);
+      } else {
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  }, [isCollapsed, onToggle]);
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -427,6 +464,36 @@ const ChatSidebarComponent = ({
           </Button>
         </div>
 
+        {!isCollapsed && (
+          <div className="px-4 mb-2">
+            <div className="relative">
+              <Search className="h-4 w-4 absolute left-3 top-2.5 text-muted-foreground" />
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 absolute right-2 top-1.5 text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    setSearchTerm('');
+                    searchInputRef.current?.focus();
+                  }}
+                  aria-label="Clear chat search"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+              <Input
+                ref={searchInputRef}
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search chats"
+                className="pl-9 pr-9 h-9 bg-secondary/60 border-border/50"
+                aria-label="Search chat history"
+              />
+            </div>
+          </div>
+        )}
+
         <ScrollArea className="flex-1">
           <div className="py-2 px-4 space-y-1">
             {isLoading && user ? (
@@ -436,6 +503,11 @@ const ChatSidebarComponent = ({
                 {groupedChatHistory.length === 0 && (chatHistory || []).length === 0 && (
                   <p className="text-sm text-muted-foreground px-2 py-4 text-center">
                     Start a conversation to see it appear here.
+                  </p>
+                )}
+                {groupedChatHistory.length === 0 && (chatHistory || []).length > 0 && searchTerm.trim().length > 0 && (
+                  <p className="text-sm text-muted-foreground px-2 py-4 text-center">
+                    No chats match “{searchTerm}”.
                   </p>
                 )}
                 {groupedChatHistory.map((group, groupIndex) => (

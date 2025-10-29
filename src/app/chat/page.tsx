@@ -231,13 +231,32 @@ export default function ChatPage() {
     baseToggleContextHub();
   };
 
-  const handleNewChat = () => {
+  const handleNewChat = useCallback(() => {
     setActiveChatId(null);
     setMessages([]);
     setGuestMessageCount(0);
     setIsNewChat(false);
     router.push('/chat');
-  };
+  }, [router]);
+  useEffect(() => {
+    const handleGlobalShortcuts = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey)) return;
+      if (event.shiftKey) return;
+
+      if (event.key.toLowerCase() === 'n') {
+        const target = event.target as HTMLElement | null;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+          return;
+        }
+
+        event.preventDefault();
+        handleNewChat();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalShortcuts);
+    return () => window.removeEventListener('keydown', handleGlobalShortcuts);
+  }, [handleNewChat]);
 
   const handleDeleteChat = async (chatId: string) => {
     setChatToDelete(chatId);

@@ -174,6 +174,8 @@ Tools now surface on hover; the menu disappears when the cursor leaves and immed
 - Persist dismissal and consider lowering prominence for logged-in users
 - Swap in standard external-link iconography
 
+**Status Update:** Banner dismissal now persists across visits (localStorage with announcement versioning), shifts to a subtler style for logged-in users, and uses a standard external-link glyph for clarity (`src/components/announcement-banner.tsx`). Remaining: consider full removal or alternate placement for long-term logged-in users.
+
 ---
 
 ## 🎨 DESIGN & VISUAL ISSUES
@@ -361,6 +363,8 @@ New users thrown into dashboard with no guidance
 - Add Cmd+K global search modal
 - Search chat history
 - Search notes
+
+**Status Update:** Added real-time filtering for chat history with a search bar (toggle with Cmd/Ctrl + K) so users can quickly find past sessions (`src/components/chat/chat-sidebar.tsx`). Global app-wide search and note/content search remain outstanding.
 
 ---
 
