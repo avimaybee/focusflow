@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useImperativeHandle,
   type Dispatch,
   type SetStateAction,
   type ChangeEvent,
@@ -37,6 +38,13 @@ type VisibilityType = 'public' | 'private' | 'unlisted' | string;
 
 // Main Component
 
+export interface MultimodalInputHandle {
+  focus: () => void;
+  setDraft: (value: string) => void;
+  submit: () => void;
+  clear: () => void;
+}
+
 interface MultimodalInputProps {
   chatId: string;
   messages: Array<UIMessage>;
@@ -55,7 +63,7 @@ interface MultimodalInputProps {
   setSelectedPersonaId: (id: string) => void;
 }
 
-const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInputProps>(
+const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalInputProps>(
   ({
     attachments,
     setAttachments,
@@ -74,8 +82,6 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
       minHeight: 24,
       maxHeight: 200,
     });
-    React.useImperativeHandle(ref, () => internalTextareaRef.current! as HTMLTextAreaElement);
-    
     const fileInputRef = useRef<HTMLInputElement>(null);
     const formRef = useRef<HTMLFormElement>(null);
 
@@ -128,6 +134,35 @@ const PureMultimodalInput = React.forwardRef<HTMLTextAreaElement, MultimodalInpu
       setAttachments([]);
       adjustHeight(true);
     }, [input, attachments, onSendMessage, setAttachments, adjustHeight]);
+
+    useImperativeHandle(ref, () => ({
+      focus: () => {
+        internalTextareaRef.current?.focus();
+      },
+      setDraft: (value: string) => {
+        setInput(value);
+        requestAnimationFrame(() => {
+          adjustHeight(true);
+          if (internalTextareaRef.current) {
+            internalTextareaRef.current.focus();
+            const length = value.length;
+            try {
+              internalTextareaRef.current.setSelectionRange(length, length);
+            } catch (error) {
+              // Ignore selection errors (e.g., unsupported input types)
+            }
+          }
+        });
+      },
+      submit: () => {
+        submitForm();
+      },
+      clear: () => {
+        setInput('');
+        setAttachments([]);
+        adjustHeight(true);
+      },
+  }), [adjustHeight, internalTextareaRef, setAttachments, submitForm]);
 
     const handleFocus = () => {
         if (onFocus) onFocus();

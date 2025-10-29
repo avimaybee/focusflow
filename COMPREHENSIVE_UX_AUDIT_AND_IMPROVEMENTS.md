@@ -159,6 +159,8 @@ Tools now surface on hover; the menu disappears when the cursor leaves and immed
 
 **Fix:** Change trigger to click, keep menu open until dismissed, and populate input instead of auto-sending
 
+**Status Update:** Smart tools now open via click, stay open until dismissed (click outside or Escape), and choosing a tool stages its prompt in the composer rather than auto-sending (`src/components/smart-tools-menu.tsx`, `src/app/chat/page.tsx`, `src/components/chat/multimodal-input.tsx`). Keyboard shortcut surfacing still pending.
+
 ---
 
 ### 8. **Announcement Banner UX**

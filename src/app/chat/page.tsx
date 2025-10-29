@@ -13,7 +13,7 @@ import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageList } from '@/components/chat/message-list';
-import { MultimodalInput } from '@/components/chat/multimodal-input';
+import { MultimodalInput, type MultimodalInputHandle } from '@/components/chat/multimodal-input';
 import { ContextHub } from '@/components/chat/context-hub';
 import { ChatMessageProps } from '@/components/chat/chat-message';
 import { AnnouncementBanner } from '@/components/announcement-banner';
@@ -64,7 +64,7 @@ export default function ChatPage() {
   const { chatHistory, isLoading: isHistoryLoading, forceRefresh } = useChatHistory();
   const { isContextHubOpen, toggleContextHub: baseToggleContextHub, closeContextHub } = useContextHubStore();
 
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<MultimodalInputHandle | null>(null);
   const activeChatIdRef = useRef<string | null>(null);
   const previousChatIdRef = useRef<string | null>(null);
   const messagesRef = useRef<ChatMessageProps[]>([]);
@@ -561,7 +561,8 @@ export default function ChatPage() {
           activeChatId={activeChatId}
           activePersona={selectedPersona}
           onSmartToolAction={(prompt) => {
-            handleSendMessage({ input: prompt, attachments: [] });
+            inputRef.current?.setDraft(prompt);
+            inputRef.current?.focus();
           }}
           onRegenerate={handleRegenerate}
         />

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CaseUpper, ListTodo, Scale, BookText, Presentation, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export type SmartTool = {
   name: string;
@@ -48,13 +47,39 @@ interface SmartToolsMenuProps {
 
 export function SmartToolsMenu({ onAction }: SmartToolsMenuProps) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
 
   return (
     <TooltipProvider>
       <motion.div
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className="flex items-center gap-1"
-        onMouseLeave={() => setIsOpen(false)}
+        ref={containerRef}
         role="toolbar"
         aria-label="Smart Tools"
       >
@@ -67,6 +92,7 @@ export function SmartToolsMenu({ onAction }: SmartToolsMenuProps) {
                 className="h-7 w-7 rounded-full"
                 onClick={() => setIsOpen(!isOpen)}
                 aria-label="Open Smart Tools"
+                aria-expanded={isOpen}
               >
                 <Sparkles className="h-4 w-4" />
               </Button>
@@ -96,6 +122,7 @@ export function SmartToolsMenu({ onAction }: SmartToolsMenuProps) {
                       onAction(tool);
                       setIsOpen(false);
                     }}
+                    aria-label={tool.name}
                   >
                     {tool.icon}
                     <span>{tool.name}</span>

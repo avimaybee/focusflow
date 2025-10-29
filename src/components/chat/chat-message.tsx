@@ -253,7 +253,13 @@ export function ChatMessage({
                 <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
                   <Tooltip delayDuration={300}>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={handleCopy}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 rounded-full"
+                        onClick={handleCopy}
+                        aria-label="Copy message"
+                      >
                         <Copy className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
@@ -262,7 +268,13 @@ export function ChatMessage({
                   {isLastInGroup && onRegenerate && (
                     <Tooltip delayDuration={300}>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={onRegenerate}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 rounded-full"
+                          onClick={onRegenerate}
+                          aria-label="Regenerate response"
+                        >
                           <RotateCw className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
@@ -272,7 +284,13 @@ export function ChatMessage({
                   {user && rawText && (
                     <Tooltip delayDuration={300}>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={handleSave}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 rounded-full"
+                          onClick={handleSave}
+                          aria-label="Save to My Content"
+                        >
                           <Save className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
@@ -288,6 +306,7 @@ export function ChatMessage({
                             size="icon"
                             className="h-6 w-6 rounded-full"
                             onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards from the following text, focusing on key terms and concepts: "'\''\''${text}'\''\''"`)}
+                            aria-label="Create flashcards from response"
                           >
                             <Album className="h-4 w-4" />
                           </Button>
@@ -301,6 +320,7 @@ export function ChatMessage({
                             size="icon"
                             className="h-6 w-6 rounded-full"
                             onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz based on this text, with 'medium' difficulty: "'\''\''${text}'\''\''"`)}
+                            aria-label="Create quiz from response"
                           >
                             <HelpCircle className="h-4 w-4" />
                           </Button>
