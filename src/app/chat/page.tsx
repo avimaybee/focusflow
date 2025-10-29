@@ -231,7 +231,7 @@ export default function ChatPage() {
           currentChatId = newChatId;
           setIsNewChat(true); // Mark as new chat to prevent loading from DB
           setActiveChatId(newChatId);
-          // Update URL without causing a re-render
+          // Update URL without navigation to prevent page refresh
           window.history.replaceState(null, '', `/chat/${newChatId}`);
           forceRefresh();
         } catch (err) {
