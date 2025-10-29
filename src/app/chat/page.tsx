@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
@@ -65,6 +65,109 @@ export default function ChatPage() {
   const { isContextHubOpen, toggleContextHub: baseToggleContextHub, closeContextHub } = useContextHubStore();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const activeChatIdRef = useRef<string | null>(null);
+  const previousChatIdRef = useRef<string | null>(null);
+  const messagesRef = useRef<ChatMessageProps[]>([]);
+  const messageFetchControllerRef = useRef<AbortController | null>(null);
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    activeChatIdRef.current = activeChatId;
+  }, [activeChatId]);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  useEffect(() => {
+    return () => {
+      messageFetchControllerRef.current?.abort();
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  const hasOptimisticMessages = useCallback((list: ChatMessageProps[]) => {
+    return list.some((msg) => {
+      const id = msg.id ?? '';
+      return id.startsWith('user-') || id.startsWith('guest-ai-') || id.startsWith('err-');
+    });
+  }, []);
+
+  const loadMessages = useCallback(async (chatId: string, attempt = 0) => {
+    if (!chatId) return;
+
+    messageFetchControllerRef.current?.abort();
+    const controller = new AbortController();
+    messageFetchControllerRef.current = controller;
+
+    try {
+      const accessToken = session?.access_token;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+
+      const url = `/api/chat?sessionId=${chatId}` + (accessToken ? `&accessToken=${encodeURIComponent(accessToken)}` : '');
+      const res = await fetch(url, { headers, signal: controller.signal });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => 'Could not read response body');
+        console.error('Failed to load messages:', res.status, text);
+        return;
+      }
+
+      const data = await res.json();
+      const fetched = (Array.isArray(data) ? data : []) as ChatMessageProps[];
+      let shouldRetry = false;
+
+      setMessages((prev) => {
+        if (activeChatIdRef.current !== chatId) {
+          return prev;
+        }
+
+        if (fetched.length === 0) {
+          if (hasOptimisticMessages(prev) && attempt < 3) {
+            shouldRetry = true;
+            return prev;
+          }
+          return [];
+        }
+
+        return fetched;
+      });
+
+      if (!shouldRetry && retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
+
+      if (shouldRetry) {
+        if (retryTimeoutRef.current) {
+          clearTimeout(retryTimeoutRef.current);
+        }
+        retryTimeoutRef.current = setTimeout(() => loadMessages(chatId, attempt + 1), 600);
+      }
+    } catch (err) {
+      if ((err as Error)?.name === 'AbortError') {
+        return;
+      }
+      console.error('Error fetching messages:', err);
+
+      if (hasOptimisticMessages(messagesRef.current) && attempt < 3) {
+        if (retryTimeoutRef.current) {
+          clearTimeout(retryTimeoutRef.current);
+        }
+        retryTimeoutRef.current = setTimeout(() => loadMessages(chatId, attempt + 1), 800);
+      }
+    } finally {
+      if (messageFetchControllerRef.current === controller) {
+        messageFetchControllerRef.current = null;
+      }
+    }
+  }, [session?.access_token, hasOptimisticMessages]);
 
   useEffect(() => {
     const chatId = params.chatId as string | undefined;
@@ -74,34 +177,33 @@ export default function ChatPage() {
   }, [params.chatId]);
 
   useEffect(() => {
-    async function loadMessages() {
-      // Don't load messages when we're creating a new chat and adding messages locally
-      if (isNewChat || !activeChatId) {
-        return;
-      }
-      
-      try {
-        // Prefer Authorization header when session is present
-        const accessToken = session?.access_token;
-        const url = `/api/chat?sessionId=${activeChatId}` + (accessToken ? `&accessToken=${encodeURIComponent(accessToken)}` : '');
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-        const res = await fetch(url, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          setMessages(Array.isArray(data) ? data : []);
-        } else {
-          const text = await res.text().catch(() => 'Could not read response body');
-          console.error('Failed to load messages:', res.status, text);
-          setMessages([]);
-        }
-      } catch (err) {
-        console.error('Error fetching messages:', err);
-        setMessages([]);
-      }
+    if (!activeChatId) {
+      setMessages([]);
+      previousChatIdRef.current = null;
+      return;
     }
-    loadMessages();
-  }, [activeChatId, session, isNewChat]);
+
+    const previousChatId = previousChatIdRef.current;
+    previousChatIdRef.current = activeChatId;
+
+    if (isNewChat) {
+      return;
+    }
+
+    if (previousChatId !== activeChatId && !hasOptimisticMessages(messagesRef.current)) {
+      setMessages([]);
+    }
+
+    loadMessages(activeChatId);
+
+    return () => {
+      messageFetchControllerRef.current?.abort();
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
+    };
+  }, [activeChatId, isNewChat, loadMessages, hasOptimisticMessages]);
 
   // Debug: log messages changes to help identify when messages becomes undefined or malformed
   useEffect(() => {
@@ -352,6 +454,9 @@ export default function ChatPage() {
       forceRefresh();
       // Reset isNewChat flag now that messages are saved
       setIsNewChat(false);
+      if (currentChatId) {
+        loadMessages(currentChatId);
+      }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -372,7 +477,8 @@ export default function ChatPage() {
         isError: true,
         createdAt: new Date(),
       };
-  setMessages(prev => ([...(prev || []), errorResponse]));
+      setMessages(prev => ([...(prev || []), errorResponse]));
+      setIsNewChat(false);
     } finally {
       setIsSending(false);
     }

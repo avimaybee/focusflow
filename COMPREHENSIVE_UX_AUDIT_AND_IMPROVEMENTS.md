@@ -40,6 +40,8 @@ Error fetching personas: TypeError: Cannot read properties of undefined (reading
 3. Keep current chat persona menu but expose clearer state when personas are unavailable
 4. Audit refresh-token flow to stop the recurring 400 errors
 
+**Status Update:** Fixed, the user personas are working on the landing page.
+
 ---
 
 ### 2. **Chat Messages Not Displaying Initially**
@@ -60,6 +62,8 @@ Error fetching personas: TypeError: Cannot read properties of undefined (reading
 1. Fix state management - messages state not triggering re-render
 2. Ensure scroll-to-bottom on new message
 3. Add optimistic UI updates for user messages
+
+**Status Update:** Implemented guarded message loading with abortable retries and immediate server resync in `src/app/chat/page.tsx` to keep optimism in sync with Supabase writes. Regression test on real data still pending.
 
 ---
 
