@@ -2,6 +2,13 @@ import Client from './client';
 
 export const runtime = 'edge';
 
-export default async function Page(props: any) {
-  return <Client {...props} />;
+type PageProps = {
+  params: {
+    messageId: string;
+  };
+  searchParams?: Record<string, string | string[] | undefined>;
+};
+
+export default function Page({}: PageProps) {
+  return <Client />;
 }
