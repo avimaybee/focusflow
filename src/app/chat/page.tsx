@@ -129,11 +129,11 @@ export default function ChatPage() {
         }
 
         if (fetched.length === 0) {
-          if (hasOptimisticMessages(prev) && attempt < 3) {
+          if (attempt < 3 && (hasOptimisticMessages(prev) || (prev && prev.length > 0))) {
             shouldRetry = true;
             return prev;
           }
-          return [];
+          return prev && prev.length > 0 ? prev : [];
         }
 
         return fetched;
@@ -333,8 +333,8 @@ export default function ChatPage() {
           currentChatId = newChatId;
           setIsNewChat(true); // Mark as new chat to prevent loading from DB
           setActiveChatId(newChatId);
-          // Update URL without navigation to prevent page refresh
-          window.history.replaceState(null, '', `/chat/${newChatId}`);
+          // Move the user into the newly created chat route to keep layout in sync
+          router.replace(`/chat/${newChatId}`);
           forceRefresh();
         } catch (err) {
           console.error('Error creating chat session:', err);
