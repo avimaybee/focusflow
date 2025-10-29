@@ -11,55 +11,78 @@
   }
 
   :root {
-    --color-1: 0 100% 63%;
-    --color-2: 270 100% 63%;
-    --color-3: 210 100% 63%;
-    --color-4: 195 100% 63%;
-    --color-5: 90 100% 63%;
-    --background: 224 10% 10%; /* #1B1F23 - Deep Charcoal */
-    --foreground: 210 40% 98%; /* Off-white for text */
-    --card: 224 10% 12%; /* Slightly lighter charcoal for cards */
-    --card-foreground: 210 40% 98%;
-    --popover: 224 10% 12%; /* Lighter for better contrast */
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%; /* #3B82F6 - Vibrant Blue */
-    --primary-foreground: 210 40% 98%; /* Off-white for high contrast */
-    --secondary: 224 10% 18%; /* Lighter for better contrast */
-    --secondary-foreground: 210 40% 98%;
-    --muted: 224 10% 18%; /* Lighter for better contrast */
-    --muted-foreground: 215 25% 70%; /* Increased lightness for better readability */
-    --accent: 265 60% 75%; /* #B788E6 - Muted Purple */
-    --accent-foreground: 224 10% 10%; /* Dark charcoal for high contrast */
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 224 10% 25%; /* Lighter border for visibility */
-    --dot-background: 224 10% 25%;
-    --input: 224 10% 18%;
-    --ring: 217 91% 60%; /* Ring color to match primary */
-    --radius: 0.75rem;
+    --background: 0 0% 6.7%; /* #111111 */
+    --foreground: 0 0% 96%; /* #F5F5F5 */
+    --card: 0 0% 10%; /* #1A1A1A */
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 0 0% 87%; /* #DEDEDE */
+    --primary-foreground: 0 0% 4%; /* #0B0B0B */
+    --secondary: 0 0% 12%; /* #1F1F1F */
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 15%; /* #262626 */
+    --muted-foreground: 0 0% 62%; /* #9E9E9E */
+    --accent: 0 0% 18%; /* #2F2F2F */
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 65% 46%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 18%; /* #2F2F2F */
+    --input: 0 0% 18%;
+    --ring: 0 0% 87%; /* #E0E0E0 */
+    --radius: 0.5rem;
+    --surface-raised: 0 0% 10%;
+    --surface-soft: 0 0% 12%;
+    --surface-muted: 0 0% 15%;
+    --surface-alt: 0 0% 4%;
+    --stroke-subtle: 0 0% 18%;
+    --stroke-medium: 0 0% 23%;
+    --stroke-strong: 0 0% 29%;
+    --text-secondary: 0 0% 78%;
+    --text-tertiary: 0 0% 62%;
+    --dot-background: 0 0% 18%;
+    --focus-ring-inverse: 0 0% 12%;
+    --shadow-xs: 0px 1px 0px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0px 8px 16px rgba(0, 0, 0, 0.25);
+    --state-success: 110 43% 55%;
+    --state-warning: 48 45% 49%;
   }
 
   .dark {
-    --background: 224 10% 10%; /* #1B1F23 - Deep Charcoal */
-    --foreground: 210 40% 98%; /* Off-white for text */
-    --card: 224 10% 12%; /* Slightly lighter charcoal for cards */
-    --card-foreground: 210 40% 98%;
-    --popover: 224 10% 12%; /* Lighter for better contrast */
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%; /* #3B82F6 - Vibrant Blue */
-    --primary-foreground: 210 40% 98%; /* Off-white for high contrast */
-    --secondary: 224 10% 18%; /* Lighter for better contrast */
-    --secondary-foreground: 210 40% 98%;
-    --muted: 224 10% 18%; /* Lighter for better contrast */
-    --muted-foreground: 215 25% 70%; /* Increased lightness for better readability */
-    --accent: 265 60% 75%; /* #B788E6 - Muted Purple */
-    --accent-foreground: 224 10% 10%; /* Dark charcoal for high contrast */
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 224 10% 25%; /* Lighter border for visibility */
-    --dot-background: 224 10% 25%;
-    --input: 224 10% 18%;
-    --ring: 217 91% 60%; /* Ring color to match primary */
+    --background: 0 0% 6.7%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 0 0% 87%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 62%;
+    --accent: 0 0% 18%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 65% 46%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 0 0% 87%;
+    --surface-raised: 0 0% 10%;
+    --surface-soft: 0 0% 12%;
+    --surface-muted: 0 0% 15%;
+    --surface-alt: 0 0% 4%;
+    --stroke-subtle: 0 0% 18%;
+    --stroke-medium: 0 0% 23%;
+    --stroke-strong: 0 0% 29%;
+    --text-secondary: 0 0% 78%;
+    --text-tertiary: 0 0% 62%;
+    --dot-background: 0 0% 18%;
+    --focus-ring-inverse: 0 0% 12%;
+    --shadow-xs: 0px 1px 0px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0px 8px 16px rgba(0, 0, 0, 0.25);
+    --state-success: 110 43% 55%;
+    --state-warning: 48 45% 49%;
   }
 }
 
@@ -100,28 +123,17 @@
 
 @layer components {
   .premium-gradient {
-    @apply bg-gradient-to-r from-purple-500 to-blue-500 text-primary-foreground;
+    @apply bg-primary text-primary-foreground;
   }
 
   .glowing-card {
-    @apply relative p-px rounded-lg;
+    @apply relative rounded-lg border border-border bg-secondary;
   }
   .glowing-card::before {
-    content: "";
-    @apply absolute inset-0 rounded-lg -z-10;
-    background: radial-gradient(
-      350px circle at var(--x) var(--y),
-      hsl(var(--primary) / 0.15),
-      transparent 80%
-    );
-    opacity: 0;
-    transition: opacity 200ms ease-out;
-  }
-  .glowing-card:hover::before {
-    @apply opacity-100;
+    content: none;
   }
   .glowing-card > .glowing-card-content {
-    @apply h-full w-full rounded-[7px] bg-secondary/50;
+    @apply h-full w-full rounded-[7px] bg-secondary;
   }
 
   /* Hide scrollbars but keep functionality */

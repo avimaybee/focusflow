@@ -234,11 +234,11 @@ export function ChatMessage({
           <div
             ref={contentRef}
             className={cn(
-              'relative max-w-full sm:max-w-xl px-3 py-2 text-sm shadow-sm',
-              'rounded-xl',
+              'relative max-w-full sm:max-w-xl px-3 py-2 text-sm shadow-surface',
+              'rounded-xl border',
               isUser
-                ? 'bg-gradient-to-br from-primary to-blue-700 text-primary-foreground'
-                : 'bg-secondary',
+                ? 'bg-primary text-primary-foreground border-stroke-subtle/40'
+                : 'bg-surface-soft text-text-secondary border-stroke-subtle',
               isUser ? (isFirstInGroup ? 'rounded-tr-xl' : 'rounded-tr-md') : (isFirstInGroup ? 'rounded-tl-xl' : 'rounded-tl-md'),
               isUser ? (isLastInGroup ? 'rounded-br-xl' : 'rounded-br-md') : (isLastInGroup ? 'rounded-bl-xl' : 'rounded-bl-md'),
               isError && 'bg-destructive/20 border border-destructive text-destructive-foreground'

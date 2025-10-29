@@ -75,6 +75,28 @@ const config = {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
         },
+        surface: {
+          raised: 'hsl(var(--surface-raised))',
+          soft: 'hsl(var(--surface-soft))',
+          muted: 'hsl(var(--surface-muted))',
+          alt: 'hsl(var(--surface-alt))',
+        },
+        stroke: {
+          subtle: 'hsl(var(--stroke-subtle))',
+          medium: 'hsl(var(--stroke-medium))',
+          strong: 'hsl(var(--stroke-strong))',
+        },
+        text: {
+          secondary: 'hsl(var(--text-secondary))',
+          tertiary: 'hsl(var(--text-tertiary))',
+        },
+        state: {
+          success: 'hsl(var(--state-success))',
+          warning: 'hsl(var(--state-warning))',
+        },
+        focus: {
+          inverse: 'hsl(var(--focus-ring-inverse))',
+        },
         popover: {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',
@@ -90,7 +112,9 @@ const config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       boxShadow: {
-        'soft-lg': '0 4px 15px rgba(0, 0, 0, 0.05)',
+        'soft-lg': '0 20px 45px rgba(0, 0, 0, 0.22)',
+        surface: '0 1px 0 0 rgba(255, 255, 255, 0.03)',
+        focus: '0 0 0 1px hsl(var(--ring))',
       },
       keyframes: {
         'accordion-down': {

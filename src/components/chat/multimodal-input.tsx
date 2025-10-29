@@ -270,7 +270,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
             onClick={submitForm}
             disabled={isGenerating || (!input.trim() && attachments.length === 0)}
             size="icon"
-            className="h-9 w-9 shrink-0 rounded-full premium-gradient hover:opacity-90 disabled:bg-muted disabled:text-muted-foreground"
+            className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
           >
             {isGenerating ? (
               <LoaderIcon className="h-5 w-5 animate-spin" />

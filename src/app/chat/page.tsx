@@ -538,7 +538,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-background via-background to-secondary/30 text-foreground">
+    <div className="flex h-screen bg-background text-foreground">
       {isMobile && (
           <Sheet open={sidebarOpen} onOpenChange={handleSetSidebarOpen}>
             <SheetContent side="left" className="p-0 w-80">

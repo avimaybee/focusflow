@@ -104,14 +104,10 @@ const groupChatHistory = (history: ChatHistoryItem[]): Array<{ key: ChatGroupKey
 };
 
 const chatAvatarPalettes = [
-  'bg-sky-500/15 text-sky-100 ring-1 ring-sky-500/30',
-  'bg-emerald-500/15 text-emerald-100 ring-1 ring-emerald-500/30',
-  'bg-purple-500/15 text-purple-100 ring-1 ring-purple-500/30',
-  'bg-amber-500/15 text-amber-100 ring-1 ring-amber-500/30',
-  'bg-rose-500/15 text-rose-100 ring-1 ring-rose-500/30',
-  'bg-cyan-500/15 text-cyan-100 ring-1 ring-cyan-500/30',
-  'bg-violet-500/15 text-violet-100 ring-1 ring-violet-500/30',
-  'bg-lime-500/15 text-lime-100 ring-1 ring-lime-500/30',
+  'bg-surface-soft text-text-secondary ring-1 ring-stroke-subtle shadow-surface',
+  'bg-surface-muted text-text-secondary ring-1 ring-stroke-medium shadow-surface',
+  'bg-secondary text-text-secondary ring-1 ring-stroke-subtle shadow-surface',
+  'bg-card text-text-secondary ring-1 ring-stroke-medium shadow-surface',
 ];
 
 const computePaletteIndex = (title: string) => {
@@ -218,7 +214,7 @@ const UserMenuItems = () => {
             <DropdownMenuItem asChild>
               <Link
                 href="/premium"
-                className="premium-gradient w-full flex items-center justify-center text-primary-foreground rounded-md py-1.5 focus:ring-0"
+                className="w-full flex items-center justify-center rounded-md bg-primary py-1.5 text-primary-foreground transition hover:bg-primary/90 focus:ring-0"
               >
                 <Sparkles className="h-4 w-4 mr-2" />
                 Upgrade to Premium
@@ -269,7 +265,7 @@ const UserMenu = ({ user, isCollapsed }: { user: SupabaseUser | null, isCollapse
                 />
                 <AvatarFallback>{initial}</AvatarFallback>
               </Avatar>
-              <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-secondary" />
+              <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-state-success ring-2 ring-surface-soft" />
             </div>
             <div
               className={cn('text-left transition-opacity duration-200', isCollapsed && "opacity-0 hidden")}
@@ -693,7 +689,7 @@ const ChatSidebarComponent = ({
                                     <AvatarImage src={user?.user_metadata?.avatar_url || undefined} data-ai-hint="person" />
                                     <AvatarFallback>{user ? (profile?.username || user.email || 'U').charAt(0).toUpperCase() : <User />}</AvatarFallback>
                                 </Avatar>
-                                {user && <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-secondary" />}
+                                {user && <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-state-success ring-2 ring-surface-soft" />}
                             </div>
                         </Button>
                     </DropdownMenuTrigger>

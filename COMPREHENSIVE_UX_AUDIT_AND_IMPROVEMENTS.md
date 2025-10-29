@@ -15,6 +15,96 @@ The app has a solid foundation and good ideas, but execution is severely hampere
 
 ---
 
+## Neutral Theme & UI Consistency Audit (October 29, 2025)
+
+I revisited the full application experience at `https://focusflow-egl.pages.dev` with the explicit goal of delivering a **neutral-spectrum, gradient-free visual system**. Research references were collected with the Playwright MCP server from:
+
+- FocusFlow core flows (Landing, Chat, Dashboard, My Content, Blog, Premium)
+- Benchmark SaaS surfaces (Linear, Notion) for neutral design patterns, information density, and motion discipline
+
+### 1. Core Visual Direction
+
+- **Palette tokens (no gradients, no chroma-heavy accents):**
+	- `bg.base` #111111 (page background), `bg.raised` #1A1A1A, `bg.soft` #202020, `bg.muted` #262626, `bg.alt` #0C0C0C
+	- `stroke.subtle` #2F2F2F, `stroke.medium` #3A3A3A, `stroke.strong` #4A4A4A
+	- `text.primary` #F5F5F5, `text.secondary` #C6C6C6, `text.tertiary` #9E9E9E, `text.inverse` #0B0B0B
+	- `accent.minor` #DEDEDE (used sparingly for CTAs), `accent.state.success` #6FBA5C, `accent.state.warning` #B19B4A
+- **Typography scale (Inter retains modern neutrality):** `h1 48/56`, `h2 32/40`, `h3 24/32`, `h4 20/28`, `body-lg 18/28`, `body 16/26`, `body-sm 14/22`, `mono-label 12/18`
+- **Iconography:** consolidate on Lucide outlined set at 20px (primary) + 16px (secondary). Fill icons only for system status dots. All icon-only buttons require tooltips and focus outlines.
+- **Surface elevation:** move away from blurred glows; use `border` plus 4px radius (cards) or 8px (modals). Introduce `shadow.xs` (0 1px 0 rgba(0,0,0,0.4)) and `shadow.sm` (0 8px 16px rgba(0,0,0,0.25)) only for floating components.
+- **Motion discipline:** restrict animations to 150ms ease-out for hover/press, 250ms ease for dialogs. Remove bounce and gradient sweeps currently applied to CTA buttons.
+
+### 2. Global System Tasks
+
+1. **Tokenize theme** in `src/lib/constants.ts` (or introduce `src/styles/tokens.css`) so Tailwind config can consume the neutral scale. Replace hard-coded blues/purples across CSS modules. No inline hex values in components post-migration.
+2. **Tailwind alignment:** update `tailwind.config.ts` + `src/tailwind.config.ts` with semantic color names (bg-base, text-primary, etc.), spacing scale (4, 8, 12, 16, 24, 32, 48, 64), and typography utilities matching the scale above.
+3. **Remove existing gradients** from buttons (`bg-gradient-to-r`, `from-blue-*`, etc.) and replace with flat neutral fills using `accent.minor` for primary CTAs and `bg.soft` for secondary.
+4. **Accessible focus states:** global focus ring as 2px solid #E0E0E0 on dark surfaces and 2px solid #1F1F1F on inverted surfaces. Implement via Tailwind ring utilities once tokens ship.
+5. **Icon audit:** replace colored emoji-like persona badges and chat icons with neutral circular avatars (background #1D1D1D, text initials #F5F5F5) or incorporate minimal success/warning states when needed.
+6. **State layers:** disabled elements should drop opacity to 40% and keep current background; do not shift hue. Hover states lighten/darken by ±4% only.
+
+### 3. Page-Level Findings & Actions
+
+#### Landing (`src/app/page.tsx` + `src/app/globals.css`)
+- **Hero headline** currently relies on a bright blue word mark. Switch to all-neutral typography, optionally underline the final word with a 1px rule in `accent.minor` to preserve emphasis.
+- **CTA buttons**: replace blue gradient pill with rectangular 8px radius button. Primary fill `accent.minor`, text `text.inverse`. Secondary should be ghost (`border: stroke.medium`, text `text.primary`).
+- **Interactive demo card**: background needs to step down to `bg.raised` with `stroke.subtle` border; chat bubble icon should inherit neutral palette. Remove neon blue send icon.
+- **Feature grid** icons currently multi-colored. Convert to monochrome line icons in `stroke.strong`. Provide uniform card heights by enforcing `min-h` and consistent padding (24px top/bottom, 20px sides).
+- **Stats ribbon**: use `text.secondary` for labels, `text.primary` for numbers, and align grid columns with 32px gap to reduce clutter.
+- **Testimonials**: remove colored initial pills; replace with typographic quotes with thin separators.
+
+#### Chat (`src/app/chat/page.tsx` + chat components)
+- **Background gradient** at root should be replaced with `bg.base`. Introduce two-column layout using `bg.soft` for sidebar and `bg.base` for conversation.
+- **Sidebar chips** use multiple saturated colors; create persona tags with neutral base and `stroke.medium` borders. Use subtle status dot (success/online) for current persona; remove color-coded backgrounds.
+- **Message composer**: flatten the container, lighten border to `stroke.medium`, change icons to neutral fills, and convert purple send button to `accent.minor` with `text.inverse` arrow.
+- **Announcement banner**: swap blue pill for `bg.raised` with 1px border; apply `text.secondary` copy and right-aligned close icon with transparent background.
+- **Suggested starters**: restructure to nested list with ghost buttons in `bg.soft` and `stroke.subtle` to reduce heavy outlines.
+- **Empty state illustration**: if keeping brand mark, turn to a wireframe-style neutral icon (#3C3C3C outlines, transparent fill).
+
+#### Dashboard (`src/app/dashboard/page.tsx`)
+- **Top KPI cards** still rely on blue CTA and glowing borders. Use consistent 1px border, 16px padding, and align icon + label row with 12px gap. Primary action buttons should sit outside the cards in the header.
+- **Weekly goals card**: lighten background to `bg.raised`, apply neutral ghost button. Remove blue highlight from “Set a Goal”; rely on `accent.minor` text + underline.
+- **Achievements row**: replace filled icons with outlined badges and adjust spacing to 24px between items. Provide tooltip for locked achievements using `bg.raised` tooltip style.
+- **Data preview cards**: ensure typography uses `text.secondary` for deltas; remove blue positive indicators and replace with `text.tertiary` + monochrome trend arrows.
+
+#### My Content (`src/app/my-content/page.tsx`)
+- **Filter chips**: convert to segmented control with neutral background (#1D1D1D) and 1px `stroke.subtle` divider. Active chip fill #2A2A2A with text #F5F5F5.
+- **Cards**: remove blue accent block; use icon monochrome outlines, background `bg.raised`. Primary CTA button becomes ghost with arrow icon flush right.
+- **Search input**: lighten border and ensure placeholder uses `text.tertiary`. Add focus ring token.
+
+#### Blog (`src/app/blog/page.tsx`)
+- **Post list**: remove heavy pill outlines and colored arrows. Instead, use simple chevron in `stroke.strong`. Add 1px divider between posts to create rhythm.
+- **Metadata**: `text.tertiary` for author/date, align to baseline grid to avoid jitter.
+
+#### Premium (`src/app/premium/page.tsx`)
+- **Pricing comparison**: remove purple highlight card. Implement neutral stacked cards with 1px `stroke.medium` border; primary plan indicated via thin 2px top rule `accent.minor` and subtle drop shadow.
+- **CTA buttons**: convert to neutral fill/outline per palette. Emphasize free vs premium through typography weight and structured bullet icons rather than color.
+- **Alert banner**: restructure to neutral background (#1C1C1C) with `text.secondary` and inline icon.
+
+### 4. Benchmark Insights Applied
+
+- **Linear (dark mode)** uses crisp monochrome tokens with precise spacing. Adopt their approach of context-specific borders instead of chroma and ensure section headings carry consistent baseline spacing.
+- **Notion** demonstrates white-mode neutrality: limit the accent usage to underline emphasis, rely on typographic hierarchy and whitespace. Apply same philosophy for our dark scheme.
+- **Interaction patterns**: Both references show deliberate motion restraint; mimic by reducing the number of hover transitions and ensuring modals slide/fade politely instead of scaling dramatically.
+
+### 5. Implementation Plan & Ownership
+
+| Track | Owner | Key Files | Notes |
+| --- | --- | --- | --- |
+| Design tokens | FE | `tailwind.config.ts`, `src/tailwind.config.ts`, `src/styles/tokens.css` | Define colors, spacing, typography, box shadow utilities |
+| Component sweep | FE | `src/components/**/*` | Replace gradients, consolidate icon usage, update button variants |
+| Page templates | FE | `src/app/**/*` | Apply new tokens per page, ensure layout alignments |
+| QA & Accessibility | QA | End-to-end via Playwright MCP | Validate contrast (AA for text), keyboard focus, hover states |
+
+### 6. Acceptance Criteria
+
+- No UI element uses a hue outside the neutral scale except semantic success/warning states.
+- No gradients present in CSS or Tailwind class strings.
+- CTAs and interactive elements share consistent hover, focus, and active states driven by tokens.
+- Screenshots captured post-implementation should visually align with the Linear/Notion neutral benchmarks (monochrome stability, minimal accent usage).
+
+---
+
 ## 🔴 CRITICAL BUGS (Fix Immediately)
 
 ### 1. **Persona Loading Failure - BREAKING**

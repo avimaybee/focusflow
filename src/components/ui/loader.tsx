@@ -1,13 +1,13 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion, type Transition } from "framer-motion";
 import React from "react";
  
 export const LoaderOne = () => {
-  const transition = (x: number) => {
+  const transition = (x: number): Transition => {
     return {
       duration: 1,
       repeat: Infinity,
-      repeatType: "loop" as const,
+      repeatType: "loop",
       delay: x * 0.2,
       ease: "easeInOut",
     };
@@ -22,7 +22,7 @@ export const LoaderOne = () => {
           y: [0, 10, 0],
         }}
         transition={transition(0)}
-        className="h-4 w-4 rounded-full border border-neutral-300 bg-gradient-to-b from-neutral-400 to-neutral-300"
+  className="h-4 w-4 rounded-full border border-stroke-subtle bg-surface-muted"
       />
       <motion.div
         initial={{
@@ -32,7 +32,7 @@ export const LoaderOne = () => {
           y: [0, 10, 0],
         }}
         transition={transition(1)}
-        className="h-4 w-4 rounded-full border border-neutral-300 bg-gradient-to-b from-neutral-400 to-neutral-300"
+  className="h-4 w-4 rounded-full border border-stroke-subtle bg-surface-muted"
       />
       <motion.div
         initial={{
@@ -42,18 +42,18 @@ export const LoaderOne = () => {
           y: [0, 10, 0],
         }}
         transition={transition(2)}
-        className="h-4 w-4 rounded-full border border-neutral-300 bg-gradient-to-b from-neutral-400 to-neutral-300"
+  className="h-4 w-4 rounded-full border border-stroke-subtle bg-surface-muted"
       />
     </div>
   );
 };
  
 export const LoaderTwo = () => {
-  const transition = (x: number) => {
+  const transition = (x: number): Transition => {
     return {
       duration: 2,
       repeat: Infinity,
-      repeatType: "loop" as const,
+      repeatType: "loop",
       delay: x * 0.2,
       ease: "easeInOut",
     };
@@ -106,7 +106,7 @@ export const LoaderThree = () => {
       strokeWidth="1"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-20 w-20 stroke-neutral-500 [--fill-final:var(--color-yellow-300)] [--fill-initial:var(--color-neutral-50)] dark:stroke-neutral-100 dark:[--fill-final:var(--color-yellow-500)] dark:[--fill-initial:var(--color-neutral-800)]"
+      className="h-20 w-20 stroke-[hsl(var(--text-tertiary))] [--fill-final:rgba(255,255,255,0.2)] [--fill-initial:rgba(255,255,255,0)]"
     >
       <motion.path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <motion.path
@@ -129,7 +129,7 @@ export const LoaderFour = ({ text = "Loading..." }: { text?: string }) => {
     <div className="relative font-bold text-black [perspective:1000px] dark:text-white">
       <motion.span
         animate={{
-          skew: [0, -40, 0],
+          skewX: [0, -40, 0],
           scaleX: [1, 2, 1],
         }}
         transition={{
@@ -145,7 +145,7 @@ export const LoaderFour = ({ text = "Loading..." }: { text?: string }) => {
         {text}
       </motion.span>
       <motion.span
-        className="absolute inset-0 text-[#00e571]/50 blur-[0.5px] dark:text-[#00e571]"
+        className="absolute inset-0 text-foreground/20 blur-[0.5px]"
         animate={{
           x: [-2, 4, -3, 1.5, -2],
           y: [-2, 4, -3, 1.5, -2],
@@ -162,7 +162,7 @@ export const LoaderFour = ({ text = "Loading..." }: { text?: string }) => {
         {text}
       </motion.span>
       <motion.span
-        className="absolute inset-0 text-[#8b00ff]/50 dark:text-[#8b00ff]"
+        className="absolute inset-0 text-foreground/15"
         animate={{
           x: [0, 1, -1.5, 1.5, -1, 0],
           y: [0, -1, 1.5, -0.5, 0],
@@ -184,7 +184,7 @@ export const LoaderFour = ({ text = "Loading..." }: { text?: string }) => {
  
 export const LoaderFive = ({ text }: { text: string }) => {
   return (
-    <div className="font-sans font-bold [--shadow-color:var(--color-neutral-500)] dark:[--shadow-color:var(--color-neutral-100)]">
+  <div className="font-sans font-bold [--shadow-color:rgba(255,255,255,0.2)] dark:[--shadow-color:rgba(0,0,0,0.35)]">
       {text.split("").map((char, i) => (
         <motion.span
           key={i}
