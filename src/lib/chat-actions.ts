@@ -49,7 +49,7 @@ export async function getChatMessages(sessionId: string, accessToken?: string): 
 
     const { data, error } = await client
         .from('chat_messages')
-        .select('id, role, content, created_at')
+        .select('id, role, content, attachments, created_at')
         .eq('session_id', sessionId)
         .order('created_at', { ascending: true });
 
@@ -69,6 +69,14 @@ export async function getChatMessages(sessionId: string, accessToken?: string): 
         text: await marked.parse(message.content),
         rawText: message.content,
         createdAt: new Date(message.created_at),
+        attachments: message.attachments && Array.isArray(message.attachments) 
+            ? message.attachments.map((att: any) => ({
+                url: att.url,
+                name: att.name,
+                contentType: att.mimeType,
+                size: parseInt(att.sizeBytes || '0'),
+            }))
+            : undefined,
     })));
 
     return messages;
@@ -112,14 +120,25 @@ export async function createChatSession(userId: string, title: string, accessTok
     return data.id;
 }
 
-export async function addChatMessage(sessionId: string, role: 'user' | 'model', content: string, accessToken?: string) {
+export async function addChatMessage(
+    sessionId: string,
+    role: 'user' | 'model',
+    content: string,
+    accessToken?: string,
+    attachments?: Array<{ url: string; name: string; mimeType: string; sizeBytes: string }>
+) {
     if (!sessionId) return false;
 
     const client = accessToken ? createAuthenticatedSupabaseClient(accessToken) : supabase;
 
     const { data, error } = await client
         .from('chat_messages')
-        .insert({ session_id: sessionId, role, content })
+        .insert({
+            session_id: sessionId,
+            role,
+            content,
+            attachments: attachments && attachments.length > 0 ? attachments : [],
+        })
         .select('id')
         .single();
 

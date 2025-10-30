@@ -87,6 +87,8 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
     const formRef = useRef<HTMLFormElement>(null);
 
     const [input, setInput] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+
     const scheduleAdjustHeight = useCallback(() => {
       if (typeof window !== 'undefined' && window.requestAnimationFrame) {
         window.requestAnimationFrame(() => adjustHeight());
@@ -107,19 +109,42 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
       const file = event.target.files?.[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setAttachments([{
-          url: e.target?.result as string,
-          name: file.name,
-          contentType: file.type,
-          size: file.size,
+      setIsUploading(true);
+
+      try {
+        // Upload file to Gemini API
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/chat/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Upload failed');
+        }
+
+        const result = await response.json();
+        
+        // Add uploaded file to attachments with Gemini URI
+        setAttachments(prev => [...prev, {
+          url: result.file.uri, // Gemini file URI
+          name: result.file.displayName || file.name,
+          contentType: result.file.mimeType,
+          size: parseInt(result.file.sizeBytes || '0'),
         }]);
-      };
-      reader.readAsDataURL(file);
-      
-      if (fileInputRef.current) {
+
+      } catch (error) {
+        console.error('File upload error:', error);
+        // Show error to user (you might want to add a toast notification here)
+        alert(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } finally {
+        setIsUploading(false);
+        if (fileInputRef.current) {
           fileInputRef.current.value = '';
+        }
       }
     };
 
@@ -241,21 +266,26 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
           />
 
           <Button
-            asChild
+            asChild={!isUploading}
             variant="ghost"
             size="icon"
             className="h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
+            disabled={isUploading}
           >
-            <label>
-              <Paperclip className="w-5 h-5" />
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-                accept="image/*,application/pdf,text/*"
-              />
-            </label>
+            {isUploading ? (
+              <LoaderIcon className="h-5 w-5 animate-spin" />
+            ) : (
+              <label>
+                <Paperclip className="w-5 h-5" />
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept="image/*,application/pdf,text/*,audio/*,video/*"
+                />
+              </label>
+            )}
           </Button>
           
           <Textarea

@@ -419,12 +419,19 @@ export default function ChatPage() {
 
     setGuestMessageCount(prev => prev + 1);
   
+    // Convert attachments to API format
+    const apiAttachments = attachments.map(att => ({
+      type: 'file_uri' as const, // All uploaded files have URIs now
+      data: att.url, // Gemini file URI
+      mimeType: att.contentType,
+    }));
+
     const chatInput = {
       message: input.trim(),
       history: historyForAI,
       sessionId: currentChatId || undefined,
       personaId: selectedPersonaId,
-      context: attachments.length > 0 ? { url: attachments[0].url, filename: attachments[0].name } : undefined,
+      attachments: apiAttachments.length > 0 ? apiAttachments : undefined,
     };
   
     setInput('');

@@ -165,12 +165,30 @@ const UserMenuItems = () => {
     const { user, isPremium, username, profile } = useAuth();
   
     const handleLogout = async () => {
-      // Placeholder for logout
-      toast({
-        title: 'Logged Out',
-        description: 'You have been successfully logged out (placeholder).',
-      });
-      router.push('/');
+      try {
+        const response = await fetch('/api/auth/logout', {
+          method: 'POST',
+        });
+        
+        if (response.ok) {
+          toast({
+            title: 'Logged Out',
+            description: 'You have been successfully logged out.',
+          });
+          router.push('/');
+          // Force reload to clear all state
+          window.location.href = '/';
+        } else {
+          throw new Error('Logout failed');
+        }
+      } catch (error) {
+        console.error('Error logging out:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to log out. Please try again.',
+        });
+      }
     };
   
     if (!user) return null;

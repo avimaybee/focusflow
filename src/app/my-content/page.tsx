@@ -11,6 +11,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
+import {
+  getSummaries,
+  getFlashcardSets,
+  getQuizzes,
+  getStudyPlans,
+  getSavedMessages,
+  toggleFavoriteStatus,
+  deleteSummary,
+  deleteFlashcardSet,
+  deleteQuiz,
+  deleteStudyPlan,
+  deleteSavedMessage,
+} from '@/lib/content-actions';
 
 const contentIcons: { [key: string]: React.ElementType } = {
   summary: FileText,
@@ -41,33 +54,6 @@ const contentTypeOptions: { value: ContentItem['type']; label: string; helper: s
   { value: 'studyPlan', label: 'Study Plans', helper: 'Structured schedules' },
 ];
 
-const placeholderContent: ContentItem[] = [
-    {
-        id: '1',
-        type: 'summary',
-        title: 'Placeholder Summary',
-        description: 'This is a placeholder summary of some notes.',
-        createdAt: new Date(),
-        isPublic: false,
-        publicSlug: null,
-        tags: ['placeholder', 'summary'],
-        isFavorited: false,
-        lastViewed: new Date(),
-    },
-    {
-        id: '2',
-        type: 'quiz',
-        title: 'Placeholder Quiz',
-        description: 'A placeholder quiz on a fascinating topic.',
-        createdAt: new Date(),
-        isPublic: false,
-        publicSlug: null,
-        tags: ['placeholder', 'quiz'],
-        isFavorited: true,
-        lastViewed: new Date(),
-    },
-];
-
 const getContentLink = (item: ContentItem): string | undefined => {
   switch (item.type) {
     case 'summary':
@@ -86,7 +72,7 @@ const getContentLink = (item: ContentItem): string | undefined => {
 };
 
 function MyContentPageContent() {
-  const { loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [allContent, setAllContent] = React.useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -94,11 +80,178 @@ function MyContentPageContent() {
   const [activeTypes, setActiveTypes] = React.useState<ContentItem['type'][]>([]);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
 
+  const fetchAllContent = React.useCallback(async () => {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      const [summaries, flashcardSets, quizzes, studyPlans, savedMessages] = await Promise.all([
+        getSummaries(user.id),
+        getFlashcardSets(user.id),
+        getQuizzes(user.id),
+        getStudyPlans(user.id),
+        getSavedMessages(user.id),
+      ]);
+
+      const content: ContentItem[] = [
+        ...summaries.map((s: any) => ({
+          id: s.id,
+          type: 'summary' as const,
+          title: s.title,
+          description: s.content?.substring(0, 100) || '',
+          createdAt: new Date(s.created_at),
+          isPublic: s.is_public || false,
+          publicSlug: s.slug,
+          tags: s.keywords || [],
+          isFavorited: s.is_favorite || false,
+          lastViewed: s.last_viewed_at ? new Date(s.last_viewed_at) : new Date(s.created_at),
+        })),
+        ...flashcardSets.map((f: any) => ({
+          id: f.id,
+          type: 'flashcardSet' as const,
+          title: f.title,
+          description: f.description || `${f.flashcards?.length || 0} cards`,
+          createdAt: new Date(f.created_at),
+          isPublic: f.is_public || false,
+          publicSlug: f.slug,
+          tags: [],
+          isFavorited: f.is_favorite || false,
+          lastViewed: f.last_viewed_at ? new Date(f.last_viewed_at) : new Date(f.created_at),
+        })),
+        ...quizzes.map((q: any) => ({
+          id: q.id,
+          type: 'quiz' as const,
+          title: q.title,
+          description: q.description || `${q.quiz_questions?.length || 0} questions`,
+          createdAt: new Date(q.created_at),
+          isPublic: q.is_public || false,
+          publicSlug: q.slug,
+          tags: [],
+          isFavorited: q.is_favorite || false,
+          lastViewed: q.last_viewed_at ? new Date(q.last_viewed_at) : new Date(q.created_at),
+        })),
+        ...studyPlans.map((p: any) => ({
+          id: p.id,
+          type: 'studyPlan' as const,
+          title: p.title,
+          description: p.description || 'Study plan',
+          createdAt: new Date(p.created_at),
+          isPublic: p.is_public || false,
+          publicSlug: p.slug,
+          tags: [],
+          isFavorited: p.is_favorite || false,
+          lastViewed: p.last_viewed_at ? new Date(p.last_viewed_at) : new Date(p.created_at),
+        })),
+        ...savedMessages.map((m: any) => ({
+          id: m.id,
+          type: 'savedMessage' as const,
+          title: m.message_content?.substring(0, 50) || 'Saved message',
+          description: m.message_content || '',
+          createdAt: new Date(m.created_at),
+          isPublic: false,
+          publicSlug: null,
+          tags: m.tags || [],
+          isFavorited: false,
+          lastViewed: new Date(m.created_at),
+        })),
+      ];
+
+      setAllContent(content);
+    } catch (error) {
+      console.error('Error fetching content:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to load your content. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, toast]);
+
   React.useEffect(() => {
-    // Placeholder for fetching data
-    setAllContent(placeholderContent);
-    setIsLoading(false);
-  }, []);
+    if (!authLoading) {
+      fetchAllContent();
+    }
+  }, [authLoading, fetchAllContent]);
+
+  const handleToggleFavorite = async (item: ContentItem) => {
+    if (!user) return;
+
+    try {
+      const typeMap: Record<ContentItem['type'], 'summary' | 'flashcard_set' | 'quiz' | 'study_plan' | 'practice_exam'> = {
+        summary: 'summary',
+        flashcardSet: 'flashcard_set',
+        quiz: 'quiz',
+        studyPlan: 'study_plan',
+        savedMessage: 'summary', // Fallback, saved messages don't have favorites
+      };
+
+      await toggleFavoriteStatus(user.id, item.id, typeMap[item.type], item.isFavorited);
+
+      // Update local state
+      setAllContent((prev) =>
+        prev.map((content) =>
+          content.id === item.id ? { ...content, isFavorited: !content.isFavorited } : content
+        )
+      );
+
+      toast({
+        title: item.isFavorited ? 'Removed from favorites' : 'Added to favorites',
+      });
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to update favorite status',
+      });
+    }
+  };
+
+  const handleDelete = async (item: ContentItem) => {
+    if (!user) return;
+    if (!confirm(`Are you sure you want to delete "${item.title}"?`)) return;
+
+    try {
+      switch (item.type) {
+        case 'summary':
+          await deleteSummary(user.id, item.id);
+          break;
+        case 'flashcardSet':
+          await deleteFlashcardSet(user.id, item.id);
+          break;
+        case 'quiz':
+          await deleteQuiz(user.id, item.id);
+          break;
+        case 'studyPlan':
+          await deleteStudyPlan(user.id, item.id);
+          break;
+        case 'savedMessage':
+          await deleteSavedMessage(user.id, item.id);
+          break;
+      }
+
+      // Update local state
+      setAllContent((prev) => prev.filter((content) => content.id !== item.id));
+
+      toast({
+        title: 'Deleted',
+        description: `${item.title} has been deleted.`,
+      });
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to delete content',
+      });
+    }
+  };
 
   const fuse = React.useMemo(() => {
     return new Fuse(allContent, {
@@ -227,7 +380,16 @@ function MyContentPageContent() {
                             </div>
                             <CardTitle className="line-clamp-2">{item.title}</CardTitle>
                           </div>
-                          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => toast({ title: 'Coming Soon!' })}>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="shrink-0" 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleToggleFavorite(item);
+                            }}
+                          >
                             <Star className={cn("h-5 w-5", item.isFavorited ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
                           </Button>
                       </div>

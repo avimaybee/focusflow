@@ -98,7 +98,7 @@ export function ChatMessage({
       return;
     }
     try {
-      await saveChatMessage(user.id, rawText);
+      await saveChatMessage(user.id, { message_content: rawText });
       toast({
         title: 'Message Saved!',
         description: 'You can find it in your "My Content" page.',

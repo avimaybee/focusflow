@@ -2,9 +2,9 @@
 
 import { z } from 'zod';
 import { getPersonaById, getDefaultPersona } from '@/lib/persona-actions';
-
-const API_KEY = process.env.GEMINI_API_KEY;
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+import { createChatSession, createFileDataPart, createInlineDataPart } from '@/lib/gemini-client';
+import { getChatMessages, addChatMessage } from '@/lib/chat-actions';
+import { truncateConversation, getConversationStats } from '@/lib/conversation-manager';
 
 const chatFlowInputSchema = z.object({
   message: z.string(),
@@ -17,85 +17,144 @@ const chatFlowInputSchema = z.object({
   sessionId: z.string().optional(),
   personaId: z.string().optional(),
   context: z.any().optional(),
+  // Support for multimodal input
+  attachments: z.array(z.object({
+    type: z.enum(['file_uri', 'inline_data']),
+    data: z.string(), // base64 for inline_data, URI for file_uri
+    mimeType: z.string(),
+  })).optional(),
 });
 
 type ChatFlowInput = z.infer<typeof chatFlowInputSchema>;
 
 export async function chatFlow(input: ChatFlowInput) {
   const validatedInput = chatFlowInputSchema.parse(input);
-  const { message, history, personaId } = validatedInput;
+  const { message, history, personaId, sessionId, userId, attachments } = validatedInput;
 
-  if (!API_KEY) {
-    throw new Error('The GEMINI_API_KEY environment variable is not set.');
-  }
+  console.log('[chat-flow] Processing message', {
+    sessionId,
+    hasHistory: !!history?.length,
+    hasAttachments: !!attachments?.length,
+    personaId,
+  });
 
   // Fetch persona from database
   const selectedPersona = personaId 
     ? await getPersonaById(personaId) 
     : await getDefaultPersona();
   
-  const personaPrompt = selectedPersona?.prompt || 'You are a helpful AI assistant.';
+  const personaPrompt = selectedPersona?.prompt || 'You are a helpful AI assistant for students.';
 
-  // Construct the conversation history for the API
-  const apiHistory = (history || []).map(h => ({
-    role: h.role,
-    parts: [{ text: h.text }],
-  }));
+  // If we have a sessionId, try to fetch the full conversation history from database
+  let conversationHistory = history || [];
+  if (sessionId && !history) {
+    console.log('[chat-flow] Loading conversation history from database for session:', sessionId);
+    try {
+      const dbMessages = await getChatMessages(sessionId);
+      conversationHistory = dbMessages.map(msg => ({
+        role: msg.role,
+        text: msg.rawText || msg.text?.toString() || '',
+      }));
+      console.log('[chat-flow] Loaded', conversationHistory.length, 'messages from database');
+      
+      // Get conversation stats before truncation
+      const stats = getConversationStats(conversationHistory);
+      console.log('[chat-flow] Conversation stats:', stats);
+      
+      // Truncate history to prevent context overflow (max 30k tokens, ~120k characters)
+      const { truncated, droppedCount, estimatedTokens } = truncateConversation(conversationHistory, 30000);
+      conversationHistory = truncated;
+      
+      if (droppedCount > 0) {
+        console.log(`[chat-flow] Truncated ${droppedCount} old messages to fit context window (${estimatedTokens} tokens)`);
+      }
+    } catch (error) {
+      console.error('[chat-flow] Failed to load conversation history:', error);
+      conversationHistory = [];
+    }
+  } else if (history && history.length > 0) {
+    // Also truncate if history was passed directly
+    const { truncated, droppedCount } = truncateConversation(history, 30000);
+    conversationHistory = truncated;
+    
+    if (droppedCount > 0) {
+      console.log(`[chat-flow] Truncated ${droppedCount} messages from provided history`);
+    }
+  }
 
-  const contents = apiHistory.length === 0
-    ? [
-        { role: 'user', parts: [{ text: personaPrompt }] },
-        { role: 'model', parts: [{ text: "Okay, I understand. I will act as that persona. What is the first question?" }] },
-        { role: 'user', parts: [{ text: message }] },
-      ]
-    : [
-        ...apiHistory,
-        { role: 'user', parts: [{ text: message }] },
-      ];
-
-  const requestPayload = {
-    contents,
-    generationConfig: {
-      temperature: 0.7,
-      topK: 1,
-      topP: 1,
-      maxOutputTokens: 65536, // Increased from 8192 for longer, detailed student responses
-    },
-  };
+  // Create stateful chat session with truncated history
+  const chat = createChatSession({
+    temperature: 0.7,
+    maxOutputTokens: 8192,
+    systemInstruction: personaPrompt,
+    history: conversationHistory,
+  });
 
   try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestPayload),
+    // Build message parts (text + attachments)
+    const messageParts: any[] = [{ text: message }];
+
+    if (attachments && attachments.length > 0) {
+      for (const attachment of attachments) {
+        if (attachment.type === 'file_uri') {
+          messageParts.push(createFileDataPart(attachment.data, attachment.mimeType));
+        } else if (attachment.type === 'inline_data') {
+          messageParts.push(createInlineDataPart(attachment.data, attachment.mimeType));
+        }
+      }
+      console.log('[chat-flow] Added', attachments.length, 'attachments to message');
+    }
+
+    // Send message and get response
+    const response = await chat.sendMessage({
+      message: messageParts.length === 1 ? message : messageParts,
     });
 
-    if (!response.ok) {
-      const errorBody = await response.json();
-      console.error('Gemini API Error:', errorBody);
-      throw new Error(`Gemini API request failed with status ${response.status}: ${errorBody.error?.message || 'Unknown error'}`);
+    const generatedText = response.text || '';
+    console.log('[chat-flow] Generated response length:', generatedText.length);
+
+    // Save messages to database if we have a session
+    if (sessionId && userId && !validatedInput.isGuest) {
+      try {
+        // Convert attachments to database format
+        const dbAttachments = attachments?.map(att => ({
+          url: att.data, // URI or inline data
+          name: att.data.split('/').pop() || 'attachment',
+          mimeType: att.mimeType,
+          sizeBytes: '0', // Would need to be passed from client
+        }));
+
+        // Save user message with attachments
+        await addChatMessage(sessionId, 'user', message, undefined, dbAttachments);
+        // Save AI response
+        await addChatMessage(sessionId, 'model', generatedText);
+        console.log('[chat-flow] Saved messages to database');
+      } catch (error) {
+        console.error('[chat-flow] Failed to save messages:', error);
+        // Don't fail the whole request if saving fails
+      }
     }
-
-    const responseData = await response.json();
-
-    if (!responseData.candidates || responseData.candidates.length === 0 || !responseData.candidates[0].content.parts[0].text) {
-        console.error('Invalid response structure from Gemini API:', responseData);
-        throw new Error('Received an invalid response from the Gemini API.');
-    }
-
-    const generatedText = responseData.candidates[0].content.parts[0].text;
 
     return {
-      sessionId: validatedInput.sessionId || 'new-session',
+      sessionId: sessionId || 'new-session',
       response: generatedText,
       rawResponse: generatedText,
       persona: selectedPersona || await getDefaultPersona(),
     };
-  } catch (error) {
-    console.error('Error in chatFlow:', error);
-    // Re-throw the error to be caught by the API route's error handler
+  } catch (error: any) {
+    console.error('[chat-flow] Error:', error);
+    
+    // Handle specific error types
+    if (error?.message?.includes('overloaded') || error?.message?.includes('quota')) {
+      console.error('[chat-flow] Model overloaded or quota exceeded');
+      throw new Error('The AI service is currently overloaded. Please try again in a moment.');
+    }
+    
+    if (error?.message?.includes('context') || error?.message?.includes('token')) {
+      console.error('[chat-flow] Context window exceeded');
+      throw new Error('The conversation has become too long. Please start a new chat.');
+    }
+    
     throw error;
   }
 }
