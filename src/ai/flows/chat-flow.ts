@@ -29,23 +29,46 @@ type ChatFlowInput = z.infer<typeof chatFlowInputSchema>;
 
 export async function chatFlow(input: ChatFlowInput) {
   const validatedInput = chatFlowInputSchema.parse(input);
-  const { message, history, personaId, sessionId, userId, attachments } = validatedInput;
+  const { message, history, personaId, sessionId, userId, attachments, isGuest } = validatedInput;
 
   console.log('[chat-flow] Processing message', {
     sessionId,
     hasHistory: !!history?.length,
     hasAttachments: !!attachments?.length,
     personaId,
+    userId,
+    isGuest,
   });
 
-  // Fetch persona from database
+  // STEP 1: Save user message to database FIRST (so it's in the history when we fetch)
+  if (sessionId && userId && !isGuest) {
+    try {
+      // Convert attachments to database format
+      const dbAttachments = attachments?.map(att => ({
+        url: att.data, // URI or inline data
+        name: att.data.split('/').pop() || 'attachment',
+        mimeType: att.mimeType,
+        sizeBytes: '0', // Would need to be passed from client
+      }));
+
+      // Save user message with attachments
+      await addChatMessage(sessionId, 'user', message, undefined, dbAttachments);
+      console.log('[chat-flow] Saved user message to database');
+    } catch (error) {
+      console.error('[chat-flow] Failed to save user message:', error);
+      // Don't fail - continue with the request
+    }
+  }
+
+  // STEP 2: Fetch persona from database
   const selectedPersona = personaId 
     ? await getPersonaById(personaId) 
     : await getDefaultPersona();
   
   const personaPrompt = selectedPersona?.prompt || 'You are a helpful AI assistant for students.';
 
-  // If we have a sessionId, try to fetch the full conversation history from database
+  // STEP 3: Load full conversation history from database (if sessionId provided)
+  // This ensures the AI sees ALL messages, including the one we just saved
   let conversationHistory = history || [];
   if (sessionId && !history) {
     console.log('[chat-flow] Loading conversation history from database for session:', sessionId);
@@ -55,7 +78,7 @@ export async function chatFlow(input: ChatFlowInput) {
         role: msg.role,
         text: msg.rawText || msg.text?.toString() || '',
       }));
-      console.log('[chat-flow] Loaded', conversationHistory.length, 'messages from database');
+      console.log('[chat-flow] Loaded', conversationHistory.length, 'messages from database (includes user message we just saved)');
       
       // Get conversation stats before truncation
       const stats = getConversationStats(conversationHistory);
@@ -82,7 +105,7 @@ export async function chatFlow(input: ChatFlowInput) {
     }
   }
 
-  // Create stateful chat session with truncated history
+  // STEP 4: Create stateful chat session with truncated history
   const chat = createChatSession({
     temperature: 0.7,
     maxOutputTokens: 8192,
@@ -105,7 +128,7 @@ export async function chatFlow(input: ChatFlowInput) {
       console.log('[chat-flow] Added', attachments.length, 'attachments to message');
     }
 
-    // Send message and get response
+    // STEP 5: Send message and get response
     const response = await chat.sendMessage({
       message: messageParts.length === 1 ? message : messageParts,
     });
@@ -113,24 +136,13 @@ export async function chatFlow(input: ChatFlowInput) {
     const generatedText = response.text || '';
     console.log('[chat-flow] Generated response length:', generatedText.length);
 
-    // Save messages to database if we have a session
-    if (sessionId && userId && !validatedInput.isGuest) {
+    // STEP 6: Save AI response to database
+    if (sessionId && userId && !isGuest) {
       try {
-        // Convert attachments to database format
-        const dbAttachments = attachments?.map(att => ({
-          url: att.data, // URI or inline data
-          name: att.data.split('/').pop() || 'attachment',
-          mimeType: att.mimeType,
-          sizeBytes: '0', // Would need to be passed from client
-        }));
-
-        // Save user message with attachments
-        await addChatMessage(sessionId, 'user', message, undefined, dbAttachments);
-        // Save AI response
         await addChatMessage(sessionId, 'model', generatedText);
-        console.log('[chat-flow] Saved messages to database');
+        console.log('[chat-flow] Saved AI response to database');
       } catch (error) {
-        console.error('[chat-flow] Failed to save messages:', error);
+        console.error('[chat-flow] Failed to save AI response:', error);
         // Don't fail the whole request if saving fails
       }
     }

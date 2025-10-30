@@ -5,56 +5,80 @@ import { useState, DragEvent, Dispatch, SetStateAction } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { Attachment } from '@/types/chat-types';
 
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // Must stay in sync with API limit
+
+const isSupportedFileType = (file: File) => {
+  if (!file.type) return false;
+  return (
+    file.type.startsWith('image/') ||
+    file.type.startsWith('audio/') ||
+    file.type.startsWith('video/') ||
+    file.type.startsWith('text/') ||
+    file.type === 'application/pdf'
+  );
+};
+
 export function useFileUpload(setAttachment: Dispatch<SetStateAction<Attachment | null>>) {
   const { toast } = useToast();
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
-  const readFileAsDataURI = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleFileSelect = async (file: File) => {
     if (!file) return;
 
-    if (!file.type.startsWith('image/') && !file.type.startsWith('text/') && file.type !== 'application/pdf') {
-       toast({
+    if (!isSupportedFileType(file)) {
+      toast({
         variant: 'destructive',
         title: 'Unsupported File Type',
-        description: 'Please upload an image, PDF, or text file.',
+        description: 'Please upload an image, audio, video, PDF, or text file.',
       });
       return;
     }
 
-    const maxSizeInBytes = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSizeInBytes) {
+    if (file.size > MAX_FILE_SIZE_BYTES) {
       toast({
         variant: 'destructive',
         title: 'File Too Large',
-        description: 'Please upload a file smaller than 10MB.',
+        description: 'Please upload a file smaller than 20MB.',
       });
       return;
     }
 
     try {
-      const dataUri = await readFileAsDataURI(file);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/chat/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok || !payload?.file?.uri) {
+        const message = payload?.error || payload?.details || 'Upload failed. Please try again.';
+        throw new Error(message);
+      }
+
+      const uploaded = payload.file;
+
       const newAttachment: Attachment = {
-        name: file.name,
-        contentType: file.type,
-        size: file.size,
-        url: dataUri,
+        name: uploaded.displayName || uploaded.name || file.name,
+        contentType: uploaded.mimeType || file.type,
+        size: Number.parseInt(uploaded.sizeBytes ?? `${file.size}`, 10) || file.size,
+        url: uploaded.uri,
       };
+
       setAttachment(newAttachment);
+      toast({
+        title: 'File Ready',
+        description: `${newAttachment.name} attached to your message.`,
+      });
     } catch (error) {
-      console.error("File reading error:", error);
+      console.error('File upload error:', error);
       toast({
         variant: 'destructive',
-        title: 'File Read Failed',
-        description: 'Could not read your file. Please try again.',
+        title: 'File Upload Failed',
+        description: error instanceof Error ? error.message : 'Could not upload your file. Please try again.',
       });
     }
   };

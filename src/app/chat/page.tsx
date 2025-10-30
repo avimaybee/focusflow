@@ -384,8 +384,6 @@ export default function ChatPage() {
         }
     }
 
-  const historyForAI = (messages || []).map(msg => ({ role: msg.role, text: msg.rawText || '' }));
-
     const userMessage: ChatMessageProps = {
         id: `user-${Date.now()}`,
         role: 'user',
@@ -403,19 +401,9 @@ export default function ChatPage() {
       console.debug('[Client] messages length after user append:', next.length);
       return next;
     });
-    // Save user message via API
-  try {
-  const accessToken = session?.access_token;
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-  await fetch('/api/chat/message', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ sessionId: currentChatId, role: 'user', content: input.trim() }),
-  });
-    } catch (err) {
-      console.error('Error saving user message via API:', err);
-    }
+    
+    // NOTE: User message will be saved by the server in chat-flow.ts
+    // This prevents duplicate saves and ensures proper ordering
 
     setGuestMessageCount(prev => prev + 1);
   
@@ -426,9 +414,11 @@ export default function ChatPage() {
       mimeType: att.contentType,
     }));
 
+    // DON'T pass history - let the server fetch full conversation from database
+    // This ensures the AI has access to all previous messages, not just what's in client state
     const chatInput = {
       message: input.trim(),
-      history: historyForAI,
+      // history: removed - server will load from DB using sessionId
       sessionId: currentChatId || undefined,
       personaId: selectedPersonaId,
       attachments: apiAttachments.length > 0 ? apiAttachments : undefined,
@@ -481,22 +471,6 @@ export default function ChatPage() {
     console.debug('[Client] messages length after model append:', next.length);
     return next;
   });
-      // Save model response via API
-      try {
-        const accessToken = session?.access_token;
-        console.debug('[Client] Saving model message via POST /api/chat/message', { sessionId: currentChatId });
-        const tmsg = Date.now();
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-        const r = await fetch('/api/chat/message', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ sessionId: currentChatId, role: 'model', content: result.response }),
-        });
-        console.debug('[Client] POST /api/chat/message finished', { status: r.status, durationMs: Date.now() - tmsg });
-      } catch (err) {
-        console.error('Error saving model message via API:', err);
-      }
       // Refresh chat history to show the new chat in the sidebar
       forceRefresh();
       // Reset isNewChat flag now that messages are saved
