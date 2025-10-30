@@ -52,6 +52,8 @@ export function useFileUpload(setAttachment: Dispatch<SetStateAction<Attachment 
         body: formData,
       });
 
+      console.debug('[FileUpload] Upload response status', response.status);
+
       const payload = await response.json().catch(() => null);
 
       if (!response.ok || !payload?.file?.uri) {
@@ -60,6 +62,8 @@ export function useFileUpload(setAttachment: Dispatch<SetStateAction<Attachment 
       }
 
       const uploaded = payload.file;
+
+      console.debug('[FileUpload] Upload success payload', uploaded);
 
       const newAttachment: Attachment = {
         name: uploaded.displayName || uploaded.name || file.name,
@@ -74,7 +78,7 @@ export function useFileUpload(setAttachment: Dispatch<SetStateAction<Attachment 
         description: `${newAttachment.name} attached to your message.`,
       });
     } catch (error) {
-      console.error('File upload error:', error);
+      console.error('[FileUpload] File upload error:', error);
       toast({
         variant: 'destructive',
         title: 'File Upload Failed',

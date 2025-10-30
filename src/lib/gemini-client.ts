@@ -125,19 +125,34 @@ async function retryWithBackoff<T>(
 
 /**
  * Upload a file to Gemini API and get a URI for use in chat
- * @param file - The file to upload (path for server-side, File for client-side)
+ * @param file - The file to upload (supports Buffer, Uint8Array, ArrayBuffer, file path)
  * @param mimeType - The MIME type of the file
  * @returns The uploaded file object with URI
  */
-export async function uploadFileToGemini(file: string | Buffer, mimeType: string) {
+export async function uploadFileToGemini(file: string | Buffer | Uint8Array | ArrayBuffer, mimeType: string) {
   if (!ALL_SUPPORTED_MIME_TYPES.includes(mimeType as any)) {
     throw new Error(`Unsupported file type: ${mimeType}`);
   }
 
   return retryWithBackoff(async () => {
     try {
+      let uploadable: string | Blob;
+      if (typeof file === 'string') {
+        uploadable = file;
+      } else if (Buffer.isBuffer(file)) {
+        const uint8 = Uint8Array.from(file);
+        uploadable = new Blob([uint8], { type: mimeType });
+      } else if (file instanceof ArrayBuffer) {
+        uploadable = new Blob([file], { type: mimeType });
+      } else if (file instanceof Uint8Array) {
+        const uint8 = Uint8Array.from(file as Uint8Array);
+        uploadable = new Blob([uint8], { type: mimeType });
+      } else {
+        throw new Error('Unsupported file payload type');
+      }
+
       const uploadedFile = await geminiClient.files.upload({
-        file: file as any, // SDK accepts string or Buffer despite type definition
+        file: uploadable,
         config: { mimeType },
       });
 

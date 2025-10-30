@@ -30,14 +30,17 @@ type ChatFlowInput = z.infer<typeof chatFlowInputSchema>;
 export async function chatFlow(input: ChatFlowInput) {
   const validatedInput = chatFlowInputSchema.parse(input);
   const { message, history, personaId, sessionId, userId, attachments, isGuest } = validatedInput;
+  const requestId = `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
 
-  console.log('[chat-flow] Processing message', {
+  console.log(`[chat-flow][${requestId}] Incoming request`, {
     sessionId,
-    hasHistory: !!history?.length,
-    hasAttachments: !!attachments?.length,
-    personaId,
     userId,
     isGuest,
+    personaId,
+    hasClientHistory: !!history?.length,
+    clientHistoryLength: history?.length ?? 0,
+    attachmentCount: attachments?.length ?? 0,
+    messagePreview: message.slice(0, 120),
   });
 
   // STEP 1: Save user message to database FIRST (so it's in the history when we fetch)
@@ -53,9 +56,12 @@ export async function chatFlow(input: ChatFlowInput) {
 
       // Save user message with attachments
       await addChatMessage(sessionId, 'user', message, undefined, dbAttachments);
-      console.log('[chat-flow] Saved user message to database');
+      console.log(`[chat-flow][${requestId}] Saved user message`, {
+        sessionId,
+        attachmentCount: dbAttachments?.length ?? 0,
+      });
     } catch (error) {
-      console.error('[chat-flow] Failed to save user message:', error);
+      console.error(`[chat-flow][${requestId}] Failed to save user message`, error);
       // Don't fail - continue with the request
     }
   }
@@ -66,33 +72,44 @@ export async function chatFlow(input: ChatFlowInput) {
     : await getDefaultPersona();
   
   const personaPrompt = selectedPersona?.prompt || 'You are a helpful AI assistant for students.';
+  console.log(`[chat-flow][${requestId}] Persona loaded`, {
+    personaId: selectedPersona?.id ?? 'default',
+    personaName: selectedPersona?.name ?? 'Default',
+    promptPreview: personaPrompt.slice(0, 120),
+  });
 
   // STEP 3: Load full conversation history from database (if sessionId provided)
   // This ensures the AI sees ALL messages, including the one we just saved
   let conversationHistory = history || [];
   if (sessionId && !history) {
-    console.log('[chat-flow] Loading conversation history from database for session:', sessionId);
+    console.log(`[chat-flow][${requestId}] Fetching conversation from database`, { sessionId });
     try {
       const dbMessages = await getChatMessages(sessionId);
       conversationHistory = dbMessages.map(msg => ({
         role: msg.role,
         text: msg.rawText || msg.text?.toString() || '',
       }));
-      console.log('[chat-flow] Loaded', conversationHistory.length, 'messages from database (includes user message we just saved)');
+      console.log(`[chat-flow][${requestId}] Loaded conversation`, {
+        totalMessages: conversationHistory.length,
+      });
       
       // Get conversation stats before truncation
       const stats = getConversationStats(conversationHistory);
-      console.log('[chat-flow] Conversation stats:', stats);
+      console.log(`[chat-flow][${requestId}] Conversation stats`, stats);
       
       // Truncate history to prevent context overflow (max 30k tokens, ~120k characters)
       const { truncated, droppedCount, estimatedTokens } = truncateConversation(conversationHistory, 30000);
       conversationHistory = truncated;
       
       if (droppedCount > 0) {
-        console.log(`[chat-flow] Truncated ${droppedCount} old messages to fit context window (${estimatedTokens} tokens)`);
+        console.log(`[chat-flow][${requestId}] Truncated history`, {
+          droppedCount,
+          estimatedTokens,
+          remainingMessages: conversationHistory.length,
+        });
       }
     } catch (error) {
-      console.error('[chat-flow] Failed to load conversation history:', error);
+      console.error(`[chat-flow][${requestId}] Failed to load conversation history`, error);
       conversationHistory = [];
     }
   } else if (history && history.length > 0) {
@@ -101,7 +118,10 @@ export async function chatFlow(input: ChatFlowInput) {
     conversationHistory = truncated;
     
     if (droppedCount > 0) {
-      console.log(`[chat-flow] Truncated ${droppedCount} messages from provided history`);
+      console.log(`[chat-flow][${requestId}] Truncated provided history`, {
+        droppedCount,
+        remainingMessages: conversationHistory.length,
+      });
     }
   }
 
@@ -111,6 +131,10 @@ export async function chatFlow(input: ChatFlowInput) {
     maxOutputTokens: 8192,
     systemInstruction: personaPrompt,
     history: conversationHistory,
+  });
+  console.log(`[chat-flow][${requestId}] Chat session created`, {
+    historyLength: conversationHistory.length,
+    attachmentCount: attachments?.length ?? 0,
   });
 
   try {
@@ -125,7 +149,9 @@ export async function chatFlow(input: ChatFlowInput) {
           messageParts.push(createInlineDataPart(attachment.data, attachment.mimeType));
         }
       }
-      console.log('[chat-flow] Added', attachments.length, 'attachments to message');
+      console.log(`[chat-flow][${requestId}] Added attachments to message`, {
+        attachmentCount: attachments.length,
+      });
     }
 
     // STEP 5: Send message and get response
@@ -134,15 +160,18 @@ export async function chatFlow(input: ChatFlowInput) {
     });
 
     const generatedText = response.text || '';
-    console.log('[chat-flow] Generated response length:', generatedText.length);
+    console.log(`[chat-flow][${requestId}] Generated response`, {
+      responseLength: generatedText.length,
+      responsePreview: generatedText.slice(0, 120),
+    });
 
     // STEP 6: Save AI response to database
     if (sessionId && userId && !isGuest) {
       try {
         await addChatMessage(sessionId, 'model', generatedText);
-        console.log('[chat-flow] Saved AI response to database');
+        console.log(`[chat-flow][${requestId}] Saved AI response`, { sessionId });
       } catch (error) {
-        console.error('[chat-flow] Failed to save AI response:', error);
+        console.error(`[chat-flow][${requestId}] Failed to save AI response`, error);
         // Don't fail the whole request if saving fails
       }
     }
@@ -154,16 +183,16 @@ export async function chatFlow(input: ChatFlowInput) {
       persona: selectedPersona || await getDefaultPersona(),
     };
   } catch (error: any) {
-    console.error('[chat-flow] Error:', error);
+    console.error(`[chat-flow][${requestId}] Error during chat flow`, error);
     
     // Handle specific error types
     if (error?.message?.includes('overloaded') || error?.message?.includes('quota')) {
-      console.error('[chat-flow] Model overloaded or quota exceeded');
+      console.error(`[chat-flow][${requestId}] Model overloaded or quota exceeded`);
       throw new Error('The AI service is currently overloaded. Please try again in a moment.');
     }
     
     if (error?.message?.includes('context') || error?.message?.includes('token')) {
-      console.error('[chat-flow] Context window exceeded');
+      console.error(`[chat-flow][${requestId}] Context window exceeded`);
       throw new Error('The conversation has become too long. Please start a new chat.');
     }
     

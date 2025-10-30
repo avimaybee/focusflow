@@ -103,6 +103,12 @@ export default function ChatPage() {
     const controller = new AbortController();
     messageFetchControllerRef.current = controller;
 
+    console.debug('[Client] loadMessages called', {
+      chatId,
+      attempt,
+      accessTokenPresent: !!session?.access_token,
+    });
+
     try {
       const accessToken = session?.access_token;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -122,6 +128,12 @@ export default function ChatPage() {
       const data = await res.json();
       const fetched = (Array.isArray(data) ? data : []) as ChatMessageProps[];
       let shouldRetry = false;
+
+      console.debug('[Client] loadMessages fetched batch', {
+        chatId,
+        fetchedCount: fetched.length,
+        attempt,
+      });
 
       setMessages((prev) => {
         if (activeChatIdRef.current !== chatId) {
@@ -161,6 +173,7 @@ export default function ChatPage() {
           clearTimeout(retryTimeoutRef.current);
         }
         retryTimeoutRef.current = setTimeout(() => loadMessages(chatId, attempt + 1), 600);
+        console.debug('[Client] Scheduling retry for loadMessages', { chatId, nextAttempt: attempt + 1 });
       }
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') {
@@ -173,6 +186,7 @@ export default function ChatPage() {
           clearTimeout(retryTimeoutRef.current);
         }
         retryTimeoutRef.current = setTimeout(() => loadMessages(chatId, attempt + 1), 800);
+        console.debug('[Client] Scheduling retry after error', { chatId, nextAttempt: attempt + 1 });
       }
     } finally {
       if (messageFetchControllerRef.current === controller) {
@@ -424,6 +438,13 @@ export default function ChatPage() {
       attachments: apiAttachments.length > 0 ? apiAttachments : undefined,
     };
   
+    console.debug('[Client] Prepared chat input payload', {
+      sessionId: chatInput.sessionId,
+      personaId: chatInput.personaId,
+      attachmentCount: chatInput.attachments?.length ?? 0,
+      messagePreview: chatInput.message.slice(0, 120),
+    });
+
     setInput('');
     setAttachments([]);
   
@@ -464,7 +485,11 @@ export default function ChatPage() {
           persona: selectedPersona,
           createdAt: new Date(),
       };
-  console.debug('[Client] Adding model response to messages', { id: modelResponse.id, rawText: modelResponse.rawText });
+  console.debug('[Client] Adding model response to messages', {
+    id: modelResponse.id,
+    rawText: modelResponse.rawText,
+    sessionId: currentChatId,
+  });
   setMessages(prev => {
     const next = ([...(prev || []), modelResponse]);
     // eslint-disable-next-line no-console
