@@ -6,7 +6,7 @@ import * as React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, User, Album, HelpCircle, Save, RotateCw, Copy, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Bot, User, Album, HelpCircle, Save, Copy, FileText } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { FlashcardViewer } from '@/components/flashcard-viewer';
@@ -52,7 +52,6 @@ export type ChatMessageProps = {
   isFirstInGroup?: boolean;
   isLastInGroup?: boolean;
   onToolAction?: (tool: SmartTool, text?: string) => void;
-  onRegenerate?: () => void;
   attachments?: { url: string; name: string; contentType: string; size: number; }[];
 };
 
@@ -71,7 +70,6 @@ export function ChatMessage({
   isFirstInGroup = true,
   isLastInGroup = true,
   onToolAction,
-  onRegenerate,
   attachments,
 }: ChatMessageProps) {
   const isUser = role === 'user';
@@ -276,22 +274,6 @@ export function ChatMessage({
                     </TooltipTrigger>
                     <TooltipContent><p>Copy</p></TooltipContent>
                   </Tooltip>
-                  {isLastInGroup && onRegenerate && (
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary/40"
-                          onClick={onRegenerate}
-                          aria-label="Regenerate response"
-                        >
-                          <RotateCw className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent><p>Regenerate</p></TooltipContent>
-                    </Tooltip>
-                  )}
                   {user && rawText && (
                     <Tooltip delayDuration={300}>
                       <TooltipTrigger asChild>

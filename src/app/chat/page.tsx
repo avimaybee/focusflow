@@ -326,10 +326,6 @@ export default function ChatPage() {
     }
   };
 
-  const handleRegenerate = () => {
-    toast({ title: 'Coming Soon', description: 'Message regeneration will be re-enabled soon.' });
-  };
-
   const handleSendMessage = async ({ input, attachments }: { input: string; attachments: Attachment[] }) => {
     // Prevent sending if no content, already sending, or auth is loading
     if ((!input.trim() && attachments.length === 0) || isSending || authLoading) return;
@@ -599,7 +595,6 @@ export default function ChatPage() {
               inputRef.current?.setDraft(prompt);
               inputRef.current?.focus();
             }}
-            onRegenerate={handleRegenerate}
             className="flex-1 min-h-0"
             contentClassName="px-4 md:px-8 py-6 space-y-6"
           />

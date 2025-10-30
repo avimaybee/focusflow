@@ -104,10 +104,10 @@ const groupChatHistory = (history: ChatHistoryItem[]): Array<{ key: ChatGroupKey
 };
 
 const chatAvatarPalettes = [
-  'bg-surface-soft text-foreground ring-1 ring-stroke-subtle',
-  'bg-surface-muted text-foreground ring-1 ring-stroke-medium',
-  'bg-secondary text-foreground ring-1 ring-stroke-subtle',
-  'bg-card text-foreground ring-1 ring-stroke-medium',
+  'bg-primary text-primary-foreground ring-1 ring-primary/60',
+  'bg-primary/95 text-primary-foreground ring-1 ring-primary/55',
+  'bg-primary/90 text-primary-foreground ring-1 ring-primary/55',
+  'bg-primary/85 text-primary-foreground ring-1 ring-primary/50',
 ];
 
 const computePaletteIndex = (title: string) => {
@@ -436,7 +436,7 @@ const ChatSidebarComponent = ({
           <Button
             variant="ghost"
             size="icon"
-            className="hidden h-10 w-10 rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/40 md:inline-flex"
+            className="hidden h-10 w-10 rounded-lg border border-primary/40 bg-primary/12 text-primary-foreground transition-colors hover:bg-primary/20 focus-visible:ring-2 focus-visible:ring-primary/40 md:inline-flex"
             onClick={onToggle}
           >
             {isCollapsed ? (
@@ -451,8 +451,8 @@ const ChatSidebarComponent = ({
           <Button
             variant="outline"
             className={cn(
-              'w-full h-11 rounded-2xl border-stroke-subtle bg-surface-soft text-foreground shadow-[0_1px_0_0_var(--stroke-subtle)] transition hover:bg-surface-soft/80',
-              isCollapsed && 'flex h-11 w-11 items-center justify-center p-0'
+              'w-full h-11 rounded-2xl border border-primary/40 bg-primary/12 text-primary-foreground shadow-[0_1px_0_0_var(--stroke-subtle)] transition hover:bg-primary/20',
+              isCollapsed && 'flex h-11 w-11 items-center justify-center p-0 border-primary/60 bg-primary text-primary-foreground hover:bg-primary/90'
             )}
             onClick={onNewChat}
           >
@@ -530,13 +530,13 @@ const ChatSidebarComponent = ({
                           role="button"
                           aria-current={isActive ? 'true' : undefined}
                           className={cn(
-                            'flex w-full items-center font-normal rounded-lg cursor-pointer text-foreground transition-all duration-200 group/item',
-                            isActive
-                              ? 'bg-muted ring-1 ring-primary/30'
-                              : 'hover:bg-muted/80',
+                            'flex items-center font-normal cursor-pointer text-foreground transition-all duration-200 group/item',
                             isCollapsed
-                              ? 'h-12 w-12 justify-center p-0'
-                              : 'justify-between gap-3 py-2 px-3',
+                              ? 'mx-auto h-12 w-12 justify-center rounded-full p-0'
+                              : 'w-full rounded-lg justify-between gap-3 py-2 px-3',
+                            isActive && !isCollapsed
+                              ? 'bg-muted ring-1 ring-primary/30'
+                              : !isActive && (isCollapsed ? 'hover:ring-1 hover:ring-muted/60' : 'hover:bg-muted/80'),
                             isEditing && 'ring-1 ring-primary/40 bg-muted'
                           )}
                           onClick={() => {
@@ -546,10 +546,19 @@ const ChatSidebarComponent = ({
                           title={!isCollapsed && !isEditing ? chat.title : undefined}
                         >
                           <div className={cn('flex items-center gap-3 flex-1 min-w-0', isCollapsed && 'justify-center')}>
-                            <Avatar className={cn('h-10 w-10 shrink-0 transition-all duration-200', isActive && !isEditing && 'ring-2 ring-primary/40 shadow-sm')}>
+                            <Avatar
+                              className={cn(
+                                'h-10 w-10 shrink-0 transition-all duration-200',
+                                isActive && !isEditing
+                                  ? isCollapsed
+                                    ? 'ring-2 ring-primary/40'
+                                    : 'ring-2 ring-primary/40 shadow-sm'
+                                  : undefined
+                              )}
+                            >
                               <AvatarFallback
                                 className={cn(
-                                  'flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide',
+                                  'flex h-full w-full items-center justify-center text-sm font-semibold uppercase tracking-wide',
                                   getChatAvatarClasses(chat.title)
                                 )}
                               >
@@ -683,7 +692,7 @@ const ChatSidebarComponent = ({
       {isCollapsed && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-sm hover:border-stroke-subtle hover:bg-muted/70">
+            <Button variant="ghost" className="flex h-11 w-11 items-center justify-center rounded-full border border-primary/50 bg-primary/12 text-primary-foreground hover:bg-primary/20">
               <div className="relative">
                 <Avatar className="h-11 w-11">
                   <AvatarImage src={user?.user_metadata?.avatar_url || undefined} data-ai-hint="person" />

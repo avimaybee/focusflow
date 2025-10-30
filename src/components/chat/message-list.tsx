@@ -18,7 +18,6 @@ interface MessageListProps {
   activeChatId: string | null;
   activePersona: PersonaDetails | undefined;
   onSmartToolAction: (prompt: string) => void;
-  onRegenerate: () => void;
   className?: string;
   contentClassName?: string;
 }
@@ -30,7 +29,6 @@ export function MessageList({
   activeChatId,
   activePersona,
   onSmartToolAction,
-  onRegenerate,
   className,
   contentClassName,
 }: MessageListProps) {
@@ -74,7 +72,6 @@ export function MessageList({
                 key={msg.id || index}
                 {...msg}
                 onToolAction={handleToolAction}
-                onRegenerate={onRegenerate}
               />
             ))}
             {isSending && safeMessages.at(-1)?.role === 'user' && (
