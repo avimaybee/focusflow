@@ -69,16 +69,16 @@ export default async function BlogPostPage({ params }: Props) {
         <div className="container mx-auto px-4 py-10 max-w-3xl">
             <BackButton href="/blog" label="Back to Blog" className="mb-8" />
             <article>
-                <header className="mb-8">
-                    <h1 className="text-4xl md:text-5xl font-bold font-heading text-center leading-tight">
+                <header className="mb-10">
+                    <h1 className="text-4xl md:text-5xl font-bold font-heading text-center leading-tight mb-4">
                         {post.title}
                     </h1>
-                    <p className="mt-4 text-center text-muted-foreground">
+                    <p className="text-center text-foreground/80 leading-relaxed font-medium">
                         By {post.author} on {publishedDate}
                     </p>
                 </header>
                 <div
-                    className="prose prose-lg prose-invert mx-auto"
+                    className="prose prose-lg prose-invert mx-auto [&>p]:leading-relaxed [&>ul]:leading-relaxed [&>ol]:leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                 />
             </article>

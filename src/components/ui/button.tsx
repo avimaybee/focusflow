@@ -23,10 +23,10 @@ const buttonVariants = cva(
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
-        default: 'h-9 px-4 py-2',
-        sm: 'h-8 rounded-md px-3',
-        lg: 'h-10 rounded-md px-8',
-        icon: 'h-9 w-9',
+        default: 'h-10 px-4 py-2 min-h-[44px] md:h-9 md:min-h-0',
+        sm: 'h-9 rounded-md px-3 min-h-[40px] md:h-8 md:min-h-0',
+        lg: 'h-11 rounded-md px-8 min-h-[44px] md:h-10',
+        icon: 'h-10 w-10 min-h-[44px] min-w-[44px] md:h-9 md:w-9 md:min-h-0 md:min-w-0',
       },
     },
     defaultVariants: {
@@ -44,12 +44,9 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? motion(Slot) : motion.button;
+    const Comp = asChild ? Slot : 'button';
     return (
       <Comp
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}

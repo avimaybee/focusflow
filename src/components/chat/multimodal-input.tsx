@@ -257,20 +257,25 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
           )}
         </AnimatePresence>
 
-  <div className="relative flex items-end gap-2 rounded-2xl border border-border/60 bg-transparent px-3 py-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25 transition-all">
+  {/* Enhanced input box with better visual clarity and depth */}
+  <div className="relative flex items-end gap-2 rounded-2xl border-2 border-border bg-card/50 backdrop-blur-sm px-3 py-2.5 shadow-lg shadow-black/5 focus-within:border-primary focus-within:bg-card focus-within:ring-4 focus-within:ring-primary/20 focus-within:shadow-xl focus-within:shadow-primary/10 transition-all duration-200 hover:border-border/80 hover:shadow-xl">
+          {/* Subtle gradient overlay for depth */}
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-background/5 to-transparent pointer-events-none"></div>
+          
           <PersonaSelector
             personas={personas || []}
             selectedPersonaId={selectedPersonaId}
             onSelect={setSelectedPersonaId}
-            className="h-9 w-9 rounded-full text-muted-foreground hover:bg-muted"
+            className="relative z-10 h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           />
 
           <Button
             asChild={!isUploading}
             variant="ghost"
             size="icon"
-            className="h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
+            className="relative z-10 h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             disabled={isUploading}
+            aria-label="Attach file"
           >
             {isUploading ? (
               <LoaderIcon className="h-5 w-5 animate-spin" />
@@ -283,6 +288,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
                   onChange={handleFileChange}
                   className="hidden"
                   accept="image/*,application/pdf,text/*,audio/*,video/*"
+                  aria-label="Upload file"
                 />
               </label>
             )}
@@ -290,11 +296,11 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
           
           <Textarea
             ref={internalTextareaRef}
-            placeholder="Send a message..."
+            placeholder="Type your message... (Shift + Enter for new line)"
             value={input}
             onChange={handleInput}
             onFocus={handleFocus}
-            className="flex-1 resize-none border-none bg-transparent px-0 text-sm leading-6 text-foreground placeholder:text-muted-foreground/80 focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="relative z-10 flex-1 resize-none border-none bg-transparent px-0 text-sm leading-6 text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 focus-visible:ring-offset-0 font-medium"
             rows={1}
             disabled={!canSend || isGenerating}
             onKeyDown={(event) => {
@@ -314,7 +320,8 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
             onClick={submitForm}
             disabled={isGenerating || (!input.trim() && attachments.length === 0)}
             size="icon"
-            className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+            className="relative z-10 h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 disabled:bg-muted disabled:text-muted-foreground disabled:hover:scale-100 transition-all duration-200 shadow-md"
+            aria-label={isGenerating ? "Generating response..." : "Send message"}
           >
             {isGenerating ? (
               <LoaderIcon className="h-5 w-5 animate-spin" />

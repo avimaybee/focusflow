@@ -207,12 +207,12 @@ export function LandingPageChatV2() {
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-background rounded-lg border shadow-xl flex flex-col h-[70vh] min-h-[500px]">
-        <div className="p-4 border-b">
-            <h2 className="text-lg font-semibold flex items-center">
-                <Sparkles className="h-5 w-5 mr-2 text-primary" />
+        <div className="p-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
+            <h2 className="text-xl font-bold flex items-center">
+                <Sparkles className="h-6 w-6 mr-2 text-primary" />
                 Interactive Demo
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground font-medium mt-1">
                 See how FocusFlow AI can accelerate your learning. (Demo limited to 5 messages)
             </p>
         </div>
@@ -232,11 +232,19 @@ export function LandingPageChatV2() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden mb-3"
+                        className="overflow-hidden mb-4"
                     >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Try these:</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {suggestedPrompts.map((prompt, i) => (
-                                <Button key={i} variant="outline" size="sm" className="text-left justify-start h-auto whitespace-normal" onClick={() => handleSuggestionClick(prompt)}>
+                                <Button 
+                                    key={i} 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="text-left justify-start h-auto whitespace-normal font-medium border-primary/30 hover:border-primary hover:bg-primary/5 hover:shadow-md transition-all duration-200 p-3" 
+                                    onClick={() => handleSuggestionClick(prompt)}
+                                >
+                                    <Sparkles className="h-3 w-3 mr-2 text-primary flex-shrink-0" />
                                     {prompt}
                                 </Button>
                             ))}
@@ -259,10 +267,15 @@ export function LandingPageChatV2() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Type your message..."
-                    className="flex-1 w-full px-4 py-2 bg-muted rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="flex-1 w-full px-4 py-2.5 bg-muted rounded-full focus:outline-none focus:ring-2 focus:ring-primary font-medium"
                     disabled={isSending || limitReached}
                 />
-                <Button type="submit" size="icon" className="rounded-full" disabled={isSending || !input.trim() || limitReached}>
+                <Button 
+                    type="submit" 
+                    size="icon" 
+                    className="rounded-full h-10 w-10 shadow-lg hover:shadow-xl transition-shadow duration-200" 
+                    disabled={isSending || !input.trim() || limitReached}
+                >
                     <Send className="h-5 w-5" />
                 </Button>
             </form>

@@ -9,6 +9,6 @@ type PageProps = {
   searchParams?: Record<string, string | string[] | undefined>;
 };
 
-export default function Page({}: PageProps) {
-  return <Client />;
+export default function Page({ params }: PageProps) {
+  return <Client params={params} />;
 }

@@ -21,8 +21,14 @@ export function SubjectPieChart({ studyTime }: SubjectPieChartProps) {
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
-          <div className="flex items-center justify-center h-48">
-            <p className="text-muted-foreground">Log study time to see your breakdown.</p>
+          <div className="flex flex-col items-center justify-center h-48 text-center px-4">
+            <div className="rounded-full bg-primary/10 p-3 mb-3">
+              <BrainCircuit className="h-6 w-6 text-primary" />
+            </div>
+            <p className="font-semibold text-sm mb-1">No Study Data Yet</p>
+            <p className="text-xs text-muted-foreground">
+              Your subject breakdown will appear as you use the chat and create study materials.
+            </p>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={200}>

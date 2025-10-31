@@ -26,9 +26,9 @@ export default function LandingPage() {
       <div className="flex-grow">
         <main>
           {/* Hero Section */}
-          <section className="relative py-20 md:py-24">
+          <section className="relative py-20 md:py-32">
             <div className="relative z-10 text-center container mx-auto px-4 flex flex-col items-center">
-                  <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight tracking-tighter text-foreground">
+                  <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-[1.15] tracking-tight text-foreground mb-8">
                       Your AI Co-Pilot for
                       <motion.span
                         initial={{ opacity: 0 }}
@@ -37,11 +37,11 @@ export default function LandingPage() {
                         className="text-primary"
                       > Learning</motion.span>
                   </h1>
-                <div className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                <div className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                   FocusFlow is your all-in-one toolkit. Turn any document into
                   <FlipWords words={words} /> in seconds.
                 </div>
-                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <HoverBorderGradient
                       containerClassName="rounded-full"

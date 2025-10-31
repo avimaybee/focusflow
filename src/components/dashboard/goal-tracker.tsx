@@ -26,9 +26,15 @@ export function GoalTracker({ goals, onSetGoal }: GoalTrackerProps) {
       </CardHeader>
       <CardContent>
         {goals.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">Set weekly goals to stay on track.</p>
-            <Button onClick={onSetGoal}>Set a Goal</Button>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="rounded-full bg-primary/10 p-3 mb-3">
+              <Target className="h-6 w-6 text-primary" />
+            </div>
+            <p className="font-semibold text-sm mb-1">No Goals Set</p>
+            <p className="text-xs text-muted-foreground mb-4 px-4">
+              Set weekly study goals to track your progress and stay motivated.
+            </p>
+            <Button onClick={onSetGoal} className="h-9 font-semibold">Set Your First Goal</Button>
           </div>
         ) : (
           <div className="space-y-4">

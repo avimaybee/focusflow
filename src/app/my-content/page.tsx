@@ -76,6 +76,7 @@ function MyContentPageContent() {
   const { toast } = useToast();
   const [allContent, setAllContent] = React.useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [hasError, setHasError] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [activeTypes, setActiveTypes] = React.useState<ContentItem['type'][]>([]);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
@@ -90,11 +91,26 @@ function MyContentPageContent() {
       setIsLoading(true);
       
       const [summaries, flashcardSets, quizzes, studyPlans, savedMessages] = await Promise.all([
-        getSummaries(user.id),
-        getFlashcardSets(user.id),
-        getQuizzes(user.id),
-        getStudyPlans(user.id),
-        getSavedMessages(user.id),
+        getSummaries(user.id).catch(err => {
+          console.error('Error fetching summaries:', err);
+          return [];
+        }),
+        getFlashcardSets(user.id).catch(err => {
+          console.error('Error fetching flashcards:', err);
+          return [];
+        }),
+        getQuizzes(user.id).catch(err => {
+          console.error('Error fetching quizzes:', err);
+          return [];
+        }),
+        getStudyPlans(user.id).catch(err => {
+          console.error('Error fetching study plans:', err);
+          return [];
+        }),
+        getSavedMessages(user.id).catch(err => {
+          console.error('Error fetching saved messages:', err);
+          return [];
+        }),
       ]);
 
       const content: ContentItem[] = [
@@ -161,15 +177,27 @@ function MyContentPageContent() {
       ];
 
       setAllContent(content);
-    } catch (error) {
-      console.error('Error fetching content:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to load your content. Please try again.',
-      });
-    } finally {
+      setHasError(false);
       setIsLoading(false);
+    } catch (error) {
+      // Only show error if there's a critical failure, not just empty results
+      console.error('Critical error fetching content:', error);
+      setAllContent([]);
+      setHasError(true);
+      setIsLoading(false);
+      
+      // Only show toast for unexpected errors, not for normal empty states
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = (error as Error).message;
+        // Don't show error for common "no data" scenarios
+        if (!errorMessage.includes('PGRST116') && !errorMessage.includes('no rows')) {
+          toast({
+            variant: 'destructive',
+            title: 'Connection Issue',
+            description: 'Unable to load your content right now. Please try refreshing.',
+          });
+        }
+      }
     }
   }, [user, toast]);
 
@@ -309,18 +337,48 @@ function MyContentPageContent() {
         return <div className="col-span-full flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
     }
 
+    // Error state - visually distinct from empty state
+    if (hasError && !hasAnyContent) {
+      return (
+        <div className="col-span-full">
+          <div className="flex flex-col items-center justify-center gap-6 rounded-2xl border-2 border-destructive/50 bg-destructive/5 px-8 py-20 text-center">
+            <div className="rounded-full bg-destructive/10 p-4">
+              <svg className="h-12 w-12 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div className="space-y-3">
+              <h3 className="text-2xl font-semibold leading-tight text-destructive">Connection Error</h3>
+              <p className="text-base text-muted-foreground max-w-md leading-relaxed">
+                We couldn&apos;t load your content due to a connection issue. Please check your internet and try again.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 mt-2">
+              <Button onClick={() => fetchAllContent()} className="min-w-[160px]">
+                Retry Connection
+              </Button>
+              <Button variant="outline" asChild className="min-w-[160px]">
+                <Link href="/dashboard">Go to Dashboard</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Empty state - friendly and encouraging
     if (!hasAnyContent) {
       return (
         <div className="col-span-full">
-          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border/70 bg-secondary/40 px-6 py-16 text-center">
-            <Sparkles className="h-10 w-10 text-primary" />
-            <div className="space-y-1">
-              <h3 className="text-xl font-semibold">You haven&apos;t created anything yet</h3>
-              <p className="text-sm text-muted-foreground max-w-md">
+          <div className="flex flex-col items-center justify-center gap-6 rounded-2xl border border-dashed border-border/70 bg-secondary/40 px-8 py-20 text-center">
+            <Sparkles className="h-12 w-12 text-primary" />
+            <div className="space-y-3">
+              <h3 className="text-2xl font-semibold leading-tight">You haven&apos;t created anything yet</h3>
+              <p className="text-base text-muted-foreground max-w-md leading-relaxed">
                 Start a chat or launch a smart tool to generate summaries, flashcards, and quizzes. Everything you create will land here automatically.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-4 mt-2">
               <Button asChild className="min-w-[160px]">
                 <Link href="/chat">Open Chat</Link>
               </Button>
@@ -336,15 +394,15 @@ function MyContentPageContent() {
     if (!hasResults) {
       return (
         <div className="col-span-full">
-          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border/70 bg-secondary/30 px-6 py-12 text-center">
-            <Inbox className="h-9 w-9 text-muted-foreground" />
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold">No matches yet</h3>
-              <p className="text-sm text-muted-foreground max-w-md">
+          <div className="flex flex-col items-center justify-center gap-5 rounded-2xl border border-dashed border-border/70 bg-secondary/30 px-8 py-16 text-center">
+            <Inbox className="h-10 w-10 text-muted-foreground" />
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold leading-tight">No matches yet</h3>
+              <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
                 Try a different keyword or clear your filters to see everything you&apos;ve saved.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 mt-1">
               <Button onClick={resetFilters} className="min-w-[140px]">Clear Filters</Button>
               <Button variant="outline" asChild className="min-w-[140px]">
                 <Link href="/chat">Generate new content</Link>
@@ -401,11 +459,11 @@ function MyContentPageContent() {
                       </CardContent>
                       <CardFooter className="p-4 pt-0 flex flex-col gap-2">
                           {linkHref ? (
-                            <Button className="w-full" asChild>
-                              <Link href={linkHref}>View & Edit</Link>
+                            <Button className="w-full h-10 font-semibold shadow-md hover:shadow-lg transition-all duration-200" asChild>
+                              <Link href={linkHref}>View & Edit →</Link>
                             </Button>
                           ) : (
-                            <Button className="w-full" disabled>
+                            <Button className="w-full h-10 font-semibold" disabled variant="secondary">
                               Coming Soon
                             </Button>
                           )}
@@ -423,26 +481,39 @@ function MyContentPageContent() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col items-center text-center mb-8">
           <h1 className="text-4xl font-bold font-heading">My Content</h1>
-          <p className="text-lg text-muted-foreground mt-1 max-w-2xl">
+          <p className="text-lg text-foreground/75 mt-1 max-w-2xl font-medium">
             All of your generated study materials, saved in one place.
           </p>
         </div>
 
         <div className="mb-6 flex flex-col gap-4">
-            <div className="relative w-full md:w-2/3 lg:w-1/2">
-                <Input 
-                    ref={searchInputRef}
-                    placeholder="Search your materials..."
-                    className="pl-10"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    aria-label="Search saved content"
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <div className="space-y-2">
+              <div className="relative w-full">
+                  <Input 
+                      ref={searchInputRef}
+                      placeholder="Search by title, keywords, or content..."
+                      className="pl-10"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      aria-label="Search saved content"
+                      disabled={!hasAnyContent}
+                  />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/60" />
+              </div>
+              {!hasAnyContent && (
+                <p className="text-xs text-foreground/65 italic font-medium">
+                  Search will be available once you create some content
+                </p>
+              )}
+              {hasAnyContent && !searchQuery && (
+                <p className="text-xs text-foreground/70 font-medium">
+                  💡 Tip: Search finds matches in titles, descriptions, and tags. Press <kbd className="rounded border border-border/60 bg-secondary/80 px-1 text-xs font-semibold">/</kbd> to quick-search
+                </p>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Filter by type</span>
+              <span className="text-xs font-bold uppercase tracking-wide text-foreground/80">Filter by type</span>
               {contentTypeOptions.map(({ value, label, helper }) => {
                 const isActive = activeTypes.includes(value);
                 return (
@@ -455,6 +526,8 @@ function MyContentPageContent() {
                     className="rounded-full"
                     aria-pressed={isActive}
                     aria-label={`${isActive ? 'Remove' : 'Include'} ${label} results${helper ? ` (${helper})` : ''}`}
+                    disabled={!hasAnyContent}
+                    title={helper}
                   >
                     {label}
                   </Button>
@@ -467,10 +540,14 @@ function MyContentPageContent() {
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
-              <span>Showing {filteredContent.length} of {allContent.length} items</span>
-              <span>Press <kbd className="rounded border border-border/60 bg-secondary/80 px-1">/</kbd> to focus search</span>
-            </div>
+            {hasAnyContent && (
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
+                <span>Showing {filteredContent.length} of {allContent.length} items</span>
+                {!isFiltering && (
+                  <span className="text-xs">Use filters above to narrow results by content type</span>
+                )}
+              </div>
+            )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

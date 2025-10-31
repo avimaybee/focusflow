@@ -30,30 +30,42 @@ export function BadgeGrid({ earnedAchievements }: BadgeGridProps) {
         <Award className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <TooltipProvider>
-          <div className="grid grid-cols-4 gap-4">
-            {ALL_ACHIEVEMENTS.map(ach => {
-              const isEarned = earnedAchievements.includes(ach.id);
-              return (
-                <Tooltip key={ach.id}>
-                  <TooltipTrigger>
-                    <div className={cn(
-                      "p-2 border rounded-lg flex items-center justify-center",
-                      isEarned ? 'bg-yellow-400/20 border-yellow-500' : 'bg-muted/50'
-                    )}>
-                      <Award className={cn("h-8 w-8", isEarned ? 'text-yellow-500' : 'text-muted-foreground')} />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="font-bold">{ach.name}</p>
-                    <p>{ach.description}</p>
-                    {!isEarned && <p className="text-xs text-muted-foreground">(Locked)</p>}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
+        {earnedAchievements.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="rounded-full bg-primary/10 p-3 mb-3">
+              <Award className="h-6 w-6 text-primary" />
+            </div>
+            <p className="font-semibold text-sm mb-1">No Achievements Yet</p>
+            <p className="text-xs text-muted-foreground px-4">
+              Start studying to unlock badges and track your accomplishments!
+            </p>
           </div>
-        </TooltipProvider>
+        ) : (
+          <TooltipProvider>
+            <div className="grid grid-cols-4 gap-4">
+              {ALL_ACHIEVEMENTS.map(ach => {
+                const isEarned = earnedAchievements.includes(ach.id);
+                return (
+                  <Tooltip key={ach.id}>
+                    <TooltipTrigger>
+                      <div className={cn(
+                        "p-2 border rounded-lg flex items-center justify-center",
+                        isEarned ? 'bg-yellow-400/20 border-yellow-500' : 'bg-muted/50'
+                      )}>
+                        <Award className={cn("h-8 w-8", isEarned ? 'text-yellow-500' : 'text-muted-foreground')} />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="font-bold">{ach.name}</p>
+                      <p>{ach.description}</p>
+                      {!isEarned && <p className="text-xs text-muted-foreground">(Locked)</p>}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          </TooltipProvider>
+        )}
       </CardContent>
     </Card>
   );

@@ -593,7 +593,7 @@ export default function ChatPage() {
         
         <AnnouncementBanner />
 
-        <div className="flex-1 min-h-0 pt-2 flex">
+        <div className="flex-1 min-h-0 flex">
           <MessageList
             messages={messages}
             isSending={isSending}
@@ -609,8 +609,8 @@ export default function ChatPage() {
           />
         </div>
 
-        <div className="sticky bottom-0 w-full pt-3">
-            <div className="mx-auto w-full px-4 pb-4 sm:max-w-3xl">
+        <div className="sticky bottom-0 w-full pt-6">
+            <div className="mx-auto w-full px-4 pb-6 sm:max-w-3xl">
               <MultimodalInput
                 ref={inputRef}
                 chatId={activeChatId || 'new'}

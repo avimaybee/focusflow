@@ -10,33 +10,18 @@ export interface BlogPost {
     tags: string[];
 }
 
-const placeholderBlogPosts: BlogPost[] = [
-    {
-        id: '1',
-        title: 'Placeholder Blog Post 1',
-        content: 'This is the content of the first placeholder blog post.',
-        excerpt: 'This is the excerpt of the first placeholder blog post.',
-        author: 'Placeholder Author',
-        publishedAt: new Date().toISOString(),
-        publicSlug: 'placeholder-1',
-        tags: ['placeholder', 'blog'],
-    },
-    {
-        id: '2',
-        title: 'Placeholder Blog Post 2',
-        content: 'This is the content of the second placeholder blog post.',
-        excerpt: 'This is the excerpt of the second placeholder blog post.',
-        author: 'Placeholder Author',
-        publishedAt: new Date().toISOString(),
-        publicSlug: 'placeholder-2',
-        tags: ['placeholder', 'blog'],
-    },
-];
+// This file is for future database-driven blog posts
+// Currently using static blog posts from blog-data.ts
+const dbBlogPosts: BlogPost[] = [];
 
 export async function getBlogPost(slug: string): Promise<BlogPost | undefined> {
-    return placeholderBlogPosts.find(post => post.publicSlug === slug);
+    // Future: Fetch from database
+    // For now, return undefined to use static posts from blog-data.ts
+    return dbBlogPosts.find(post => post.publicSlug === slug);
 }
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
-    return placeholderBlogPosts;
+    // Future: Fetch from database
+    // For now, return empty array to use static posts from blog-data.ts
+    return dbBlogPosts;
 }

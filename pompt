@@ -1,5 +1,105 @@
-look at this file and audit the app thoroughly to check each task and update its status. use the playwright MCP server. 
-use id - avimaybe7@gmail.com
-password -  azxcvbnm
-take various screenshots and snapshots to gain maximum context of the website. we need to fix a lot of UI bugs. 
-https://focusflow-egl.pages.dev
+Here’s a brutally honest, highly critical UI/UX audit of your FocusFlow app, focusing only on issues and areas requiring improvement—no compliments, just work to be done:
+
+Global/UI Consistency Issues
+
+Typography & Alignment Inconsistency: Numerous headings, buttons, and list items are inconsistently spaced (wrong margins/paddings), resulting in a “patchwork” look that lacks professional polish.​
+
+Lack of Visual Hierarchy: Key CTAs (e.g., “Start Now,” “Continue with Free,” etc.) do not stand out visually and are easily lost among headings/body text.
+
+Button Styles Vary Widely: Primary actions and secondary/tertiary buttons use inconsistent colors, border radii, and font weights across Dashboard, My Content, and Chat.​
+
+Placeholder Data Everywhere: Far too many sections display “Coming Soon,” “Placeholder,” or canned preview/demo data, which leaves the user doubting if anything works at all.​
+
+Homepage
+
+Severe Text Glitches: Branding copy (“Turn any document into...”) is unreadable—the letters are stacked vertically or jumbled out of order, likely due to a CSS/layout bug.​
+
+Broken FAQ Section: Several FAQ headings are empty, creating sections with no content (looks broken and confusing).
+
+Lack of Introduction: Immediate wall-of-text with marketing bullets instead of a clear “What does this actually do?” for brand-new users.
+
+Dashboard
+
+Non-Functional Analytics: Progress Analytics and Weekly Reports are mostly static preview data or “coming soon”—users get no sense of real engagement/data.​
+
+Empty States Unpolished: When a new user logs in, nearly the entire Dashboard is blank or “You haven’t created anything yet.” No “Get Started” overlay, onboarding, or contextual hints.
+
+Call-to-Action Mix-Up: Multiple “Start Now,” “Create your first!,” and “Preview” links/buttons all do similar things, but their differences aren’t made clear.
+
+My Content
+
+Error Spam: The page frequently displays “Failed to load your content. Please try again.”—even if the account is brand new.​
+
+Zero Search/Filter Guidance: The search/filter bar appears, but with zero items, and its design isn’t explained (what can I search? by keyword? type?).
+
+No Visual Difference Between Empty/Error States: Error and empty-states look the same (hurts trust/confidence in app stability).
+
+Blog Section
+
+Placeholder Everything: Only “Placeholder Blog Post” templates, giving an impression the blog is half-built. No actual content, authorship, or design value [blogs].
+
+Navigation Is Hidden: “Back to Blog” link is visually faint/easy to miss; lacks a clear way back to main features.
+
+Premium Page
+
+Unclear Differentiation: Feature lists for Free vs Premium share layout/visual styling, so benefits are difficult to scan quickly.​
+
+“Unlock Your Full Potential” CTA is Vague: Doesn’t actually describe what improves if you pay/upgrade; should highlight specific power-user features.
+
+Beta Notices are Weak: The “Early Access Beta” badge/statement is buried and lacks visual emphasis, so users may miss the temporary perks.
+
+Chat / Demo / Actions
+
+Suggested Starters Blend with Background: The “Suggested Starters” and example prompts are hard to distinguish from the rest of the chat, so new users may miss out on onboarding [chat].
+
+Input Box Styling Is Unclear: Input fields don’t stand out, are sometimes bland or visually overcrowded, discouraging interaction.
+
+Weird Sample Data: “ayo, fine shyt” and other inappropriate/random notes appear as “My Notes”—this is unprofessional and could be off-putting [chat].
+
+No Error Handling for Empty Inputs/Bad Requests: There’s no noticeable feedback for unsupported queries, errors, or failed requests.
+
+Practice Exam & Study Plan
+
+“Undefined” Routes: Navigating to new exam/plan pages generates “undefined” route slugs, making URLs ugly, confusing, and likely unstable (should fallback to proper IDs or clean slugs).
+
+Placeholder Reviews: Finished exam/study plan pages are also placeholders, with zero actionable info or follow-up CTAs.
+
+Mobile/Responsiveness
+
+Did not observe any firm evidence of mobile optimization. (Based on desktop exploration, but check for incomplete breakpoints, collapsing nav, or button overlap.)
+
+Accessibility
+
+No Obvious ARIA Labels: Input fields, buttons, and navigation lack accessible labels/landmarks for screen readers.
+
+Color Contrast Weaknesses: Some headings and link texts (e.g., back links, filter/search bars) have insufficient contrast, making them hard to read on various backgrounds.
+
+General
+
+Missing Branding Touches: Minimal favicon, inconsistent color tokens, and plain error screens (default system or bare text instead of styled errors).
+
+No Loading States: Data-heavy pages and transitions do not display loading animations or skeletons, leading to uncertainty during slow requests.
+
+No “Help” or Guide: No help icon, tooltip, or onboarding modal for users who are lost/confused.
+
+Summary of Immediate Fixes Needed
+
+Fix text garbling issues on the homepage and other key landing screens.
+
+Polish empty/error/placeholder states—use contextual onboarding rather than blank slates or error spam.
+
+Unify button, CTA, and form field styling across all major pages for a sense of cohesion.
+
+Replace or properly gate placeholder/demo features—never show “Coming Soon” as primary UI.
+
+Implement proper loading, error, and help states throughout.
+
+Clean up all inappropriate/sample/static content before live/production.
+
+Audit and fix route/slug logic to avoid “undefined” pages.
+
+Boost accessibility, input labels, and color contrast.
+
+Add onboarding or context panels for first-time users.
+
+Let me know if you want annotated screenshots, code-level CSS/UX recommendations, or a prioritized issue list with fix difficulty estimates.

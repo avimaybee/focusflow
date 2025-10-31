@@ -22,7 +22,7 @@ export default async function BlogIndexPage() {
           <h1 className="text-4xl md:text-5xl font-bold font-heading">
             The FocusFlow Blog
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground">
+          <p className="mt-4 text-lg text-foreground/75 font-medium">
             Insights on AI, learning science, and productivity.
           </p>
         </header>
@@ -36,14 +36,14 @@ export default async function BlogIndexPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-foreground/75 mb-4 font-normal">
                     {post.excerpt}
                   </p>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>
+                  <div className="flex items-center justify-between text-sm text-foreground/70">
+                    <span className="font-medium">
                       {post.author} &middot; {format(post.date, 'MMMM d, yyyy')}
                     </span>
-                    <span className="flex items-center group-hover:text-primary transition-colors">
+                    <span className="flex items-center group-hover:text-primary transition-colors font-semibold">
                       Read More <MoveRight className="ml-2 h-4 w-4" />
                     </span>
                   </div>

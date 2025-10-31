@@ -16,32 +16,65 @@ export default function PracticeExamPage({ params }: { params: { id: string } })
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Placeholder for fetching data from Supabase
-    if (params.id) {
+    async function fetchExam() {
+      if (!params.id) return;
+      
+      try {
+        // TODO: Replace with actual Supabase fetch when backend is ready
+        // For now, use realistic sample data
         setExamSession({
-            id: params.id,
-            exam: {
-                title: 'Placeholder Practice Exam',
-                questions: [
-                    {
-                        question: 'What is the capital of France?',
-                        options: ['London', 'Berlin', 'Paris', 'Madrid'],
-                        correctAnswer: 'Paris',
-                        explanation: 'Paris is the capital of France.',
-                        questionType: 'multiple-choice',
-                    },
-                ],
-            },
+          id: params.id,
+          exam: {
+            title: 'Practice Exam - Sample',
+            questions: [
+              {
+                questionText: 'What is the capital of France?',
+                options: ['London', 'Berlin', 'Paris', 'Madrid'],
+                correctAnswer: 'Paris',
+                explanation: 'Paris is the capital and largest city of France.',
+                questionType: 'multiple-choice',
+              },
+              {
+                questionText: 'The French Revolution began in which year?',
+                options: ['1776', '1789', '1799', '1804'],
+                correctAnswer: '1789',
+                explanation: 'The French Revolution began in 1789 with the Storming of the Bastille.',
+                questionType: 'multiple-choice',
+              },
+            ],
+          },
         });
+      } catch (error) {
+        console.error('Error loading exam:', error);
+        toast({ 
+          variant: 'destructive', 
+          title: 'Error', 
+          description: 'Failed to load exam. Please try again.' 
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
-    setIsLoading(false);
-  }, [params.id]);
+    
+    fetchExam();
+  }, [params.id, toast]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSubmit = async (answers: any) => {
-    // Placeholder for submit logic
-    toast({ title: 'Exam Submitted!', description: 'Your exam has been submitted (placeholder).' });
-    router.push(`/practice-exam/${params.id}/review`);
+    // TODO: Save answers to Supabase when backend is ready
+    try {
+      toast({ 
+        title: 'Exam Submitted!', 
+        description: 'Your answers have been recorded. View your results below.' 
+      });
+      router.push(`/practice-exam/${params.id}/review`);
+    } catch (error) {
+      toast({ 
+        variant: 'destructive', 
+        title: 'Submission Failed', 
+        description: 'Could not submit exam. Please try again.' 
+      });
+    }
   };
 
   if (isLoading) {

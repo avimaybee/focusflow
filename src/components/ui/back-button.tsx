@@ -36,7 +36,7 @@ export function BackButton({
 
   const commonProps = {
     className: cn(
-      'inline-flex items-center space-x-2 bg-transparent text-foreground hover:bg-secondary/80 active:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+      'inline-flex items-center space-x-2 h-10 px-4 bg-transparent text-foreground/90 font-semibold hover:bg-secondary/80 hover:text-primary active:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-200 border border-border/60 hover:border-primary/50',
       className
     ),
     disabled,
@@ -47,7 +47,7 @@ export function BackButton({
   const content = (
     <>
       <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-sm font-semibold">{label}</span>
     </>
   );
 

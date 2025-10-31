@@ -11,6 +11,13 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { usePathname } from 'next/navigation';
 import { PageTransitionWrapper } from '@/components/layout/page-transition-wrapper';
+import dynamic from 'next/dynamic';
+
+// Lazy load onboarding modal to reduce initial bundle size
+const OnboardingModal = dynamic(
+  () => import('@/components/onboarding/onboarding-modal').then(mod => ({ default: mod.OnboardingModal })),
+  { ssr: false }
+);
 
 const fontHeading = Poppins({
   subsets: ['latin'],
@@ -47,6 +54,7 @@ export default function RootLayout({
         )}
       >
         <Providers>
+          <OnboardingModal />
           <Header />
           <PageTransitionWrapper>{children}</PageTransitionWrapper>
           {isLandingPage && <Footer />}
