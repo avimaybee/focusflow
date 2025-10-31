@@ -269,30 +269,37 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
             className="relative z-10 h-10 w-10 rounded-full text-foreground/70 hover:text-foreground hover:bg-accent/80 transition-all hover:scale-105"
           />
 
-          <Button
-            asChild={!isUploading}
-            variant="ghost"
-            size="icon"
-            className="relative z-10 h-10 w-10 cursor-pointer rounded-full text-foreground/70 hover:text-foreground hover:bg-accent/80 transition-all hover:scale-105"
-            disabled={isUploading}
-            aria-label="Attach file"
-          >
-            {isUploading ? (
+          {isUploading ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative z-10 h-10 w-10 rounded-full text-foreground/70"
+              disabled={true}
+              aria-label="Uploading file..."
+            >
               <LoaderIcon className="h-5 w-5 animate-spin" />
-            ) : (
-              <label>
-                <Paperclip className="w-5 h-5" />
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="hidden"
-                  accept="image/*,application/pdf,text/*,audio/*,video/*"
-                  aria-label="Upload file"
-                />
-              </label>
-            )}
-          </Button>
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative z-10 h-10 w-10 cursor-pointer rounded-full text-foreground/70 hover:text-foreground hover:bg-accent/80 transition-all hover:scale-105"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Attach file"
+            >
+              <Paperclip className="w-5 h-5" />
+            </Button>
+          )}
+          
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept="image/*,application/pdf,text/*,audio/*,video/*"
+            aria-label="Upload file"
+            disabled={isUploading}
+          />
           
           <Textarea
             ref={internalTextareaRef}
