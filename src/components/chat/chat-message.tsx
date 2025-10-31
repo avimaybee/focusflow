@@ -45,6 +45,7 @@ export type ChatMessageProps = {
   userAvatar?: string | null;
   userName?: string;
   persona?: PersonaDetails;
+  personaId?: string; // Track which persona generated this message
   createdAt?: Date;
   source?: unknown;
   confidence?: unknown;

@@ -467,9 +467,10 @@ const ChatSidebarComponent = ({
   }, [isCollapsed, onToggle]);
 
   return (
-    <aside
+    <TooltipProvider>
+    <motion.aside
       style={{ width: isCollapsed ? 80 : 320 }}
-className='flex-col bg-surface-soft/90 border-r border-border/60 backdrop-blur-sm flex transition-all duration-300 ease-in-out'
+      className='flex-col bg-surface-soft/90 border-r border-border/60 backdrop-blur-sm flex transition-all duration-300 ease-in-out'
     >
       <div
         className={cn(

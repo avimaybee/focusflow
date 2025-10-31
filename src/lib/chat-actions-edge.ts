@@ -19,7 +19,7 @@ export async function getChatMessages(sessionId: string, authToken?: string): Pr
 
         const { data, error } = await supabaseClient
             .from('chat_messages')
-            .select('id, role, content, created_at')
+            .select('id, role, content, persona_id, created_at')
             .eq('session_id', sessionId)
             .order('created_at', { ascending: true });
 
@@ -38,6 +38,7 @@ export async function getChatMessages(sessionId: string, authToken?: string): Pr
             role: message.role as 'user' | 'model',
             text: await marked.parse(message.content),
             rawText: message.content,
+            personaId: message.persona_id,
             createdAt: new Date(message.created_at),
         })));
 
@@ -134,7 +135,8 @@ export async function addChatMessage(
     role: 'user' | 'model',
     content: string,
     authToken?: string,
-    attachments?: Array<{ url: string; name: string; mimeType: string; sizeBytes: string }>
+    attachments?: Array<{ url: string; name: string; mimeType: string; sizeBytes: string }>,
+    personaId?: string
 ): Promise<boolean> {
     if (!sessionId) {
         console.error('[addChatMessage] No sessionId provided');
@@ -151,6 +153,7 @@ export async function addChatMessage(
                 role,
                 content,
                 attachments: attachments && attachments.length > 0 ? attachments : [],
+                persona_id: personaId,
             });
 
         if (error) {
@@ -158,7 +161,7 @@ export async function addChatMessage(
             return false;
         }
 
-        console.log('[addChatMessage] Successfully added message to session:', sessionId);
+        console.log('[addChatMessage] Successfully added message to session:', sessionId, 'with persona:', personaId);
         return true;
     } catch (error) {
         console.error('[addChatMessage] Unexpected error:', error);

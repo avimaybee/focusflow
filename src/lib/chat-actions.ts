@@ -49,7 +49,7 @@ export async function getChatMessages(sessionId: string, accessToken?: string): 
 
     const { data, error } = await client
         .from('chat_messages')
-        .select('id, role, content, attachments, created_at')
+        .select('id, role, content, attachments, persona_id, created_at')
         .eq('session_id', sessionId)
         .order('created_at', { ascending: true });
 
@@ -68,6 +68,7 @@ export async function getChatMessages(sessionId: string, accessToken?: string): 
         role: message.role as 'user' | 'model',
         text: await marked.parse(message.content),
         rawText: message.content,
+        personaId: message.persona_id,
         createdAt: new Date(message.created_at),
         attachments: message.attachments && Array.isArray(message.attachments) 
             ? message.attachments.map((att: any) => ({
@@ -125,7 +126,8 @@ export async function addChatMessage(
     role: 'user' | 'model',
     content: string,
     accessToken?: string,
-    attachments?: Array<{ url: string; name: string; mimeType: string; sizeBytes: string }>
+    attachments?: Array<{ url: string; name: string; mimeType: string; sizeBytes: string }>,
+    personaId?: string
 ) {
     if (!sessionId) return false;
 
@@ -138,6 +140,7 @@ export async function addChatMessage(
             role,
             content,
             attachments: attachments && attachments.length > 0 ? attachments : [],
+            persona_id: personaId,
         })
         .select('id')
         .single();

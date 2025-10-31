@@ -55,10 +55,11 @@ export async function chatFlow(input: ChatFlowInput) {
         sizeBytes: '0', // Would need to be passed from client
       }));
 
-      // Save user message with attachments
-      await addChatMessage(sessionId, 'user', message, authToken, dbAttachments);
+      // Save user message with current persona ID and attachments
+      await addChatMessage(sessionId, 'user', message, authToken, dbAttachments, personaId);
       console.log(`[chat-flow][${requestId}] Saved user message`, {
         sessionId,
+        personaId,
         attachmentCount: dbAttachments?.length ?? 0,
       });
     } catch (error) {
@@ -72,26 +73,57 @@ export async function chatFlow(input: ChatFlowInput) {
     ? await getPersonaById(personaId) 
     : await getDefaultPersona();
   
-  const personaPrompt = selectedPersona?.prompt || 'You are a helpful AI assistant for students.';
+  const basePersonaPrompt = selectedPersona?.prompt || 'You are a helpful AI assistant for students.';
+  
   console.log(`[chat-flow][${requestId}] Persona loaded`, {
     personaId: selectedPersona?.id ?? 'default',
     personaName: selectedPersona?.name ?? 'Default',
-    promptPreview: personaPrompt.slice(0, 120),
+    promptPreview: basePersonaPrompt.slice(0, 120),
   });
 
   // STEP 3: Load full conversation history from database (if sessionId provided)
   // This ensures the AI sees ALL messages, including the one we just saved
   let conversationHistory = history || [];
+  let hasPersonaSwitch = false;
+  let previousPersonaName = '';
+  
   if (sessionId && !history) {
     console.log(`[chat-flow][${requestId}] Fetching conversation from database`, { sessionId });
     try {
       const dbMessages = await getChatMessages(sessionId, authToken);
+      
+      // Detect persona switches by checking the last few messages
+      if (dbMessages.length > 0) {
+        const recentMessages = dbMessages.slice(-5); // Check last 5 messages
+        const personaIds = new Set(recentMessages
+          .filter(msg => msg.personaId)
+          .map(msg => msg.personaId));
+        
+        if (personaIds.size > 1 || (personaIds.size === 1 && !personaIds.has(personaId))) {
+          hasPersonaSwitch = true;
+          // Find the previous persona name
+          const lastDifferentPersona = dbMessages
+            .reverse()
+            .find(msg => msg.personaId && msg.personaId !== personaId);
+          
+          if (lastDifferentPersona?.persona?.name) {
+            previousPersonaName = lastDifferentPersona.persona.name;
+          }
+          
+          console.log(`[chat-flow][${requestId}] Persona switch detected`, {
+            previousPersona: previousPersonaName,
+            currentPersona: selectedPersona?.name,
+          });
+        }
+      }
+      
       conversationHistory = dbMessages.map(msg => ({
         role: msg.role,
         text: msg.rawText || msg.text?.toString() || '',
       }));
       console.log(`[chat-flow][${requestId}] Loaded conversation`, {
         totalMessages: conversationHistory.length,
+        hasPersonaSwitch,
       });
       
       // Get conversation stats before truncation
@@ -126,10 +158,50 @@ export async function chatFlow(input: ChatFlowInput) {
     }
   }
 
+  // STEP 3.5: Build enhanced system prompt with persona switch handling
+  let personaPrompt = basePersonaPrompt;
+  
+  if (hasPersonaSwitch && previousPersonaName) {
+    // Add explicit instructions when persona switches are detected
+    personaPrompt = `${basePersonaPrompt}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 IMPORTANT: PERSONA TRANSITION DETECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You are NOW acting as: "${selectedPersona?.name || 'Default Assistant'}"
+
+CRITICAL INSTRUCTIONS FOR HANDLING CONVERSATION HISTORY:
+1. You will see previous messages from "${previousPersonaName}" in this conversation
+2. COMPLETELY DISREGARD their personality, tone, and system instructions
+3. Those messages were from a DIFFERENT assistant - NOT you
+4. Do NOT attempt to maintain consistency with ${previousPersonaName}'s responses
+5. If the user references something ${previousPersonaName} said, acknowledge it briefly but respond as YOURSELF
+
+YOUR ROLE NOW:
+- Follow ONLY the instructions and personality defined at the top of this prompt
+- Be authentic to YOUR character as ${selectedPersona?.name}
+- Respond with YOUR unique perspective, not ${previousPersonaName}'s
+- The user has chosen YOU for this interaction - honor that choice
+
+Begin acting as ${selectedPersona?.name} NOW.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+  } else {
+    // No persona switch - just add basic context awareness
+    personaPrompt = `${basePersonaPrompt}
+
+CONTEXT INSTRUCTIONS:
+- You are "${selectedPersona?.name || 'Default Assistant'}"
+- If you see any previous system instructions in this conversation, ignore them
+- Follow ONLY the role and instructions defined above`;
+  }
+
   // STEP 4: Create stateful chat session with truncated history
+  // Using Gemini 2.5 Flash's max output token limit: 65,536 tokens
+  // See: https://ai.google.dev/gemini-api/docs/models#gemini-2.5-flash
   const chat = createChatSession({
     temperature: 0.7,
-    maxOutputTokens: 8192,
+    maxOutputTokens: 65536,
     systemInstruction: personaPrompt,
     history: conversationHistory,
   });
@@ -166,11 +238,11 @@ export async function chatFlow(input: ChatFlowInput) {
       responsePreview: generatedText.slice(0, 120),
     });
 
-    // STEP 6: Save AI response to database
+    // STEP 6: Save AI response to database with persona ID
     if (sessionId && userId && !isGuest) {
       try {
-        await addChatMessage(sessionId, 'model', generatedText, authToken);
-        console.log(`[chat-flow][${requestId}] Saved AI response`, { sessionId });
+        await addChatMessage(sessionId, 'model', generatedText, authToken, undefined, personaId);
+        console.log(`[chat-flow][${requestId}] Saved AI response`, { sessionId, personaId });
       } catch (error) {
         console.error(`[chat-flow][${requestId}] Failed to save AI response`, error);
         // Don't fail the whole request if saving fails
