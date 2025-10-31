@@ -255,50 +255,88 @@ const UserMenu = ({ user, isCollapsed }: { user: SupabaseUser | null, isCollapse
   const initial = displayName.charAt(0).toUpperCase();
 
   if (!user) {
-    return (
-      <Button variant="ghost" className={cn("w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50", isCollapsed && "w-10 h-10 p-0 flex items-center justify-center")} onClick={() => authModal.onOpen('login')}>
+    const content = (
+      <>
         <Avatar className="h-10 w-10">
-            <AvatarFallback><User /></AvatarFallback>
+          <AvatarFallback><User /></AvatarFallback>
         </Avatar>
         <div className={cn("text-left", isCollapsed && "hidden")}>
-            <p className="font-semibold">Guest</p>
-            <p className="text-xs text-muted-foreground">Log in to save</p>
+          <p className="font-semibold">Guest</p>
+          <p className="text-xs text-muted-foreground">Log in to save</p>
         </div>
+      </>
+    );
+
+    const buttonClasses = cn(
+      "w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50",
+      isCollapsed && "w-12 h-12 p-0 flex items-center justify-center rounded-full"
+    );
+
+    if (isCollapsed) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" className={buttonClasses} onClick={() => authModal.onOpen('login')}>
+              {content}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right" align="center">
+            Log In
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return (
+      <Button variant="ghost" className={buttonClasses} onClick={() => authModal.onOpen('login')}>
+        {content}
       </Button>
-    )
+    );
   }
 
   return (
     <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className={cn("w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50", isCollapsed && "w-10 h-10 p-0 flex items-center justify-center")}
-          >
-            <div className="relative">
-              <Avatar className="h-10 w-10">
-                <AvatarImage
-                  src={user?.user_metadata?.avatar_url || undefined}
-                  data-ai-hint="person"
-                />
-                <AvatarFallback>{initial}</AvatarFallback>
-              </Avatar>
-              <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-state-success ring-2 ring-surface-soft" />
-            </div>
-            <div
-              className={cn('text-left transition-opacity duration-200', isCollapsed && "opacity-0 hidden")}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50",
+                isCollapsed && "w-12 h-12 p-0 flex items-center justify-center rounded-full"
+              )}
             >
-              <p className="font-semibold truncate">{displayName}</p>
-              <p className="text-xs text-muted-foreground">
-                {isPremium ? 'Premium Plan' : 'Free Plan'}
-              </p>
-            </div>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-[280px]" side="top" align="start">
-          <UserMenuItems />
-        </DropdownMenuContent>
-      </DropdownMenu>
+              <div className="relative">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage
+                    src={user?.user_metadata?.avatar_url || undefined}
+                    data-ai-hint="person"
+                  />
+                  <AvatarFallback>{initial}</AvatarFallback>
+                </Avatar>
+                <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-state-success ring-2 ring-surface-soft" />
+              </div>
+              <div
+                className={cn('text-left transition-opacity duration-200', isCollapsed && "opacity-0 hidden")}
+              >
+                <p className="font-semibold truncate">{displayName}</p>
+                <p className="text-xs text-muted-foreground">
+                  {isPremium ? 'Premium Plan' : 'Free Plan'}
+                </p>
+              </div>
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        {isCollapsed && (
+          <TooltipContent side="right" align="center">
+            {displayName}
+          </TooltipContent>
+        )}
+      </Tooltip>
+      <DropdownMenuContent className="w-[280px]" side="top" align="start">
+        <UserMenuItems />
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
@@ -429,14 +467,12 @@ const ChatSidebarComponent = ({
   }, [isCollapsed, onToggle]);
 
   return (
-    <TooltipProvider delayDuration={0}>
-      <motion.aside
-        animate={{ width: isCollapsed ? 80 : 320 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-  className='flex-col bg-surface-soft/90 border-r border-border/60 backdrop-blur-sm flex'
-      >
-        <div
-          className={cn(
+    <aside
+      style={{ width: isCollapsed ? 80 : 320 }}
+className='flex-col bg-surface-soft/90 border-r border-border/60 backdrop-blur-sm flex transition-all duration-300 ease-in-out'
+    >
+      <div
+        className={cn(
             'flex items-center h-16 px-4 shrink-0',
             isCollapsed ? 'justify-center' : 'justify-between'
           )}
@@ -469,13 +505,13 @@ const ChatSidebarComponent = ({
           <Button
             variant="outline"
             className={cn(
-              'w-full h-11 rounded-2xl border border-primary/40 bg-primary/12 text-primary-foreground shadow-[0_1px_0_0_var(--stroke-subtle)] transition hover:bg-primary/20',
-              isCollapsed && 'flex h-11 w-11 items-center justify-center p-0 border-primary/60 bg-primary text-primary-foreground hover:bg-primary/90'
+              'w-full h-11 rounded-lg border-primary/40 bg-primary/12 text-primary-foreground shadow-sm transition hover:bg-primary/20',
+              isCollapsed && 'h-12 w-12 rounded-full border-primary/60 bg-primary text-primary-foreground hover:bg-primary/90'
             )}
             onClick={onNewChat}
           >
-            <Plus className="h-5 w-5" />
-            <span className={cn('ml-2 text-sm font-semibold', isCollapsed && 'hidden')}>New Chat</span>
+            <Plus className={cn(isCollapsed ? 'h-5 w-5' : 'h-4 w-4')} />
+            <span className={cn('ml-2 font-semibold', isCollapsed && 'hidden')}>New Chat</span>
           </Button>
         </div>
 
@@ -704,34 +740,7 @@ const ChatSidebarComponent = ({
         </ScrollArea>
 
     <div className="mt-auto border-t border-border/60 bg-surface-soft/70 px-4 py-3">
-      <div className={cn(isCollapsed ? 'hidden opacity-0' : 'opacity-100 transition-opacity duration-200')}>
-         <UserMenu user={user} isCollapsed={false} />
-      </div>
-      {isCollapsed && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex h-11 w-11 items-center justify-center rounded-full border border-primary/50 bg-primary/12 text-primary-foreground hover:bg-primary/20">
-              <div className="relative">
-                <Avatar className="h-11 w-11">
-                  <AvatarImage src={user?.user_metadata?.avatar_url || undefined} data-ai-hint="person" />
-                  <AvatarFallback className="text-base font-semibold">
-                    {user ? (profile?.username || user.email || 'U').charAt(0).toUpperCase() : <User />}
-                  </AvatarFallback>
-                </Avatar>
-                {user && <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-state-success ring-2 ring-surface-soft" />}
-              </div>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="mb-2 w-64" side="top" align="start">
-            {user ? <UserMenuItems /> : (
-              <DropdownMenuItem onClick={() => useAuthModal.getState().onOpen('login')}>
-                <LogIn className="mr-2 h-4 w-4" />
-                Log In
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+       <UserMenu user={user} isCollapsed={isCollapsed} />
         </div>
       </motion.aside>
     </TooltipProvider>

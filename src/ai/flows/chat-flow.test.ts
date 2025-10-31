@@ -1,30 +1,69 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { chatFlow } from './chat-flow';
 
-describe('chatFlow', () => {
-  it('should return an under construction message', async () => {
-    const input = {
-      userId: 'test-user',
-      message: 'Hello, world!',
-      isGuest: false,
+vi.mock('@/lib/supabase', () => {
+    const from = vi.fn();
+
+    from.mockImplementation((tableName) => {
+      const baseMock = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: { id: 'default-persona', prompt: 'You are an assistant.' }, error: null }),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+        insert: vi.fn(() => ({
+          select: vi.fn(() => ({
+            single: vi.fn().mockResolvedValue({ data: { id: 'new-message' }, error: null })
+          }))
+        }))
+      };
+
+      if (tableName === 'chat_sessions') {
+        baseMock.insert = vi.fn().mockResolvedValue({ data: [{ id: 'new-session-id' }], error: null });
+      }
+
+      return baseMock;
+    });
+
+    const mockSupabaseClient = { from };
+
+    return {
+      supabase: mockSupabaseClient,
+      createSupabaseClient: vi.fn().mockReturnValue(mockSupabaseClient),
+      createAuthenticatedSupabaseClient: vi.fn().mockResolvedValue(mockSupabaseClient),
     };
+  });
 
-    const result = await chatFlow(input);
+vi.mock('@/lib/gemini-client', () => ({
+  createChatSession: vi.fn().mockReturnValue({
+    sendMessage: vi.fn(async () => {
+        return Promise.resolve({
+            response: {
+              text: () => 'This is a mocked chat response.',
+            },
+          });
+    }),
+  }),
+}));
 
-    expect(result.response).toBe("I'm sorry, the chat functionality is currently under construction while we upgrade our systems to Supabase. Please check back later.");
-    expect(result.sessionId).toBe('new-session');
+describe('chatFlow', () => {
+  it('should return a mocked response', async () => {
+    const result = await chatFlow({
+      message: 'Hello, world!',
+      userId: 'test-user',
+      isGuest: false,
+    });
+    expect(result.response).toBe('This is a mocked chat response.');
   });
 
   it('should use the provided sessionId', async () => {
-    const input = {
-      userId: 'test-user',
+    const result = await chatFlow({
       message: 'Hello, again!',
       sessionId: 'existing-session-id',
+      userId: 'test-user',
       isGuest: false,
-    };
-
-    const result = await chatFlow(input);
-
+    });
     expect(result.sessionId).toBe('existing-session-id');
+    expect(result.response).toBe('This is a mocked chat response.');
   });
 });

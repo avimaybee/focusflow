@@ -28,6 +28,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -564,18 +565,20 @@ export default function ChatPage() {
       )}
       
       <div className="hidden md:flex">
-        <ChatSidebar
-            user={user}
-            chatHistory={chatHistory}
-            activeChatId={activeChatId}
-            onNewChat={handleNewChat}
-            onChatSelect={(id) => router.push(`/chat/${id}`)}
-            onDeleteChat={handleDeleteChat}
-            isLoading={isHistoryLoading}
-            isCollapsed={isSidebarCollapsed}
-            onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
-      onRefreshHistory={forceRefresh}
-        />
+        <TooltipProvider>
+          <ChatSidebar
+              user={user}
+              chatHistory={chatHistory}
+              activeChatId={activeChatId}
+              onNewChat={handleNewChat}
+              onChatSelect={(id) => router.push(`/chat/${id}`)}
+              onDeleteChat={handleDeleteChat}
+              isLoading={isHistoryLoading}
+              isCollapsed={isSidebarCollapsed}
+              onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
+        onRefreshHistory={forceRefresh}
+          />
+        </TooltipProvider>
       </div>
 
   <main className="flex-1 flex flex-col h-screen min-w-0 bg-background">

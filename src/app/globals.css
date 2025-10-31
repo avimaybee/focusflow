@@ -11,37 +11,37 @@
   }
 
   :root {
-    --background: 0 0% 6.7%; /* #111111 */
-    --foreground: 0 0% 96%; /* #F5F5F5 */
-    --card: 0 0% 10%; /* #1A1A1A */
-    --card-foreground: 0 0% 96%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 96%;
-    --primary: 0 0% 87%; /* #DEDEDE */
-    --primary-foreground: 0 0% 4%; /* #0B0B0B */
-    --secondary: 0 0% 12%; /* #1F1F1F */
-    --secondary-foreground: 0 0% 96%;
-    --muted: 0 0% 15%; /* #262626 */
-    --muted-foreground: 0 0% 62%; /* #9E9E9E */
-    --accent: 0 0% 18%; /* #2F2F2F */
-    --accent-foreground: 0 0% 96%;
-    --destructive: 0 65% 46%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 18%; /* #2F2F2F */
-    --input: 0 0% 18%;
-    --ring: 0 0% 87%; /* #E0E0E0 */
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 170 30% 45%;
+    --primary-foreground: 170 20% 95%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 62.8%;
+    --accent: 170 30% 45%;
+    --accent-foreground: 170 20% 95%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 170 30% 45%;
     --radius: 0.5rem;
-    --surface-raised: 0 0% 10%;
-    --surface-soft: 0 0% 12%;
-    --surface-muted: 0 0% 15%;
-    --surface-alt: 0 0% 4%;
-    --stroke-subtle: 0 0% 18%;
-    --stroke-medium: 0 0% 23%;
-    --stroke-strong: 0 0% 29%;
-    --text-secondary: 0 0% 78%;
-    --text-tertiary: 0 0% 62%;
-    --dot-background: 0 0% 18%;
-    --focus-ring-inverse: 0 0% 12%;
+    --surface-raised: 0 0% 7%;
+    --surface-soft: 0 0% 10%;
+    --surface-muted: 0 0% 14%;
+    --surface-alt: 0 0% 3.9%;
+    --stroke-subtle: 0 0% 14.9%;
+    --stroke-medium: 0 0% 20%;
+    --stroke-strong: 0 0% 25%;
+    --text-secondary: 0 0% 80%;
+    --text-tertiary: 0 0% 62.8%;
+    --dot-background: 0 0% 14.9%;
+    --focus-ring-inverse: 0 0% 10%;
     --shadow-xs: 0px 1px 0px rgba(0, 0, 0, 0.4);
     --shadow-sm: 0px 8px 16px rgba(0, 0, 0, 0.25);
     --state-success: 110 43% 55%;
@@ -49,36 +49,36 @@
   }
 
   .dark {
-    --background: 0 0% 6.7%;
-    --foreground: 0 0% 96%;
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 96%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 96%;
-    --primary: 0 0% 87%;
-    --primary-foreground: 0 0% 4%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 96%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 62%;
-    --accent: 0 0% 18%;
-    --accent-foreground: 0 0% 96%;
-    --destructive: 0 65% 46%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 0 0% 87%;
-    --surface-raised: 0 0% 10%;
-    --surface-soft: 0 0% 12%;
-    --surface-muted: 0 0% 15%;
-    --surface-alt: 0 0% 4%;
-    --stroke-subtle: 0 0% 18%;
-    --stroke-medium: 0 0% 23%;
-    --stroke-strong: 0 0% 29%;
-    --text-secondary: 0 0% 78%;
-    --text-tertiary: 0 0% 62%;
-    --dot-background: 0 0% 18%;
-    --focus-ring-inverse: 0 0% 12%;
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 170 30% 45%;
+    --primary-foreground: 170 20% 95%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 62.8%;
+    --accent: 170 30% 45%;
+    --accent-foreground: 170 20% 95%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 170 30% 45%;
+    --surface-raised: 0 0% 7%;
+    --surface-soft: 0 0% 10%;
+    --surface-muted: 0 0% 14%;
+    --surface-alt: 0 0% 3.9%;
+    --stroke-subtle: 0 0% 14.9%;
+    --stroke-medium: 0 0% 20%;
+    --stroke-strong: 0 0% 25%;
+    --text-secondary: 0 0% 80%;
+    --text-tertiary: 0 0% 62.8%;
+    --dot-background: 0 0% 14.9%;
+    --focus-ring-inverse: 0 0% 10%;
     --shadow-xs: 0px 1px 0px rgba(0, 0, 0, 0.4);
     --shadow-sm: 0px 8px 16px rgba(0, 0, 0, 0.25);
     --state-success: 110 43% 55%;
