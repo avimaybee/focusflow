@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
   console.log('=== NEW CHAT REQUEST ===', { method: request.method, url: request.url });
   try {
     const { userId: uid, isAnonymous } = await getUserFromRequest(request);
+    const authToken = request.headers.get('authorization');
     console.log('[API] Authenticated User ID:', uid || 'Guest', 'isAnonymous:', isAnonymous);
 
     // Log headers (avoid logging sensitive auth headers if present)
@@ -71,6 +72,7 @@ export async function POST(request: NextRequest) {
       sessionId: parsed.sessionId,
       personaId: parsed.personaId || 'neutral',
       context: parsed.context,
+      authToken: authToken || undefined,
     };
 
     console.log('[API] Calling chatFlow with input keys:', Object.keys(input));

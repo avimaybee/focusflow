@@ -18,11 +18,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
  * @param accessToken - The user's JWT access token from their session
  * @returns Authenticated Supabase client
  */
-export function createAuthenticatedSupabaseClient(accessToken: string): SupabaseClient {
+export function createAuthenticatedSupabaseClient(token: string): SupabaseClient {
+  const authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
   return createClient(supabaseUrl!, supabaseAnonKey!, {
     global: {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: authorization,
       },
     },
   });

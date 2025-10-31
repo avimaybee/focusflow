@@ -1,24 +1,9 @@
 // Edge-compatible chat actions for use in API routes
 // These don't use 'use server' directive and work in Edge runtime
 
-import { createClient } from '@supabase/supabase-js';
+import { supabase, createAuthenticatedSupabaseClient } from './supabase';
 import { ChatMessageProps } from '@/components/chat/chat-message';
 import { marked } from 'marked';
-
-// Helper function to get Supabase credentials with error checking
-function getSupabaseCredentials() {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-        console.error('[Supabase] Missing environment variables!');
-        console.error('[Supabase] NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'SET' : 'MISSING');
-        console.error('[Supabase] NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'SET' : 'MISSING');
-        throw new Error('Missing Supabase URL or Anon Key environment variables.');
-    }
-
-    return { supabaseUrl, supabaseAnonKey };
-}
 
 /**
  * Get chat messages for a session (Edge-compatible)
@@ -30,18 +15,7 @@ export async function getChatMessages(sessionId: string, authToken?: string): Pr
     }
 
     try {
-        const { supabaseUrl, supabaseAnonKey } = getSupabaseCredentials();
-        
-        // Create a Supabase client with optional auth token
-        const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, 
-            authToken ? {
-                global: {
-                    headers: {
-                        Authorization: authToken,
-                    },
-                },
-            } : undefined
-        );
+        const supabaseClient = authToken ? createAuthenticatedSupabaseClient(authToken) : supabase;
 
         const { data, error } = await supabaseClient
             .from('chat_messages')
@@ -87,18 +61,7 @@ export async function createChatSession(userId: string, title: string, authToken
     try {
         console.log('[createChatSession] Creating session for userId:', userId, 'with title:', title, 'hasToken:', !!authToken);
         
-        const { supabaseUrl, supabaseAnonKey } = getSupabaseCredentials();
-        
-        // Create a Supabase client with optional auth token
-        const supabaseClient = createClient(supabaseUrl, supabaseAnonKey,
-            authToken ? {
-                global: {
-                    headers: {
-                        Authorization: authToken,
-                    },
-                },
-            } : undefined
-        );
+        const supabaseClient = authToken ? createAuthenticatedSupabaseClient(authToken) : supabase;
 
         // First, verify the profile exists for this user
         const { data: profileData, error: profileError } = await supabaseClient
@@ -166,29 +129,29 @@ export async function createChatSession(userId: string, title: string, authToken
 /**
  * Add a message to a chat session (Edge-compatible)
  */
-export async function addChatMessage(sessionId: string, role: 'user' | 'model', content: string, authToken?: string): Promise<boolean> {
+export async function addChatMessage(
+    sessionId: string,
+    role: 'user' | 'model',
+    content: string,
+    authToken?: string,
+    attachments?: Array<{ url: string; name: string; mimeType: string; sizeBytes: string }>
+): Promise<boolean> {
     if (!sessionId) {
         console.error('[addChatMessage] No sessionId provided');
         return false;
     }
 
     try {
-        const { supabaseUrl, supabaseAnonKey } = getSupabaseCredentials();
-        
-        // Create a Supabase client with optional auth token
-        const supabaseClient = createClient(supabaseUrl, supabaseAnonKey,
-            authToken ? {
-                global: {
-                    headers: {
-                        Authorization: authToken,
-                    },
-                },
-            } : undefined
-        );
+        const supabaseClient = authToken ? createAuthenticatedSupabaseClient(authToken) : supabase;
 
         const { error } = await supabaseClient
             .from('chat_messages')
-            .insert({ session_id: sessionId, role, content });
+            .insert({
+                session_id: sessionId,
+                role,
+                content,
+                attachments: attachments && attachments.length > 0 ? attachments : [],
+            });
 
         if (error) {
             console.error('[addChatMessage] Error adding chat message:', error);

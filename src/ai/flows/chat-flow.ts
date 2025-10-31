@@ -23,13 +23,14 @@ const chatFlowInputSchema = z.object({
     data: z.string(), // base64 for inline_data, URI for file_uri
     mimeType: z.string(),
   })).optional(),
+  authToken: z.string().optional(),
 });
 
 type ChatFlowInput = z.infer<typeof chatFlowInputSchema>;
 
 export async function chatFlow(input: ChatFlowInput) {
   const validatedInput = chatFlowInputSchema.parse(input);
-  const { message, history, personaId, sessionId, userId, attachments, isGuest } = validatedInput;
+  const { message, history, personaId, sessionId, userId, attachments, isGuest, authToken } = validatedInput;
   const requestId = `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
 
   console.log(`[chat-flow][${requestId}] Incoming request`, {
@@ -55,7 +56,7 @@ export async function chatFlow(input: ChatFlowInput) {
       }));
 
       // Save user message with attachments
-      await addChatMessage(sessionId, 'user', message, undefined, dbAttachments);
+      await addChatMessage(sessionId, 'user', message, authToken, dbAttachments);
       console.log(`[chat-flow][${requestId}] Saved user message`, {
         sessionId,
         attachmentCount: dbAttachments?.length ?? 0,
@@ -84,7 +85,7 @@ export async function chatFlow(input: ChatFlowInput) {
   if (sessionId && !history) {
     console.log(`[chat-flow][${requestId}] Fetching conversation from database`, { sessionId });
     try {
-      const dbMessages = await getChatMessages(sessionId);
+      const dbMessages = await getChatMessages(sessionId, authToken);
       conversationHistory = dbMessages.map(msg => ({
         role: msg.role,
         text: msg.rawText || msg.text?.toString() || '',
@@ -168,7 +169,7 @@ export async function chatFlow(input: ChatFlowInput) {
     // STEP 6: Save AI response to database
     if (sessionId && userId && !isGuest) {
       try {
-        await addChatMessage(sessionId, 'model', generatedText);
+        await addChatMessage(sessionId, 'model', generatedText, authToken);
         console.log(`[chat-flow][${requestId}] Saved AI response`, { sessionId });
       } catch (error) {
         console.error(`[chat-flow][${requestId}] Failed to save AI response`, error);
