@@ -230,8 +230,8 @@ export function AuthModal() {
                     >
                       <Check className="h-8 w-8 text-green-500" />
                     </motion.div>
-                    <p className="mt-4 text-lg font-medium">Success!</p>
-                    <p className="text-sm text-muted-foreground">Redirecting you now...</p>
+                    <p className="mt-4 text-lg font-semibold text-foreground">Success!</p>
+                    <p className="text-sm text-foreground/70 font-medium">Redirecting you now...</p>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -259,9 +259,9 @@ export function AuthModal() {
                       <div className="space-y-4 w-full">
                           <AuthForm isSignup={view === 'signup'} />
 
-                          <p className="text-center text-sm text-muted-foreground">
+                          <p className="text-center text-sm text-foreground/70 font-medium">
                               {view === 'login' ? "Don't have an account?" : "Already have an account?"}
-                              <Button variant="link" className="p-1" onClick={() => setView(view === 'login' ? 'signup' : 'login')}>
+                              <Button variant="link" className="p-1 font-semibold text-primary" onClick={() => setView(view === 'login' ? 'signup' : 'login')}>
                                   {view === 'login' ? 'Sign up' : 'Log in'}
                               </Button>
                           </p>

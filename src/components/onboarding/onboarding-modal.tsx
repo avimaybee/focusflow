@@ -234,27 +234,18 @@ export function OnboardingModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-4">
-          <div className="flex items-start justify-between">
+      <DialogContent className="sm:max-w-[520px] max-w-[95vw] p-0 overflow-hidden border-border/60">
+        <DialogHeader className="p-6 pb-4 relative">
+          <div className="flex items-start justify-between pr-8">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <Icon className="h-5 w-5 text-primary" />
               </div>
-              <div>
-                <DialogTitle className="text-xl">{step.title}</DialogTitle>
-                <p className="text-sm text-muted-foreground mt-1">{step.description}</p>
+              <div className="flex-1 min-w-0">
+                <DialogTitle className="text-xl font-bold">{step.title}</DialogTitle>
+                <p className="text-sm text-foreground/70 mt-1 font-medium">{step.description}</p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 -mr-2 -mt-2"
-              onClick={handleSkip}
-              aria-label="Close onboarding"
-            >
-              <X className="h-4 w-4" />
-            </Button>
           </div>
         </DialogHeader>
 
@@ -309,7 +300,7 @@ export function OnboardingModal() {
             <Button
               variant="ghost"
               onClick={handleSkip}
-              className="text-muted-foreground"
+              className="text-foreground/70 hover:text-foreground font-medium"
             >
               Skip Tour
             </Button>
@@ -319,12 +310,13 @@ export function OnboardingModal() {
                   variant="outline"
                   onClick={handlePrevious}
                   size="sm"
+                  className="font-semibold"
                 >
                   <ArrowLeft className="h-4 w-4 mr-1" />
                   Back
                 </Button>
               )}
-              <Button onClick={handleNext} size="sm">
+              <Button onClick={handleNext} size="sm" className="font-semibold">
                 {isLastStep ? (
                   <>
                     Get Started
