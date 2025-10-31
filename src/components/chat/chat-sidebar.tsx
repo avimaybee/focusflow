@@ -104,10 +104,10 @@ const groupChatHistory = (history: ChatHistoryItem[]): Array<{ key: ChatGroupKey
 };
 
 const chatAvatarPalettes = [
-  'bg-primary text-primary-foreground ring-1 ring-primary/60',
-  'bg-primary/95 text-primary-foreground ring-1 ring-primary/55',
-  'bg-primary/90 text-primary-foreground ring-1 ring-primary/55',
-  'bg-primary/85 text-primary-foreground ring-1 ring-primary/50',
+  'bg-muted text-foreground/80',
+  'bg-muted text-foreground/80',
+  'bg-muted text-foreground/80',
+  'bg-muted text-foreground/80',
 ];
 
 const computePaletteIndex = (title: string) => {
@@ -502,24 +502,34 @@ const ChatSidebarComponent = ({
           </Button>
         </div>
 
-        <div className="flex items-center justify-center px-4 mb-2">
+        {/* Quick Actions Section */}
+        <div className={cn("px-4 mb-3", isCollapsed && "px-2")}>
+          {!isCollapsed && (
+            <p className="text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2 px-1">
+              Quick Actions
+            </p>
+          )}
           <Button
             variant="outline"
             className={cn(
-              'w-full h-11 rounded-lg border-primary/40 bg-primary/12 text-primary-foreground shadow-sm transition hover:bg-primary/20',
-              isCollapsed && 'h-12 w-12 rounded-full border-primary/60 bg-primary text-primary-foreground hover:bg-primary/90'
+              'w-full h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-md shadow-primary/20 transition-all hover:shadow-lg hover:shadow-primary/30 font-semibold',
+              isCollapsed && 'h-11 w-11 rounded-xl'
             )}
             onClick={onNewChat}
           >
             <Plus className={cn(isCollapsed ? 'h-5 w-5' : 'h-4 w-4')} />
-            <span className={cn('ml-2 font-semibold', isCollapsed && 'hidden')}>New Chat</span>
+            <span className={cn('ml-2', isCollapsed && 'hidden')}>New Chat</span>
           </Button>
         </div>
 
+        {/* Chat History Section */}
         {!isCollapsed && (
           <div className="px-4 mb-2">
+            <p className="text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2 px-1">
+              Chat History
+            </p>
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-foreground/60" />
               {searchTerm && (
                 <Button
                   variant="ghost"
@@ -538,11 +548,17 @@ const ChatSidebarComponent = ({
                 ref={searchInputRef}
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search chats"
-                className="h-10 rounded-xl border-stroke-subtle bg-surface-soft pl-10 pr-10 text-sm placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-primary/30"
+                placeholder="Search chats..."
+                className="h-10 rounded-xl border border-border/70 bg-card pl-10 pr-10 text-sm placeholder:text-foreground/50 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-border hover:border-border/90"
                 aria-label="Search chat history"
               />
             </div>
+          </div>
+        )}
+
+        {isCollapsed && (
+          <div className="px-2 mb-3">
+            <div className="h-px bg-border/60" />
           </div>
         )}
 
@@ -590,9 +606,9 @@ const ChatSidebarComponent = ({
                               ? 'mx-auto h-12 w-12 justify-center rounded-full p-0'
                               : 'w-full rounded-lg justify-between gap-3 py-2 px-3',
                             isActive && !isCollapsed
-                              ? 'bg-muted ring-1 ring-primary/30'
-                              : !isActive && (isCollapsed ? 'hover:ring-1 hover:ring-muted/60' : 'hover:bg-muted/80'),
-                            isEditing && 'ring-1 ring-primary/40 bg-muted'
+                              ? 'bg-primary/8 border-l-2 border-l-primary'
+                              : !isActive && (isCollapsed ? 'hover:bg-muted/50' : 'hover:bg-muted/50'),
+                            isEditing && 'bg-muted/80'
                           )}
                           onClick={() => {
                             if (isEditing || isRenaming) return;
@@ -604,11 +620,7 @@ const ChatSidebarComponent = ({
                             <Avatar
                               className={cn(
                                 'h-10 w-10 shrink-0 transition-all duration-200',
-                                isActive && !isEditing
-                                  ? isCollapsed
-                                    ? 'ring-2 ring-primary/40'
-                                    : 'ring-2 ring-primary/40 shadow-sm'
-                                  : undefined
+                                isActive && 'ring-1 ring-primary/40'
                               )}
                             >
                               <AvatarFallback

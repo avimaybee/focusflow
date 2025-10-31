@@ -257,23 +257,23 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
           )}
         </AnimatePresence>
 
-  {/* Enhanced input box with better visual clarity and depth */}
-  <div className="relative flex items-end gap-2 rounded-2xl border-2 border-border bg-card/50 backdrop-blur-sm px-3 py-2.5 shadow-lg shadow-black/5 focus-within:border-primary focus-within:bg-card focus-within:ring-4 focus-within:ring-primary/20 focus-within:shadow-xl focus-within:shadow-primary/10 transition-all duration-200 hover:border-border/80 hover:shadow-xl">
+  {/* Enhanced input box with strong visual presence and interaction feedback */}
+  <div className="relative flex items-end gap-2.5 rounded-2xl border border-border/80 bg-card px-4 py-3 shadow-lg hover:shadow-xl focus-within:border-border focus-within:bg-card focus-within:ring-4 focus-within:ring-primary/20 focus-within:shadow-2xl transition-all duration-200 hover:border-border">
           {/* Subtle gradient overlay for depth */}
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-background/5 to-transparent pointer-events-none"></div>
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-background/10 to-transparent pointer-events-none"></div>
           
           <PersonaSelector
             personas={personas || []}
             selectedPersonaId={selectedPersonaId}
             onSelect={setSelectedPersonaId}
-            className="relative z-10 h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="relative z-10 h-10 w-10 rounded-full text-foreground/70 hover:text-foreground hover:bg-accent/80 transition-all hover:scale-105"
           />
 
           <Button
             asChild={!isUploading}
             variant="ghost"
             size="icon"
-            className="relative z-10 h-9 w-9 cursor-pointer rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="relative z-10 h-10 w-10 cursor-pointer rounded-full text-foreground/70 hover:text-foreground hover:bg-accent/80 transition-all hover:scale-105"
             disabled={isUploading}
             aria-label="Attach file"
           >
@@ -300,7 +300,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
             value={input}
             onChange={handleInput}
             onFocus={handleFocus}
-            className="relative z-10 flex-1 resize-none border-none bg-transparent px-0 text-sm leading-6 text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 focus-visible:ring-offset-0 font-medium"
+            className="relative z-10 flex-1 resize-none border-none bg-transparent px-0 text-base leading-6 text-foreground placeholder:text-foreground/45 focus-visible:ring-0 focus-visible:ring-offset-0 font-normal"
             rows={1}
             disabled={!canSend || isGenerating}
             onKeyDown={(event) => {
@@ -320,7 +320,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
             onClick={submitForm}
             disabled={isGenerating || (!input.trim() && attachments.length === 0)}
             size="icon"
-            className="relative z-10 h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 disabled:bg-muted disabled:text-muted-foreground disabled:hover:scale-100 transition-all duration-200 shadow-md"
+            className="relative z-10 h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 hover:shadow-xl hover:shadow-primary/30 disabled:bg-muted disabled:text-muted-foreground disabled:hover:scale-100 transition-all duration-200 shadow-lg shadow-primary/20 active:scale-95"
             aria-label={isGenerating ? "Generating response..." : "Send message"}
           >
             {isGenerating ? (
