@@ -609,8 +609,13 @@ export default function ChatPage() {
           />
         </div>
 
-        <div className="sticky bottom-0 w-full pt-6">
-            <div className="mx-auto w-full px-4 pb-6 sm:max-w-3xl">
+        <div className="sticky bottom-0 w-full pt-6 relative">
+            {/* Subtle radial gradient emanating from bottom */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-radial from-primary/8 via-primary/3 to-transparent rounded-t-full blur-3xl"></div>
+            </div>
+            
+            <div className="mx-auto w-full px-4 pb-6 sm:max-w-3xl relative z-10">
               <MultimodalInput
                 ref={inputRef}
                 chatId={activeChatId || 'new'}

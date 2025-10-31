@@ -109,6 +109,9 @@ const config = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(circle, var(--tw-gradient-stops))',
+      },
       boxShadow: {
         'soft-lg': '0 20px 45px rgba(0, 0, 0, 0.22)',
         surface: '0 1px 0 0 rgba(255, 255, 255, 0.03)',

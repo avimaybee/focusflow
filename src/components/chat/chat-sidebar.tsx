@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   LogIn,
   LogOut,
-  Plus,
+  MessageSquarePlus,
   Settings,
   Sparkles,
   LayoutDashboard,
@@ -503,33 +503,25 @@ const ChatSidebarComponent = ({
         </div>
 
         {/* Quick Actions Section */}
-        <div className={cn("px-4 mb-3", isCollapsed && "px-2")}>
-          {!isCollapsed && (
-            <p className="text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2 px-1">
-              Quick Actions
-            </p>
-          )}
+        <div className={cn("px-3 mb-4", isCollapsed && "px-2 flex justify-center")}>
           <Button
             variant="outline"
             className={cn(
-              'w-full h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-md shadow-primary/20 transition-all hover:shadow-lg hover:shadow-primary/30 font-semibold',
-              isCollapsed && 'h-11 w-11 rounded-xl'
+              'w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-sm transition-colors font-medium',
+              isCollapsed && 'h-10 w-10 rounded-full flex items-center justify-center'
             )}
             onClick={onNewChat}
           >
-            <Plus className={cn(isCollapsed ? 'h-5 w-5' : 'h-4 w-4')} />
-            <span className={cn('ml-2', isCollapsed && 'hidden')}>New Chat</span>
+            <MessageSquarePlus className={cn(isCollapsed ? 'h-5 w-5' : 'h-4 w-4')} />
+            <span className={cn('ml-2.5', isCollapsed && 'hidden')}>New Chat</span>
           </Button>
         </div>
 
         {/* Chat History Section */}
         {!isCollapsed && (
-          <div className="px-4 mb-2">
-            <p className="text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2 px-1">
-              Chat History
-            </p>
+          <div className="px-3 mb-3">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-foreground/60" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-foreground/50" />
               {searchTerm && (
                 <Button
                   variant="ghost"
@@ -548,8 +540,8 @@ const ChatSidebarComponent = ({
                 ref={searchInputRef}
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search chats..."
-                className="h-10 rounded-xl border border-border/70 bg-card pl-10 pr-10 text-sm placeholder:text-foreground/50 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-border hover:border-border/90"
+                placeholder="Search..."
+                className="h-9 rounded-xl border-0 bg-muted/30 pl-10 pr-10 text-sm placeholder:text-foreground/40 focus-visible:ring-1 focus-visible:ring-border focus-visible:bg-muted/50"
                 aria-label="Search chat history"
               />
             </div>
@@ -606,9 +598,9 @@ const ChatSidebarComponent = ({
                               ? 'mx-auto h-12 w-12 justify-center rounded-full p-0'
                               : 'w-full rounded-lg justify-between gap-3 py-2 px-3',
                             isActive && !isCollapsed
-                              ? 'bg-primary/8 border-l-2 border-l-primary'
-                              : !isActive && (isCollapsed ? 'hover:bg-muted/50' : 'hover:bg-muted/50'),
-                            isEditing && 'bg-muted/80'
+                              ? 'bg-muted/40 border-l-2 border-l-primary/70'
+                              : !isActive && (isCollapsed ? 'hover:bg-muted/30' : 'hover:bg-muted/30'),
+                            isEditing && 'bg-muted/60'
                           )}
                           onClick={() => {
                             if (isEditing || isRenaming) return;
@@ -619,13 +611,13 @@ const ChatSidebarComponent = ({
                           <div className={cn('flex items-center gap-3 flex-1 min-w-0', isCollapsed && 'justify-center')}>
                             <Avatar
                               className={cn(
-                                'h-10 w-10 shrink-0 transition-all duration-200',
-                                isActive && 'ring-1 ring-primary/40'
+                                'h-9 w-9 shrink-0 transition-colors',
+                                isActive && 'ring-1 ring-primary/30'
                               )}
                             >
                               <AvatarFallback
                                 className={cn(
-                                  'flex h-full w-full items-center justify-center text-sm font-semibold uppercase tracking-wide',
+                                  'flex h-full w-full items-center justify-center text-xs font-medium uppercase',
                                   getChatAvatarClasses(chat.title)
                                 )}
                               >
@@ -655,8 +647,8 @@ const ChatSidebarComponent = ({
                                 />
                               ) : (
                                 <>
-                                  <p className="truncate text-sm font-semibold text-foreground">{chat.title}</p>
-                                  <p className="truncate text-xs text-muted-foreground/80">{relativeTime}</p>
+                                  <p className="truncate text-sm font-medium text-foreground">{chat.title}</p>
+                                  <p className="truncate text-xs text-muted-foreground/70">{relativeTime}</p>
                                 </>
                               )}
                             </div>
@@ -667,7 +659,7 @@ const ChatSidebarComponent = ({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 rounded-lg text-primary hover:bg-primary/10"
+                                  className="h-7 w-7 rounded-lg text-primary hover:bg-primary/10"
                                   onClick={(event) => {
                                     event.stopPropagation();
                                     handleRenameSubmit(chat.id);
@@ -684,7 +676,7 @@ const ChatSidebarComponent = ({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted/70"
+                                  className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted/70"
                                   onClick={(event) => {
                                     event.stopPropagation();
                                     handleCancelRename();

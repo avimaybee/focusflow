@@ -223,57 +223,54 @@ export function ChatMessage({
         exit={{ opacity: 0, y: -5 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className={cn(
-          'group flex items-start gap-3',
-          isUser && 'justify-end'
+          'group flex items-start gap-4 px-4 md:px-6 py-5',
+          isUser ? 'bg-transparent' : 'bg-muted/30'
         )}
       >
-        {!isUser && avatar}
+        {!isUser && (
+          <div className="flex-shrink-0 pt-1">
+            {avatar}
+          </div>
+        )}
         <div
           className={cn(
-            'flex flex-col gap-1',
-            isUser ? 'items-end' : 'items-start'
+            'flex-1 flex flex-col gap-2 max-w-3xl',
+            isUser && 'items-end'
           )}
         >
           {!isUser && isFirstInGroup && (
-            <p className="text-xs text-muted-foreground font-medium ml-2">{persona?.name || 'AI Assistant'}</p>
+            <p className="text-sm font-semibold text-foreground">{persona?.name || 'AI Assistant'}</p>
           )}
           <div
             ref={contentRef}
             className={cn(
-              'relative max-w-full sm:max-w-2xl px-4 py-3 text-sm leading-6',
-              'rounded-2xl border shadow-[0_18px_40px_-30px_rgba(15,23,42,0.72)] transition-shadow duration-300',
+              'relative w-full text-[15px] leading-7',
               isUser
-                ? 'bg-primary text-primary-foreground border-stroke-subtle/20'
-                : 'bg-surface-muted/85 text-foreground border-stroke-subtle/70 backdrop-blur-sm',
-              isUser
-                ? (isFirstInGroup ? 'rounded-tr-2xl' : 'rounded-tr-xl')
-                : (isFirstInGroup ? 'rounded-tl-2xl' : 'rounded-tl-xl'),
-              isUser
-                ? (isLastInGroup ? 'rounded-br-3xl' : 'rounded-br-xl')
-                : (isLastInGroup ? 'rounded-bl-3xl' : 'rounded-bl-xl'),
-              isError && 'bg-destructive/20 border border-destructive text-destructive-foreground'
+                ? 'bg-primary/10 text-foreground px-4 py-3 rounded-2xl border border-primary/20 max-w-[85%]'
+                : 'text-foreground',
+              isError && 'bg-destructive/10 border border-destructive/30 text-destructive-foreground px-4 py-3 rounded-2xl'
             )}
           >
             {user && <TextSelectionMenu containerRef={contentRef} />}
             {renderContent()}
           </div>
           {!isUser && !isError && (
-            <div className="flex items-center gap-2 transition-opacity duration-200">
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <TooltipProvider>
-                <div className="flex items-center gap-1.5 rounded-full border border-stroke-subtle/70 bg-surface-soft/90 px-1.5 py-1 shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset]">
+                <div className="flex items-center gap-0.5">
                   <Tooltip delayDuration={300}>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary/40"
+                        className="h-7 w-7 rounded-md text-foreground/60 hover:bg-muted hover:text-foreground"
                         onClick={handleCopy}
                         aria-label="Copy message"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="h-3.5 w-3.5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>Copy</p></TooltipContent>
+                    <TooltipContent side="bottom"><p>Copy</p></TooltipContent>
                   </Tooltip>
                   {user && rawText && (
                     <Tooltip delayDuration={300}>
@@ -281,14 +278,14 @@ export function ChatMessage({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary/40"
+                          className="h-7 w-7 rounded-md text-foreground/60 hover:bg-muted hover:text-foreground"
                           onClick={handleSave}
                           aria-label="Save to My Content"
                         >
-                          <Save className="h-4 w-4" />
+                          <Save className="h-3.5 w-3.5" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent><p>Save to My Content</p></TooltipContent>
+                      <TooltipContent side="bottom"><p>Save to My Content</p></TooltipContent>
                     </Tooltip>
                   )}
                   {rawText && onToolAction && (
@@ -298,42 +295,46 @@ export function ChatMessage({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary/40"
+                            className="h-7 w-7 rounded-md text-foreground/60 hover:bg-muted hover:text-foreground"
                             onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards that cover the key concepts from this response:\n${text}`)}
                             aria-label="Create flashcards from response"
                           >
-                            <Album className="h-4 w-4" />
+                            <Album className="h-3.5 w-3.5" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent><p>Create Flashcards</p></TooltipContent>
+                        <TooltipContent side="bottom"><p>Create Flashcards</p></TooltipContent>
                       </Tooltip>
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary/40"
+                            className="h-7 w-7 rounded-md text-foreground/60 hover:bg-muted hover:text-foreground"
                             onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz (medium difficulty) using this response as source material:\n${text}`)}
                             aria-label="Create quiz from response"
                           >
-                            <HelpCircle className="h-4 w-4" />
+                            <HelpCircle className="h-3.5 w-3.5" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent><p>Create Quiz</p></TooltipContent>
+                        <TooltipContent side="bottom"><p>Create Quiz</p></TooltipContent>
                       </Tooltip>
                     </>
                   )}
+                  {rawText && onToolAction && (
+                    <SmartToolsMenu
+                      onAction={(tool) => onToolAction(tool, rawText)}
+                    />
+                  )}
                 </div>
-                {rawText && onToolAction && (
-                  <SmartToolsMenu
-                    onAction={(tool) => onToolAction(tool, rawText)}
-                  />
-                )}
               </TooltipProvider>
             </div>
           )}
         </div>
-        {isUser && avatar}
+        {isUser && (
+          <div className="flex-shrink-0 pt-1">
+            {avatar}
+          </div>
+        )}
       </motion.div>
     </>
   );
