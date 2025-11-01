@@ -20,6 +20,7 @@ import {
   Loader2,
   Search,
   Pencil,
+  Bookmark,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -516,6 +517,39 @@ const ChatSidebarComponent = ({
           </Button>
         </div>
 
+        {/* Navigation Menu (Claude-like) */}
+        {!isCollapsed && (
+          <nav className="px-3 mb-4 space-y-1">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 h-9 text-foreground hover:bg-muted/60 rounded-lg"
+              asChild
+            >
+              <Link href="/chat">
+                <MessageSquarePlus className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Chats</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 h-9 text-foreground hover:bg-muted/60 rounded-lg"
+              asChild
+            >
+              <Link href="/my-content">
+                <Bookmark className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Saved</span>
+              </Link>
+            </Button>
+          </nav>
+        )}
+
+        {/* Divider */}
+        {!isCollapsed && (
+          <div className="px-3 mb-3">
+            <div className="h-px bg-border/40" />
+          </div>
+        )}
+
         {/* Chat History Section */}
         {!isCollapsed && (
           <div className="px-3 mb-3">
@@ -550,6 +584,12 @@ const ChatSidebarComponent = ({
         {isCollapsed && (
           <div className="px-2 mb-3">
             <div className="h-px bg-border/60" />
+          </div>
+        )}
+
+        {!isCollapsed && chatHistory && chatHistory.length > 0 && (
+          <div className="px-4 mb-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Recents</p>
           </div>
         )}
 
