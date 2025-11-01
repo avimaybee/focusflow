@@ -3,8 +3,7 @@
 
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CaseUpper, ListTodo, Scale, BookText, Presentation, Sparkles } from 'lucide-react';
 
 export type SmartTool = {
@@ -47,92 +46,48 @@ interface SmartToolsMenuProps {
 
 export function SmartToolsMenu({ onAction }: SmartToolsMenuProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const containerRef = React.useRef<HTMLDivElement | null>(null);
-
-  React.useEffect(() => {
-    if (!isOpen) return;
-
-    const handlePointerDown = (event: MouseEvent) => {
-      if (!containerRef.current) return;
-      if (!containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen]);
 
   return (
-    <TooltipProvider>
-      <motion.div
-        transition={{ duration: 0.2, ease: 'easeOut' }}
-        className="flex items-center gap-1"
-        ref={containerRef}
-        role="toolbar"
-        aria-label="Smart Tools"
-      >
-        <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm border">
-          <Tooltip delayDuration={300}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-full"
-                onClick={() => setIsOpen(!isOpen)}
-                aria-label="Open Smart Tools"
-                aria-expanded={isOpen}
-              >
-                <Sparkles className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Smart Tools</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        
-        <AnimatePresence>
-            {isOpen && (
-              <motion.div
-                className="flex flex-wrap items-center gap-1 max-w-md"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-              >
-                {smartTools.map((tool) => (
-                  <Button
-                    key={tool.name}
-                    variant="outline"
-                    size="sm"
-                    className="h-7 px-2 rounded-full text-xs gap-1.5 hover:bg-primary hover:text-primary-foreground transition-colors"
-                    onClick={() => {
-                      onAction(tool);
-                      setIsOpen(false);
-                    }}
-                    aria-label={tool.name}
-                  >
-                    {tool.icon}
-                    <span>{tool.name}</span>
-                  </Button>
-                ))}
-              </motion.div>
-            )}
-        </AnimatePresence>
-      </motion.div>
-    </TooltipProvider>
+    <>
+      <Tooltip delayDuration={300}>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 rounded-md text-foreground/40 hover:bg-muted hover:text-foreground/70 transition-colors"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Smart Tools"
+            aria-expanded={isOpen}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          <p>AI Smart Tools</p>
+        </TooltipContent>
+      </Tooltip>
+
+      {isOpen && (
+        <>
+          {smartTools.map((tool) => (
+            <Button
+              key={tool.name}
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2.5 rounded-full text-xs gap-1.5 bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors whitespace-nowrap"
+              onClick={() => {
+                onAction(tool);
+                setIsOpen(false);
+              }}
+              aria-label={tool.name}
+            >
+              {React.cloneElement(tool.icon, { className: 'h-3 w-3' })}
+              <span>{tool.name}</span>
+            </Button>
+          ))}
+        </>
+      )}
+    </>
   );
 }
 

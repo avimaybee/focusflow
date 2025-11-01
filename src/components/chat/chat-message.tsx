@@ -352,9 +352,7 @@ export function ChatMessage({
                       <TooltipContent side="right"><p>Quiz</p></TooltipContent>
                     </Tooltip>
 
-                    <div className="h-7 w-7 flex items-center justify-center">
-                      <SmartToolsMenu onAction={(tool) => onToolAction(tool, rawText)} />
-                    </div>
+                    <SmartToolsMenu onAction={(tool) => onToolAction(tool, rawText)} />
                   </>
                 )}
               </TooltipProvider>
