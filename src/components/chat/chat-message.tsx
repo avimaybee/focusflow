@@ -21,62 +21,80 @@ import type { PersonaDetails } from '@/types/chat-types';
 
 // Persona color mapping - THE ACTUAL 10 PERSONAS
 const getPersonaColor = (persona?: PersonaDetails): string => {
-  if (!persona) return 'border-l-teal-500/50'; // Default
+  console.log('[ChatMessage] getPersonaColor called with persona:', persona);
+  
+  if (!persona) {
+    console.log('[ChatMessage] No persona provided, using default teal');
+    return 'border-l-teal-500/50'; // Default
+  }
   
   const id = (persona.id || '').toLowerCase();
   const name = persona.name.toLowerCase();
   
+  console.log('[ChatMessage] Checking persona - id:', id, 'name:', name);
+  
   // 1. Gurt - The Guide 🎓
   if (id === 'gurt' || name.includes('gurt')) {
+    console.log('[ChatMessage] Matched Gurt - returning teal');
     return 'border-l-teal-500/50';
   }
   
-  // 2. ELI5 - The Simplifier 👶 (aka "im a baby")
-  if (id === 'eli5' || name.includes('eli5') || name.includes('baby') || name.includes('simplif')) {
+  // 2. ELI5 - The Simplifier 👶 (aka "im a baby", "milo")
+  if (id === 'eli5' || name.includes('eli5') || name.includes('baby') || name.includes('milo') || name.includes('simplif')) {
+    console.log('[ChatMessage] Matched Milo/ELI5 - returning green');
     return 'border-l-green-500/50';
   }
   
   // 3. Straight Shooter - The Direct Answer 🎯
-  if (id === 'straight-shooter' || name.includes('straight') || name.includes('direct')) {
+  if (id === 'straight-shooter' || name.includes('straight') || name.includes('direct') || name.includes('frank')) {
+    console.log('[ChatMessage] Matched Frank/Straight Shooter - returning cyan');
     return 'border-l-cyan-500/50';
   }
   
   // 4. Essay Writer - The Academic Wordsmith ✍️
-  if (id === 'essay-writer' || name.includes('essay') || name.includes('wordsmith')) {
+  if (id === 'essay-writer' || name.includes('essay') || name.includes('wordsmith') || name.includes('clairo')) {
+    console.log('[ChatMessage] Matched Clairo/Essay Writer - returning purple');
     return 'border-l-purple-500/50';
   }
   
   // 5. Deep Dive Dynamo - The Understanding Builder 🧠 (aka "lore master")
   if (id === 'in-depth-explainer' || name.includes('deep') || name.includes('dynamo') || name.includes('lore')) {
+    console.log('[ChatMessage] Matched Lore Master - returning blue');
     return 'border-l-blue-500/50';
   }
   
   // 6. Sassy Eva - The Fun Diva Teacher 💅 (aka "sassy tutor")
   if (id === 'sassy-eva' || name.includes('eva') || name.includes('sassy') || name.includes('diva')) {
+    console.log('[ChatMessage] Matched Sassy Eva - returning pink');
     return 'border-l-pink-500/50';
   }
   
   // 7. Idea Fountain - The Creative Catalyst 💡 (aka "idea cook")
   if (id === 'brainstormer' || name.includes('idea') || name.includes('fountain') || name.includes('creative') || name.includes('cook')) {
+    console.log('[ChatMessage] Matched Idea Cook - returning orange');
     return 'border-l-orange-500/50';
   }
   
   // 8. Cram Master - The Speed Learner ⚡ (aka "memory coach")
   if (id === 'memory-coach' || name.includes('memory') || name.includes('cram') || name.includes('coach')) {
+    console.log('[ChatMessage] Matched Memory Coach - returning amber');
     return 'border-l-amber-500/50';
   }
   
   // 9. CodeMaster - The Programming Mentor 💻 (aka "code nerd")
   if (id === 'coding-guru' || name.includes('code') || name.includes('programming') || name.includes('nerd')) {
+    console.log('[ChatMessage] Matched Code Nerd - returning indigo');
     return 'border-l-indigo-500/50';
   }
   
   // 10. Test Ace - The Exam Strategist 🎓 (aka "exam strategist")
   if (id === 'exam-strategist' || name.includes('exam') || name.includes('test') || name.includes('ace')) {
+    console.log('[ChatMessage] Matched Exam Strategist - returning rose');
     return 'border-l-rose-500/50';
   }
   
   // Default fallback
+  console.log('[ChatMessage] No match found, using default teal');
   return 'border-l-teal-500/50';
 };
 
