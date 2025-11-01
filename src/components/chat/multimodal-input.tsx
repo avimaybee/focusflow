@@ -106,42 +106,63 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
     };
     
     const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+      console.log('[MultimodalInput] handleFileChange triggered');
       const file = event.target.files?.[0];
-      if (!file) return;
+      if (!file) {
+        console.log('[MultimodalInput] No file selected');
+        return;
+      }
+      console.log('[MultimodalInput] File selected:', file.name, file.type, file.size);
 
       setIsUploading(true);
+
+      console.log('[MultimodalInput] Starting upload for file:', file.name);
 
       try {
         // Upload file to Gemini API
         const formData = new FormData();
         formData.append('file', file);
+        console.log('[MultimodalInput] FormData prepared, size approx (bytes):', file.size);
 
+        console.log('[MultimodalInput] Sending POST /api/chat/upload');
         const response = await fetch('/api/chat/upload', {
           method: 'POST',
           body: formData,
         });
 
+        console.log('[MultimodalInput] Upload response status:', response.status);
+
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Upload failed');
+          let errorBody: any = null;
+          try {
+            errorBody = await response.json();
+          } catch (e) {
+            console.warn('[MultimodalInput] Could not parse error JSON from upload response');
+          }
+          console.error('[MultimodalInput] Upload failed, response:', errorBody || await response.text().catch(() => '<no body>'));
+          throw new Error(errorBody?.error || 'Upload failed');
         }
 
         const result = await response.json();
+        console.log('[MultimodalInput] Upload result payload:', result);
         
         // Add uploaded file to attachments with Gemini URI
-        setAttachments(prev => [...prev, {
+        const newAttachment = {
           url: result.file.uri, // Gemini file URI
           name: result.file.displayName || file.name,
           contentType: result.file.mimeType,
           size: parseInt(result.file.sizeBytes || '0'),
-        }]);
+        };
+        console.log('[MultimodalInput] Adding attachment to state:', newAttachment.url);
+        setAttachments(prev => [...prev, newAttachment]);
 
       } catch (error) {
-        console.error('File upload error:', error);
+        console.error('[MultimodalInput] File upload error:', error);
         // Show error to user (you might want to add a toast notification here)
         alert(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } finally {
         setIsUploading(false);
+        console.log('[MultimodalInput] Upload finished, isUploading set to false');
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -283,7 +304,10 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 cursor-pointer rounded-full text-foreground/60 hover:text-foreground hover:bg-muted/60 transition-colors"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => {
+                  console.log('[MultimodalInput] Paperclip button clicked, triggering file input.');
+                  fileInputRef.current?.click();
+                }}
                 aria-label="Attach file"
               >
                 <Paperclip className="w-4 h-4" />
