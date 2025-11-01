@@ -338,7 +338,7 @@ export default function ChatPage() {
     if (!chatToDelete || !user) return;
 
     try {
-      const accessToken = session?.access_token;
+      const accessToken = sessionRef.current?.access_token;
       const url = `/api/chat/delete?chatId=${chatToDelete}&userId=${user.id}` + 
         (accessToken ? `&accessToken=${encodeURIComponent(accessToken)}` : '');
       
@@ -401,7 +401,7 @@ export default function ChatPage() {
     if (!currentChatId) {
         try {
           // Get the access token from the session
-          const accessToken = session?.access_token;
+          const accessToken = sessionRef.current?.access_token;
           if (!accessToken) {
             console.error('[Client] No access token available in session');
             toast({ variant: 'destructive', title: 'Error', description: 'Authentication error. Please sign in again.' });
