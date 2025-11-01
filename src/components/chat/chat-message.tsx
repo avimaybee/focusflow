@@ -19,6 +19,67 @@ import { TextSelectionMenu } from '@/components/notes/text-selection-menu';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import type { PersonaDetails } from '@/types/chat-types';
 
+// Persona color mapping - THE ACTUAL 10 PERSONAS
+const getPersonaColor = (persona?: PersonaDetails): string => {
+  if (!persona) return 'border-l-teal-500/50'; // Default
+  
+  const id = (persona.id || '').toLowerCase();
+  const name = persona.name.toLowerCase();
+  
+  // 1. Gurt - The Guide 🎓
+  if (id === 'gurt' || name.includes('gurt')) {
+    return 'border-l-teal-500/50';
+  }
+  
+  // 2. ELI5 - The Simplifier 👶 (aka "im a baby")
+  if (id === 'eli5' || name.includes('eli5') || name.includes('baby') || name.includes('simplif')) {
+    return 'border-l-green-500/50';
+  }
+  
+  // 3. Straight Shooter - The Direct Answer 🎯
+  if (id === 'straight-shooter' || name.includes('straight') || name.includes('direct')) {
+    return 'border-l-cyan-500/50';
+  }
+  
+  // 4. Essay Writer - The Academic Wordsmith ✍️
+  if (id === 'essay-writer' || name.includes('essay') || name.includes('wordsmith')) {
+    return 'border-l-purple-500/50';
+  }
+  
+  // 5. Deep Dive Dynamo - The Understanding Builder 🧠 (aka "lore master")
+  if (id === 'in-depth-explainer' || name.includes('deep') || name.includes('dynamo') || name.includes('lore')) {
+    return 'border-l-blue-500/50';
+  }
+  
+  // 6. Sassy Eva - The Fun Diva Teacher 💅 (aka "sassy tutor")
+  if (id === 'sassy-eva' || name.includes('eva') || name.includes('sassy') || name.includes('diva')) {
+    return 'border-l-pink-500/50';
+  }
+  
+  // 7. Idea Fountain - The Creative Catalyst 💡 (aka "idea cook")
+  if (id === 'brainstormer' || name.includes('idea') || name.includes('fountain') || name.includes('creative') || name.includes('cook')) {
+    return 'border-l-orange-500/50';
+  }
+  
+  // 8. Cram Master - The Speed Learner ⚡ (aka "memory coach")
+  if (id === 'memory-coach' || name.includes('memory') || name.includes('cram') || name.includes('coach')) {
+    return 'border-l-amber-500/50';
+  }
+  
+  // 9. CodeMaster - The Programming Mentor 💻 (aka "code nerd")
+  if (id === 'coding-guru' || name.includes('code') || name.includes('programming') || name.includes('nerd')) {
+    return 'border-l-indigo-500/50';
+  }
+  
+  // 10. Test Ace - The Exam Strategist 🎓 (aka "exam strategist")
+  if (id === 'exam-strategist' || name.includes('exam') || name.includes('test') || name.includes('ace')) {
+    return 'border-l-rose-500/50';
+  }
+  
+  // Default fallback
+  return 'border-l-teal-500/50';
+};
+
 interface FlashcardData {
   question: string;
   answer: string;
@@ -216,7 +277,7 @@ export function ChatMessage({
               'relative w-full text-sm sm:text-[15px] leading-relaxed',
               isUser
                 ? 'bg-primary/15 text-foreground px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl max-w-fit'
-                : 'text-foreground/90 border-l-2 border-l-primary/40 pl-3 sm:pl-4',
+                : cn('text-foreground/90 border-l-2 pl-3 sm:pl-4', getPersonaColor(persona)),
               isError && 'bg-destructive/10 border border-destructive/30 text-destructive-foreground px-4 py-3 rounded-2xl'
             )}
           >
@@ -225,18 +286,18 @@ export function ChatMessage({
           </div>
 
           {!isUser && !isError && (
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="flex items-center gap-0.5 mt-1">
               <TooltipProvider>
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 rounded-lg text-foreground/50 hover:bg-muted hover:text-foreground/70 transition-colors"
+                      className="h-7 w-7 rounded-md text-foreground/40 hover:bg-muted hover:text-foreground/70 transition-colors"
                       onClick={handleCopy}
                       aria-label="Copy message"
                     >
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-3.5 w-3.5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="right"><p>Copy</p></TooltipContent>
@@ -248,11 +309,11 @@ export function ChatMessage({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-lg text-foreground/50 hover:bg-muted hover:text-foreground/70 transition-colors"
+                        className="h-7 w-7 rounded-md text-foreground/40 hover:bg-muted hover:text-foreground/70 transition-colors"
                         onClick={handleSave}
                         aria-label="Save to My Content"
                       >
-                        <Save className="h-4 w-4" />
+                        <Save className="h-3.5 w-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="right"><p>Save</p></TooltipContent>
@@ -266,11 +327,11 @@ export function ChatMessage({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 rounded-lg text-foreground/50 hover:bg-muted hover:text-foreground/70 transition-colors"
+                          className="h-7 w-7 rounded-md text-foreground/40 hover:bg-muted hover:text-foreground/70 transition-colors"
                           onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards that cover the key concepts from this response:\n${text}`)}
                           aria-label="Create flashcards"
                         >
-                          <Album className="h-4 w-4" />
+                          <Album className="h-3.5 w-3.5" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="right"><p>Flashcards</p></TooltipContent>
@@ -281,20 +342,20 @@ export function ChatMessage({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 rounded-lg text-foreground/50 hover:bg-muted hover:text-foreground/70 transition-colors"
+                          className="h-7 w-7 rounded-md text-foreground/40 hover:bg-muted hover:text-foreground/70 transition-colors"
                           onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz (medium difficulty) using this response as source material:\n${text}`)}
                           aria-label="Create quiz"
                         >
-                          <HelpCircle className="h-4 w-4" />
+                          <HelpCircle className="h-3.5 w-3.5" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="right"><p>Quiz</p></TooltipContent>
                     </Tooltip>
-                  </>
-                )}
 
-                {rawText && onToolAction && (
-                  <SmartToolsMenu onAction={(tool) => onToolAction(tool, rawText)} />
+                    <div className="h-7 w-7 flex items-center justify-center">
+                      <SmartToolsMenu onAction={(tool) => onToolAction(tool, rawText)} />
+                    </div>
+                  </>
                 )}
               </TooltipProvider>
             </div>

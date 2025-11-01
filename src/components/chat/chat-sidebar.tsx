@@ -507,29 +507,19 @@ const ChatSidebarComponent = ({
         <div className={cn("px-3 mb-4", isCollapsed && "px-2 flex justify-center")}>
           <Button
             className={cn(
-              'w-full h-10 rounded-xl bg-primary hover:bg-primary/85 active:bg-primary/75 text-white border-0 shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40 transition-all font-medium',
-              isCollapsed && 'h-11 w-11 rounded-full flex items-center justify-center shadow-lg shadow-primary/40'
+              'w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-white border-0 transition-colors font-medium',
+              isCollapsed && 'h-10 w-10 rounded-lg p-0 flex items-center justify-center'
             )}
             onClick={onNewChat}
           >
-            <MessageSquarePlus className={cn(isCollapsed ? 'h-6 w-6' : 'h-4 w-4')} />
+            <MessageSquarePlus className={cn(isCollapsed ? 'h-5 w-5' : 'h-4 w-4')} />
             <span className={cn('ml-2.5', isCollapsed && 'hidden')}>New Chat</span>
           </Button>
         </div>
 
-        {/* Navigation Menu (Claude-like) */}
+        {/* Navigation Menu */}
         {!isCollapsed && (
           <nav className="px-3 mb-4 space-y-1">
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 h-9 text-foreground hover:bg-muted/60 rounded-lg"
-              asChild
-            >
-              <Link href="/chat">
-                <MessageSquarePlus className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Chats</span>
-              </Link>
-            </Button>
             <Button
               variant="ghost"
               className="w-full justify-start gap-3 h-9 text-foreground hover:bg-muted/60 rounded-lg"
@@ -637,7 +627,7 @@ const ChatSidebarComponent = ({
                               ? 'mx-auto h-12 w-12 justify-center rounded-full p-0'
                               : 'w-full rounded-lg justify-between gap-3 py-2 px-3',
                             isActive && !isCollapsed
-                              ? 'bg-muted/40 border-l-2 border-l-primary/70'
+                              ? 'bg-muted/40'
                               : !isActive && (isCollapsed ? 'hover:bg-muted/30' : 'hover:bg-muted/30'),
                             isEditing && 'bg-muted/60'
                           )}
