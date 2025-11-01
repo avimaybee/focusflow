@@ -273,7 +273,7 @@ export default function ChatPage() {
         retryTimeoutRef.current = null;
       }
     };
-  }, [activeChatId, isNewChat, loadMessages, hasOptimisticMessages]);
+  }, [activeChatId, isNewChat, loadMessages, hasOptimisticMessages, session]);
 
   // Debug: log messages changes to help identify when messages becomes undefined or malformed
   useEffect(() => {
