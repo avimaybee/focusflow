@@ -5,8 +5,7 @@
 import * as React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bot, User, Album, HelpCircle, Save, Copy, FileText } from 'lucide-react';
+import { Album, HelpCircle, Save, Copy } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { FlashcardViewer } from '@/components/flashcard-viewer';
@@ -189,32 +188,6 @@ export function ChatMessage({
     );
   };
 
-  const avatar = (
-    <Avatar
-      className={cn(
-        'h-8 w-8',
-        !isFirstInGroup && 'opacity-0',
-        isUser ? '' : 'bg-accent/50 text-accent-foreground border border-accent'
-      )}
-    >
-      {isUser ? (
-        <>
-          <AvatarImage src={userAvatar || undefined} data-ai-hint="person" />
-          <AvatarFallback>
-            {userName === 'Guest' ? <User className="h-5 w-5" /> : userName?.charAt(0).toUpperCase() || 'U'}
-          </AvatarFallback>
-        </>
-      ) : (
-        <>
-          <AvatarImage src={persona?.avatarUrl} alt={persona?.name} />
-          <AvatarFallback className="bg-transparent">
-            <Bot className="h-5 w-5" />
-          </AvatarFallback>
-        </>
-      )}
-    </Avatar>
-  );
-
   return (
     <>
       <motion.div
@@ -223,118 +196,110 @@ export function ChatMessage({
         exit={{ opacity: 0, y: -5 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className={cn(
-          'group flex items-start gap-4 px-4 md:px-6 py-5',
-          isUser ? 'bg-transparent' : 'bg-muted/30'
+          'group flex w-full gap-3 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4',
+          isUser ? 'justify-end' : 'justify-start'
         )}
       >
-        {!isUser && (
-          <div className="flex-shrink-0 pt-1">
-            {avatar}
-          </div>
-        )}
         <div
           className={cn(
-            'flex-1 flex flex-col gap-2 max-w-3xl',
-            isUser && 'items-end'
+            'flex flex-col gap-1 max-w-2xl sm:max-w-3xl',
+            isUser ? 'items-end' : 'items-start'
           )}
         >
-          {!isUser && isFirstInGroup && (
-            <p className="text-sm font-semibold text-foreground">{persona?.name || 'AI Assistant'}</p>
+          {!isUser && isFirstInGroup && persona && (
+            <p className="text-xs font-medium text-foreground/60 px-1">{persona.name || 'AI Assistant'}</p>
           )}
+
           <div
             ref={contentRef}
             className={cn(
-              'relative w-full text-[15px] leading-7',
+              'relative w-full text-sm sm:text-[15px] leading-relaxed',
               isUser
-                ? 'bg-primary/10 text-foreground px-4 py-3 rounded-2xl border border-primary/20 max-w-[85%]'
-                : 'text-foreground',
+                ? 'bg-primary/15 text-foreground px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl max-w-fit'
+                : 'text-foreground/90 border-l-2 border-l-primary/40 pl-3 sm:pl-4',
               isError && 'bg-destructive/10 border border-destructive/30 text-destructive-foreground px-4 py-3 rounded-2xl'
             )}
           >
-            {user && <TextSelectionMenu containerRef={contentRef} />}
+            {user && !isUser && <TextSelectionMenu containerRef={contentRef} />}
             {renderContent()}
           </div>
+
           {!isUser && !isError && (
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <TooltipProvider>
-                <div className="flex items-center gap-0.5">
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-lg text-foreground/50 hover:bg-muted hover:text-foreground/70 transition-colors"
+                      onClick={handleCopy}
+                      aria-label="Copy message"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right"><p>Copy</p></TooltipContent>
+                </Tooltip>
+
+                {user && rawText && (
                   <Tooltip delayDuration={300}>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 rounded-md text-foreground/60 hover:bg-muted hover:text-foreground"
-                        onClick={handleCopy}
-                        aria-label="Copy message"
+                        className="h-8 w-8 rounded-lg text-foreground/50 hover:bg-muted hover:text-foreground/70 transition-colors"
+                        onClick={handleSave}
+                        aria-label="Save to My Content"
                       >
-                        <Copy className="h-3.5 w-3.5" />
+                        <Save className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom"><p>Copy</p></TooltipContent>
+                    <TooltipContent side="right"><p>Save</p></TooltipContent>
                   </Tooltip>
-                  {user && rawText && (
+                )}
+
+                {rawText && onToolAction && (
+                  <>
                     <Tooltip delayDuration={300}>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 rounded-md text-foreground/60 hover:bg-muted hover:text-foreground"
-                          onClick={handleSave}
-                          aria-label="Save to My Content"
+                          className="h-8 w-8 rounded-lg text-foreground/50 hover:bg-muted hover:text-foreground/70 transition-colors"
+                          onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards that cover the key concepts from this response:\n${text}`)}
+                          aria-label="Create flashcards"
                         >
-                          <Save className="h-3.5 w-3.5" />
+                          <Album className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="bottom"><p>Save to My Content</p></TooltipContent>
+                      <TooltipContent side="right"><p>Flashcards</p></TooltipContent>
                     </Tooltip>
-                  )}
-                  {rawText && onToolAction && (
-                    <>
-                      <Tooltip delayDuration={300}>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 rounded-md text-foreground/60 hover:bg-muted hover:text-foreground"
-                            onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards that cover the key concepts from this response:\n${text}`)}
-                            aria-label="Create flashcards from response"
-                          >
-                            <Album className="h-3.5 w-3.5" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom"><p>Create Flashcards</p></TooltipContent>
-                      </Tooltip>
-                      <Tooltip delayDuration={300}>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 rounded-md text-foreground/60 hover:bg-muted hover:text-foreground"
-                            onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz (medium difficulty) using this response as source material:\n${text}`)}
-                            aria-label="Create quiz from response"
-                          >
-                            <HelpCircle className="h-3.5 w-3.5" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom"><p>Create Quiz</p></TooltipContent>
-                      </Tooltip>
-                    </>
-                  )}
-                  {rawText && onToolAction && (
-                    <SmartToolsMenu
-                      onAction={(tool) => onToolAction(tool, rawText)}
-                    />
-                  )}
-                </div>
+
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg text-foreground/50 hover:bg-muted hover:text-foreground/70 transition-colors"
+                          onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz (medium difficulty) using this response as source material:\n${text}`)}
+                          aria-label="Create quiz"
+                        >
+                          <HelpCircle className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right"><p>Quiz</p></TooltipContent>
+                    </Tooltip>
+                  </>
+                )}
+
+                {rawText && onToolAction && (
+                  <SmartToolsMenu onAction={(tool) => onToolAction(tool, rawText)} />
+                )}
               </TooltipProvider>
             </div>
           )}
         </div>
-        {isUser && (
-          <div className="flex-shrink-0 pt-1">
-            {avatar}
-          </div>
-        )}
       </motion.div>
     </>
   );

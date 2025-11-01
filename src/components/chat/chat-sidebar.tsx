@@ -505,14 +505,13 @@ const ChatSidebarComponent = ({
         {/* Quick Actions Section */}
         <div className={cn("px-3 mb-4", isCollapsed && "px-2 flex justify-center")}>
           <Button
-            variant="outline"
             className={cn(
-              'w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-sm transition-colors font-medium',
-              isCollapsed && 'h-10 w-10 rounded-full flex items-center justify-center'
+              'w-full h-10 rounded-xl bg-primary hover:bg-primary/85 active:bg-primary/75 text-white border-0 shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40 transition-all font-medium',
+              isCollapsed && 'h-11 w-11 rounded-full flex items-center justify-center shadow-lg shadow-primary/40'
             )}
             onClick={onNewChat}
           >
-            <MessageSquarePlus className={cn(isCollapsed ? 'h-5 w-5' : 'h-4 w-4')} />
+            <MessageSquarePlus className={cn(isCollapsed ? 'h-6 w-6' : 'h-4 w-4')} />
             <span className={cn('ml-2.5', isCollapsed && 'hidden')}>New Chat</span>
           </Button>
         </div>
