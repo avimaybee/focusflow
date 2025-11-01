@@ -49,7 +49,21 @@ export async function getChatMessages(sessionId: string, accessToken?: string): 
 
     const { data, error } = await client
         .from('chat_messages')
-        .select('id, role, content, attachments, persona_id, created_at')
+        .select(`
+            id, 
+            role, 
+            content, 
+            attachments, 
+            persona_id, 
+            created_at,
+            personas (
+                id,
+                name,
+                display_name,
+                description,
+                prompt
+            )
+        `)
         .eq('session_id', sessionId)
         .order('created_at', { ascending: true });
 
@@ -63,22 +77,39 @@ export async function getChatMessages(sessionId: string, accessToken?: string): 
         return [];
     }
 
-    const messages = await Promise.all(data.map(async (message) => ({
-        id: message.id,
-        role: message.role as 'user' | 'model',
-        text: await marked.parse(message.content),
-        rawText: message.content,
-        personaId: message.persona_id,
-        createdAt: new Date(message.created_at),
-        attachments: message.attachments && Array.isArray(message.attachments) 
-            ? message.attachments.map((att: any) => ({
-                url: att.url,
-                name: att.name,
-                contentType: att.mimeType,
-                size: parseInt(att.sizeBytes || '0'),
-            }))
-            : undefined,
-    })));
+    const messages = await Promise.all(data.map(async (message: any) => {
+        // Map persona data if available
+        let persona: any = undefined;
+        if (message.personas && Array.isArray(message.personas) && message.personas.length > 0) {
+            const p = message.personas[0];
+            persona = {
+                id: p.id,
+                name: p.name,
+                displayName: p.display_name,
+                description: p.description,
+                prompt: p.prompt,
+                avatarUrl: '',
+            };
+        }
+
+        return {
+            id: message.id,
+            role: message.role as 'user' | 'model',
+            text: await marked.parse(message.content),
+            rawText: message.content,
+            personaId: message.persona_id,
+            persona: persona,
+            createdAt: new Date(message.created_at),
+            attachments: message.attachments && Array.isArray(message.attachments) 
+                ? message.attachments.map((att: any) => ({
+                    url: att.url,
+                    name: att.name,
+                    contentType: att.mimeType,
+                    size: parseInt(att.sizeBytes || '0'),
+                }))
+                : undefined,
+        };
+    }));
 
     return messages;
 }
