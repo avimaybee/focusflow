@@ -127,11 +127,11 @@ export default function ChatPage() {
     console.debug('[Client] loadMessages called', {
       chatId,
       attempt,
-      accessTokenPresent: !!session?.access_token,
+      accessTokenPresent: !!sessionRef.current?.access_token,
     });
 
     try {
-      const accessToken = session?.access_token;
+      const accessToken = sessionRef.current?.access_token;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (accessToken) {
         headers['Authorization'] = `Bearer ${accessToken}`;
@@ -178,7 +178,9 @@ export default function ChatPage() {
             return optimistic && msg.id && !fetchedIds.has(msg.id);
           });
 
-          if ((hasMissingOptimistic || fetched.length < prevList.length) && attempt < 5) {
+          // Only retry if we have optimistic messages AND they're still missing + attempt < 2
+          // Don't retry on length mismatch - this is often a false positive
+          if (hasMissingOptimistic && attempt < 2) {
             shouldRetry = true;
             return prev;
           }
@@ -229,7 +231,13 @@ export default function ChatPage() {
       }
       inFlightFetchesRef.current.delete(chatId);
     }
-  }, [session?.access_token, hasOptimisticMessages]);
+  }, [hasOptimisticMessages]);
+
+  // Keep session stable via ref to avoid callback recreation
+  const sessionRef = useRef(session);
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   useEffect(() => {
     const chatId = params.chatId as string | undefined;
@@ -536,9 +544,6 @@ export default function ChatPage() {
       forceRefresh();
       // Reset isNewChat flag now that messages are saved
       setIsNewChat(false);
-      if (currentChatId) {
-        loadMessages(currentChatId);
-      }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

@@ -64,10 +64,11 @@ interface MultimodalInputProps {
   setSelectedPersonaId: (id: string) => void;
 }
 
-const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalInputProps>(
-  ({
-    attachments,
-    setAttachments,
+const PureMultimodalInput = React.memo(
+  React.forwardRef<MultimodalInputHandle, MultimodalInputProps>(
+    ({
+      attachments,
+      setAttachments,
     onSendMessage,
     onStopGenerating,
     onFocus,
@@ -362,6 +363,17 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
           </Button>
         </div>
       </form>
+    );
+    }
+  ),
+  (prevProps, nextProps) => {
+    // Return true if props unchanged (skip re-render)
+    return (
+      prevProps.chatId === nextProps.chatId &&
+      prevProps.isGenerating === nextProps.isGenerating &&
+      prevProps.canSend === nextProps.canSend &&
+      prevProps.selectedPersonaId === nextProps.selectedPersonaId &&
+      prevProps.personas === nextProps.personas
     );
   }
 );

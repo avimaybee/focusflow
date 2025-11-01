@@ -1,6 +1,7 @@
 
 'use client';
 
+import { memo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { AIConversation, AIConversationContent, AIConversationScrollButton } from '@/components/ui/kibo-ui/ai/conversation';
 import { ChatMessage, ChatMessageProps } from '@/components/chat/chat-message';
@@ -22,7 +23,7 @@ interface MessageListProps {
   contentClassName?: string;
 }
 
-export function MessageList({
+export const MessageList = memo(function MessageList({
   messages,
   isSending,
   isHistoryLoading,
@@ -50,11 +51,11 @@ export function MessageList({
 
   const showWelcomeScreen = !activeChatId && safeMessages.length === 0 && !isSending;
 
-  const handleToolAction = (tool: SmartTool, text?: string) => {
+  const handleToolAction = useCallback((tool: SmartTool, text?: string) => {
     if (!text) return;
     const prompt = tool.prompt(text);
     onSmartToolAction(prompt);
-  };
+  }, [onSmartToolAction]);
 
   return (
     <AIConversation className={cn('flex-1', className)}>
@@ -88,4 +89,15 @@ export function MessageList({
       <AIConversationScrollButton />
     </AIConversation>
   );
-}
+}, (prevProps, nextProps) => {
+  // Return true if props are equal (skip re-render)
+  return (
+    prevProps.messages === nextProps.messages &&
+    prevProps.isSending === nextProps.isSending &&
+    prevProps.isHistoryLoading === nextProps.isHistoryLoading &&
+    prevProps.activeChatId === nextProps.activeChatId &&
+    prevProps.activePersona === nextProps.activePersona
+  );
+});
+
+MessageList.displayName = 'MessageList';
