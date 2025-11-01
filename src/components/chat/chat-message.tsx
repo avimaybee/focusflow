@@ -17,10 +17,10 @@ import { useAuth } from '@/context/auth-context';
 import { saveChatMessage } from '@/lib/content-actions';
 import { TextSelectionMenu } from '@/components/notes/text-selection-menu';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
-import type { PersonaDetails } from '@/types/chat-types';
+import type { Persona } from '@/types/persona';
 
 // Persona color mapping - THE ACTUAL 10 PERSONAS
-const getPersonaColor = (persona?: PersonaDetails): string => {
+const getPersonaColor = (persona?: Persona): string => {
   console.log('[ChatMessage] getPersonaColor called with persona:', persona);
   
   if (!persona) {
@@ -122,7 +122,7 @@ export type ChatMessageProps = {
   quiz?: QuizData;
   userAvatar?: string | null;
   userName?: string;
-  persona?: PersonaDetails;
+  persona?: Persona;
   personaId?: string; // Track which persona generated this message
   createdAt?: Date;
   source?: unknown;

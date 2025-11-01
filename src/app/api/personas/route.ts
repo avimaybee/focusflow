@@ -1,19 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { PersonaDatabaseRow, convertDatabaseRowToPersona, Persona } from '@/types/persona';
 
 export const runtime = 'edge';
-
-interface PersonaRecord {
-  id: string;
-  name: string;
-  display_name: string;
-  description: string;
-  prompt: string;
-  avatar_url: string | null;
-  avatar_emoji: string | null;
-  sort_order: number | null;
-  is_active: boolean | null;
-}
 
 function getSupabaseServerClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -52,16 +41,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to load personas' }, { status: 500 });
     }
 
-  const personas = ((data as PersonaRecord[] | null) || []).map((persona) => ({
-      id: persona.id,
-      name: persona.name,
-      displayName: persona.display_name,
-      description: persona.description,
-      prompt: persona.prompt,
-      avatarUrl: persona.avatar_url,
-      avatarEmoji: persona.avatar_emoji,
-      sortOrder: persona.sort_order ?? 0,
-    }));
+    const personas = ((data as PersonaDatabaseRow[] | null) || []).map(convertDatabaseRowToPersona);
 
     return NextResponse.json(
       { personas },

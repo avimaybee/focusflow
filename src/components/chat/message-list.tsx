@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { WelcomeScreen } from './welcome-screen';
 import { ChatMessageSkeleton } from './chat-message-skeleton';
 import type { SmartTool } from '@/components/smart-tools-menu';
-import type { PersonaDetails } from '@/types/chat-types';
+import type { Persona } from '@/types/persona';
 import { cn } from '@/lib/utils';
 
 interface MessageListProps {
@@ -16,7 +16,7 @@ interface MessageListProps {
   isSending: boolean;
   isHistoryLoading: boolean;
   activeChatId: string | null;
-  activePersona: PersonaDetails | undefined;
+  activePersona: Persona | undefined;
   onSmartToolAction: (prompt: string) => void;
   className?: string;
   contentClassName?: string;

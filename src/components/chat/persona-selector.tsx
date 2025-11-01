@@ -73,12 +73,7 @@ const personaColors: { [key: string]: string } = {
   'exam strategist': 'from-red-500/20 to-rose-500/20 border-red-500/30',
 };
 
-interface Persona {
-  id: string;
-  name: string;
-  description?: string;
-  displayName?: string;
-}
+import type { Persona } from '@/types/persona';
 
 interface PersonaSelectorProps {
   personas: Persona[];

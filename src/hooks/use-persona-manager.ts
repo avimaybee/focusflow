@@ -1,167 +1,127 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { PersonaIDs } from '@/lib/constants';
+import { Persona, DEFAULT_PERSONA_ID } from '@/types/persona';
 
-type PersonaDetails = {
-  id: string;
-  name: string;
-  displayName: string;
-  description: string;
-  avatarUrl: string;
-  prompt: string;
-};
-
-type PersonaApiEntry = {
-  id: string;
-  name?: string | null;
-  displayName?: string | null;
-  description?: string | null;
-  prompt?: string | null;
-  avatarUrl?: string | null;
-  avatarEmoji?: string | null;
-};
-
-const FALLBACK_PERSONAS: PersonaDetails[] = [
+/**
+ * Minimal fallback personas used only when API fails and cache is empty.
+ * These are NOT meant to be comprehensive — they exist solely for resilience.
+ * For new personas, update the database only; they will auto-load from /api/personas.
+ */
+const MINIMAL_FALLBACK_PERSONAS: Persona[] = [
   {
-    id: PersonaIDs.GURT,
+    id: 'Gurt',
     name: 'Gurt',
     displayName: 'Gurt - The Guide',
-    description: 'Friendly default study buddy for anything you throw at them.',
-    avatarUrl: '',
+    description: 'Your default helpful companion',
     prompt: '',
-  },
-  {
-    id: PersonaIDs.IM_A_BABY,
-    name: 'Milo',
-    displayName: 'Milo - Explain Like I\'m Five',
-    description: 'Breaks tough topics into playful kid-level explanations.',
-    avatarUrl: '',
-    prompt: '',
-  },
-  {
-    id: PersonaIDs.STRAIGHT_SHOOTER,
-    name: 'Frank',
-    displayName: 'Frank - The Straight Shooter',
-    description: 'No fluff answers when you just need the facts.',
-    avatarUrl: '',
-    prompt: '',
-  },
-  {
-    id: PersonaIDs.ESSAY_WRITER,
-    name: 'Clairo',
-    displayName: 'Clairo - Essay Writer',
-    description: 'Builds polished academic essays with structure and voice.',
-    avatarUrl: '',
-    prompt: '',
-  },
-  {
-    id: PersonaIDs.LORE_MASTER,
-    name: 'Syd',
-    displayName: 'Syd - Deep Dive Explainer',
-    description: 'Guides you through every angle until the concept finally sticks.',
-    avatarUrl: '',
-    prompt: '',
-  },
-  {
-    id: PersonaIDs.SASSY_TUTOR,
-    name: 'Lexi',
-    displayName: 'Lexi - The Sassy Tutor',
-    description: 'High-energy coach who makes studying feel fun and encouraging.',
-    avatarUrl: '',
-    prompt: '',
-  },
-  {
-    id: PersonaIDs.IDEA_COOK,
-    name: 'The Chef',
-    displayName: 'The Chef - Idea Cook',
-    description: 'Rapid-fire brainstorm partner serving up creative takes.',
-    avatarUrl: '',
-    prompt: '',
-  },
-  {
-    id: PersonaIDs.MEMORY_COACH,
-    name: 'Remi',
-    displayName: 'Remi - Memory Coach',
-    description: 'Helps you lock down facts fast with mnemonics and repetition.',
-    avatarUrl: '',
-    prompt: '',
-  },
-  {
-    id: PersonaIDs.CODE_NERD,
-    name: 'Dex',
-    displayName: 'Dex - Code Nerd',
-    description: 'Clear, encouraging programming mentor from basics to advanced.',
-    avatarUrl: '',
-    prompt: '',
-  },
-  {
-    id: PersonaIDs.EXAM_STRATEGIST,
-    name: 'Theo',
-    displayName: 'Theo - Exam Strategist',
-    description: 'Exam-day strategist who optimises time, focus, and points.',
-    avatarUrl: '',
-    prompt: '',
+    avatarUrl: null,
+    avatarEmoji: null,
+    sortOrder: 0,
   },
 ];
 
-function convertToPersonaDetails(persona: PersonaApiEntry): PersonaDetails {
-  return {
-    id: persona.id,
-    name: persona.name || persona.displayName || persona.id,
-    displayName: persona.displayName || persona.name || persona.id,
-    description: persona.description || '',
-    avatarUrl: persona.avatarEmoji || persona.avatarUrl || '',
-    prompt: persona.prompt || '',
-  };
-}
-
 export function usePersonaManager(initialPersonaId?: string) {
   const { preferredPersona } = useAuth();
-  const [personas, setPersonas] = useState<PersonaDetails[]>([]);
-  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(initialPersonaId || PersonaIDs.GURT);
+  const [personas, setPersonas] = useState<Persona[]>([]);
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(initialPersonaId || DEFAULT_PERSONA_ID);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch personas from database
+  /**
+   * Module-level caching to avoid duplicate persona fetches across multiple hook instances.
+   * This keeps network calls to a minimum and returns a shared promise while fetching.
+   */
+  const globalAny: any = globalThis as any;
+  if (!globalAny.__personasCache) {
+    globalAny.__personasCache = { data: null, ts: 0, promise: null } as {
+      data: Persona[] | null;
+      ts: number;
+      promise: Promise<Persona[]> | null;
+    };
+  }
+  const CACHE_TTL = 60 * 1000; // 60s
+
   useEffect(() => {
-    const controller = new AbortController();
+    let mounted = true;
 
-    async function fetchPersonas() {
+    async function ensurePersonas() {
       setIsLoading(true);
+
+      const cache = globalAny.__personasCache;
+      const now = Date.now();
+
+      // If cache valid, use it
+      if (cache.data && now - cache.ts < CACHE_TTL) {
+        if (!mounted) return;
+        setPersonas(cache.data);
+        setIsLoading(false);
+        return;
+      }
+
+      // If another fetch is in-flight, await it
+      if (cache.promise) {
+        try {
+          const fetched = await cache.promise;
+          if (!mounted) return;
+          setPersonas(fetched);
+        } catch (err) {
+          if (!mounted) return;
+          console.error('[usePersonaManager] Error awaiting personas promise:', err);
+          setPersonas(MINIMAL_FALLBACK_PERSONAS);
+        } finally {
+          if (mounted) setIsLoading(false);
+        }
+        return;
+      }
+
+      // Otherwise start a new fetch and store the promise
+      const promise = (async () => {
+        try {
+          const response = await fetch('/api/personas', {
+            method: 'GET',
+            cache: 'no-store',
+          });
+          if (!response.ok) {
+            throw new Error(`Persona request failed with status ${response.status}`);
+          }
+          const payload = await response.json() as { personas?: Persona[] };
+          const fetched = Array.isArray(payload.personas) ? payload.personas : [];
+          const final = fetched.length > 0 ? fetched : MINIMAL_FALLBACK_PERSONAS;
+          cache.data = final;
+          cache.ts = Date.now();
+          return final;
+        } catch (error) {
+          console.error('[usePersonaManager] Error fetching personas:', error);
+          const final = MINIMAL_FALLBACK_PERSONAS;
+          cache.data = final;
+          cache.ts = Date.now();
+          return final;
+        } finally {
+          cache.promise = null;
+        }
+      })();
+
+      cache.promise = promise;
+
       try {
-        const response = await fetch('/api/personas', {
-          method: 'GET',
-          cache: 'no-store',
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Persona request failed with status ${response.status}`);
-        }
-
-        const payload = await response.json() as { personas?: PersonaApiEntry[] };
-        const fetched = Array.isArray(payload.personas) ? payload.personas : [];
-        const converted = fetched.map(convertToPersonaDetails);
-
-        if (!controller.signal.aborted) {
-          setPersonas(converted.length > 0 ? converted : FALLBACK_PERSONAS);
-        }
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        console.error('Error fetching personas:', error);
-        setPersonas(FALLBACK_PERSONAS);
+        const res = await promise;
+        if (!mounted) return;
+        setPersonas(res);
+      } catch (err) {
+        if (!mounted) return;
+        console.error('[usePersonaManager] Error resolving personas fetch:', err);
+        setPersonas(MINIMAL_FALLBACK_PERSONAS);
       } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
+        if (mounted) setIsLoading(false);
       }
     }
 
-    fetchPersonas();
+    ensurePersonas();
 
-    return () => controller.abort();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Set preferred persona from auth context

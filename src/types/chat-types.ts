@@ -1,5 +1,6 @@
 
 import { z } from 'zod';
+import { validPersonaIDs, Persona } from './persona';
 
 export interface Attachment {
   url: string;
@@ -8,6 +9,10 @@ export interface Attachment {
   size: number;
 }
 
+/**
+ * @deprecated Use Persona from '@/types/persona' instead.
+ * This interface is kept only for backwards compatibility.
+ */
 export interface PersonaDetails {
   id: string;
   name: string;
@@ -15,20 +20,12 @@ export interface PersonaDetails {
   prompt: string;
 }
 
-export const validPersonas = [
-  'Gurt',
-  'Im a baby',
-  'straight shooter',
-  'essay writer',
-  'lore master',
-  'sassy tutor',
-  'idea cook',
-  'memory coach',
-  'code nerd',
-  'exam strategist',
-] as const;
+/**
+ * Valid persona IDs, imported from the canonical source.
+ */
+export const validPersonas = validPersonaIDs;
 
-export type Persona = (typeof validPersonas)[number];
+export type Persona_deprecated = (typeof validPersonas)[number];
 export const PersonaSchema = z.enum(validPersonas);
 
 export const ChatHistoryMessageSchema = z.object({

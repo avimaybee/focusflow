@@ -3,12 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bot } from 'lucide-react';
 import { LoaderFive } from '../ui/loader';
-
-interface Persona {
-    id: string;
-    name: string;
-    avatarUrl: string;
-}
+import type { Persona } from '@/types/persona';
 
 interface ChatMessageSkeletonProps {
     persona?: Persona;
@@ -18,7 +13,7 @@ export function ChatMessageSkeleton({ persona }: ChatMessageSkeletonProps) {
     return (
         <div className="group flex items-start gap-3">
             <Avatar className="h-8 w-8 bg-accent/50 text-accent-foreground border border-accent">
-                <AvatarImage src={persona?.avatarUrl} alt={persona?.name} />
+                <AvatarImage src={persona?.avatarUrl || undefined} alt={persona?.name} />
                 <AvatarFallback className="bg-transparent">
                     <Bot className="h-5 w-5" />
                 </AvatarFallback>

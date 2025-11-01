@@ -1,38 +1,52 @@
 # Personas (developer quick reference)
 
-This file documents where and how the project uses personas and how to update them.
+**IMPORTANT:** See `PERSONAS_UNIFIED.md` in the project root for the complete persona system documentation.
 
-Where personas live
+## Quick Summary
+As of the latest refactoring, personas are now unified in a single source of truth:
+- **All types live in:** `src/types/persona.ts`
+- **API endpoint:** `/api/personas` (fetches from Supabase, cached 5min + 1hr stale-while-revalidate)
+- **Hook:** `src/hooks/use-persona-manager.ts` (in-memory cache, deduped in-flight requests)
+- **Database:** `public.personas` table (Supabase)
+
+## Where personas live
 - Database: `public.personas` (Supabase)
 - Migration: `supabase/migrations/04_create_personas_table.sql`
+- Types: `src/types/persona.ts` (canonical, single source of truth)
 
-Primary code paths
-- Server actions: `src/lib/persona-actions.ts` — canonical place to fetch/modify personas.
+## Primary code paths
+- API Route: `src/app/api/personas/route.ts` — fetches personas from DB, returns Persona[]
 - Client hook: `src/hooks/use-persona-manager.ts` — React hook used by UI components to fetch and cache personas.
-- Constants: `src/lib/constants.ts` — `PersonaIDs` constant used to avoid hard-coded strings.
-- Types: `src/types/chat-types.ts` — `validPersonas` and default persona values.
 - Chat flow: `src/ai/flows/chat-flow.ts` — resolves persona prompt for AI system messages.
 - Key UI components:
   - `src/components/chat/persona-selector.tsx`
   - `src/components/chat/multimodal-input.tsx`
   - `src/components/landing/landing-page-chat-v2.tsx`
 
-How to add a persona (high-level)
-1. Create an INSERT migration or add the row via Supabase SQL editor (see `supabase/migrations/04_create_personas_table.sql`).
-2. (Optional) Add the id to `src/lib/constants.ts` to make it easy to reference in code.
-3. Add the id to `src/types/chat-types.ts` `validPersonas` array to keep TypeScript strict.
-4. Test locally: run dev server, select the persona in the UI, and send a chat message.
+## How to add a persona (simplified)
+1. Insert a new row into the `public.personas` table via Supabase with all required fields (id, name, display_name, description, prompt, avatar_emoji, is_active=true, sort_order).
+2. (Optional) Add the ID to `PERSONA_IDS` in `src/types/persona.ts` for type safety.
+3. (Optional) Add the ID to `validPersonaIDs` in `src/types/persona.ts` for validation.
+4. That's it! The new persona will auto-load on next page load from `/api/personas`.
 
-Best practices
-- Prefer adding personas via DB so they can be updated without redeploys.
-- Avoid hard-coded string ids across components; use `PersonaIDs` constant.
-- If you must rename an id, follow a migration strategy to preserve chat history (create new row, migrate existing references, then remove old row).
+## Best practices
+- Prefer adding personas via DB so they can be updated without code redeploys.
+- Use `PERSONA_IDS` constant from `src/types/persona.ts` when referencing personas in code.
+- All new code should import `Persona` type from `src/types/persona.ts`.
+- Keep persona names in the database lowercase and consistent (affects color matching in UI).
 
-Common troubleshooting
-- Personas not showing: ensure `getPersonas()` returns rows and `is_active` is true.
-- Unexpected persona behavior: inspect `prompt` field in DB for the persona and check `chat-flow` usage.
+## Backwards Compatibility Notes
+- `src/lib/constants.ts` still exports `PersonaIDs`, but it re-exports from `src/types/persona.ts`.
+- `src/types/chat-types.ts` still exports `PersonaDetails` (deprecated), but it's not used in new code.
+- Old code using `PersonaDetails` still compiles but may have type errors due to nullable `avatarUrl`.
 
-If you need a longer developer doc, update `docs/PERSONAS.md` (canonical) and link it here.
+## Common troubleshooting
+- Personas not showing: ensure rows exist in `public.personas` with `is_active=true`.
+- Persona colors not matching: check that persona names in DB match the lowercase checks in `getPersonaColor()` in `src/components/chat/chat-message.tsx`.
+- Type errors about avatarUrl: `Persona.avatarUrl` is now nullable (`string | null`). Use `persona?.avatarUrl || undefined` when needed.
+
+---
+
 # FocusFlow AI: Project Overview
 
 This document provides a comprehensive overview of the FocusFlow AI application, detailing its features, technical implementation, design philosophy, and key development challenges.

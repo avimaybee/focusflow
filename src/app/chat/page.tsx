@@ -70,6 +70,8 @@ export default function ChatPage() {
   const previousChatIdRef = useRef<string | null>(null);
   const messagesRef = useRef<ChatMessageProps[]>([]);
   const messageFetchControllerRef = useRef<AbortController | null>(null);
+  const messagesCacheRef = useRef<Map<string, { data: ChatMessageProps[]; ts: number }>>(new Map());
+  const inFlightFetchesRef = useRef<Map<string, Promise<void>>>(new Map());
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -100,7 +102,25 @@ export default function ChatPage() {
   const loadMessages = useCallback(async (chatId: string, attempt = 0) => {
     if (!chatId) return;
 
-    messageFetchControllerRef.current?.abort();
+    // If we have a fresh cache for this chat and no optimistic messages, use it
+    const cached = messagesCacheRef.current.get(chatId);
+    const now = Date.now();
+    if (cached && now - cached.ts < 10_000 && !hasOptimisticMessages(messagesRef.current)) {
+      setMessages(cached.data);
+      return;
+    }
+
+    // If there's already an in-flight fetch for this chat, don't start a parallel one.
+    const existing = inFlightFetchesRef.current.get(chatId);
+    if (existing) {
+      try {
+        await existing;
+      } catch (e) {
+        // swallow; existing fetch will handle state
+      }
+      return;
+    }
+
     const controller = new AbortController();
     messageFetchControllerRef.current = controller;
 
@@ -118,64 +138,78 @@ export default function ChatPage() {
       }
 
       const url = `/api/chat?sessionId=${chatId}` + (accessToken ? `&accessToken=${encodeURIComponent(accessToken)}` : '');
-      const res = await fetch(url, { headers, signal: controller.signal });
+      // Track this fetch as in-flight for this chatId to avoid duplicates
+      const fetchPromise = (async () => {
+        const res = await fetch(url, { headers, signal: controller.signal });
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => 'Could not read response body');
-        console.error('Failed to load messages:', res.status, text);
-        return;
-      }
-
-      const data = await res.json();
-      const fetched = (Array.isArray(data) ? data : []) as ChatMessageProps[];
-      let shouldRetry = false;
-
-      console.debug('[Client] loadMessages fetched batch', {
-        chatId,
-        fetchedCount: fetched.length,
-        attempt,
-      });
-
-      setMessages((prev) => {
-        if (activeChatIdRef.current !== chatId) {
-          return prev;
+        if (!res.ok) {
+          const text = await res.text().catch(() => 'Could not read response body');
+          console.error('Failed to load messages:', res.status, text);
+          return;
         }
 
-        if (fetched.length === 0) {
-          if (attempt < 3 && (hasOptimisticMessages(prev) || (prev && prev.length > 0))) {
+        const data = await res.json();
+        const fetched = (Array.isArray(data) ? data : []) as ChatMessageProps[];
+        let shouldRetry = false;
+
+        console.debug('[Client] loadMessages fetched batch', {
+          chatId,
+          fetchedCount: fetched.length,
+          attempt,
+        });
+
+        setMessages((prev) => {
+          if (activeChatIdRef.current !== chatId) {
+            return prev;
+          }
+
+          if (fetched.length === 0) {
+            if (attempt < 3 && (hasOptimisticMessages(prev) || (prev && prev.length > 0))) {
+              shouldRetry = true;
+              return prev;
+            }
+            return prev && prev.length > 0 ? prev : [];
+          }
+
+          const prevList = prev || [];
+          const fetchedIds = new Set(fetched.map((msg) => msg.id));
+          const hasMissingOptimistic = prevList.some((msg) => {
+            const optimistic = (msg.id ?? '').startsWith('user-') || (msg.id ?? '').startsWith('guest-ai-') || (msg.id ?? '').startsWith('err-');
+            return optimistic && msg.id && !fetchedIds.has(msg.id);
+          });
+
+          if ((hasMissingOptimistic || fetched.length < prevList.length) && attempt < 5) {
             shouldRetry = true;
             return prev;
           }
-          return prev && prev.length > 0 ? prev : [];
-        }
 
-        const prevList = prev || [];
-        const fetchedIds = new Set(fetched.map((msg) => msg.id));
-        const hasMissingOptimistic = prevList.some((msg) => {
-          const optimistic = (msg.id ?? '').startsWith('user-') || (msg.id ?? '').startsWith('guest-ai-') || (msg.id ?? '').startsWith('err-');
-          return optimistic && msg.id && !fetchedIds.has(msg.id);
+          return fetched;
         });
 
-        if ((hasMissingOptimistic || fetched.length < prevList.length) && attempt < 5) {
-          shouldRetry = true;
-          return prev;
+        // Cache the fetched messages for short period
+        try {
+          messagesCacheRef.current.set(chatId, { data: (Array.isArray(data) ? data : []) as ChatMessageProps[], ts: Date.now() });
+        } catch (e) {
+          // ignore cache set failures
         }
 
-        return fetched;
-      });
-
-      if (!shouldRetry && retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-        retryTimeoutRef.current = null;
-      }
-
-      if (shouldRetry) {
-        if (retryTimeoutRef.current) {
+        if (!shouldRetry && retryTimeoutRef.current) {
           clearTimeout(retryTimeoutRef.current);
+          retryTimeoutRef.current = null;
         }
-        retryTimeoutRef.current = setTimeout(() => loadMessages(chatId, attempt + 1), 600);
-        console.debug('[Client] Scheduling retry for loadMessages', { chatId, nextAttempt: attempt + 1 });
-      }
+
+        if (shouldRetry) {
+          if (retryTimeoutRef.current) {
+            clearTimeout(retryTimeoutRef.current);
+          }
+          retryTimeoutRef.current = setTimeout(() => loadMessages(chatId, attempt + 1), 600);
+          console.debug('[Client] Scheduling retry for loadMessages', { chatId, nextAttempt: attempt + 1 });
+        }
+      })();
+
+      inFlightFetchesRef.current.set(chatId, fetchPromise);
+      await fetchPromise;
+      inFlightFetchesRef.current.delete(chatId);
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') {
         return;
@@ -193,6 +227,7 @@ export default function ChatPage() {
       if (messageFetchControllerRef.current === controller) {
         messageFetchControllerRef.current = null;
       }
+      inFlightFetchesRef.current.delete(chatId);
     }
   }, [session?.access_token, hasOptimisticMessages]);
 
