@@ -140,18 +140,20 @@ export async function uploadFileToGemini(file: string | Buffer | Uint8Array | Ar
       if (typeof file === 'string') {
         uploadable = file;
       } else if (Buffer.isBuffer(file)) {
-        const uint8 = Uint8Array.from(file);
-        uploadable = new Blob([uint8], { type: mimeType });
+        uploadable = new Blob([file as BlobPart], { type: mimeType });
       } else if (file instanceof ArrayBuffer) {
         uploadable = new Blob([file], { type: mimeType });
       } else if (file instanceof Uint8Array) {
-        uploadable = new Blob([file], { type: mimeType });
+        uploadable = new Blob([file as BlobPart], { type: mimeType });
       } else {
         throw new Error('Unsupported file payload type');
       }
 
-      const uploadedFile = await geminiClient.files.uploadFile(uploadable, {
-        mimeType,
+      const uploadedFile = await geminiClient.files.upload({
+        file: uploadable,
+        config: {
+          mimeType,
+        },
       });
 
       console.log('[gemini-client] File uploaded successfully:', uploadedFile.uri);
