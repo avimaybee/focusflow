@@ -425,7 +425,7 @@ export default function ChatPage() {
     // Convert attachments to API format
     const apiAttachments = attachments.map(att => ({
       type: 'file_uri' as const, // All uploaded files have URIs now
-      uri: att.url, // Gemini file URI
+      data: att.url, // Gemini file URI (field name must match server schema)
       mimeType: att.contentType,
     }));
 
