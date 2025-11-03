@@ -38,12 +38,16 @@ vi.mock('@/lib/gemini-client', () => ({
   createChatSession: vi.fn().mockReturnValue({
     sendMessage: vi.fn(async () => {
         return Promise.resolve({
-            response: {
-              text: () => 'This is a mocked chat response.',
-            },
+            text: 'This is a mocked chat response.',
           });
     }),
   }),
+  createFileDataPart: vi.fn((uri, mimeType) => ({
+    fileData: { fileUri: uri, mimeType },
+  })),
+  createInlineDataPart: vi.fn((data, mimeType) => ({
+    inlineData: { data, mimeType },
+  })),
 }));
 
 describe('chatFlow', () => {
@@ -64,6 +68,38 @@ describe('chatFlow', () => {
       isGuest: false,
     });
     expect(result.sessionId).toBe('existing-session-id');
+    expect(result.response).toBe('This is a mocked chat response.');
+  });
+
+  it('should accept file_uri attachments with data field', async () => {
+    const result = await chatFlow({
+      message: 'Analyze this image',
+      userId: 'test-user',
+      isGuest: false,
+      attachments: [
+        {
+          type: 'file_uri',
+          data: 'https://generativelanguage.googleapis.com/v1beta/files/abc123',
+          mimeType: 'image/png',
+        },
+      ],
+    });
+    expect(result.response).toBe('This is a mocked chat response.');
+  });
+
+  it('should accept inline_data attachments with data field', async () => {
+    const result = await chatFlow({
+      message: 'Analyze this content',
+      userId: 'test-user',
+      isGuest: false,
+      attachments: [
+        {
+          type: 'inline_data',
+          data: 'base64encodeddata',
+          mimeType: 'text/plain',
+        },
+      ],
+    });
     expect(result.response).toBe('This is a mocked chat response.');
   });
 });
