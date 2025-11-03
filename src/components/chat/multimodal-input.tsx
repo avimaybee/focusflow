@@ -301,6 +301,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
               </Button>
             ) : (
               <Button
+                type="button"
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 cursor-pointer rounded-full text-foreground/60 hover:text-foreground hover:bg-muted/60 transition-colors"

@@ -232,7 +232,7 @@ export function ChatMessage({
               <div key={att.url || index} className="relative h-48 w-48">
                 {att.contentType.startsWith('image/') ? (
                   <Image
-                    src={att.url}
+                    src={`/api/chat/image/${att.url.replace(/^files\//, '')}`}
                     alt={att.name || 'Attached image'}
                     layout="fill"
                     className="rounded-md object-contain"

@@ -145,8 +145,7 @@ export async function uploadFileToGemini(file: string | Buffer | Uint8Array | Ar
       } else if (file instanceof ArrayBuffer) {
         uploadable = new Blob([file], { type: mimeType });
       } else if (file instanceof Uint8Array) {
-        const uint8 = Uint8Array.from(file as Uint8Array);
-        uploadable = new Blob([uint8], { type: mimeType });
+        uploadable = new Blob([file], { type: mimeType });
       } else {
         throw new Error('Unsupported file payload type');
       }
