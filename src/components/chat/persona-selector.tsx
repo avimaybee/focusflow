@@ -78,6 +78,7 @@ interface Persona {
   name: string;
   description?: string;
   displayName?: string;
+  avatarEmoji?: string;
 }
 
 interface PersonaSelectorProps {
@@ -100,10 +101,11 @@ export function PersonaSelector({
   const [open, setOpen] = React.useState(false);
   const selectedPersona = personas.find((p) => p.id === selectedPersonaId);
   const Icon = selectedPersona ? (personaIcons[selectedPersona.id] || Bot) : Users;
+  const selectedEmoji = selectedPersona?.avatarEmoji;
   
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+  <PopoverTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
@@ -115,8 +117,12 @@ export function PersonaSelector({
             disabled && "opacity-50 cursor-not-allowed",
             className
           )}
-        >
-          <Icon className="h-5 w-5 text-muted-foreground" />
+          >
+          {selectedEmoji ? (
+            <span className="text-lg leading-none">{selectedEmoji}</span>
+          ) : (
+            <Icon className="h-5 w-5 text-muted-foreground" />
+          )}
         </Button>
       </PopoverTrigger>
       
@@ -173,12 +179,21 @@ export function PersonaSelector({
                               ? "bg-primary/10 ring-2 ring-primary/30" 
                               : "bg-muted group-hover:bg-primary/5"
                           )}>
-                            <PersonaIcon className={cn(
-                              "h-5 w-5 transition-colors",
-                              isSelected 
-                                ? "text-primary" 
-                                : "text-muted-foreground group-hover:text-foreground"
-                            )} />
+                            {persona.avatarEmoji ? (
+                              <span className={cn(
+                                "text-lg leading-none",
+                                isSelected ? 'opacity-100' : 'opacity-90'
+                              )} aria-hidden>
+                                {persona.avatarEmoji}
+                              </span>
+                            ) : (
+                              <PersonaIcon className={cn(
+                                "h-5 w-5 transition-colors",
+                                isSelected 
+                                  ? "text-primary" 
+                                  : "text-muted-foreground group-hover:text-foreground"
+                              )} />
+                            )}
                           </div>
                           
                           {/* Content */}

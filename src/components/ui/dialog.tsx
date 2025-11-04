@@ -54,33 +54,33 @@ const DialogContent = React.forwardRef<
   return (
     <DialogPortal>
         <DialogOverlay />
-        <DialogPrimitive.Content
-          ref={ref}
-          asChild
-          className={cn(
-            "fixed left-[50%] top-[50%] z-[100] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 border bg-secondary shadow-2xl sm:rounded-xl",
-            className
-          )}
-          {...props}
-        >
-          <motion.div
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={0.1}
-            onDragEnd={onDragEnd}
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="grid gap-4 p-6 max-h-[90vh] overflow-y-auto"
+
+        {/* Centering wrapper: ensures dialog is perfectly centered regardless of transforms on page content */}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <DialogPrimitive.Content
+            ref={ref}
+            className={cn(
+              "w-full max-w-lg border bg-secondary shadow-2xl sm:rounded-xl",
+              className
+            )}
+            {...props}
           >
-            {children}
-            <DialogPrimitive.Close className="absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
-          </motion.div>
-        </DialogPrimitive.Content>
+            <motion.div
+              // Keep motion/animation but do not rely on asChild forwarding (avoids prop type conflicts)
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="grid gap-4 p-6 max-h-[90vh] overflow-y-auto relative"
+            >
+              {children}
+              <DialogPrimitive.Close className="absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </DialogPrimitive.Close>
+            </motion.div>
+          </DialogPrimitive.Content>
+        </div>
     </DialogPortal>
   )
 });

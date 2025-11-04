@@ -11,6 +11,7 @@ type PersonaDetails = {
   displayName: string;
   description: string;
   avatarUrl: string;
+  avatarEmoji?: string;
   prompt: string;
 };
 
@@ -31,6 +32,7 @@ const FALLBACK_PERSONAS: PersonaDetails[] = [
     displayName: 'Gurt - The Guide',
     description: 'Friendly default study buddy for anything you throw at them.',
     avatarUrl: '',
+    avatarEmoji: '🎓',
     prompt: '',
   },
   {
@@ -39,6 +41,7 @@ const FALLBACK_PERSONAS: PersonaDetails[] = [
     displayName: 'Milo - Explain Like I\'m Five',
     description: 'Breaks tough topics into playful kid-level explanations.',
     avatarUrl: '',
+    avatarEmoji: '👶',
     prompt: '',
   },
   {
@@ -47,6 +50,7 @@ const FALLBACK_PERSONAS: PersonaDetails[] = [
     displayName: 'Frank - The Straight Shooter',
     description: 'No fluff answers when you just need the facts.',
     avatarUrl: '',
+    avatarEmoji: '🎯',
     prompt: '',
   },
   {
@@ -55,6 +59,7 @@ const FALLBACK_PERSONAS: PersonaDetails[] = [
     displayName: 'Clairo - Essay Writer',
     description: 'Builds polished academic essays with structure and voice.',
     avatarUrl: '',
+    avatarEmoji: '✍️',
     prompt: '',
   },
   {
@@ -63,6 +68,7 @@ const FALLBACK_PERSONAS: PersonaDetails[] = [
     displayName: 'Syd - Deep Dive Explainer',
     description: 'Guides you through every angle until the concept finally sticks.',
     avatarUrl: '',
+    avatarEmoji: '🧠',
     prompt: '',
   },
   {
@@ -71,6 +77,7 @@ const FALLBACK_PERSONAS: PersonaDetails[] = [
     displayName: 'Lexi - The Sassy Tutor',
     description: 'High-energy coach who makes studying feel fun and encouraging.',
     avatarUrl: '',
+    avatarEmoji: '✨',
     prompt: '',
   },
   {
@@ -79,6 +86,7 @@ const FALLBACK_PERSONAS: PersonaDetails[] = [
     displayName: 'The Chef - Idea Cook',
     description: 'Rapid-fire brainstorm partner serving up creative takes.',
     avatarUrl: '',
+    avatarEmoji: '💡',
     prompt: '',
   },
   {
@@ -87,6 +95,7 @@ const FALLBACK_PERSONAS: PersonaDetails[] = [
     displayName: 'Remi - Memory Coach',
     description: 'Helps you lock down facts fast with mnemonics and repetition.',
     avatarUrl: '',
+    avatarEmoji: '⚡',
     prompt: '',
   },
   {
@@ -95,6 +104,7 @@ const FALLBACK_PERSONAS: PersonaDetails[] = [
     displayName: 'Dex - Code Nerd',
     description: 'Clear, encouraging programming mentor from basics to advanced.',
     avatarUrl: '',
+    avatarEmoji: '💻',
     prompt: '',
   },
   {
@@ -103,6 +113,7 @@ const FALLBACK_PERSONAS: PersonaDetails[] = [
     displayName: 'Theo - Exam Strategist',
     description: 'Exam-day strategist who optimises time, focus, and points.',
     avatarUrl: '',
+    avatarEmoji: '🎯',
     prompt: '',
   },
 ];
@@ -114,6 +125,7 @@ function convertToPersonaDetails(persona: PersonaApiEntry): PersonaDetails {
     displayName: persona.displayName || persona.name || persona.id,
     description: persona.description || '',
     avatarUrl: persona.avatarEmoji || persona.avatarUrl || '',
+    avatarEmoji: persona.avatarEmoji || undefined,
     prompt: persona.prompt || '',
   };
 }
