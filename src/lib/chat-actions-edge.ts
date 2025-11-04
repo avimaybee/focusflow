@@ -4,6 +4,7 @@
 import { supabase, createAuthenticatedSupabaseClient } from './supabase';
 import { ChatMessageProps } from '@/components/chat/chat-message';
 import { marked } from 'marked';
+import { buildGeminiProxyUrl } from '@/lib/attachment-utils';
 
 /**
  * Get chat messages for a session (Edge-compatible)
@@ -19,7 +20,7 @@ export async function getChatMessages(sessionId: string, authToken?: string): Pr
 
         const { data, error } = await supabaseClient
             .from('chat_messages')
-            .select('id, role, content, persona_id, created_at')
+            .select('id, role, content, attachments, persona_id, created_at')
             .eq('session_id', sessionId)
             .order('created_at', { ascending: true });
 
@@ -33,14 +34,58 @@ export async function getChatMessages(sessionId: string, authToken?: string): Pr
             return [];
         }
 
-        const messages = await Promise.all(data.map(async (message) => ({
-            id: message.id,
-            role: message.role as 'user' | 'model',
-            text: await marked.parse(message.content),
-            rawText: message.content,
-            personaId: message.persona_id,
-            createdAt: new Date(message.created_at),
-        })));
+        const messages = await Promise.all(data.map(async (message) => {
+            const text = await marked.parse(message.content);
+            const attachments = Array.isArray(message.attachments)
+                ? message.attachments.reduce<NonNullable<ChatMessageProps['attachments']>>((acc, raw) => {
+                    if (!raw || typeof raw !== 'object') {
+                        return acc;
+                    }
+
+                    const remoteUrl = typeof raw.url === 'string' ? raw.url : undefined;
+                    const proxiedUrl = remoteUrl ? buildGeminiProxyUrl(remoteUrl) : '';
+                    const name = typeof raw.name === 'string' && raw.name.length > 0 ? raw.name : 'attachment';
+                    const mimeType = typeof raw.mimeType === 'string' ? raw.mimeType : typeof raw.contentType === 'string' ? raw.contentType : 'application/octet-stream';
+
+                    let sizeValue: number | undefined;
+                    if (typeof raw.sizeBytes === 'number') {
+                        sizeValue = raw.sizeBytes;
+                    } else if (typeof raw.size === 'number') {
+                        sizeValue = raw.size;
+                    } else if (typeof raw.sizeBytes === 'string') {
+                        const parsed = Number.parseInt(raw.sizeBytes, 10);
+                        if (Number.isFinite(parsed)) {
+                            sizeValue = parsed;
+                        }
+                    }
+
+                    const normalizedSize = typeof sizeValue === 'number' && Number.isFinite(sizeValue) ? Math.max(0, sizeValue) : 0;
+
+                    if (!remoteUrl && !proxiedUrl) {
+                        return acc;
+                    }
+
+                    acc.push({
+                        url: proxiedUrl || remoteUrl || '',
+                        remoteUrl,
+                        name,
+                        contentType: mimeType,
+                        size: normalizedSize,
+                    });
+                    return acc;
+                }, [])
+                : undefined;
+
+            return {
+                id: message.id,
+                role: message.role as 'user' | 'model',
+                text,
+                rawText: message.content,
+                personaId: message.persona_id,
+                createdAt: new Date(message.created_at),
+                attachments,
+            };
+        }));
 
         console.log('[getChatMessages] Successfully fetched', messages.length, 'messages for session:', sessionId);
         return messages;

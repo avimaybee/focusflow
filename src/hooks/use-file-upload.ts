@@ -4,6 +4,7 @@
 import { useState, DragEvent, Dispatch, SetStateAction } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { Attachment } from '@/types/chat-types';
+import { buildGeminiProxyUrl } from '@/lib/attachment-utils';
 
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // Must stay in sync with API limit
 
@@ -65,11 +66,14 @@ export function useFileUpload(setAttachment: Dispatch<SetStateAction<Attachment 
 
       console.debug('[FileUpload] Upload success payload', uploaded);
 
+      const remoteUri = uploaded.uri as string | undefined;
+      const proxiedUrl = buildGeminiProxyUrl(remoteUri);
       const newAttachment: Attachment = {
         name: uploaded.displayName || uploaded.name || file.name,
         contentType: uploaded.mimeType || file.type,
         size: Number.parseInt(uploaded.sizeBytes ?? `${file.size}`, 10) || file.size,
-        url: uploaded.uri,
+        url: proxiedUrl || remoteUri || '',
+        remoteUrl: remoteUri,
       };
 
       setAttachment(newAttachment);

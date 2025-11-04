@@ -399,16 +399,24 @@ export default function ChatPage() {
         }
     }
 
-    const userMessage: ChatMessageProps = {
-        id: `user-${Date.now()}`,
-        role: 'user',
-        text: await marked.parse(input.trim()),
-        rawText: input.trim(),
-        userName: user?.user_metadata?.displayName || user?.email || 'User',
-        userAvatar: user?.user_metadata?.avatar_url || null,
-        createdAt: new Date(),
-        attachments: attachments.map(att => ({ url: att.url, name: att.name, contentType: att.contentType, size: att.size }))
-    };
+  const normalizedAttachments = attachments.map(att => ({
+    url: att.url,
+    remoteUrl: att.remoteUrl,
+    name: att.name,
+    contentType: att.contentType,
+    size: att.size,
+  }));
+
+  const userMessage: ChatMessageProps = {
+    id: `user-${Date.now()}`,
+    role: 'user',
+    text: await marked.parse(input.trim()),
+    rawText: input.trim(),
+    userName: user?.user_metadata?.displayName || user?.email || 'User',
+    userAvatar: user?.user_metadata?.avatar_url || null,
+    createdAt: new Date(),
+    attachments: normalizedAttachments.length > 0 ? normalizedAttachments : undefined,
+  };
     console.debug('[Client] Adding userMessage to messages', { id: userMessage.id, rawText: userMessage.rawText });
     setMessages(prev => {
       const next = ([...(prev || []), userMessage]);
@@ -423,13 +431,15 @@ export default function ChatPage() {
     setGuestMessageCount(prev => prev + 1);
   
     // Convert attachments to API format
-    const apiAttachments = attachments.map(att => ({
+    const apiAttachments = attachments
+      .map(att => ({
       type: 'file_uri' as const,
-      data: att.url,
+      data: att.remoteUrl ?? att.url,
       mimeType: att.contentType,
       name: att.name,
       sizeBytes: typeof att.size === 'number' ? att.size : Number(att.size || 0),
-    }));
+    }))
+      .filter(att => typeof att.data === 'string' && att.data.length > 0);
 
     // DON'T pass history - let the server fetch full conversation from database
     // This ensures the AI has access to all previous messages, not just what's in client state

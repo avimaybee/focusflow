@@ -29,6 +29,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
 import type { Attachment } from '@/types/chat-types';
+import { buildGeminiProxyUrl } from '@/lib/attachment-utils';
 
 // Minimal UIMessage type used by this component (wasn't exported from chat-types)
 type UIMessage = { id: string; content: string; role: string };
@@ -154,13 +155,16 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
         
         // Add uploaded file to attachments with Gemini URI
         const sizeBytes = Number.parseInt(result.file.sizeBytes || `${file.size}`, 10);
-        const newAttachment = {
-          url: result.file.uri, // Gemini file URI
+        const remoteUri = result.file.uri as string | undefined;
+        const proxiedUrl = buildGeminiProxyUrl(remoteUri);
+        const newAttachment: Attachment = {
+          url: proxiedUrl || remoteUri || '',
+          remoteUrl: remoteUri,
           name: result.file.displayName || file.name,
           contentType: result.file.mimeType,
           size: Number.isFinite(sizeBytes) && sizeBytes >= 0 ? sizeBytes : file.size,
         };
-        console.log('[MultimodalInput] Adding attachment to state:', newAttachment.url);
+        console.log('[MultimodalInput] Adding attachment to state:', newAttachment.remoteUrl);
         setAttachments(prev => [...prev, newAttachment]);
 
       } catch (error: unknown) {
@@ -180,9 +184,11 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
     const handleRemoveAttachment = useCallback(
       (attachmentToRemove: Attachment) => {
         setAttachments((currentAttachments) =>
-          currentAttachments.filter(
-            (attachment) => attachment.url !== attachmentToRemove.url
-          )
+          currentAttachments.filter((attachment) => {
+            const removeKey = attachmentToRemove.remoteUrl ?? attachmentToRemove.url;
+            const attachmentKey = attachment.remoteUrl ?? attachment.url;
+            return attachmentKey !== removeKey;
+          })
         );
         internalTextareaRef.current?.focus();
       },
@@ -258,8 +264,10 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
               exit={{ opacity: 0, height: 0, paddingBottom: 0 }}
               className="px-1"
             >
-              {attachments.map((attachment) => (
-                 <div key={attachment.url} className="inline-flex items-center gap-2 rounded-full bg-secondary border border-border py-1 pl-2 pr-1 text-sm">
+              {attachments.map((attachment) => {
+                const attachmentKey = attachment.remoteUrl ?? attachment.url;
+                return (
+                 <div key={attachmentKey} className="inline-flex items-center gap-2 rounded-full bg-secondary border border-border py-1 pl-2 pr-1 text-sm">
                     <FileIcon className="h-4 w-4 text-muted-foreground" />
                     <span className="font-medium">{attachment.name}</span>
                     <Button
@@ -271,7 +279,8 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
                       <XIcon className="w-4 h-4" />
                     </Button>
                   </div>
-              ))}
+                );
+              })}
             </motion.div>
           )}
         </AnimatePresence>

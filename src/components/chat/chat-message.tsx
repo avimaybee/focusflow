@@ -131,7 +131,7 @@ export type ChatMessageProps = {
   isFirstInGroup?: boolean;
   isLastInGroup?: boolean;
   onToolAction?: (tool: SmartTool, text?: string) => void;
-  attachments?: { url: string; name: string; contentType: string; size: number; }[];
+  attachments?: { url: string; remoteUrl?: string; name: string; contentType: string; size: number }[];
 };
 
 export function ChatMessage({
@@ -228,8 +228,10 @@ export function ChatMessage({
         )}
         {attachments && attachments.length > 0 && (
           <div className="mt-2 grid gap-2 grid-cols-2">
-            {attachments.map((att, index) => (
-              <div key={att.url || index} className="relative h-48 w-48">
+            {attachments.map((att, index) => {
+              const attachmentKey = att.remoteUrl ?? att.url ?? index;
+              return (
+              <div key={attachmentKey} className="relative h-48 w-48">
                 {att.contentType.startsWith('image/') ? (
                   <Image
                     src={att.url}
@@ -243,7 +245,8 @@ export function ChatMessage({
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
         {images && images.length > 0 && (

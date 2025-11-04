@@ -6,6 +6,7 @@ export interface Attachment {
   name: string;
   contentType: string;
   size: number;
+  remoteUrl?: string;
 }
 
 export interface PersonaDetails {

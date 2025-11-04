@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { ChatHistoryItem } from '@/hooks/use-chat-history';
 import { ChatMessageProps } from '@/components/chat/chat-message';
 import { marked } from 'marked';
+import { buildGeminiProxyUrl } from '@/lib/attachment-utils';
 
 const renameChatSchema = z.object({
     title: z
@@ -70,13 +71,44 @@ export async function getChatMessages(sessionId: string, accessToken?: string): 
         rawText: message.content,
         personaId: message.persona_id,
         createdAt: new Date(message.created_at),
-        attachments: message.attachments && Array.isArray(message.attachments) 
-            ? message.attachments.map((att: any) => ({
-                url: att.url,
-                name: att.name,
-                contentType: att.mimeType,
-                size: parseInt(att.sizeBytes || '0'),
-            }))
+        attachments: Array.isArray(message.attachments)
+            ? message.attachments.reduce<NonNullable<ChatMessageProps['attachments']>>((acc, raw) => {
+                if (!raw || typeof raw !== 'object') {
+                    return acc;
+                }
+
+                const remoteUrl = typeof raw.url === 'string' ? raw.url : undefined;
+                const proxiedUrl = remoteUrl ? buildGeminiProxyUrl(remoteUrl) : '';
+                const name = typeof raw.name === 'string' && raw.name.length > 0 ? raw.name : 'attachment';
+                const mimeType = typeof raw.mimeType === 'string' ? raw.mimeType : typeof raw.contentType === 'string' ? raw.contentType : 'application/octet-stream';
+
+                let sizeValue: number | undefined;
+                if (typeof raw.sizeBytes === 'number') {
+                    sizeValue = raw.sizeBytes;
+                } else if (typeof raw.size === 'number') {
+                    sizeValue = raw.size;
+                } else if (typeof raw.sizeBytes === 'string') {
+                    const parsed = Number.parseInt(raw.sizeBytes, 10);
+                    if (Number.isFinite(parsed)) {
+                        sizeValue = parsed;
+                    }
+                }
+
+                const normalizedSize = typeof sizeValue === 'number' && Number.isFinite(sizeValue) ? Math.max(0, sizeValue) : 0;
+
+                if (!remoteUrl && !proxiedUrl) {
+                    return acc;
+                }
+
+                acc.push({
+                    url: proxiedUrl || remoteUrl || '',
+                    remoteUrl,
+                    name,
+                    contentType: mimeType,
+                    size: normalizedSize,
+                });
+                return acc;
+            }, [])
             : undefined,
     })));
 
