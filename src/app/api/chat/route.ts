@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
+
 export async function POST(request: NextRequest) {
   const start = Date.now();
   console.log('=== NEW CHAT REQUEST ===', { method: request.method, url: request.url });
@@ -51,14 +52,84 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.text();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let parsed: any = null;
+    interface ChatRequestBody {
+      message?: string;
+      sessionId?: string;
+      personaId?: string;
+      context?: unknown;
+      attachments?: unknown;
+    }
+
+    let parsed: ChatRequestBody | null = null;
     try {
-      parsed = body ? JSON.parse(body) : null;
+      parsed = body ? (JSON.parse(body) as ChatRequestBody) : null;
     } catch {
       console.warn('[API] Could not parse request body as JSON, raw body:', body);
     }
     console.log('[API] Request body (parsed):', parsed ? (Object.keys(parsed).length > 0 ? Object.fromEntries(Object.entries(parsed).slice(0, 20)) : parsed) : parsed);
+
+    type RawAttachment = {
+      type?: unknown;
+      data?: unknown;
+      uri?: unknown;
+      mimeType?: unknown;
+      contentType?: unknown;
+      name?: unknown;
+      sizeBytes?: unknown;
+      size?: unknown;
+    };
+
+    const rawAttachments = Array.isArray(parsed?.attachments)
+      ? (parsed.attachments as RawAttachment[])
+      : undefined;
+
+    type NormalizedAttachment = {
+      type: 'file_uri' | 'inline_data';
+      data: string;
+      mimeType: string;
+      name?: string;
+      sizeBytes?: number;
+    };
+
+    const normalizedAttachments = rawAttachments
+      ? rawAttachments.reduce<NormalizedAttachment[]>((acc, att) => {
+          if (!att || typeof att !== 'object') {
+            return acc;
+          }
+
+          const type: NormalizedAttachment['type'] = att.type === 'inline_data' ? 'inline_data' : 'file_uri';
+          const data = typeof att.data === 'string'
+            ? att.data
+            : typeof att.uri === 'string'
+              ? att.uri
+              : null;
+          const mimeType = typeof att.mimeType === 'string'
+            ? att.mimeType
+            : typeof att.contentType === 'string'
+              ? att.contentType
+              : null;
+
+          if (!data || !mimeType) {
+            return acc;
+          }
+
+          const name = typeof att.name === 'string' ? att.name : undefined;
+          let sizeBytes: number | undefined;
+          if (typeof att.sizeBytes === 'number') {
+            sizeBytes = Math.max(0, att.sizeBytes);
+          } else if (typeof att.size === 'number') {
+            sizeBytes = Math.max(0, att.size);
+          } else if (typeof att.sizeBytes === 'string') {
+            const parsedSize = Number.parseInt(att.sizeBytes, 10);
+            if (!Number.isNaN(parsedSize)) {
+              sizeBytes = Math.max(0, parsedSize);
+            }
+          }
+
+          acc.push({ type, data, mimeType, name, sizeBytes });
+          return acc;
+        }, [])
+      : undefined;
 
     if (!parsed || !parsed.message) {
       console.error('[API] Missing required field: message');
@@ -73,6 +144,7 @@ export async function POST(request: NextRequest) {
       personaId: parsed.personaId || 'neutral',
       context: parsed.context,
       authToken: authToken || undefined,
+      attachments: normalizedAttachments && normalizedAttachments.length > 0 ? normalizedAttachments : undefined,
     };
 
     console.log('[API] Calling chatFlow with input keys:', Object.keys(input));
@@ -81,11 +153,18 @@ export async function POST(request: NextRequest) {
     console.log('[API] chatFlow result keys:', result ? Object.keys(result).slice(0, 20) : result, { durationMs: Date.now() - start });
     return NextResponse.json(result);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('=== FATAL API ROUTE ERROR ===', error);
-    console.error('Error stack:', error?.stack);
-    const errorMessage = error?.cause?.message || error?.message || 'No further details available.';
+    const stack = error instanceof Error ? error.stack : undefined;
+    if (stack) {
+      console.error('Error stack:', stack);
+    }
+    const cause = error instanceof Error && error.cause instanceof Error
+      ? error.cause.message
+      : undefined;
+    const message = error instanceof Error ? error.message : undefined;
+    const errorMessage = cause || message || 'No further details available.';
     return NextResponse.json({ error: 'An internal server error occurred.', details: errorMessage }, { status: 500 });
   }
 }
+

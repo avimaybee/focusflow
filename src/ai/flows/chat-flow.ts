@@ -22,6 +22,8 @@ const chatFlowInputSchema = z.object({
     type: z.enum(['file_uri', 'inline_data']),
     data: z.string(), // base64 for inline_data, URI for file_uri
     mimeType: z.string(),
+    name: z.string().optional(),
+    sizeBytes: z.number().int().nonnegative().optional(),
   })).optional(),
   authToken: z.string().optional(),
 });
@@ -49,10 +51,10 @@ export async function chatFlow(input: ChatFlowInput) {
     try {
       // Convert attachments to database format
       const dbAttachments = attachments?.map(att => ({
-        url: att.data, // URI or inline data
-        name: att.data.split('/').pop() || 'attachment',
+        url: att.data,
+        name: att.name || att.data.split('/').pop() || 'attachment',
         mimeType: att.mimeType,
-        sizeBytes: '0', // Would need to be passed from client
+        sizeBytes: att.sizeBytes != null ? String(att.sizeBytes) : '0',
       }));
 
       // Save user message with current persona ID and attachments

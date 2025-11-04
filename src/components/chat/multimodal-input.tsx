@@ -133,33 +133,41 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
         console.log('[MultimodalInput] Upload response status:', response.status);
 
         if (!response.ok) {
-          let errorBody: any = null;
+          let errorBody: unknown = null;
+          let fallbackText: string | undefined;
           try {
             errorBody = await response.json();
-          } catch (e) {
+          } catch {
             console.warn('[MultimodalInput] Could not parse error JSON from upload response');
+            fallbackText = await response.text().catch(() => '<no body>');
           }
-          console.error('[MultimodalInput] Upload failed, response:', errorBody || await response.text().catch(() => '<no body>'));
-          throw new Error(errorBody?.error || 'Upload failed');
+          const payloadForLog = errorBody ?? fallbackText ?? '<no body>';
+          console.error('[MultimodalInput] Upload failed, response:', payloadForLog);
+          const errorMessage = typeof errorBody === 'object' && errorBody !== null && 'error' in errorBody && typeof (errorBody as { error?: unknown }).error === 'string'
+            ? (errorBody as { error: string }).error
+            : undefined;
+          throw new Error(errorMessage || 'Upload failed');
         }
 
         const result = await response.json();
         console.log('[MultimodalInput] Upload result payload:', result);
         
         // Add uploaded file to attachments with Gemini URI
+        const sizeBytes = Number.parseInt(result.file.sizeBytes || `${file.size}`, 10);
         const newAttachment = {
           url: result.file.uri, // Gemini file URI
           name: result.file.displayName || file.name,
           contentType: result.file.mimeType,
-          size: parseInt(result.file.sizeBytes || '0'),
+          size: Number.isFinite(sizeBytes) && sizeBytes >= 0 ? sizeBytes : file.size,
         };
         console.log('[MultimodalInput] Adding attachment to state:', newAttachment.url);
         setAttachments(prev => [...prev, newAttachment]);
 
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('[MultimodalInput] File upload error:', error);
+        const message = error instanceof Error ? error.message : 'Unknown error';
         // Show error to user (you might want to add a toast notification here)
-        alert(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        alert(`Failed to upload file: ${message}`);
       } finally {
         setIsUploading(false);
         console.log('[MultimodalInput] Upload finished, isUploading set to false');
@@ -204,7 +212,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
             const length = value.length;
             try {
               internalTextareaRef.current.setSelectionRange(length, length);
-            } catch (error) {
+            } catch {
               // Ignore selection errors (e.g., unsupported input types)
             }
           }
@@ -242,16 +250,6 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
           submitForm();
         }}
       >
-        <input
-          type="file"
-          className="hidden"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          tabIndex={-1}
-          disabled={isGenerating}
-          accept="image/*,application/pdf,text/*"
-        />
-
         <AnimatePresence>
           {attachments.length > 0 && (
             <motion.div

@@ -424,9 +424,11 @@ export default function ChatPage() {
   
     // Convert attachments to API format
     const apiAttachments = attachments.map(att => ({
-      type: 'file_uri' as const, // All uploaded files have URIs now
-      uri: att.url, // Gemini file URI
+      type: 'file_uri' as const,
+      data: att.url,
       mimeType: att.contentType,
+      name: att.name,
+      sizeBytes: typeof att.size === 'number' ? att.size : Number(att.size || 0),
     }));
 
     // DON'T pass history - let the server fetch full conversation from database

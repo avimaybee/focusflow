@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate MIME type
-    if (!ALL_SUPPORTED_MIME_TYPES.includes(file.type as any)) {
+    if (!ALL_SUPPORTED_MIME_TYPES.some((allowed) => allowed === file.type)) {
       console.warn(`[chat-upload][${requestId}] Unsupported file type`, {
         mimeType: file.type,
       });
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Upload to Gemini
-    const uploadedFile = await uploadFileToGemini(fileBytes, file.type);
+    const uploadedFile = await uploadFileToGemini(fileBytes, file.type, file.name);
     console.log(`[chat-upload][${requestId}] Uploaded to Gemini`, {
       uri: uploadedFile.uri,
       mimeType: uploadedFile.mimeType,
@@ -92,12 +92,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`[chat-upload][${requestId}] File upload error`, error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       {
         error: 'File upload failed',
-        details: error?.message || 'Unknown error',
+        details: message,
       },
       { status: 500 }
     );

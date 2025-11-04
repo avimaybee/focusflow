@@ -26,9 +26,9 @@ export const DEFAULT_CHAT_MODEL = 'gemini-2.5-flash';
  * Supported file MIME types for multimodal input
  */
 export const SUPPORTED_FILE_TYPES = {
-  images: ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif'],
-  documents: ['application/pdf'],
-  audio: ['audio/wav', 'audio/mp3', 'audio/aiff', 'audio/aac', 'audio/ogg', 'audio/flac'],
+  images: ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif', 'image/gif'],
+  documents: ['application/pdf', 'text/plain', 'text/markdown', 'text/csv', 'text/html'],
+  audio: ['audio/wav', 'audio/mp3', 'audio/mpeg', 'audio/aiff', 'audio/aac', 'audio/ogg', 'audio/flac'],
   video: ['video/mp4', 'video/mpeg', 'video/mov', 'video/avi', 'video/x-flv', 'video/mpg', 'video/webm', 'video/wmv', 'video/3gpp'],
 } as const;
 
@@ -129,8 +129,12 @@ async function retryWithBackoff<T>(
  * @param mimeType - The MIME type of the file
  * @returns The uploaded file object with URI
  */
-export async function uploadFileToGemini(file: string | Buffer | Uint8Array | ArrayBuffer, mimeType: string) {
-  if (!ALL_SUPPORTED_MIME_TYPES.includes(mimeType as any)) {
+export async function uploadFileToGemini(
+  file: string | Blob | Buffer | Uint8Array | ArrayBuffer,
+  mimeType: string,
+  displayName?: string,
+) {
+  if (!ALL_SUPPORTED_MIME_TYPES.some((allowed) => allowed === mimeType)) {
     throw new Error(`Unsupported file type: ${mimeType}`);
   }
 
@@ -139,21 +143,26 @@ export async function uploadFileToGemini(file: string | Buffer | Uint8Array | Ar
       let uploadable: string | Blob;
       if (typeof file === 'string') {
         uploadable = file;
-      } else if (Buffer.isBuffer(file)) {
-        const uint8 = Uint8Array.from(file);
-        uploadable = new Blob([uint8], { type: mimeType });
-      } else if (file instanceof ArrayBuffer) {
+      } else if (typeof Blob !== 'undefined' && file instanceof Blob) {
+        uploadable = file;
+      } else if (typeof ArrayBuffer !== 'undefined' && file instanceof ArrayBuffer) {
         uploadable = new Blob([file], { type: mimeType });
       } else if (file instanceof Uint8Array) {
-        const uint8 = Uint8Array.from(file as Uint8Array);
-        uploadable = new Blob([uint8], { type: mimeType });
+        const slice = file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer;
+        uploadable = new Blob([slice], { type: mimeType });
+      } else if (typeof Buffer !== 'undefined' && Buffer.isBuffer(file)) {
+        const bufferView = Uint8Array.from(file);
+        const slice = bufferView.buffer.slice(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength) as ArrayBuffer;
+        uploadable = new Blob([slice], { type: mimeType });
       } else {
         throw new Error('Unsupported file payload type');
       }
 
+      const uploadConfig = displayName ? { mimeType, displayName } : { mimeType };
+
       const uploadedFile = await geminiClient.files.upload({
         file: uploadable,
-        config: { mimeType },
+        config: uploadConfig,
       });
 
       console.log('[gemini-client] File uploaded successfully:', uploadedFile.uri);
