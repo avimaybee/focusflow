@@ -416,7 +416,7 @@ export async function selectPersonaForPrompt(
  * Invalidate the persona embeddings cache
  * Call this when personas are updated
  */
-export function invalidatePersonaCache(): void {
+export async function invalidatePersonaCache(): Promise<void> {
   personaEmbeddingsCache = null;
   personasCache = null;
   cacheTimestamp = 0;
