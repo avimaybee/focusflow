@@ -275,16 +275,18 @@ const UserMenu = ({ user, isCollapsed }: { user: SupabaseUser | null, isCollapse
 
     if (isCollapsed) {
       return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" className={buttonClasses} onClick={() => authModal.onOpen('login')}>
-              {content}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right" align="center">
-            Log In
-          </TooltipContent>
-        </Tooltip>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" className={buttonClasses} onClick={() => authModal.onOpen('login')}>
+                {content}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right" align="center">
+              Log In
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       );
     }
 
@@ -296,48 +298,50 @@ const UserMenu = ({ user, isCollapsed }: { user: SupabaseUser | null, isCollapse
   }
 
   return (
-    <DropdownMenu>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50",
-                isCollapsed && "w-12 h-12 p-0 flex items-center justify-center rounded-full"
-              )}
-            >
-              <div className="relative">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage
-                    src={user?.user_metadata?.avatar_url || undefined}
-                    data-ai-hint="person"
-                  />
-                  <AvatarFallback>{initial}</AvatarFallback>
-                </Avatar>
-                <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-state-success ring-2 ring-surface-soft" />
-              </div>
-              <div
-                className={cn('text-left transition-opacity duration-200', isCollapsed && "opacity-0 hidden")}
+    <TooltipProvider>
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start gap-3 text-sm h-auto py-2.5 px-2.5 hover:bg-muted/50",
+                  isCollapsed && "w-12 h-12 p-0 flex items-center justify-center rounded-full"
+                )}
               >
-                <p className="font-semibold truncate">{displayName}</p>
-                <p className="text-xs text-muted-foreground">
-                  {isPremium ? 'Premium Plan' : 'Free Plan'}
-                </p>
-              </div>
-            </Button>
-          </DropdownMenuTrigger>
-        </TooltipTrigger>
-        {isCollapsed && (
-          <TooltipContent side="right" align="center">
-            {displayName}
-          </TooltipContent>
-        )}
-      </Tooltip>
-      <DropdownMenuContent className="w-[280px]" side="top" align="start">
-        <UserMenuItems />
-      </DropdownMenuContent>
-    </DropdownMenu>
+                <div className="relative">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={user?.user_metadata?.avatar_url || undefined}
+                      data-ai-hint="person"
+                    />
+                    <AvatarFallback>{initial}</AvatarFallback>
+                  </Avatar>
+                  <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-state-success ring-2 ring-surface-soft" />
+                </div>
+                <div
+                  className={cn('text-left transition-opacity duration-200', isCollapsed && "opacity-0 hidden")}
+                >
+                  <p className="font-semibold truncate">{displayName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isPremium ? 'Premium Plan' : 'Free Plan'}
+                  </p>
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          {isCollapsed && (
+            <TooltipContent side="right" align="center">
+              {displayName}
+            </TooltipContent>
+          )}
+        </Tooltip>
+        <DropdownMenuContent className="w-[280px]" side="top" align="start">
+          <UserMenuItems />
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </TooltipProvider>
   );
 };
 

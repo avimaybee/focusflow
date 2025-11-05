@@ -31,7 +31,7 @@ import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
 import type { Attachment } from '@/types/chat-types';
 import { buildGeminiProxyUrl } from '@/lib/attachment-utils';
 import { useDraftStore } from '@/stores/use-draft-store';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 // Minimal UIMessage type used by this component (wasn't exported from chat-types)
 type UIMessage = { id: string; content: string; role: string };
@@ -286,45 +286,46 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
     };
 
     return (
-      <form 
-        ref={formRef} 
-        className={cn("relative w-full", className)}
-        onSubmit={(e) => {
-          e.preventDefault();
-          submitForm();
-        }}
-      >
-        <AnimatePresence>
-          {attachments.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0, paddingBottom: 0 }}
-              animate={{ opacity: 1, height: 'auto', paddingBottom: '0.75rem' }}
-              exit={{ opacity: 0, height: 0, paddingBottom: 0 }}
-              className="px-1"
-            >
-              {attachments.map((attachment) => {
-                const attachmentKey = attachment.remoteUrl ?? attachment.url;
-                return (
-                 <div key={attachmentKey} className="inline-flex items-center gap-2 rounded-full bg-secondary border border-border py-1 pl-2 pr-1 text-sm">
-                    <FileIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{attachment.name}</span>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleRemoveAttachment(attachment)}
-                      className="h-6 w-6 rounded-full"
-                    >
-                      <XIcon className="w-4 h-4" />
-                    </Button>
-                  </div>
-                );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <TooltipProvider>
+        <form 
+          ref={formRef} 
+          className={cn("relative w-full", className)}
+          onSubmit={(e) => {
+            e.preventDefault();
+            submitForm();
+          }}
+        >
+          <AnimatePresence>
+            {attachments.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, paddingBottom: 0 }}
+                animate={{ opacity: 1, height: 'auto', paddingBottom: '0.75rem' }}
+                exit={{ opacity: 0, height: 0, paddingBottom: 0 }}
+                className="px-1"
+              >
+                {attachments.map((attachment) => {
+                  const attachmentKey = attachment.remoteUrl ?? attachment.url;
+                  return (
+                   <div key={attachmentKey} className="inline-flex items-center gap-2 rounded-full bg-secondary border border-border py-1 pl-2 pr-1 text-sm">
+                      <FileIcon className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{attachment.name}</span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemoveAttachment(attachment)}
+                        className="h-6 w-6 rounded-full"
+                      >
+                        <XIcon className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-  {/* Clean input box inspired by Gemini - subtle border, integrated tools */}
-  <div className="relative flex items-end gap-3 rounded-3xl border border-border/60 bg-card/50 backdrop-blur-sm px-1.5 py-1.5 shadow-sm hover:border-border/80 focus-within:border-primary/40 focus-within:shadow-md transition-all duration-200">
+    {/* Clean input box inspired by Gemini - subtle border, integrated tools */}
+    <div className="relative flex items-end gap-3 rounded-3xl border border-border/60 bg-card/50 backdrop-blur-sm px-1.5 py-1.5 shadow-sm hover:border-border/80 focus-within:border-primary/40 focus-within:shadow-md transition-all duration-200">
           
           <div className="flex items-center gap-1 pl-2">
             <PersonaSelector
@@ -424,6 +425,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
           </Tooltip>
         </div>
       </form>
+      </TooltipProvider>
     );
   }
 );
