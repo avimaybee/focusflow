@@ -31,11 +31,13 @@ import {
   Clock,
   Drama,
   Sparkles,
+  Target,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Persona icon mapping with fallback
 const personaIcons: { [key: string]: React.ElementType } = {
+  'Auto': Target,
   'Gurt': Bot,
   'Im a baby': Baby,
   'straight shooter': List,
@@ -61,6 +63,7 @@ const personaIcons: { [key: string]: React.ElementType } = {
 
 // Persona color schemes for visual distinction
 const personaColors: { [key: string]: string } = {
+  'Auto': 'from-violet-500/20 to-fuchsia-500/20 border-violet-500/30',
   'Gurt': 'from-blue-500/20 to-cyan-500/20 border-blue-500/30',
   'Im a baby': 'from-pink-500/20 to-purple-500/20 border-pink-500/30',
   'straight shooter': 'from-gray-500/20 to-slate-500/20 border-gray-500/30',

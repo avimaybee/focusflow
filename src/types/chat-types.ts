@@ -17,7 +17,15 @@ export interface PersonaDetails {
   prompt: string;
 }
 
+export interface AutoSelectionMetadata {
+  selectedByAuto: boolean;
+  autoSelectedPersonaId: string;
+  autoConfidence: number;
+  autoSelectionMethod: 'explicit' | 'semantic' | 'fallback' | 'default';
+}
+
 export const validPersonas = [
+  'Auto',
   'Gurt',
   'Im a baby',
   'straight shooter',

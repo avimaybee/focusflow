@@ -5,6 +5,8 @@ import { getPersonaById, getDefaultPersona } from '@/lib/persona-actions';
 import { createChatSession, createFileDataPart, createInlineDataPart } from '@/lib/gemini-client';
 import { getChatMessages, addChatMessage } from '@/lib/chat-actions';
 import { truncateConversation, getConversationStats } from '@/lib/conversation-manager';
+import { selectPersonaForPrompt, type PersonaSelectionResult } from '@/lib/persona-selector';
+import { PersonaIDs } from '@/lib/constants';
 
 const chatFlowInputSchema = z.object({
   message: z.string(),
@@ -70,9 +72,38 @@ export async function chatFlow(input: ChatFlowInput) {
     }
   }
 
-  // STEP 2: Fetch persona from database
-  const selectedPersona = personaId 
-    ? await getPersonaById(personaId) 
+  // STEP 1.5: Auto persona selection if needed
+  let autoSelectionResult: PersonaSelectionResult | null = null;
+  let effectivePersonaId = personaId;
+  
+  if (personaId === PersonaIDs.AUTO) {
+    console.log(`[chat-flow][${requestId}] Auto persona detected, selecting best persona`);
+    try {
+      autoSelectionResult = await selectPersonaForPrompt(message, personaId);
+      effectivePersonaId = autoSelectionResult.personaId;
+      
+      console.log(`[chat-flow][${requestId}] Auto-selected persona`, {
+        selectedPersonaId: effectivePersonaId,
+        selectedPersonaName: autoSelectionResult.personaName,
+        confidence: autoSelectionResult.confidence,
+        method: autoSelectionResult.method,
+      });
+    } catch (error) {
+      console.error(`[chat-flow][${requestId}] Auto-selection failed, using default`, error);
+      effectivePersonaId = PersonaIDs.GURT;
+      autoSelectionResult = {
+        personaId: PersonaIDs.GURT,
+        personaName: 'Gurt',
+        confidence: 0,
+        reason: 'Auto-selection failed',
+        method: 'default',
+      };
+    }
+  }
+
+  // STEP 2: Fetch persona from database (using effective persona ID)
+  const selectedPersona = effectivePersonaId 
+    ? await getPersonaById(effectivePersonaId) 
     : await getDefaultPersona();
   
   const basePersonaPrompt = selectedPersona?.prompt || 'You are a helpful AI assistant for students.';
@@ -240,11 +271,34 @@ CONTEXT INSTRUCTIONS:
       responsePreview: generatedText.slice(0, 120),
     });
 
-    // STEP 6: Save AI response to database with persona ID
+    // STEP 6: Save AI response to database with persona ID and auto-selection metadata
     if (sessionId && userId && !isGuest) {
       try {
-        await addChatMessage(sessionId, 'model', generatedText, authToken, undefined, personaId);
-        console.log(`[chat-flow][${requestId}] Saved AI response`, { sessionId, personaId });
+        // If Auto was used, save with auto-selection metadata
+        if (autoSelectionResult) {
+          await addChatMessage(
+            sessionId,
+            'model',
+            generatedText,
+            authToken,
+            undefined,
+            effectivePersonaId,
+            {
+              selectedByAuto: true,
+              autoSelectedPersonaId: autoSelectionResult.personaId,
+              autoConfidence: autoSelectionResult.confidence,
+              autoSelectionMethod: autoSelectionResult.method,
+            }
+          );
+          console.log(`[chat-flow][${requestId}] Saved AI response with auto-selection metadata`, {
+            sessionId,
+            effectivePersonaId,
+            autoConfidence: autoSelectionResult.confidence,
+          });
+        } else {
+          await addChatMessage(sessionId, 'model', generatedText, authToken, undefined, effectivePersonaId);
+          console.log(`[chat-flow][${requestId}] Saved AI response`, { sessionId, effectivePersonaId });
+        }
       } catch (error) {
         console.error(`[chat-flow][${requestId}] Failed to save AI response`, error);
         // Don't fail the whole request if saving fails
@@ -256,6 +310,7 @@ CONTEXT INSTRUCTIONS:
       response: generatedText,
       rawResponse: generatedText,
       persona: selectedPersona || await getDefaultPersona(),
+      autoSelection: autoSelectionResult || undefined,
     };
   } catch (error: any) {
     console.error(`[chat-flow][${requestId}] Error during chat flow`, error);

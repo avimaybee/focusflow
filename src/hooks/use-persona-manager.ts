@@ -27,6 +27,15 @@ type PersonaApiEntry = {
 
 const FALLBACK_PERSONAS: PersonaDetails[] = [
   {
+    id: PersonaIDs.AUTO,
+    name: 'Auto',
+    displayName: '🎯 Auto - Smart Selector',
+    description: 'Automatically picks the best persona for your message.',
+    avatarUrl: '',
+    avatarEmoji: '🎯',
+    prompt: '',
+  },
+  {
     id: PersonaIDs.GURT,
     name: 'Gurt',
     displayName: 'Gurt - The Guide',

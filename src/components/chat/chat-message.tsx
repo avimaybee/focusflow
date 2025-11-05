@@ -19,7 +19,7 @@ import { TextSelectionMenu } from '@/components/notes/text-selection-menu';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import type { PersonaDetails } from '@/types/chat-types';
 
-// Persona color mapping - THE ACTUAL 10 PERSONAS
+// Persona color mapping - THE ACTUAL 10 PERSONAS + AUTO
 const getPersonaColor = (persona?: PersonaDetails): string => {
   if (!persona) {
     return 'border-l-teal-500/50'; // Default
@@ -27,6 +27,11 @@ const getPersonaColor = (persona?: PersonaDetails): string => {
   
   const id = (persona.id || '').toLowerCase();
   const name = (persona.name || '').toLowerCase();
+  
+  // 0. Auto - The Smart Selector 🎯
+  if (id === 'auto') {
+    return 'border-l-violet-500/50';
+  }
   
   // 1. Gurt - The Guide 🎓
   if (id === 'gurt') {
@@ -116,6 +121,10 @@ export type ChatMessageProps = {
   isLastInGroup?: boolean;
   onToolAction?: (tool: SmartTool, text?: string) => void;
   attachments?: { url: string; remoteUrl?: string; name: string; contentType: string; size: number }[];
+  // Auto-selection metadata
+  selectedByAuto?: boolean;
+  autoSelectedPersonaId?: string;
+  autoSelectedPersonaName?: string;
 };
 
 export function ChatMessage({
@@ -134,6 +143,9 @@ export function ChatMessage({
   isLastInGroup = true,
   onToolAction,
   attachments,
+  selectedByAuto,
+  autoSelectedPersonaId,
+  autoSelectedPersonaName,
 }: ChatMessageProps) {
   const isUser = role === 'user';
   const { user } = useAuth();
@@ -273,7 +285,21 @@ export function ChatMessage({
           )}
         >
           {!isUser && isFirstInGroup && persona && (
-            <p className="text-xs font-medium text-foreground/60 px-1">{persona.name || 'AI Assistant'}</p>
+            <div className="flex items-center gap-1 px-1">
+              {selectedByAuto && autoSelectedPersonaName && (
+                <div className="flex items-center gap-1 text-xs font-medium text-foreground/60">
+                  <span className="inline-flex items-center gap-0.5">
+                    <span className="text-xs">🎯</span>
+                    <span>Auto</span>
+                  </span>
+                  <span className="text-foreground/40">→</span>
+                  <span className="text-foreground/80">{autoSelectedPersonaName}</span>
+                </div>
+              )}
+              {!selectedByAuto && (
+                <p className="text-xs font-medium text-foreground/60">{persona.name || 'AI Assistant'}</p>
+              )}
+            </div>
           )}
 
           <div

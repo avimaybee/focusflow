@@ -4,6 +4,7 @@
  */
 
 export const PersonaIDs = {
+  AUTO: 'Auto',
   GURT: 'Gurt',
   IM_A_BABY: 'Im a baby',
   STRAIGHT_SHOOTER: 'straight shooter',
