@@ -32,6 +32,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { PersonaIDs } from '@/lib/constants';
 // Server functions moved to API routes to avoid importing server-only code into client bundle
 // We'll call the new API endpoints instead
 // import { getChatMessages, createChatSession, addChatMessage } from '@/lib/chat-actions';
@@ -360,9 +361,11 @@ export default function ChatPage() {
         return;
     }
 
-    setIsSending(true);
+  setIsSending(true);
 
-    let currentChatId = activeChatId;
+  let currentChatId = activeChatId;
+  // Persona to use for this send (use a local var to avoid React state update race)
+  let activePersonaForThisSend = selectedPersonaId;
 
     // Create a new chat session if it's the first message
     if (!currentChatId) {
@@ -398,6 +401,13 @@ export default function ChatPage() {
           currentChatId = newChatId;
           setIsNewChat(true); // Mark as new chat to prevent loading from DB
           setActiveChatId(newChatId);
+          // Default newly created chats to Auto persona (update both local var and state)
+          activePersonaForThisSend = PersonaIDs.AUTO;
+          try {
+            setSelectedPersonaId(PersonaIDs.AUTO);
+          } catch (e) {
+            console.warn('Failed to set default persona to Auto for new chat', e);
+          }
           // Move the user into the newly created chat route to keep layout in sync
           router.replace(`/chat/${newChatId}`);
           forceRefresh();
@@ -426,8 +436,8 @@ export default function ChatPage() {
     userAvatar: user?.user_metadata?.avatar_url || null,
     createdAt: new Date(),
     attachments: normalizedAttachments.length > 0 ? normalizedAttachments : undefined,
-    personaId: selectedPersonaId,
-    persona: selectedPersona || undefined,
+  personaId: activePersonaForThisSend,
+    persona: personas.find((p) => p.id === activePersonaForThisSend) || selectedPersona || undefined,
   };
     console.debug('[Client] Adding userMessage to messages', { id: userMessage.id, rawText: userMessage.rawText });
     setMessages(prev => {
@@ -459,7 +469,7 @@ export default function ChatPage() {
       message: input.trim(),
       // history: removed - server will load from DB using sessionId
       sessionId: currentChatId || undefined,
-      personaId: selectedPersonaId,
+      personaId: activePersonaForThisSend,
       attachments: apiAttachments.length > 0 ? apiAttachments : undefined,
     };
   
