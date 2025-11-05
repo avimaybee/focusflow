@@ -142,7 +142,9 @@ function convertToPersonaDetails(persona: PersonaApiEntry): PersonaDetails {
 export function usePersonaManager(initialPersonaId?: string) {
   const { preferredPersona } = useAuth();
   const [personas, setPersonas] = useState<PersonaDetails[]>([]);
-  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(initialPersonaId || PersonaIDs.GURT);
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(
+    initialPersonaId || PersonaIDs.AUTO
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch personas from database
@@ -192,8 +194,14 @@ export function usePersonaManager(initialPersonaId?: string) {
       if (personas.some(p => p.id === preferredPersona)) {
         setSelectedPersonaId(preferredPersona);
       }
+    } else if (!preferredPersona && personas.length > 0) {
+      // Default new sessions to Auto if available
+      const autoPersona = personas.find(p => p.id === PersonaIDs.AUTO);
+      if (autoPersona && selectedPersonaId !== autoPersona.id) {
+        setSelectedPersonaId(autoPersona.id);
+      }
     }
-  }, [preferredPersona, personas, initialPersonaId]);
+  }, [preferredPersona, personas, initialPersonaId, selectedPersonaId, setSelectedPersonaId]);
   
   const selectedPersona = personas.find(p => p.id === selectedPersonaId);
 

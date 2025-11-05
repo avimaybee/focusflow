@@ -32,7 +32,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { PersonaIDs } from '@/lib/constants';
 // Server functions moved to API routes to avoid importing server-only code into client bundle
 // We'll call the new API endpoints instead
 // import { getChatMessages, createChatSession, addChatMessage } from '@/lib/chat-actions';
@@ -63,6 +62,7 @@ export default function ChatPage() {
   const [guestMessageCount, setGuestMessageCount] = useState(0);
 
   const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId } = usePersonaManager();
+  const [personaWasExplicitlySet, setPersonaWasExplicitlySet] = useState(false);
   const { chatHistory, isLoading: isHistoryLoading, forceRefresh } = useChatHistory();
   const { isContextHubOpen, toggleContextHub: baseToggleContextHub, closeContextHub } = useContextHubStore();
 
@@ -72,6 +72,8 @@ export default function ChatPage() {
   const messagesRef = useRef<ChatMessageProps[]>([]);
   const messageFetchControllerRef = useRef<AbortController | null>(null);
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const firstLoadRef = useRef<boolean>(true);
+  const currentChatIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     activeChatIdRef.current = activeChatId;
@@ -98,7 +100,7 @@ export default function ChatPage() {
     });
   }, []);
 
-  const loadMessages = useCallback(async (chatId: string, attempt = 0) => {
+  const loadMessages = useCallback(async (chatId: string, attempt = 0, isFirstLoad = false) => {
     if (!chatId) return;
 
     messageFetchControllerRef.current?.abort();
@@ -108,6 +110,8 @@ export default function ChatPage() {
     console.debug('[Client] loadMessages called', {
       chatId,
       attempt,
+      isFirstLoad,
+      personaWasExplicitlySet,
       accessTokenPresent: !!session?.access_token,
     });
 
@@ -131,7 +135,8 @@ export default function ChatPage() {
       const fetched = (Array.isArray(data) ? data : []) as ChatMessageProps[];
       let shouldRetry = false;
 
-      if (fetched.length > 0) {
+      // Only restore persona from chat history on initial load, and only if user didn't explicitly select one
+      if (fetched.length > 0 && isFirstLoad && !personaWasExplicitlySet) {
         const lastUserPersona = [...fetched]
           .reverse()
           .find((msg) => msg.role === 'user' && typeof msg.personaId === 'string' && msg.personaId.length > 0);
@@ -197,7 +202,7 @@ export default function ChatPage() {
         if (retryTimeoutRef.current) {
           clearTimeout(retryTimeoutRef.current);
         }
-        retryTimeoutRef.current = setTimeout(() => loadMessages(chatId, attempt + 1), 800);
+        retryTimeoutRef.current = setTimeout(() => loadMessages(chatId, attempt + 1, isFirstLoad), 800);
         console.debug('[Client] Scheduling retry after error', { chatId, nextAttempt: attempt + 1 });
       }
     } finally {
@@ -205,7 +210,7 @@ export default function ChatPage() {
         messageFetchControllerRef.current = null;
       }
     }
-  }, [session?.access_token, hasOptimisticMessages, selectedPersonaId, setSelectedPersonaId]);
+  }, [session?.access_token, hasOptimisticMessages, selectedPersonaId, setSelectedPersonaId, personaWasExplicitlySet]);
 
   useEffect(() => {
     const chatId = params.chatId as string | undefined;
@@ -218,6 +223,8 @@ export default function ChatPage() {
     if (!activeChatId) {
       setMessages([]);
       previousChatIdRef.current = null;
+      firstLoadRef.current = true;
+      setPersonaWasExplicitlySet(false);
       return;
     }
 
@@ -232,7 +239,12 @@ export default function ChatPage() {
       setMessages([]);
     }
 
-    loadMessages(activeChatId);
+    // Load messages on first load of this chat
+    const isFirstLoad = firstLoadRef.current;
+    if (isFirstLoad) {
+      firstLoadRef.current = false;
+    }
+    loadMessages(activeChatId, 0, isFirstLoad);
 
     return () => {
       messageFetchControllerRef.current?.abort();
@@ -361,11 +373,9 @@ export default function ChatPage() {
         return;
     }
 
-  setIsSending(true);
+    setIsSending(true);
 
-  let currentChatId = activeChatId;
-  // Persona to use for this send (use a local var to avoid React state update race)
-  let activePersonaForThisSend = selectedPersonaId;
+    let currentChatId = activeChatId;
 
     // Create a new chat session if it's the first message
     if (!currentChatId) {
@@ -401,13 +411,6 @@ export default function ChatPage() {
           currentChatId = newChatId;
           setIsNewChat(true); // Mark as new chat to prevent loading from DB
           setActiveChatId(newChatId);
-          // Default newly created chats to Auto persona (update both local var and state)
-          activePersonaForThisSend = PersonaIDs.AUTO;
-          try {
-            setSelectedPersonaId(PersonaIDs.AUTO);
-          } catch (e) {
-            console.warn('Failed to set default persona to Auto for new chat', e);
-          }
           // Move the user into the newly created chat route to keep layout in sync
           router.replace(`/chat/${newChatId}`);
           forceRefresh();
@@ -436,8 +439,8 @@ export default function ChatPage() {
     userAvatar: user?.user_metadata?.avatar_url || null,
     createdAt: new Date(),
     attachments: normalizedAttachments.length > 0 ? normalizedAttachments : undefined,
-  personaId: activePersonaForThisSend,
-    persona: personas.find((p) => p.id === activePersonaForThisSend) || selectedPersona || undefined,
+    personaId: selectedPersonaId,
+    persona: selectedPersona || undefined,
   };
     console.debug('[Client] Adding userMessage to messages', { id: userMessage.id, rawText: userMessage.rawText });
     setMessages(prev => {
@@ -469,7 +472,7 @@ export default function ChatPage() {
       message: input.trim(),
       // history: removed - server will load from DB using sessionId
       sessionId: currentChatId || undefined,
-      personaId: activePersonaForThisSend,
+      personaId: selectedPersonaId,
       attachments: apiAttachments.length > 0 ? apiAttachments : undefined,
     };
   
@@ -686,7 +689,10 @@ export default function ChatPage() {
                 selectedVisibilityType="private"
                 personas={personas}
                 selectedPersonaId={selectedPersonaId}
-                setSelectedPersonaId={setSelectedPersonaId}
+                setSelectedPersonaId={(id) => {
+                  setSelectedPersonaId(id);
+                  setPersonaWasExplicitlySet(true);
+                }}
               />
             </div>
         </div>
