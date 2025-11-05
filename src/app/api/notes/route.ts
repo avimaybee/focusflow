@@ -130,8 +130,10 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ error: 'Failed to fetch existing notes' }, { status: 500 });
             }
 
+            // Add visual separator and spacing when appending
+            const separator = '<hr class="my-4 border-t-2 border-gray-300" />';
             const newContent = existing?.content 
-                ? existing.content + '\n\n' + snippet
+                ? existing.content + separator + snippet
                 : snippet;
 
             if (existing) {

@@ -105,13 +105,14 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
     ];
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
 
-    // Load draft on mount
+    // Load draft on mount and randomize placeholder
     useEffect(() => {
       const draft = getDraft(chatId);
       if (draft) {
         setInput(draft);
-        setPlaceholderIndex(Math.floor(Math.random() * placeholders.length));
       }
+      // Always set a random placeholder on mount
+      setPlaceholderIndex(Math.floor(Math.random() * placeholders.length));
     }, [chatId, getDraft]);
 
     // Auto-save draft with debounce

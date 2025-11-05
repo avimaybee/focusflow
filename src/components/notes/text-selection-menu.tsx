@@ -111,9 +111,11 @@ export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
     }
 
     try {
-        const contentToAppend = explanation.status === 'success'
-            ? `> ${selectedText}\n\n${explanation.content?.replace(/<[^>]*>/g, '\n')}`
-            : selectedText;
+        // Create a formatted snippet with timestamp and visual separation
+        const timestamp = new Date().toLocaleString();
+        const formattedSnippet = explanation.status === 'success'
+            ? `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 2px solid #e5e7eb;"><p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">📌 Added on ${timestamp}</p><blockquote style="border-left: 3px solid #3b82f6; padding-left: 1rem; margin-left: 0; color: #4b5563;">${selectedText}</blockquote><div style="margin-top: 0.75rem; color: #374151;">${explanation.content?.replace(/<[^>]*>/g, '')}</div></div>`
+            : `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 2px solid #e5e7eb;"><p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">📌 Added on ${timestamp}</p><p style="color: #374151;">${selectedText}</p></div>`;
         
         // Use the API route instead of server action
         if (!session?.access_token) {
@@ -134,7 +136,7 @@ export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
             body: JSON.stringify({ 
                 userId: user.id, 
                 append: true,
-                snippet: contentToAppend 
+                snippet: formattedSnippet 
             }),
         });
 
