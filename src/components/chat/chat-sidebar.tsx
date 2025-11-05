@@ -475,7 +475,7 @@ const ChatSidebarComponent = ({
     <TooltipProvider>
     <motion.aside
       style={{ width: isCollapsed ? 80 : 320 }}
-      className='flex-col bg-surface-soft/90 border-r border-border backdrop-blur-sm flex transition-all duration-300 ease-in-out'
+      className='flex-col bg-background/95 border-r border-border/60 backdrop-blur-sm flex transition-all duration-300 ease-in-out'
     >
       <div
         className={cn(
@@ -486,7 +486,7 @@ const ChatSidebarComponent = ({
           <Link
             href="/"
             className={cn(
-              'flex items-center gap-2 text-xl font-semibold text-foreground',
+              'flex items-center gap-2 text-xl font-semibold text-foreground/85',
               isCollapsed && 'hidden'
             )}
           >
@@ -511,7 +511,7 @@ const ChatSidebarComponent = ({
         <div className={cn("px-3 mb-4", isCollapsed && "px-2 flex justify-center")}>
           <Button
             className={cn(
-              'w-full h-10 rounded-xl bg-primary/20 hover:bg-primary/30 text-foreground border border-primary/30 transition-colors font-medium',
+              'w-full h-10 rounded-xl bg-primary/10 hover:bg-primary/15 text-foreground/80 transition-colors font-medium',
               isCollapsed && 'h-10 w-10 rounded-lg p-0 flex items-center justify-center'
             )}
             onClick={onNewChat}
@@ -526,7 +526,7 @@ const ChatSidebarComponent = ({
           <nav className="px-3 mb-4 space-y-1">
             <Button
               variant="ghost"
-              className="w-full justify-start gap-3 h-9 text-foreground hover:bg-muted/60 rounded-lg"
+              className="w-full justify-start gap-3 h-9 text-foreground/85 hover:bg-muted/60 rounded-lg"
               asChild
             >
               <Link href="/my-content">
@@ -548,7 +548,7 @@ const ChatSidebarComponent = ({
         {!isCollapsed && (
           <div className="px-3 mb-3">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-foreground/50" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-foreground/60" />
               {searchTerm && (
                 <Button
                   variant="ghost"
@@ -568,7 +568,7 @@ const ChatSidebarComponent = ({
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search..."
-                className="h-9 rounded-xl border-0 bg-muted/30 pl-10 pr-10 text-sm placeholder:text-foreground/40 focus-visible:ring-1 focus-visible:ring-border focus-visible:bg-muted/50"
+                className="h-9 rounded-xl border-0 bg-muted/20 pl-10 pr-10 text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-border focus-visible:bg-muted/30"
                 aria-label="Search chat history"
               />
             </div>
@@ -626,12 +626,12 @@ const ChatSidebarComponent = ({
                           role="button"
                           aria-current={isActive ? 'true' : undefined}
                           className={cn(
-                            'flex items-center font-normal cursor-pointer text-foreground transition-all duration-200 group/item',
+                            'flex items-center font-normal cursor-pointer text-foreground/85 transition-all duration-200 group/item',
                             isCollapsed
                               ? 'mx-auto h-12 w-12 justify-center rounded-full p-0'
                               : 'w-full rounded-lg justify-between gap-3 py-2 px-3',
                             isActive && !isCollapsed
-                              ? 'bg-primary/10 border border-primary/30 shadow-sm'
+                              ? 'bg-primary/10'
                               : !isActive && (isCollapsed ? 'hover:bg-muted/30' : 'hover:bg-muted/30'),
                             isEditing && 'bg-muted/60'
                           )}
@@ -645,7 +645,7 @@ const ChatSidebarComponent = ({
                             <Avatar
                               className={cn(
                                 'h-9 w-9 shrink-0 transition-all duration-200',
-                                isActive && 'ring-2 ring-primary shadow-md'
+                                isActive && 'ring-2 ring-primary'
                               )}
                             >
                               <AvatarFallback
@@ -680,7 +680,7 @@ const ChatSidebarComponent = ({
                                 />
                               ) : (
                                 <>
-                                  <p className={cn('truncate text-sm font-medium', isActive ? 'text-foreground font-semibold' : 'text-foreground')}>{chat.title}</p>
+                                  <p className={cn('truncate text-sm font-medium', isActive ? 'text-foreground/85 font-semibold' : 'text-foreground/85')}>{chat.title}</p>
                                   <p className={cn('truncate text-xs', isActive ? 'text-foreground/60' : 'text-muted-foreground/70')}>{relativeTime}</p>
                                 </>
                               )}
@@ -777,7 +777,7 @@ const ChatSidebarComponent = ({
           </div>
         </ScrollArea>
 
-    <div className="mt-auto border-t border-border bg-surface-soft/70 px-4 py-3">
+  <div className="mt-auto border-t border-border/60 bg-background/95 px-4 py-3">
        <UserMenu user={user} isCollapsed={isCollapsed} />
         </div>
       </motion.aside>
