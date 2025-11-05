@@ -13,6 +13,8 @@ export interface PersonaSelectionResult {
 
 // Confidence threshold - if below this, we still use the top result but log for monitoring
 const MIN_CONFIDENCE_THRESHOLD = 0.3;
+const KEYWORD_OVERRIDE_THRESHOLD = 0.45;
+const KEYWORD_STRONGER_BY = 0.1;
 
 // Cache for persona embeddings to avoid recomputing
 let personaEmbeddingsCache: Map<string, number[]> | null = null;
@@ -84,7 +86,7 @@ function computeTextSimilarity(text1: string, text2: string): number {
  * Rule-based fallback selector using keyword matching
  * This is used when embeddings are unavailable or fail
  */
-function fallbackKeywordSelector(prompt: string, personas: Persona[]): PersonaSelectionResult {
+function keywordSelector(prompt: string, personas: Persona[]): PersonaSelectionResult | null {
   const lowerPrompt = prompt.toLowerCase();
   
   // Define keyword patterns for each type of persona
@@ -171,8 +173,12 @@ function fallbackKeywordSelector(prompt: string, personas: Persona[]): PersonaSe
   if (scores.size > 0) {
     const sorted = Array.from(scores.entries()).sort((a, b) => b[1] - a[1]);
     const [personaId, score] = sorted[0];
-    const persona = personas.find(p => p.id === personaId)!;
-    
+    const persona = personas.find(p => p.id === personaId);
+
+    if (!persona) {
+      return null;
+    }
+
     return {
       personaId: persona.id,
       personaName: persona.name,
@@ -182,13 +188,16 @@ function fallbackKeywordSelector(prompt: string, personas: Persona[]): PersonaSe
     };
   }
 
-  // Ultimate fallback: return Gurt
+  return null;
+}
+
+function buildDefaultPersonaResult(personas: Persona[], reason: string): PersonaSelectionResult {
   const defaultPersona = personas.find(p => p.id === PersonaIDs.GURT) || personas[0];
   return {
-    personaId: defaultPersona.id,
-    personaName: defaultPersona.name,
+    personaId: defaultPersona?.id ?? PersonaIDs.GURT,
+    personaName: defaultPersona?.name ?? 'Gurt',
     confidence: 0.1,
-    reason: 'No strong keyword matches, using default',
+    reason,
     method: 'default',
   };
 }
@@ -276,8 +285,19 @@ async function getPersonaEmbeddings(personas: Persona[]): Promise<Map<string, nu
     // Exclude Auto persona from selection targets
     if (persona.id === PersonaIDs.AUTO) continue;
     
-    // Combine description and name for embedding
-    const textToEmbed = `${persona.display_name} ${persona.description}`;
+    // Combine description, traits, and prompt for embedding context
+    const traitsText = Array.isArray(persona.personality_traits)
+      ? persona.personality_traits.join(' ')
+      : '';
+    const textToEmbed = [
+      persona.display_name,
+      persona.name,
+      persona.description,
+      persona.prompt,
+      traitsText,
+    ]
+      .filter(Boolean)
+      .join(' ');
     const embedding = await generateSimpleEmbedding(textToEmbed);
     newCache.set(persona.id, embedding);
   }
@@ -337,7 +357,11 @@ async function semanticSelector(prompt: string, personas: Persona[]): Promise<Pe
     };
   } catch (error) {
     console.error('[persona-selector] Semantic selection failed, using fallback', error);
-    return fallbackKeywordSelector(prompt, personas);
+    const keywordResult = keywordSelector(prompt, personas);
+    if (keywordResult) {
+      return keywordResult;
+    }
+    return buildDefaultPersonaResult(personas, 'Semantic selection failed');
   }
 }
 
@@ -383,8 +407,43 @@ export async function selectPersonaForPrompt(
       };
     }
 
+    // PRIORITY 1.5: Strong keyword match overrides semantic selection
+    const keywordCandidate = keywordSelector(prompt, personas);
+    if (keywordCandidate && keywordCandidate.confidence >= KEYWORD_OVERRIDE_THRESHOLD) {
+      const elapsed = Date.now() - startTime;
+      console.log('[persona-selector] Keyword override selection', {
+        personaId: keywordCandidate.personaId,
+        method: keywordCandidate.method,
+        confidence: keywordCandidate.confidence.toFixed(3),
+        latency: `${elapsed}ms`,
+      });
+      return keywordCandidate;
+    }
+
     // PRIORITY 2: Semantic similarity selection
     const result = await semanticSelector(prompt, personas);
+
+    // Allow keyword-based result to override if it's noticeably stronger
+    if (
+      keywordCandidate &&
+      keywordCandidate.personaId !== result.personaId &&
+      (keywordCandidate.confidence >= result.confidence + KEYWORD_STRONGER_BY ||
+        (keywordCandidate.confidence >= KEYWORD_OVERRIDE_THRESHOLD && result.confidence < KEYWORD_OVERRIDE_THRESHOLD))
+    ) {
+      const elapsed = Date.now() - startTime;
+      console.log('[persona-selector] Keyword tie-break override', {
+        personaId: keywordCandidate.personaId,
+        method: keywordCandidate.method,
+        keywordConfidence: keywordCandidate.confidence.toFixed(3),
+        semanticPersonaId: result.personaId,
+        semanticConfidence: result.confidence.toFixed(3),
+        latency: `${elapsed}ms`,
+      });
+      return {
+        ...keywordCandidate,
+        reason: `${keywordCandidate.reason} (overrode semantic match ${result.personaName})`,
+      };
+    }
     
     const elapsed = Date.now() - startTime;
     console.log('[persona-selector] Persona selected', {
@@ -397,18 +456,13 @@ export async function selectPersonaForPrompt(
     return result;
   } catch (error) {
     console.error('[persona-selector] Critical error in persona selection', error);
-    
+
     // Ultimate fallback
-    const personas = await getPersonas();
-    const defaultPersona = personas.find(p => p.id === PersonaIDs.GURT) || personas[0];
-    
-    return {
-      personaId: defaultPersona.id,
-      personaName: defaultPersona.name,
-      confidence: 0,
-      reason: `Error during selection: ${error}`,
-      method: 'default',
-    };
+    const fallbackPersonas = await getPersonas();
+    return buildDefaultPersonaResult(
+      fallbackPersonas.filter(p => p.id !== PersonaIDs.AUTO),
+      `Error during selection: ${error}`
+    );
   }
 }
 

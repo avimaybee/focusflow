@@ -8,7 +8,7 @@ import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
-import { Attachment } from '@/types/chat-types';
+import { Attachment, type PersonaDetails as ChatPersonaDetails } from '@/types/chat-types';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
 import { ChatHeader } from '@/components/chat/chat-header';
@@ -130,6 +130,16 @@ export default function ChatPage() {
       const fetched = (Array.isArray(data) ? data : []) as ChatMessageProps[];
       let shouldRetry = false;
 
+      if (fetched.length > 0) {
+        const lastUserPersona = [...fetched]
+          .reverse()
+          .find((msg) => msg.role === 'user' && typeof msg.personaId === 'string' && msg.personaId.length > 0);
+
+        if (lastUserPersona?.personaId && lastUserPersona.personaId !== selectedPersonaId) {
+          setSelectedPersonaId(lastUserPersona.personaId);
+        }
+      }
+
       console.debug('[Client] loadMessages fetched batch', {
         chatId,
         fetchedCount: fetched.length,
@@ -194,7 +204,7 @@ export default function ChatPage() {
         messageFetchControllerRef.current = null;
       }
     }
-  }, [session?.access_token, hasOptimisticMessages]);
+  }, [session?.access_token, hasOptimisticMessages, selectedPersonaId, setSelectedPersonaId]);
 
   useEffect(() => {
     const chatId = params.chatId as string | undefined;
@@ -416,6 +426,8 @@ export default function ChatPage() {
     userAvatar: user?.user_metadata?.avatar_url || null,
     createdAt: new Date(),
     attachments: normalizedAttachments.length > 0 ? normalizedAttachments : undefined,
+    personaId: selectedPersonaId,
+    persona: selectedPersona || undefined,
   };
     console.debug('[Client] Adding userMessage to messages', { id: userMessage.id, rawText: userMessage.rawText });
     setMessages(prev => {
@@ -485,6 +497,23 @@ export default function ChatPage() {
         console.error('/api/chat returned non-ok:', response.status, bodyText);
         throw { response, result };
       }
+
+      const responsePersonaId = typeof result?.persona?.id === 'string'
+        ? result.persona.id
+        : selectedPersonaId;
+      const personaFromState = personas.find((p) => p.id === responsePersonaId);
+      const mappedPersona: ChatPersonaDetails | undefined = personaFromState || (result?.persona
+        ? {
+            id: result.persona.id,
+            name: result.persona.name || result.persona.display_name || result.persona.id,
+            avatarUrl: result.persona.avatar_url || '',
+            avatarEmoji: result.persona.avatar_emoji || undefined,
+            prompt: result.persona.prompt || '',
+          }
+        : selectedPersona || undefined);
+      const autoSelection = result?.autoSelection;
+      const autoSelectedPersonaId = typeof autoSelection?.personaId === 'string' ? autoSelection.personaId : undefined;
+      const autoSelectedPersonaName = typeof autoSelection?.personaName === 'string' ? autoSelection.personaName : undefined;
       
       const modelResponse: ChatMessageProps = {
           id: `guest-ai-${Date.now()}`,
@@ -495,8 +524,12 @@ export default function ChatPage() {
           quiz: result.quiz,
           source: result.source,
           confidence: result.confidence,
-          persona: selectedPersona,
+          persona: mappedPersona,
+          personaId: responsePersonaId,
           createdAt: new Date(),
+          selectedByAuto: Boolean(autoSelection),
+          autoSelectedPersonaId,
+          autoSelectedPersonaName,
       };
   console.debug('[Client] Adding model response to messages', {
     id: modelResponse.id,
