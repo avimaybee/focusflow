@@ -74,62 +74,70 @@ export default function DashboardPage() {
         
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5 mb-8">
             <StreakCalendar streakCount={streakCount} />
-            <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer group" onClick={() => window.location.href = '/chat'}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                    <CardTitle className="text-sm font-bold leading-none text-foreground/90">Summaries Made</CardTitle>
-                    <FileText className="h-4 w-4 text-foreground/60" />
-                </CardHeader>
-                <CardContent className="pb-4">
-                    <div className={`text-2xl font-bold mb-2 leading-none ${summariesCount > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
-                        {summariesCount}
-                    </div>
-                    <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold text-primary hover:bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                        {summariesCount > 0 ? 'Create More →' : 'Start Now →'}
-                    </Button>
-                </CardContent>
-            </Card>
-            <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer group" onClick={() => window.location.href = '/chat'}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                    <CardTitle className="text-sm font-bold leading-none text-foreground/90">Quizzes Taken</CardTitle>
-                    <HelpCircle className="h-4 w-4 text-foreground/60" />
-                </CardHeader>
-                <CardContent className="pb-4">
-                    <div className={`text-2xl font-bold mb-2 leading-none ${quizzesCount > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
-                        {quizzesCount}
-                    </div>
-                    <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold text-primary hover:bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                        {quizzesCount > 0 ? 'Create More →' : 'Create First →'}
-                    </Button>
-                </CardContent>
-            </Card>
-            <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer group" onClick={() => window.location.href = '/chat'}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                    <CardTitle className="text-sm font-bold leading-none text-foreground/90">Flashcard Sets</CardTitle>
-                    <BrainCircuit className="h-4 w-4 text-foreground/60" />
-                </CardHeader>
-                <CardContent className="pb-4">
-                    <div className={`text-2xl font-bold mb-2 leading-none ${flashcardsCount > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
-                        {flashcardsCount}
-                    </div>
-                    <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold text-primary hover:bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                        {flashcardsCount > 0 ? 'Create More →' : 'Create First →'}
-                    </Button>
-                </CardContent>
-            </Card>
-            <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer group" onClick={() => window.location.href = '/study-plan/new'}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                    <CardTitle className="text-sm font-bold leading-none text-foreground/90">Study Plans</CardTitle>
-                    <Calendar className="h-4 w-4 text-foreground/60" />
-                </CardHeader>
-                <CardContent className="pb-4">
-                    <div className={`text-2xl font-bold mb-2 leading-none ${studyPlansCount > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
-                        {studyPlansCount}
-                    </div>
-                    <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold text-primary hover:bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                        {studyPlansCount > 0 ? 'Create More →' : 'Build First →'}
-                    </Button>
-                </CardContent>
-            </Card>
+            <Link href="/chat">
+                <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer group h-full">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                        <CardTitle className="text-sm font-bold leading-none text-foreground/90">Summaries Made</CardTitle>
+                        <FileText className="h-4 w-4 text-foreground/60" />
+                    </CardHeader>
+                    <CardContent className="pb-4">
+                        <div className={`text-2xl font-bold mb-2 leading-none ${summariesCount > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            {summariesCount}
+                        </div>
+                        <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold text-primary hover:bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                            {summariesCount > 0 ? 'Create More →' : 'Start Now →'}
+                        </Button>
+                    </CardContent>
+                </Card>
+            </Link>
+            <Link href="/chat">
+                <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer group h-full">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                        <CardTitle className="text-sm font-bold leading-none text-foreground/90">Quizzes Taken</CardTitle>
+                        <HelpCircle className="h-4 w-4 text-foreground/60" />
+                    </CardHeader>
+                    <CardContent className="pb-4">
+                        <div className={`text-2xl font-bold mb-2 leading-none ${quizzesCount > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            {quizzesCount}
+                        </div>
+                        <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold text-primary hover:bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                            {quizzesCount > 0 ? 'Create More →' : 'Create First →'}
+                        </Button>
+                    </CardContent>
+                </Card>
+            </Link>
+            <Link href="/chat">
+                <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer group h-full">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                        <CardTitle className="text-sm font-bold leading-none text-foreground/90">Flashcard Sets</CardTitle>
+                        <BrainCircuit className="h-4 w-4 text-foreground/60" />
+                    </CardHeader>
+                    <CardContent className="pb-4">
+                        <div className={`text-2xl font-bold mb-2 leading-none ${flashcardsCount > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            {flashcardsCount}
+                        </div>
+                        <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold text-primary hover:bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                            {flashcardsCount > 0 ? 'Create More →' : 'Create First →'}
+                        </Button>
+                    </CardContent>
+                </Card>
+            </Link>
+            <Link href="/study-plan/new">
+                <Card className="hover:border-primary/80 hover:bg-muted transition-all cursor-pointer group h-full">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                        <CardTitle className="text-sm font-bold leading-none text-foreground/90">Study Plans</CardTitle>
+                        <Calendar className="h-4 w-4 text-foreground/60" />
+                    </CardHeader>
+                    <CardContent className="pb-4">
+                        <div className={`text-2xl font-bold mb-2 leading-none ${studyPlansCount > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            {studyPlansCount}
+                        </div>
+                        <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold text-primary hover:bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                            {studyPlansCount > 0 ? 'Create More →' : 'Build First →'}
+                        </Button>
+                    </CardContent>
+                </Card>
+            </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

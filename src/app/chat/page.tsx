@@ -612,6 +612,7 @@ export default function ChatPage() {
             isHistoryLoading={isHistoryLoading && !!activeChatId}
             activeChatId={activeChatId}
             activePersona={selectedPersona}
+            personas={personas}
             onSmartToolAction={(prompt) => {
               inputRef.current?.setDraft(prompt);
               inputRef.current?.focus();

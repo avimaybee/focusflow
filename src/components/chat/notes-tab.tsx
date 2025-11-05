@@ -4,6 +4,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useAuth } from '@/context/auth-context';
+import { useNotesStore } from '@/stores/use-notes-store';
 import { Loader2, CheckCircle, AlertTriangle, Search, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
@@ -16,6 +17,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export function NotesTab() {
   const { user, session } = useAuth();
+  const { refreshTrigger } = useNotesStore();
   const { toast } = useToast();
   const [content, setContent] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
@@ -28,7 +30,7 @@ export function NotesTab() {
   // Effect to fetch initial notes
   useEffect(() => {
     async function loadNotes() {
-      if (!user || !session?.access_token || isLoaded) return;
+      if (!user || !session?.access_token) return;
 
       try {
         const response = await fetch(`/api/notes?userId=${user.id}`, {
@@ -51,7 +53,7 @@ export function NotesTab() {
     }
 
     loadNotes();
-  }, [user, session, isLoaded]);
+  }, [user, session, refreshTrigger]);
 
   // Effect to save notes when debounced content changes
   useEffect(() => {
@@ -118,17 +120,23 @@ export function NotesTab() {
 
     const fuse = new Fuse([textContent], { includeMatches: true, findAllMatches: true, threshold: 0.1 });
     const result = fuse.search(searchQuery);
-    const matches = result.flatMap(r => r.matches);
+    const matches = result.flatMap(r => r.matches || []);
     
     if (matches.length === 0) {
       return '<p class="text-muted-foreground">No matches found.</p>';
     }
 
     let highlightedContent = textContent;
-    matches.sort((a,b) => b.indices[0][0] - a.indices[0][0]).forEach(match => {
-      const [start, end] = match.indices[0];
-      highlightedContent = `${highlightedContent.substring(0, start)}<mark class="bg-primary/50">${highlightedContent.substring(start, end + 1)}</mark>${highlightedContent.substring(end + 1)}`;
-    });
+    matches
+      .filter((match): match is NonNullable<typeof match> => match !== undefined && match !== null)
+      .sort((a, b) => (b.indices?.[0]?.[0] ?? 0) - (a.indices?.[0]?.[0] ?? 0))
+      .forEach(match => {
+        const indices = match.indices?.[0];
+        if (indices && Array.isArray(indices) && indices.length >= 2) {
+          const [start, end] = indices;
+          highlightedContent = `${highlightedContent.substring(0, start)}<mark class="bg-primary/50">${highlightedContent.substring(start, end + 1)}</mark>${highlightedContent.substring(end + 1)}`;
+        }
+      });
     
     return highlightedContent.replace(/\n/g, '<br />');
 

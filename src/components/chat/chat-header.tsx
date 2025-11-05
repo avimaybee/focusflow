@@ -50,14 +50,9 @@ const ChatHeaderComponent = ({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ duration: 0.2 }}
-                      className="font-medium text-foreground flex items-center gap-2"
+                      className="font-medium text-foreground"
                     >
-                      {personaAvatar && (
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted/30 text-sm">
-                          {personaAvatar}
-                        </span>
-                      )}
-                      <span>{personaName}</span>
+                      {personaName}
                     </motion.span>
                   </AnimatePresence>
                 </div>

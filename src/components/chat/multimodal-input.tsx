@@ -30,6 +30,8 @@ import { cn } from '@/lib/utils';
 import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
 import type { Attachment } from '@/types/chat-types';
 import { buildGeminiProxyUrl } from '@/lib/attachment-utils';
+import { useDraftStore } from '@/stores/use-draft-store';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Minimal UIMessage type used by this component (wasn't exported from chat-types)
 type UIMessage = { id: string; content: string; role: string };
@@ -67,6 +69,7 @@ interface MultimodalInputProps {
 
 const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalInputProps>(
   ({
+    chatId,
     attachments,
     setAttachments,
     onSendMessage,
@@ -89,6 +92,40 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
 
     const [input, setInput] = useState('');
     const [isUploading, setIsUploading] = useState(false);
+    const { getDraft, setDraft, clearDraft } = useDraftStore();
+
+    // Dynamic placeholder texts
+    const placeholders = [
+      'Ask anything...',
+      'What would you like to know?',
+      'Share your question...',
+      'Tell me something to learn...',
+      'Let\'s explore this topic...',
+      'What\'s on your mind?',
+    ];
+    const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
+    // Load draft on mount
+    useEffect(() => {
+      const draft = getDraft(chatId);
+      if (draft) {
+        setInput(draft);
+        setPlaceholderIndex(Math.floor(Math.random() * placeholders.length));
+      }
+    }, [chatId, getDraft]);
+
+    // Auto-save draft with debounce
+    useEffect(() => {
+      const timeoutId = setTimeout(() => {
+        if (input.trim()) {
+          setDraft(chatId, input);
+        } else {
+          clearDraft(chatId);
+        }
+      }, 1000); // Save after 1 second of inactivity
+
+      return () => clearTimeout(timeoutId);
+    }, [input, chatId, setDraft, clearDraft]);
 
     const scheduleAdjustHeight = useCallback(() => {
       if (typeof window !== 'undefined' && window.requestAnimationFrame) {
@@ -201,9 +238,10 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
       }
       onSendMessage({ input, attachments });
       setInput('');
+      clearDraft(chatId);
       setAttachments([]);
       adjustHeight(true);
-    }, [input, attachments, onSendMessage, setAttachments, adjustHeight]);
+    }, [input, attachments, onSendMessage, setAttachments, adjustHeight, clearDraft, chatId]);
 
     useImperativeHandle(ref, () => ({
       focus: () => {
@@ -293,32 +331,42 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
               personas={personas || []}
               selectedPersonaId={selectedPersonaId}
               onSelect={setSelectedPersonaId}
-              className="h-8 w-8 rounded-full text-foreground/60 hover:text-foreground hover:bg-muted/60 transition-colors"
+              className="h-8 w-8 rounded-full text-foreground/60 hover:text-foreground hover:bg-muted/60 transition-all duration-200"
             />
 
             {isUploading ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full text-foreground/60"
-                disabled={true}
-                aria-label="Uploading file..."
-              >
-                <LoaderIcon className="h-4 w-4 animate-spin" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full text-foreground/60"
+                    disabled={true}
+                    aria-label="Uploading file..."
+                  >
+                    <LoaderIcon className="h-4 w-4 animate-spin" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Uploading...</TooltipContent>
+              </Tooltip>
             ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 cursor-pointer rounded-full text-foreground/60 hover:text-foreground hover:bg-muted/60 transition-colors"
-                onClick={() => {
-                  console.log('[MultimodalInput] Paperclip button clicked, triggering file input.');
-                  fileInputRef.current?.click();
-                }}
-                aria-label="Attach file"
-              >
-                <Paperclip className="w-4 h-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 cursor-pointer rounded-full text-foreground/60 hover:text-foreground hover:bg-muted/60 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/50"
+                    onClick={() => {
+                      console.log('[MultimodalInput] Paperclip button clicked, triggering file input.');
+                      fileInputRef.current?.click();
+                    }}
+                    aria-label="Attach file"
+                  >
+                    <Paperclip className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Attach file (Shift+Click for multiple)</TooltipContent>
+              </Tooltip>
             )}
           </div>
           
@@ -334,7 +382,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
           
           <Textarea
             ref={internalTextareaRef}
-            placeholder="Ask anything..."
+            placeholder={placeholders[placeholderIndex]}
             value={input}
             onChange={handleInput}
             onFocus={handleFocus}
@@ -353,20 +401,27 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
             }}
           />
 
-          <Button
-            type="button"
-            onClick={submitForm}
-            disabled={isGenerating || (!input.trim() && attachments.length === 0)}
-            size="icon"
-            className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted/50 disabled:text-muted-foreground transition-colors shadow-sm"
-            aria-label={isGenerating ? "Generating response..." : "Send message"}
-          >
-            {isGenerating ? (
-              <LoaderIcon className="h-4.5 w-4.5 animate-spin" />
-            ) : (
-              <Send className="h-4.5 w-4.5" />
-            )}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                onClick={submitForm}
+                disabled={isGenerating || (!input.trim() && attachments.length === 0)}
+                size="icon"
+                className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted/50 disabled:text-muted-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/50 shadow-sm hover:shadow-md"
+                aria-label={isGenerating ? "Generating response..." : "Send message"}
+              >
+                {isGenerating ? (
+                  <LoaderIcon className="h-4.5 w-4.5 animate-spin" />
+                ) : (
+                  <Send className="h-4.5 w-4.5" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {isGenerating ? 'Generating...' : 'Send (Enter)'}
+            </TooltipContent>
+          </Tooltip>
         </div>
       </form>
     );

@@ -18,7 +18,8 @@ export async function getChatMessages(sessionId: string, authToken?: string): Pr
     try {
         const supabaseClient = authToken ? createAuthenticatedSupabaseClient(authToken) : supabase;
 
-        const { data, error } = await supabaseClient
+        // Fetch messages (without persona join initially, we'll resolve client-side)
+        const { data: messages, error } = await supabaseClient
             .from('chat_messages')
             .select('id, role, content, attachments, persona_id, created_at')
             .eq('session_id', sessionId)
@@ -29,17 +30,44 @@ export async function getChatMessages(sessionId: string, authToken?: string): Pr
             return [];
         }
 
-        if (!data) {
+        if (!messages || messages.length === 0) {
             console.warn('[getChatMessages] No data returned for sessionId:', sessionId);
             return [];
         }
 
-        const messages = await Promise.all(data.map(async (message) => {
+        // Fetch all personas once so we can resolve them
+        const { data: personas, error: personasError } = await supabaseClient
+            .from('personas')
+            .select('id, name, display_name, description, avatar_url, avatar_emoji, prompt');
+
+        if (personasError) {
+            console.warn('[getChatMessages] Could not fetch personas:', personasError);
+        }
+
+        const personasMap = new Map(
+            (personas || []).map((p: any) => [
+                (p.id || '').trim().toLowerCase(),
+                {
+                    id: p.id,
+                    name: p.name,
+                    displayName: p.display_name,
+                    description: p.description,
+                    avatarUrl: p.avatar_url || '',
+                    avatarEmoji: p.avatar_emoji,
+                    prompt: p.prompt,
+                } as any,
+            ])
+        );
+
+        const processedMessages = await Promise.all(messages.map(async (message: any) => {
             const text = await marked.parse(message.content);
-            const attachments = Array.isArray(message.attachments)
-                ? message.attachments.reduce<NonNullable<ChatMessageProps['attachments']>>((acc, raw) => {
+            let attachments: NonNullable<ChatMessageProps['attachments']> | undefined;
+            
+            if (Array.isArray(message.attachments)) {
+                const processedAttachments: NonNullable<ChatMessageProps['attachments']> = [];
+                for (const raw of message.attachments) {
                     if (!raw || typeof raw !== 'object') {
-                        return acc;
+                        continue;
                     }
 
                     const remoteUrl = typeof raw.url === 'string' ? raw.url : undefined;
@@ -62,19 +90,23 @@ export async function getChatMessages(sessionId: string, authToken?: string): Pr
                     const normalizedSize = typeof sizeValue === 'number' && Number.isFinite(sizeValue) ? Math.max(0, sizeValue) : 0;
 
                     if (!remoteUrl && !proxiedUrl) {
-                        return acc;
+                        continue;
                     }
 
-                    acc.push({
+                    processedAttachments.push({
                         url: proxiedUrl || remoteUrl || '',
                         remoteUrl,
                         name,
                         contentType: mimeType,
                         size: normalizedSize,
                     });
-                    return acc;
-                }, [])
-                : undefined;
+                }
+                attachments = processedAttachments.length > 0 ? processedAttachments : undefined;
+            }
+
+            // Resolve persona by personaId
+            const personaId = message.persona_id ? (message.persona_id + '').trim().toLowerCase() : '';
+            const persona = personaId ? personasMap.get(personaId) : undefined;
 
             return {
                 id: message.id,
@@ -82,13 +114,14 @@ export async function getChatMessages(sessionId: string, authToken?: string): Pr
                 text,
                 rawText: message.content,
                 personaId: message.persona_id,
+                persona,
                 createdAt: new Date(message.created_at),
                 attachments,
             };
         }));
 
-        console.log('[getChatMessages] Successfully fetched', messages.length, 'messages for session:', sessionId);
-        return messages;
+        console.log('[getChatMessages] Successfully fetched', processedMessages.length, 'messages for session:', sessionId);
+        return processedMessages;
     } catch (error) {
         console.error('[getChatMessages] Unexpected error:', error);
         return [];

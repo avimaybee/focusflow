@@ -2,6 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useAuth } from '@/context/auth-context';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Zap } from 'lucide-react';
@@ -40,6 +41,69 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 export function WelcomeScreen({ onSelectPrompt }: WelcomeScreenProps) {
+  const { profile } = useAuth();
+  
+  // Generate dynamic greetings combining motivational, goal-oriented, and time-based styles
+  const getGreeting = () => {
+    const name = profile?.username || null;
+    const hour = new Date().getHours();
+    
+    // Time-based greetings
+    let timeBasedGreetings: string[] = [];
+    
+    if (hour < 12) {
+      // Morning (5 AM - 12 PM)
+      timeBasedGreetings = [
+        `Good morning${name ? `, ${name}` : ''}! Let's tackle your studies today.`,
+        `Rise and shine${name ? `, ${name}` : ''}! Ready to ace today?`,
+        `Morning${name ? `, ${name}` : ''}! What shall we learn today?`,
+        `${name ? `${name}, start` : 'Start'} your day strong with some studying!`,
+        `Fresh morning energy${name ? `, ${name}` : ''}! What's first on your agenda?`,
+      ];
+    } else if (hour < 17) {
+      // Afternoon (12 PM - 5 PM)
+      timeBasedGreetings = [
+        `Afternoon${name ? `, ${name}` : ''}! Keep the momentum going.`,
+        `Back for more${name ? `, ${name}` : ''}? Let's keep studying!`,
+        `Afternoon study session${name ? ` for ${name}` : ''}—what's next?`,
+        `${name ? `${name}, let's` : 'Let\'s'} power through the afternoon!`,
+        `Still going strong${name ? `, ${name}` : ''}? Let's tackle more!`,
+      ];
+    } else {
+      // Evening (5 PM - 5 AM)
+      timeBasedGreetings = [
+        `Evening${name ? `, ${name}` : ''}! One more study session?`,
+        `Burning the midnight oil${name ? `, ${name}` : ''}? Let's dive in!`,
+        `Ready for some evening studying${name ? `, ${name}` : ''}?`,
+        `${name ? `${name}, wrap` : 'Wrap'} up your day with some learning!`,
+        `Late night grind${name ? `, ${name}` : ''}! What should we focus on?`,
+      ];
+    }
+    
+    // Motivational greetings (Option 4)
+    const motivationalGreetings = [
+      `${name ? `${name}, you've` : 'You\'ve'} got this! What shall we learn?`,
+      `${name ? `${name}!` : 'Welcome back!'} Your next breakthrough awaits.`,
+      `Ready to unlock new knowledge${name ? `, ${name}` : ''}?`,
+      `${name ? `${name}, let's` : 'Let\'s'} make today count!`,
+    ];
+    
+    // Goal-oriented greetings (Option 3)
+    const goalOrientedGreetings = [
+      `${name ? `${name}, ready to` : 'Time to'} ace your studies today?`,
+      `What skill shall we master${name ? `, ${name}` : ''} today?`,
+      `${name ? `${name}!` : 'Hey there!'} What's on your study agenda?`,
+      `Let's power through your learning goals${name ? `, ${name}` : ''}.`,
+      `${name ? `${name}` : 'Ready'} to level up your knowledge today?`,
+    ];
+    
+    // Combine all arrays for maximum variety
+    const allGreetings = [...timeBasedGreetings, ...motivationalGreetings, ...goalOrientedGreetings];
+    return allGreetings[Math.floor(Math.random() * allGreetings.length)];
+  };
+  
+  const greeting = useMemo(() => getGreeting(), [profile?.username]);
+  
   // Generate random prompts on mount and keep them stable
   const suggestedPrompts = useMemo(() => {
     return shuffleArray(allPrompts).slice(0, 4);
@@ -52,7 +116,7 @@ export function WelcomeScreen({ onSelectPrompt }: WelcomeScreenProps) {
           <Logo className="h-8 w-8 text-primary" />
         </div>
         <h1 className="text-2xl md:text-3xl font-bold mb-1.5 text-foreground leading-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
-          How can I help you today?
+          {greeting}
         </h1>
         <p className="text-base text-foreground/70 mb-6 font-normal">
           Select a starting point below, or just begin typing.

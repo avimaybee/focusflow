@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
+import { useNotesStore } from '@/stores/use-notes-store';
 import { Button } from '@/components/ui/button';
 import { NotebookPen, Sparkles, Loader2 } from 'lucide-react';
 import { getExplanation } from '@/lib/ai-actions';
@@ -24,6 +25,7 @@ export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
   const { user, session } = useAuth();
   const { toast } = useToast();
   const { toggleContextHub, isContextHubOpen } = useContextHubStore();
+  const { triggerRefresh } = useNotesStore();
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const [selectedText, setSelectedText] = useState<string>('');
   const [explanation, setExplanation] = useState<ExplanationState>({ status: 'idle', content: null });
@@ -144,6 +146,9 @@ export function TextSelectionMenu({ containerRef }: TextSelectionMenuProps) {
             title: 'Sent to Notes',
             description: 'The selected text has been added to your notes.',
         });
+
+        // Trigger refresh in the notes tab
+        triggerRefresh();
 
         if (!isContextHubOpen) {
             toggleContextHub();
