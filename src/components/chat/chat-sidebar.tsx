@@ -475,7 +475,7 @@ const ChatSidebarComponent = ({
     <TooltipProvider>
     <motion.aside
       style={{ width: isCollapsed ? 80 : 320 }}
-      className='flex-col bg-surface-soft/90 border-r border-border/60 backdrop-blur-sm flex transition-all duration-300 ease-in-out'
+      className='flex-col bg-surface-soft/90 border-r border-border backdrop-blur-sm flex transition-all duration-300 ease-in-out'
     >
       <div
         className={cn(
@@ -511,7 +511,7 @@ const ChatSidebarComponent = ({
         <div className={cn("px-3 mb-4", isCollapsed && "px-2 flex justify-center")}>
           <Button
             className={cn(
-              'w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-white border-0 transition-colors font-medium',
+              'w-full h-10 rounded-xl bg-primary/20 hover:bg-primary/30 text-foreground border border-primary/30 transition-colors font-medium',
               isCollapsed && 'h-10 w-10 rounded-lg p-0 flex items-center justify-center'
             )}
             onClick={onNewChat}
@@ -540,7 +540,7 @@ const ChatSidebarComponent = ({
         {/* Divider */}
         {!isCollapsed && (
           <div className="px-3 mb-3">
-            <div className="h-px bg-border/70" />
+            <div className="h-px bg-border" />
           </div>
         )}
 
@@ -577,7 +577,7 @@ const ChatSidebarComponent = ({
 
         {isCollapsed && (
           <div className="px-2 mb-3">
-            <div className="h-px bg-border/80" />
+            <div className="h-px bg-border" />
           </div>
         )}
 
@@ -606,7 +606,7 @@ const ChatSidebarComponent = ({
                 {groupedChatHistory.map((group, groupIndex) => (
                   <div key={group.key} className="space-y-1">
                     {isCollapsed ? (
-                      groupIndex > 0 && <div className="mx-auto my-2 h-px w-6 bg-border/80" />
+                      groupIndex > 0 && <div className="mx-auto my-2 h-px w-6 bg-border" />
                     ) : (
                       <p className="px-2 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                         {group.label}
@@ -631,7 +631,7 @@ const ChatSidebarComponent = ({
                               ? 'mx-auto h-12 w-12 justify-center rounded-full p-0'
                               : 'w-full rounded-lg justify-between gap-3 py-2 px-3',
                             isActive && !isCollapsed
-                              ? 'bg-muted/40'
+                              ? 'bg-primary/10 border border-primary/30 shadow-sm'
                               : !isActive && (isCollapsed ? 'hover:bg-muted/30' : 'hover:bg-muted/30'),
                             isEditing && 'bg-muted/60'
                           )}
@@ -644,8 +644,8 @@ const ChatSidebarComponent = ({
                           <div className={cn('flex items-center gap-3 flex-1 min-w-0', isCollapsed && 'justify-center')}>
                             <Avatar
                               className={cn(
-                                'h-9 w-9 shrink-0 transition-colors',
-                                isActive && 'ring-1 ring-primary/30'
+                                'h-9 w-9 shrink-0 transition-all duration-200',
+                                isActive && 'ring-2 ring-primary shadow-md'
                               )}
                             >
                               <AvatarFallback
@@ -680,8 +680,8 @@ const ChatSidebarComponent = ({
                                 />
                               ) : (
                                 <>
-                                  <p className="truncate text-sm font-medium text-foreground">{chat.title}</p>
-                                  <p className="truncate text-xs text-muted-foreground/70">{relativeTime}</p>
+                                  <p className={cn('truncate text-sm font-medium', isActive ? 'text-foreground font-semibold' : 'text-foreground')}>{chat.title}</p>
+                                  <p className={cn('truncate text-xs', isActive ? 'text-foreground/60' : 'text-muted-foreground/70')}>{relativeTime}</p>
                                 </>
                               )}
                             </div>
@@ -777,7 +777,7 @@ const ChatSidebarComponent = ({
           </div>
         </ScrollArea>
 
-    <div className="mt-auto border-t border-border/60 bg-surface-soft/70 px-4 py-3">
+    <div className="mt-auto border-t border-border bg-surface-soft/70 px-4 py-3">
        <UserMenu user={user} isCollapsed={isCollapsed} />
         </div>
       </motion.aside>

@@ -87,17 +87,18 @@ export function PublishAsBlogModal({ isOpen, onOpenChange, contentItem, onSucces
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Publish as Blog Post</DialogTitle>
-                    <DialogDescription>
+            <DialogContent className="sm:max-w-[520px] max-w-[95vw] p-0 overflow-hidden border-border/60">
+                <DialogHeader className="p-6 pb-4">
+                    <DialogTitle className="text-xl font-bold">Publish as Blog Post</DialogTitle>
+                    <DialogDescription className="text-foreground/70 font-medium">
                         Review and edit the SEO details for your new blog post.
                     </DialogDescription>
                 </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                            control={form.control}
+                <div className="px-6 pb-6">
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                            <FormField
+                                control={form.control}
                             name="title"
                             render={({ field }) => (
                                 <FormItem>
@@ -148,15 +149,16 @@ export function PublishAsBlogModal({ isOpen, onOpenChange, contentItem, onSucces
                                 </FormItem>
                             )}
                         />
-                        <DialogFooter>
+                        <div className="flex gap-3 justify-end pt-4">
                             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
                             <Button type="submit" disabled={isPublishing}>
                                 {isPublishing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Publish
                             </Button>
-                        </DialogFooter>
+                        </div>
                     </form>
                 </Form>
+                </div>
             </DialogContent>
         </Dialog>
     );

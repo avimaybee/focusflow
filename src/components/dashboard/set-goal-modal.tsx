@@ -56,46 +56,48 @@ export function SetGoalModal({ isOpen, onOpenChange, onSuccess }: SetGoalModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Set a Weekly Goal</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-[520px] max-w-[95vw] p-0 overflow-hidden border-border/60">
+        <DialogHeader className="p-6 pb-4">
+          <DialogTitle className="text-xl font-bold">Set a Weekly Goal</DialogTitle>
+          <DialogDescription className="text-foreground/70 font-medium">
             Define a target for a subject you want to focus on this week.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="subject" className="text-right">
-              Subject
-            </Label>
-            <Input
-              id="subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="col-span-3"
-              placeholder="e.g., Biology"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="target-hours" className="text-right">
-              Target (Hours)
-            </Label>
-            <Input
-              id="target-hours"
-              type="number"
-              value={targetHours}
-              onChange={(e) => setTargetHours(e.target.value)}
-              className="col-span-3"
-              placeholder="e.g., 5"
-            />
+        <div className="px-6 pb-6">
+          <div className="grid gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="subject" className="text-sm font-medium">
+                Subject
+              </Label>
+              <Input
+                id="subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="e.g., Biology"
+                className="bg-background"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="target-hours" className="text-sm font-medium">
+                Target (Hours)
+              </Label>
+              <Input
+                id="target-hours"
+                type="number"
+                value={targetHours}
+                onChange={(e) => setTargetHours(e.target.value)}
+                placeholder="e.g., 5"
+                className="bg-background"
+              />
+            </div>
           </div>
         </div>
-        <DialogFooter>
+        <div className="px-6 pb-6 flex gap-3 justify-end">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={isSaving}>
             {isSaving ? 'Saving...' : 'Save Goal'}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

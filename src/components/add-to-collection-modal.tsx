@@ -81,42 +81,49 @@ export function AddToCollectionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add to Collection</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-[520px] max-w-[95vw] p-0 overflow-hidden border-border/60">
+        <DialogHeader className="p-6 pb-4">
+          <DialogTitle className="text-xl font-bold">Add to Collection</DialogTitle>
+          <DialogDescription className="text-foreground/70 font-medium">
             Organize your content by adding it to a study collection.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div>
-            <h4 className="font-medium mb-2">Add to Existing</h4>
-            <div className="flex items-center gap-2">
-              <Select onValueChange={setSelectedCollection} value={selectedCollection}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a collection" />
-                </SelectTrigger>
-                <SelectContent>
-                  {collections.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button onClick={handleAddToCollection} disabled={!selectedCollection}>Add</Button>
+        <div className="px-6 pb-6">
+          <div className="space-y-5">
+            <div>
+              <h4 className="font-semibold mb-3 text-sm">Add to Existing</h4>
+              <div className="flex items-center gap-2">
+                <Select onValueChange={setSelectedCollection} value={selectedCollection}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Select a collection" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {collections.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleAddToCollection} disabled={!selectedCollection}>Add</Button>
+              </div>
             </div>
-          </div>
-          <div className="text-center text-sm text-muted-foreground">OR</div>
-          <div>
-            <h4 className="font-medium mb-2">Create New</h4>
-            <div className="flex items-center gap-2">
-              <Input 
-                placeholder="e.g. Biology Midterm Prep"
-                value={newCollectionTitle}
-                onChange={(e) => setNewCollectionTitle(e.target.value)}
-              />
-              <Button onClick={handleCreateAndAdd} disabled={!newCollectionTitle.trim() || isCreating}>
-                {isCreating ? 'Creating...' : 'Create & Add'}
-              </Button>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 border-t border-border/40" />
+              <span className="text-xs text-muted-foreground font-medium">OR</span>
+              <div className="flex-1 border-t border-border/40" />
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3 text-sm">Create New</h4>
+              <div className="flex items-center gap-2">
+                <Input 
+                  placeholder="e.g. Biology Midterm Prep"
+                  value={newCollectionTitle}
+                  onChange={(e) => setNewCollectionTitle(e.target.value)}
+                  className="bg-background"
+                />
+                <Button onClick={handleCreateAndAdd} disabled={!newCollectionTitle.trim() || isCreating}>
+                  {isCreating ? 'Creating...' : 'Create & Add'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
