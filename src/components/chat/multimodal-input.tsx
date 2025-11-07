@@ -388,7 +388,7 @@ const PureMultimodalInput = React.forwardRef<MultimodalInputHandle, MultimodalIn
           </AnimatePresence>
 
     {/* Clean input box inspired by Gemini - subtle border, integrated tools */}
-    <div className="relative flex items-end gap-3 rounded-3xl border border-border/60 bg-card/50 backdrop-blur-sm px-1.5 py-1.5 shadow-sm hover:border-border/80 focus-within:border-primary/40 focus-within:shadow-md transition-all duration-200">
+    <div className="relative flex items-end gap-3 rounded-3xl border border-border/60 bg-card/50 backdrop-blur-sm px-1.5 py-1.5 shadow-sm hover:border-border/80 focus-within:border-primary/40 focus-within:shadow-md focus-within:hover:border-primary/40 transition-all duration-200">
           
           <div className="flex items-center gap-1 pl-2">
             <PersonaSelector

@@ -548,7 +548,7 @@ const ChatSidebarComponent = ({
         {!isCollapsed && (
           <div className="px-3 mb-3">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-foreground/60" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-foreground/75" />
               {searchTerm && (
                 <Button
                   variant="ghost"
@@ -777,7 +777,7 @@ const ChatSidebarComponent = ({
           </div>
         </ScrollArea>
 
-  <div className="mt-auto border-t border-border/60 bg-background/95 px-4 py-3">
+  <div className="sticky bottom-0 border-t border-border/60 bg-background/95 px-4 py-3">
        <UserMenu user={user} isCollapsed={isCollapsed} />
         </div>
       </motion.aside>

@@ -5,7 +5,7 @@
 import * as React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Album, HelpCircle, Save, Copy } from 'lucide-react';
+import { Save, Copy } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { FlashcardViewer } from '@/components/flashcard-viewer';
@@ -352,39 +352,7 @@ export function ChatMessage({
                 )}
 
                 {rawText && onToolAction && (
-                  <>
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-md text-foreground/40 hover:bg-muted hover:text-foreground/70 transition-colors"
-                          onClick={() => handleFeatureAction((text) => `Create a set of 10 flashcards that cover the key concepts from this response:\n${text}`)}
-                          aria-label="Create flashcards"
-                        >
-                          <Album className="h-3.5 w-3.5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="right"><p>Flashcards</p></TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-md text-foreground/40 hover:bg-muted hover:text-foreground/70 transition-colors"
-                          onClick={() => handleFeatureAction((text) => `Create a 5-question multiple-choice quiz (medium difficulty) using this response as source material:\n${text}`)}
-                          aria-label="Create quiz"
-                        >
-                          <HelpCircle className="h-3.5 w-3.5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="right"><p>Quiz</p></TooltipContent>
-                    </Tooltip>
-
-                    <SmartToolsMenu onAction={(tool) => onToolAction(tool, rawText)} />
-                  </>
+                  <SmartToolsMenu onAction={(tool) => onToolAction(tool, rawText)} />
                 )}
               </TooltipProvider>
             </div>

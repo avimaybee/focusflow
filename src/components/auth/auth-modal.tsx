@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useAuth } from '@/context/auth-context';
@@ -86,7 +86,7 @@ export function AuthModal() {
     };
   }, [isOpen, loginForm, signupForm, onClose]);
 
-  const handleAuthAction = async (
+  const handleAuthAction = useCallback(async (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     action: (email: string, pass: string) => Promise<any>,
     values: LoginFormValues | SignupFormValues,
@@ -106,17 +106,17 @@ export function AuthModal() {
       toast({ variant: 'destructive', title: 'Authentication Failed', description: error.message });
       setFormState('idle');
     }
-  };
+  }, [refreshAuthStatus, toast]);
 
-  const handleLogin = (values: LoginFormValues) => {
+  const handleLogin = useCallback((values: LoginFormValues) => {
     handleAuthAction(
       (email, password) => supabase.auth.signInWithPassword({ email, password }),
       values,
       "Welcome back!"
     );
-  };
+  }, [handleAuthAction]);
   
-  const handleSignup = (values: SignupFormValues) => {
+  const handleSignup = useCallback((values: SignupFormValues) => {
     handleAuthAction(
       (email, password) => supabase.auth.signUp({
         email,
@@ -130,7 +130,7 @@ export function AuthModal() {
       values,
       "Welcome to FocusFlow AI!"
     );
-  };
+  }, [handleAuthAction]);
 
   const isLoading = formState === 'loading';
 
@@ -139,49 +139,47 @@ export function AuthModal() {
     const onSubmit = isSignup ? handleSignup : handleLogin;
     
     return (
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={isSignup ? 'signup' : 'login'}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0, transition: { delay: 0.15, duration: 0.2 } }}
-          exit={{ opacity: 0, y: -10, transition: { duration: 0.1 } }}
-          className="w-full"
-        >
-          <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                      <FormItem>
-                          <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
-                          <FormControl>
-                          <Input id={isSignup ? 'signup-email' : 'login-email'} type="email" placeholder="you@example.com" {...field} disabled={isLoading} autoComplete="email" />
-                          </FormControl>
-                          <FormMessage />
-                      </FormItem>
-                      )}
-                  />
-                  <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                      <FormItem>
-                          <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
-                          <FormControl>
-                          <Input id={isSignup ? 'signup-password' : 'login-password'} type="password" {...field} disabled={isLoading} autoComplete={isSignup ? 'new-password' : 'current-password'}/>
-                          </FormControl>
-                          <FormMessage />
-                      </FormItem>
-                      )}
-                  />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignup ? 'Create Account' : 'Log In')}
-                  </Button>
-              </form>
-          </Form>
-        </motion.div>
-      </AnimatePresence>
+      <motion.div
+        key={isSignup ? 'signup' : 'login'}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0, transition: { delay: 0.15, duration: 0.2 } }}
+        exit={{ opacity: 0, y: -10, transition: { duration: 0.1 } }}
+        className="w-full"
+      >
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                    <FormItem>
+                        <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
+                        <FormControl>
+                        <Input id={isSignup ? 'signup-email' : 'login-email'} type="email" placeholder="you@example.com" {...field} disabled={isLoading} autoComplete="email" />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                    <FormItem>
+                        <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
+                        <FormControl>
+                        <Input id={isSignup ? 'signup-password' : 'login-password'} type="password" {...field} disabled={isLoading} autoComplete={isSignup ? 'new-password' : 'current-password'}/>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignup ? 'Create Account' : 'Log In')}
+                </Button>
+            </form>
+        </Form>
+      </motion.div>
     );
   };
 

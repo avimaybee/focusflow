@@ -610,7 +610,6 @@ export default function ChatPage() {
                 onNewChat={handleNewChat}
                 onChatSelect={(id) => {
                   router.push(`/chat/${id}`);
-                  setSidebarOpen(false);
                 }}
                 onDeleteChat={handleDeleteChat}
                 isLoading={isHistoryLoading}
