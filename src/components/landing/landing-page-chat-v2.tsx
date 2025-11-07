@@ -12,8 +12,6 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import {
     Send,
     Sparkles,
-    Bot,
-    User,
     Paperclip,
     X as XIcon,
     File as FileIcon,
@@ -128,16 +126,6 @@ const Message = ({ message, personaId, personaName }: { message: ChatMessageProp
                     dangerouslySetInnerHTML={{ __html: typeof message.text === 'string' ? message.text : '' }}
                 />
             </div>
-            {isModel && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                    <Bot size={20} />
-                </div>
-            )}
-            {!isModel && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground">
-                    <User size={20} />
-                </div>
-            )}
         </motion.div>
     );
 };
@@ -182,9 +170,6 @@ const ThinkingIndicator = ({ personaName, personaId }: { personaName: string; pe
                     </div>
                 </div>
             </div>
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                <Bot size={20} />
-            </div>
         </motion.div>
     );
 };
@@ -194,7 +179,7 @@ export function LandingPageChatV2() {
   const [messages, setMessages] = useState<ChatMessageProps[]>([welcomeMessage]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(true);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [guestMessageCount, setGuestMessageCount] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -205,13 +190,8 @@ export function LandingPageChatV2() {
   const [guestId] = useState<string>(uuidv4());
   const { toast } = useToast();
   
-  // Select a random persona on page load for the demo
-  const [randomPersonaId] = useState(() => {
-    const personaIds = Object.values(PersonaIDs);
-    return personaIds[Math.floor(Math.random() * personaIds.length)];
-  });
-  
-  const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId, isLoading } = usePersonaManager(randomPersonaId);
+  // Use Auto persona by default for the demo
+  const { personas, selectedPersona, selectedPersonaId, setSelectedPersonaId, isLoading } = usePersonaManager(PersonaIDs.AUTO);
   const authModal = useAuthModal();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -344,7 +324,7 @@ export function LandingPageChatV2() {
         return;
     }
 
-    setShowSuggestions(false);
+  // keep placeholder suggestions rotating; no suggestion panel
     setIsSending(true);
 
     const userMessage: ChatMessageProps = {
@@ -382,13 +362,39 @@ export function LandingPageChatV2() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'An unknown error occurred.');
 
+      // Determine which persona produced the response. The server may return
+      // a persona object and/or autoSelection metadata when Auto is used.
+      const responsePersonaId = typeof result?.persona?.id === 'string'
+        ? result.persona.id
+        : selectedPersonaId;
+
+      const personaFromState = personas.find((p) => p.id === responsePersonaId);
+      const mappedPersonaName = personaFromState?.name || result?.persona?.name || result?.persona?.display_name || responsePersonaId;
+
+      const autoSelection = result?.autoSelection;
+      const autoSelectedPersonaId = typeof autoSelection?.personaId === 'string' ? autoSelection.personaId : undefined;
+      const autoSelectedPersonaName = typeof autoSelection?.personaName === 'string' ? autoSelection.personaName : undefined;
+
       const modelResponse: ChatMessageProps = {
         id: `guest-ai-${Date.now()}`,
         role: 'model',
         text: await marked.parse(result.response),
+        // Provide persona metadata so the UI can show the resolved name when Auto selected
+        personaId: responsePersonaId,
+        persona: {
+          id: responsePersonaId,
+          name: mappedPersonaName,
+          avatarUrl: result?.persona?.avatar_url || '',
+          avatarEmoji: result?.persona?.avatar_emoji || undefined,
+          prompt: result?.persona?.prompt || '',
+        },
+        selectedByAuto: Boolean(autoSelection),
+        autoSelectedPersonaId,
+        autoSelectedPersonaName,
       };
-    setMessages(prev => ([...(prev || []), modelResponse]));
-    setAttachments([]);
+
+      setMessages(prev => ([...(prev || []), modelResponse]));
+      setAttachments([]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Message Failed', description: error.message });
@@ -411,27 +417,42 @@ export function LandingPageChatV2() {
     }
   }, [handleSendMessage, setInput]);
 
+  // Rotate placeholder text every 4 seconds
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPlaceholderIndex((i) => (i + 1) % suggestedPrompts.length);
+    }, 4000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <div className="w-full max-w-4xl mx-auto bg-background rounded-lg border shadow-xl flex flex-col h-[70vh] min-h-[500px]">
-        <div className="p-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
-            <h2 className="text-xl font-bold flex items-center">
-                <Sparkles className="h-6 w-6 mr-2 text-primary" />
-                Interactive Demo
-            </h2>
-            <p className="text-sm text-muted-foreground font-medium mt-1">
-                See how FocusFlow AI can accelerate your learning. (Demo limited to 5 messages)
-            </p>
-        </div>
+  <div className="w-full max-w-4xl mx-auto bg-background rounded-t-lg rounded-b-3xl border shadow-xl flex flex-col h-[70vh] min-h-[500px]">
+    <div className="p-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
+      <h2 className="text-xl font-bold flex items-center">
+        <Sparkles className="h-6 w-6 mr-2 text-primary" />
+        Try the Personas — Meet your AI Co‑Pilots
+      </h2>
+      <p className="text-sm text-muted-foreground font-medium mt-1">
+        Each persona is a tuned study companion with a distinct teaching style, tone, and expertise — try them to see which one adapts to your learning.
+      </p>
+    </div>
         
         <div className="flex-1 overflow-y-auto p-6 space-y-0">
-            {messages.map((msg) => (
-              <Message 
-                key={msg.id} 
-                message={msg} 
-                personaId={selectedPersonaId}
-                personaName={selectedPersona?.name}
-              />
-            ))}
+            {messages.map((msg) => {
+              const msgPersonaId = msg.personaId ?? msg.persona?.id ?? selectedPersonaId;
+              const msgPersonaName = msg.selectedByAuto
+                ? (msg.autoSelectedPersonaName ?? msg.persona?.name ?? selectedPersona?.name)
+                : (msg.persona?.name ?? selectedPersona?.name);
+
+              return (
+                <Message
+                  key={msg.id}
+                  message={msg}
+                  personaId={msgPersonaId}
+                  personaName={msgPersonaName}
+                />
+              );
+            })}
             <AnimatePresence>
                 {isSending && <ThinkingIndicator personaName={selectedPersona?.name || 'AI Assistant'} personaId={selectedPersonaId} />}
             </AnimatePresence>
@@ -439,32 +460,7 @@ export function LandingPageChatV2() {
         </div>
         
         <div className="p-4 border-t bg-background/50">
-            <AnimatePresence>
-                {showSuggestions && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden mb-4"
-                    >
-                        <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Try these:</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {suggestedPrompts.map((prompt, i) => (
-                                <Button 
-                                    key={i} 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="text-left justify-start h-auto whitespace-normal font-medium border-primary/30 hover:border-primary hover:bg-primary/5 hover:shadow-md transition-all duration-200 p-3" 
-                                    onClick={() => handleSuggestionClick(prompt)}
-                                >
-                                    <Sparkles className="h-3 w-3 mr-2 text-primary flex-shrink-0" />
-                                    {prompt}
-                                </Button>
-                            ))}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+      {/* Suggestions moved into the input placeholder as ghost text */}
 
             {/* Attachment Display Section - matches MultimodalInput.tsx */}
             <AnimatePresence>
@@ -615,7 +611,7 @@ export function LandingPageChatV2() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type your message..."
+                  placeholder={`Try: "${suggestedPrompts[placeholderIndex]}"`}
                   className="flex-1 w-full px-2 py-2 bg-transparent text-[15px] leading-6 text-foreground placeholder:text-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 font-normal outline-none"
                   disabled={isSending || limitReached}
                   onKeyDown={(event) => {

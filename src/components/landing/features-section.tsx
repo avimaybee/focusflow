@@ -52,7 +52,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-24 bg-secondary/30">
+    <section id="features" className="py-24 bg-transparent">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold font-heading mb-6 leading-tight">
@@ -86,7 +86,7 @@ const Feature = ({
   return (
     <div
       className={cn(
-        "flex flex-col lg:border-r py-10 relative group/feature dark:border-neutral-800",
+        "flex flex-col lg:border-r py-10 relative group/feature dark:border-neutral-800 bg-transparent",
         (index === 0 || index === 3) && "lg:border-l dark:border-neutral-800",
         index < 3 && "lg:border-b dark:border-neutral-800"
       )}
