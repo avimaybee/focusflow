@@ -20,6 +20,7 @@ import {
 import { useAuthModal } from '@/hooks/use-auth-modal';
 import { PersonaIDs } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { getPersonaColor } from '@/lib/persona-colors';
 import type { ChatMessageProps } from '@/components/chat/chat-message';
 import type { Attachment } from '@/types/chat-types';
 
@@ -46,61 +47,7 @@ const limitMessage: ChatMessageProps = {
     text: 'Looks like you\'re getting the hang of it! You\'ve reached the demo limit. <br/><br/> Please sign up or log in to continue our chat—it\'s free and you\'ll get access to all the features!',
 }
 
-// Persona color mapping - matches actual ChatMessage component
-const getPersonaColor = (personaId?: string): string => {
-  if (!personaId) {
-    return 'border-l-teal-500/50'; // Default
-  }
-  
-  const id = (personaId || '').toLowerCase();
-  
-  // Map persona IDs to colors
-  if (id === 'auto') {
-    return 'border-l-violet-500/50';
-  }
-  
-  if (id === 'gurt') {
-    return 'border-l-teal-500/50';
-  }
-  
-  if (id === 'im a baby' || id === 'milo') {
-    return 'border-l-green-500/50';
-  }
-  
-  if (id === 'straight shooter' || id === 'frank') {
-    return 'border-l-cyan-500/50';
-  }
-  
-  if (id === 'essay writer' || id === 'clairo') {
-    return 'border-l-purple-500/50';
-  }
-  
-  if (id === 'lore master' || id === 'syd') {
-    return 'border-l-blue-500/50';
-  }
-  
-  if (id === 'sassy tutor' || id === 'lexi') {
-    return 'border-l-pink-500/50';
-  }
-  
-  if (id === 'idea cook' || id === 'the chef') {
-    return 'border-l-orange-500/50';
-  }
-  
-  if (id === 'memory coach' || id === 'remi') {
-    return 'border-l-amber-500/50';
-  }
-  
-  if (id === 'code nerd' || id === 'dex') {
-    return 'border-l-indigo-500/50';
-  }
-  
-  if (id === 'exam strategist' || id === 'theo') {
-    return 'border-l-rose-500/50';
-  }
-  
-  return 'border-l-teal-500/50';
-};
+// persona colors centralized in src/lib/persona-colors.ts
 
 const Message = ({ message, personaId, personaName }: { message: ChatMessageProps; personaId?: string; personaName?: string }) => {
     const isModel = message.role === 'model';
