@@ -39,36 +39,8 @@ export function AuthModal() {
   const { toast } = useToast();
 
   const [formState, setFormState] = useState<FormState>('idle');
-  const [activeLayoutId, setActiveLayoutId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setActiveLayoutId(null);
-      return;
-    }
 
-    if (!layoutId) {
-      setActiveLayoutId(null);
-      return;
-    }
-
-    setActiveLayoutId(layoutId);
-
-    const timeout = window.setTimeout(() => {
-      // Drop the shared layout id after the entrance animation finishes so
-      // Framer Motion stops detaching the DOM node that contains the inputs.
-      setActiveLayoutId(null);
-    }, 450);
-
-    return () => window.clearTimeout(timeout);
-  }, [isOpen, layoutId]);
-
-  const releaseSharedLayout = useCallback(() => {
-    // Delay releasing the shared layout to prevent focus loss during typing
-    setTimeout(() => {
-      setActiveLayoutId(null);
-    }, 100);
-  }, []);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -170,60 +142,43 @@ export function AuthModal() {
     
     return (
       <motion.div
-        key={isSignup ? 'signup' : 'login'}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0, transition: { delay: 0.15, duration: 0.2 } }}
         exit={{ opacity: 0, y: -10, transition: { duration: 0.1 } }}
         className="w-full"
       >
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                    <FormItem>
-                        <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
-                        <FormControl>
-                        <Input
-                          id={isSignup ? 'signup-email' : 'login-email'}
-                          type="email"
-                          placeholder="you@example.com"
-                          {...field}
-                          onFocus={releaseSharedLayout}
-                          disabled={isLoading}
-                          autoComplete="email"
-                        />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
+                <Input
+                  id={isSignup ? 'signup-email' : 'login-email'}
+                  type="email"
+                  placeholder="you@example.com"
+                  {...form.register('email')}
+                  disabled={isLoading}
+                  autoComplete="email"
                 />
-                <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                    <FormItem>
-                        <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
-                        <FormControl>
-                        <Input
-                          id={isSignup ? 'signup-password' : 'login-password'}
-                          type="password"
-                          {...field}
-                          onFocus={releaseSharedLayout}
-                          disabled={isLoading}
-                          autoComplete={isSignup ? 'new-password' : 'current-password'}
-                        />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
+                {form.formState.errors.email && (
+                  <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
+                )}
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
+                <Input
+                  id={isSignup ? 'signup-password' : 'login-password'}
+                  type="password"
+                  {...form.register('password')}
+                  disabled={isLoading}
+                  autoComplete={isSignup ? 'new-password' : 'current-password'}
                 />
+                {form.formState.errors.password && (
+                  <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
+                )}
+            </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignup ? 'Create Account' : 'Log In')}
                 </Button>
             </form>
-        </Form>
       </motion.div>
     );
   };
@@ -239,7 +194,6 @@ export function AuthModal() {
           onClick={onClose}
         >
           <motion.div
-            {...(activeLayoutId ? { layoutId: activeLayoutId } : {})}
             className="bg-secondary rounded-lg shadow-xl w-full max-w-sm"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -248,7 +202,7 @@ export function AuthModal() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
-              <AnimatePresence mode="wait">
+              <AnimatePresence>
                 {formState === 'success' ? (
                   <motion.div
                     key="success"
