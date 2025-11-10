@@ -235,6 +235,20 @@
 .prose-styles ol {
   line-height: 1.65;
   font-size: 0.9375rem; /* 15px */
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.prose-styles p:first-child,
+.prose-styles ul:first-child,
+.prose-styles ol:first-child {
+  margin-top: 0;
+}
+
+.prose-styles p:last-child,
+.prose-styles ul:last-child,
+.prose-styles ol:last-child {
+  margin-bottom: 0;
 }
 
 .prose-styles h1,

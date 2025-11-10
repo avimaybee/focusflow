@@ -274,13 +274,13 @@ export function ChatMessage({
         exit={{ opacity: 0, y: -5 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className={cn(
-          'group flex w-full gap-3 sm:gap-4 px-4 sm:px-6 py-1 sm:py-1.5 mb-2 sm:mb-2.5 last:mb-0',
+          'group flex w-full gap-3 sm:gap-4 px-4 sm:px-6 py-0 sm:py-0.5 mb-1.5 sm:mb-2 last:mb-0',
           isUser ? 'justify-end' : 'justify-start'
         )}
       >
         <div
           className={cn(
-            'flex flex-col gap-1 max-w-2xl sm:max-w-3xl',
+            'flex flex-col gap-0.5 max-w-2xl sm:max-w-3xl',
             isUser ? 'items-end' : 'items-start'
           )}
         >
@@ -307,9 +307,9 @@ export function ChatMessage({
             className={cn(
               'relative w-full text-sm sm:text-[15px] leading-relaxed',
               isUser
-                ? 'bg-primary/15 text-foreground px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl max-w-fit'
+                ? 'bg-primary/15 text-foreground px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl max-w-fit'
                 : cn(
-                    'text-foreground/90 border-l-2 pl-3 sm:pl-4 py-1.5 sm:py-2',
+                    'text-foreground/90 border-l-2 pl-3 sm:pl-4 py-1 sm:py-1.5',
                     getPersonaColor(persona)
                   ),
               isError && 'bg-destructive/10 border border-destructive/30 text-destructive-foreground px-4 py-3 rounded-2xl'
@@ -320,7 +320,7 @@ export function ChatMessage({
           </div>
 
           {!isUser && !isError && (
-            <div className="flex items-center gap-0.5 mt-1">
+            <div className="flex items-center gap-0.5 mt-0.5">
               <TooltipProvider>
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
