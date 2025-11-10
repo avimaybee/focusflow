@@ -64,9 +64,10 @@ export function AuthModal() {
   }, [isOpen, layoutId]);
 
   const releaseSharedLayout = useCallback(() => {
-    // Once a field is active we drop the shared layout id so Framer Motion stops
-    // relocating the modal container on each keystroke (which was stealing focus).
-    setActiveLayoutId((current) => (current ? null : current));
+    // Delay releasing the shared layout to prevent focus loss during typing
+    setTimeout(() => {
+      setActiveLayoutId(null);
+    }, 100);
   }, []);
 
   const loginForm = useForm<LoginFormValues>({
