@@ -167,6 +167,13 @@ export default function ChatPage() {
 
         const prevList = prev || [];
         const fetchedIds = new Set(fetched.map((msg) => msg.id));
+
+        // If we fetched more messages than we had before, use the fetched messages
+        // This handles the case where optimistic messages get replaced with real database messages
+        if (fetched.length > prevList.length) {
+          return fetched;
+        }
+
         const hasMissingOptimistic = prevList.some((msg) => {
           const optimistic = (msg.id ?? '').startsWith('user-') || (msg.id ?? '').startsWith('guest-ai-') || (msg.id ?? '').startsWith('err-');
           return optimistic && msg.id && !fetchedIds.has(msg.id);
@@ -544,16 +551,8 @@ export default function ChatPage() {
           autoSelectedPersonaId,
           autoSelectedPersonaName,
       };
-  console.debug('[Client] Adding model response to messages', {
-    id: modelResponse.id,
-    rawText: modelResponse.rawText,
+  console.debug('[Client] AI response received, refreshing messages from database', {
     sessionId: currentChatId,
-  });
-  setMessages(prev => {
-    const next = ([...(prev || []), modelResponse]);
-    // eslint-disable-next-line no-console
-    console.debug('[Client] messages length after model append:', next.length);
-    return next;
   });
       // Refresh chat history to show the new chat in the sidebar
       forceRefresh();
