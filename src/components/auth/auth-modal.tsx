@@ -54,15 +54,20 @@ export function AuthModal() {
 
     setActiveLayoutId(layoutId);
 
-    const raf = requestAnimationFrame(() => {
-      // Detach from shared layout after the opening animation so Framer Motion
-      // stops re-parenting the modal content on every render (which was
-      // forcing the inputs to lose focus after the first keystroke).
+    const timeout = window.setTimeout(() => {
+      // Drop the shared layout id after the entrance animation finishes so
+      // Framer Motion stops detaching the DOM node that contains the inputs.
       setActiveLayoutId(null);
-    });
+    }, 450);
 
-    return () => cancelAnimationFrame(raf);
+    return () => window.clearTimeout(timeout);
   }, [isOpen, layoutId]);
+
+  const releaseSharedLayout = useCallback(() => {
+    // Once a field is active we drop the shared layout id so Framer Motion stops
+    // relocating the modal container on each keystroke (which was stealing focus).
+    setActiveLayoutId((current) => (current ? null : current));
+  }, []);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -179,7 +184,15 @@ export function AuthModal() {
                     <FormItem>
                         <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
                         <FormControl>
-                        <Input id={isSignup ? 'signup-email' : 'login-email'} type="email" placeholder="you@example.com" {...field} disabled={isLoading} autoComplete="email" />
+                        <Input
+                          id={isSignup ? 'signup-email' : 'login-email'}
+                          type="email"
+                          placeholder="you@example.com"
+                          {...field}
+                          onFocus={releaseSharedLayout}
+                          disabled={isLoading}
+                          autoComplete="email"
+                        />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -192,7 +205,14 @@ export function AuthModal() {
                     <FormItem>
                         <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
                         <FormControl>
-                        <Input id={isSignup ? 'signup-password' : 'login-password'} type="password" {...field} disabled={isLoading} autoComplete={isSignup ? 'new-password' : 'current-password'}/>
+                        <Input
+                          id={isSignup ? 'signup-password' : 'login-password'}
+                          type="password"
+                          {...field}
+                          onFocus={releaseSharedLayout}
+                          disabled={isLoading}
+                          autoComplete={isSignup ? 'new-password' : 'current-password'}
+                        />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -218,7 +238,7 @@ export function AuthModal() {
           onClick={onClose}
         >
           <motion.div
-            layoutId={activeLayoutId ?? 'auth-modal-fallback'}
+            {...(activeLayoutId ? { layoutId: activeLayoutId } : {})}
             className="bg-secondary rounded-lg shadow-xl w-full max-w-sm"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
