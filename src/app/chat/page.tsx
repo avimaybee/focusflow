@@ -418,6 +418,12 @@ export default function ChatPage() {
           currentChatId = newChatId;
           setIsNewChat(true); // Mark as new chat to prevent loading from DB
           setActiveChatId(newChatId);
+          // Ensure ref is in sync immediately so subsequent loadMessages
+          // calls (which check activeChatIdRef.current) won't bail out
+          // due to the ref still being the old value in the same tick.
+          activeChatIdRef.current = newChatId;
+          // Also keep currentChatIdRef in sync for any other usages
+          currentChatIdRef.current = newChatId;
           // Move the user into the newly created chat route to keep layout in sync
           router.replace(`/chat/${newChatId}`);
           forceRefresh();
@@ -566,12 +572,22 @@ export default function ChatPage() {
       forceRefresh();
       // Reset isNewChat flag now that messages are saved
       setIsNewChat(false);
-      // Load messages from database to ensure we have the latest
-      setTimeout(() => {
+      // Immediately attempt to refresh messages from the DB so the saved AI
+      // response (which may have been persisted server-side) is reflected in
+      // the UI without requiring the user to refresh or send another message.
+      // loadMessages will internally retry if optimistic messages are present
+      // or if the saved messages haven't appeared yet.
+      try {
         if (currentChatId) {
-          loadMessages(currentChatId);
+          // await here so the UI updates from the latest DB state before
+          // finishing the send flow. If the fetch is slow, loadMessages has
+          // retry logic to re-attempt fetching.
+          await loadMessages(currentChatId);
         }
-      }, 500);
+      } catch (e) {
+        // swallow - loadMessages already logs errors and will retry where appropriate
+        console.debug('[Client] loadMessages after send failed (non-blocking)', e);
+      }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
