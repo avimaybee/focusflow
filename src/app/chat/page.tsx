@@ -96,7 +96,7 @@ export default function ChatPage() {
   const hasOptimisticMessages = useCallback((list: ChatMessageProps[]) => {
     return list.some((msg) => {
       const id = msg.id ?? '';
-      return id.startsWith('user-') || id.startsWith('guest-ai-') || id.startsWith('err-');
+      return id.startsWith('user-') || id.startsWith('model-') || id.startsWith('err-');
     });
   }, []);
 
@@ -175,7 +175,7 @@ export default function ChatPage() {
         }
 
         const hasMissingOptimistic = prevList.some((msg) => {
-          const optimistic = (msg.id ?? '').startsWith('user-') || (msg.id ?? '').startsWith('guest-ai-') || (msg.id ?? '').startsWith('err-');
+          const optimistic = (msg.id ?? '').startsWith('user-') || (msg.id ?? '').startsWith('model-') || (msg.id ?? '').startsWith('err-');
           return optimistic && msg.id && !fetchedIds.has(msg.id);
         });
 
@@ -536,7 +536,7 @@ export default function ChatPage() {
       const autoSelectedPersonaName = typeof autoSelection?.personaName === 'string' ? autoSelection.personaName : undefined;
       
       const modelResponse: ChatMessageProps = {
-          id: `guest-ai-${Date.now()}`,
+          id: `model-${Date.now()}`, // Use a different prefix to avoid conflicts
           role: 'model',
           text: await marked.parse(result.response),
           rawText: result.response,
@@ -551,16 +551,27 @@ export default function ChatPage() {
           autoSelectedPersonaId,
           autoSelectedPersonaName,
       };
-  console.debug('[Client] AI response received, refreshing messages from database', {
+  console.debug('[Client] Adding AI response to messages', {
+    id: modelResponse.id,
+    rawText: modelResponse.rawText,
     sessionId: currentChatId,
+  });
+  setMessages(prev => {
+    const next = ([...(prev || []), modelResponse]);
+    // eslint-disable-next-line no-console
+    console.debug('[Client] messages length after AI append:', next.length);
+    return next;
   });
       // Refresh chat history to show the new chat in the sidebar
       forceRefresh();
       // Reset isNewChat flag now that messages are saved
       setIsNewChat(false);
-      if (currentChatId) {
-        loadMessages(currentChatId);
-      }
+      // Load messages to ensure we have the correct database IDs
+      setTimeout(() => {
+        if (currentChatId) {
+          loadMessages(currentChatId);
+        }
+      }, 200);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
