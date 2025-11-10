@@ -246,12 +246,17 @@ export default function ChatPage() {
       setMessages([]);
     }
 
-    // Load messages on first load of this chat
+    // Load messages on first load of this chat, but not if we have AI responses already
     const isFirstLoad = firstLoadRef.current;
     if (isFirstLoad) {
       firstLoadRef.current = false;
     }
-    loadMessages(activeChatId, 0, isFirstLoad);
+
+    // Don't load messages if we already have AI responses (optimistic or real)
+    const hasAIResponses = messagesRef.current.some(msg => msg.role === 'model');
+    if (!hasAIResponses) {
+      loadMessages(activeChatId, 0, isFirstLoad);
+    }
 
     return () => {
       messageFetchControllerRef.current?.abort();
@@ -261,12 +266,6 @@ export default function ChatPage() {
       }
     };
   }, [activeChatId, isNewChat, loadMessages, hasOptimisticMessages]);
-
-  // Debug: log messages changes to help identify when messages becomes undefined or malformed
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.debug('[ChatPage] messages changed, length:', Array.isArray(messages) ? messages.length : typeof messages, messages && messages.slice ? messages.slice(-5) : messages);
-  }, [messages]);
 
   const handleSetSidebarOpen = (isOpen: boolean) => {
     setSidebarOpen(isOpen);
@@ -536,7 +535,7 @@ export default function ChatPage() {
       const autoSelectedPersonaName = typeof autoSelection?.personaName === 'string' ? autoSelection.personaName : undefined;
       
       const modelResponse: ChatMessageProps = {
-          id: `model-${Date.now()}`, // Use a different prefix to avoid conflicts
+          id: `ai-${Date.now()}`,
           role: 'model',
           text: await marked.parse(result.response),
           rawText: result.response,
@@ -551,27 +550,19 @@ export default function ChatPage() {
           autoSelectedPersonaId,
           autoSelectedPersonaName,
       };
+
+      console.log('[DEBUG] Created modelResponse:', { id: modelResponse.id, role: modelResponse.role, textLength: modelResponse.rawText?.length });
   console.debug('[Client] Adding AI response to messages', {
     id: modelResponse.id,
-    rawText: modelResponse.rawText,
+    rawText: (modelResponse.rawText || '').substring(0, 100) + '...',
     sessionId: currentChatId,
   });
-  setMessages(prev => {
-    const next = ([...(prev || []), modelResponse]);
-    // eslint-disable-next-line no-console
-    console.debug('[Client] messages length after AI append:', next.length);
-    return next;
-  });
+  setMessages(prev => [...(prev || []), modelResponse]);
       // Refresh chat history to show the new chat in the sidebar
       forceRefresh();
       // Reset isNewChat flag now that messages are saved
       setIsNewChat(false);
-      // Load messages to ensure we have the correct database IDs
-      setTimeout(() => {
-        if (currentChatId) {
-          loadMessages(currentChatId);
-        }
-      }, 200);
+      // Don't call loadMessages - keep optimistic messages for immediate display
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
