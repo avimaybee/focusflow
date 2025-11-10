@@ -194,6 +194,7 @@ export function AuthModal() {
           onClick={onClose}
         >
           <motion.div
+            {...(layoutId ? { layoutId } : {})}
             className="bg-secondary rounded-lg shadow-xl w-full max-w-sm"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
