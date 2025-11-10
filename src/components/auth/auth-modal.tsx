@@ -45,10 +45,12 @@ export function AuthModal() {
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
+    mode: 'onBlur',
   });
   const signupForm = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: { email: '', password: '' },
+    mode: 'onBlur',
   });
 
   useEffect(() => {
@@ -151,7 +153,7 @@ export function AuthModal() {
             <div className="space-y-2">
                 <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
                 <Input
-                  id={isSignup ? 'signup-email' : 'login-email'}
+                  id="email"
                   type="email"
                   placeholder="you@example.com"
                   {...form.register('email')}
@@ -165,11 +167,11 @@ export function AuthModal() {
             <div className="space-y-2">
                 <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
                 <Input
-                  id={isSignup ? 'signup-password' : 'login-password'}
+                  id="password"
                   type="password"
                   {...form.register('password')}
                   disabled={isLoading}
-                  autoComplete={isSignup ? 'new-password' : 'current-password'}
+                  autoComplete="off"
                 />
                 {form.formState.errors.password && (
                   <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
