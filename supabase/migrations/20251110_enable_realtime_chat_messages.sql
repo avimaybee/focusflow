@@ -1,16 +1,35 @@
--- Enable Realtime for chat_messages table
--- This allows the Supabase Realtime service to stream INSERT/UPDATE/DELETE events
--- for chat messages to connected clients via WebSocket
+-- Enable Realtime for chat_messages table (safe version)
+--
+-- Use a DO block to conditionally create the publication and add the
+-- table to the publication. Postgres does not support `ALTER PUBLICATION
+-- ... ADD TABLE IF NOT EXISTS` syntax, which caused the original error.
+-- This script is safe to run multiple times.
 
--- Enable realtime for chat_messages if not already enabled
-ALTER PUBLICATION supabase_realtime ADD TABLE IF NOT EXISTS public.chat_messages;
+DO $$
+BEGIN
+  -- Create the publication if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+    CREATE PUBLICATION supabase_realtime;
+  END IF;
 
--- Ensure the table has REPLICA IDENTITY FULL for proper realtime updates
--- This ensures all column values are included in realtime events
-ALTER TABLE public.chat_messages REPLICA IDENTITY FULL;
+  -- Add table to publication if not already included
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime'
+      AND schemaname = 'public'
+      AND tablename = 'chat_messages'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages;
+  END IF;
+END
+$$;
 
--- Add comment explaining realtime usage
-COMMENT ON TABLE public.chat_messages IS 
+-- Ensure the table provides full row data in replication events
+ALTER TABLE IF EXISTS public.chat_messages REPLICA IDENTITY FULL;
+
+-- Add an explanatory comment (idempotent)
+COMMENT ON TABLE public.chat_messages IS
   'Chat messages with Realtime enabled for instant message delivery. '
   'Clients subscribe to INSERT events filtered by session_id to receive '
   'messages as they are created.';

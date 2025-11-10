@@ -223,70 +223,101 @@ export default function ChatPage() {
   // Handle incoming Realtime messages with deduplication
   const handleRealtimeMessage = useCallback((incomingMessage: ChatMessageProps) => {
     setMessages((prev) => {
-      // Deduplicate by DB id first
+      if (!prev) {
+        return [incomingMessage];
+      }
+
+      // Deduplicate by DB id first (highest priority)
       const alreadyExists = prev.some(m => m.id === incomingMessage.id);
       if (alreadyExists) {
-        console.debug('[Realtime] Message already exists, skipping', { id: incomingMessage.id });
+        console.debug('[Realtime] Message already exists by DB id, skipping', { id: incomingMessage.id });
         return prev;
       }
 
-      // Check for optimistic messages that should be replaced
-      // If incoming message is a 'model' role, look for optimistic AI messages with similar content/timing
+      // Strategy: replace optimistic messages with their real DB counterparts
+      // This prevents duplicates by identifying and removing the optimistic version
+      
       if (incomingMessage.role === 'model') {
-        const optimisticIndex = prev.findIndex(m => {
+        // For AI responses: find the last optimistic AI message with same text
+        // (most recent optimistic message, since there should only be one)
+        for (let i = prev.length - 1; i >= 0; i--) {
+          const m = prev[i];
           const isOptimistic = m.id && (m.id.startsWith('ai-') || m.id.startsWith('model-'));
-          if (!isOptimistic) return false;
+          if (!isOptimistic) continue;
           
-          // Check if rawText matches (for replacing optimistic AI response)
-          const textMatches = m.rawText && incomingMessage.rawText && 
-            m.rawText.trim() === incomingMessage.rawText.trim();
+          // Strong match: exact text match (trimmed, ignoring HTML)
+          const incomingTextNorm = (incomingMessage.rawText || '').trim();
+          const prevTextNorm = (m.rawText || '').trim();
+          if (incomingTextNorm === prevTextNorm && incomingTextNorm.length > 0) {
+            console.debug('[Realtime] Replacing optimistic model message (text match)', {
+              optimisticId: m.id,
+              dbId: incomingMessage.id,
+            });
+            const updated = [...prev];
+            updated[i] = incomingMessage;
+            return updated;
+          }
           
-          // Or check if timing is very close (within 2 seconds)
-          const timeClose = m.createdAt && incomingMessage.createdAt &&
-            Math.abs(m.createdAt.getTime() - incomingMessage.createdAt.getTime()) < 2000;
-          
-          return textMatches || timeClose;
-        });
-
-        if (optimisticIndex !== -1) {
-          console.debug('[Realtime] Replacing optimistic model message', {
-            optimisticId: prev[optimisticIndex].id,
-            dbId: incomingMessage.id,
-          });
-          const updated = [...prev];
-          updated[optimisticIndex] = incomingMessage;
-          return updated;
+          // Fallback: timing-based match if no text match (within 3 seconds after optimistic creation)
+          if (m.createdAt && incomingMessage.createdAt) {
+            const timeDiff = incomingMessage.createdAt.getTime() - m.createdAt.getTime();
+            if (timeDiff >= 0 && timeDiff < 3000) {
+              console.debug('[Realtime] Replacing optimistic model message (timing match)', {
+                optimisticId: m.id,
+                dbId: incomingMessage.id,
+                timeDiffMs: timeDiff,
+              });
+              const updated = [...prev];
+              updated[i] = incomingMessage;
+              return updated;
+            }
+          }
         }
       }
 
-      // Check for optimistic user messages that should be replaced
       if (incomingMessage.role === 'user') {
-        const optimisticIndex = prev.findIndex(m => {
+        // For user messages: find the last optimistic user message with same text
+        for (let i = prev.length - 1; i >= 0; i--) {
+          const m = prev[i];
           const isOptimistic = m.id && m.id.startsWith('user-');
-          if (!isOptimistic || m.role !== 'user') return false;
+          if (!isOptimistic || m.role !== 'user') continue;
           
-          // Match by content and timing
-          const textMatches = m.rawText && incomingMessage.rawText && 
-            m.rawText.trim() === incomingMessage.rawText.trim();
-          const timeClose = m.createdAt && incomingMessage.createdAt &&
-            Math.abs(m.createdAt.getTime() - incomingMessage.createdAt.getTime()) < 5000;
+          // Strong match: exact text match (trimmed)
+          const incomingTextNorm = (incomingMessage.rawText || '').trim();
+          const prevTextNorm = (m.rawText || '').trim();
+          if (incomingTextNorm === prevTextNorm && incomingTextNorm.length > 0) {
+            console.debug('[Realtime] Replacing optimistic user message (text match)', {
+              optimisticId: m.id,
+              dbId: incomingMessage.id,
+            });
+            const updated = [...prev];
+            updated[i] = incomingMessage;
+            return updated;
+          }
           
-          return textMatches && timeClose;
-        });
-
-        if (optimisticIndex !== -1) {
-          console.debug('[Realtime] Replacing optimistic user message', {
-            optimisticId: prev[optimisticIndex].id,
-            dbId: incomingMessage.id,
-          });
-          const updated = [...prev];
-          updated[optimisticIndex] = incomingMessage;
-          return updated;
+          // Fallback: timing-based match (within 5 seconds)
+          if (m.createdAt && incomingMessage.createdAt) {
+            const timeDiff = incomingMessage.createdAt.getTime() - m.createdAt.getTime();
+            if (timeDiff >= 0 && timeDiff < 5000) {
+              console.debug('[Realtime] Replacing optimistic user message (timing match)', {
+                optimisticId: m.id,
+                dbId: incomingMessage.id,
+                timeDiffMs: timeDiff,
+              });
+              const updated = [...prev];
+              updated[i] = incomingMessage;
+              return updated;
+            }
+          }
         }
       }
 
-      // No duplicate found, append new message
-      console.debug('[Realtime] Appending new message', { id: incomingMessage.id, role: incomingMessage.role });
+      // No duplicate/optimistic match found, append new message
+      console.debug('[Realtime] Appending new message (no optimistic match)', { 
+        id: incomingMessage.id, 
+        role: incomingMessage.role,
+        rawText: (incomingMessage.rawText || '').substring(0, 50),
+      });
       return [...prev, incomingMessage];
     });
   }, []);
