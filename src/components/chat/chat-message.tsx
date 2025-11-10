@@ -274,7 +274,7 @@ export function ChatMessage({
         exit={{ opacity: 0, y: -5 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className={cn(
-          'group flex w-full gap-3 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4',
+          'group flex w-full gap-3 sm:gap-4 px-4 sm:px-6 py-2 sm:py-3 mb-3 last:mb-0',
           isUser ? 'justify-end' : 'justify-start'
         )}
       >

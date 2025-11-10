@@ -17,7 +17,7 @@ export function ChatMessageSkeleton({ persona }: ChatMessageSkeletonProps) {
     const personaColorClass = getPersonaColor(persona?.id);
 
     return (
-        <div className="group flex w-full gap-3 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 justify-start">
+        <div className="group flex w-full gap-3 sm:gap-4 px-4 sm:px-6 py-2 sm:py-3 mb-3 last:mb-0 justify-start">
             <div className="flex flex-col gap-1 max-w-2xl sm:max-w-3xl items-start w-full">
                 {persona?.name && (
                     <div className="flex items-center gap-1 px-1">
