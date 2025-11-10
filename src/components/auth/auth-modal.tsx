@@ -40,13 +40,17 @@ export function AuthModal() {
 
   const [formState, setFormState] = useState<FormState>('idle');
 
+
+
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
+    mode: 'onBlur',
   });
   const signupForm = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: { email: '', password: '' },
+    mode: 'onBlur',
   });
 
   useEffect(() => {
@@ -140,45 +144,43 @@ export function AuthModal() {
     
     return (
       <motion.div
-        key={isSignup ? 'signup' : 'login'}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0, transition: { delay: 0.15, duration: 0.2 } }}
         exit={{ opacity: 0, y: -10, transition: { duration: 0.1 } }}
         className="w-full"
       >
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                    <FormItem>
-                        <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
-                        <FormControl>
-                        <Input id={isSignup ? 'signup-email' : 'login-email'} type="email" placeholder="you@example.com" {...field} disabled={isLoading} autoComplete="email" />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor={isSignup ? 'signup-email' : 'login-email'}>Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  {...form.register('email')}
+                  disabled={isLoading}
+                  autoComplete="email"
                 />
-                <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                    <FormItem>
-                        <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
-                        <FormControl>
-                        <Input id={isSignup ? 'signup-password' : 'login-password'} type="password" {...field} disabled={isLoading} autoComplete={isSignup ? 'new-password' : 'current-password'}/>
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
+                {form.formState.errors.email && (
+                  <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
+                )}
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor={isSignup ? 'signup-password' : 'login-password'}>Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  {...form.register('password')}
+                  disabled={isLoading}
+                  autoComplete="off"
                 />
+                {form.formState.errors.password && (
+                  <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
+                )}
+            </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignup ? 'Create Account' : 'Log In')}
                 </Button>
             </form>
-        </Form>
       </motion.div>
     );
   };
@@ -194,7 +196,7 @@ export function AuthModal() {
           onClick={onClose}
         >
           <motion.div
-            layoutId={layoutId || 'auth-modal-fallback'}
+            {...(layoutId ? { layoutId } : {})}
             className="bg-secondary rounded-lg shadow-xl w-full max-w-sm"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -203,7 +205,7 @@ export function AuthModal() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
-              <AnimatePresence mode="wait">
+              <AnimatePresence>
                 {formState === 'success' ? (
                   <motion.div
                     key="success"
