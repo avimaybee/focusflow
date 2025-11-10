@@ -168,9 +168,9 @@ export default function ChatPage() {
         const prevList = prev || [];
         const fetchedIds = new Set(fetched.map((msg) => msg.id));
 
-        // If we fetched more messages than we had before, use the fetched messages
-        // This handles the case where optimistic messages get replaced with real database messages
-        if (fetched.length > prevList.length) {
+        // If we fetched more messages than we had before, or if we have the same number
+        // but we're loading after sending a message, replace all messages
+        if (fetched.length >= prevList.length) {
           return fetched;
         }
 
@@ -242,21 +242,22 @@ export default function ChatPage() {
       return;
     }
 
-    if (previousChatId !== activeChatId && !hasOptimisticMessages(messagesRef.current)) {
-      setMessages([]);
-    }
-
-    // Load messages on first load of this chat, but not if we have AI responses already
+  if (previousChatId !== activeChatId && !hasOptimisticMessages(messagesRef.current) && !isSending) {
+    setMessages([]);
+  }    // Load messages on first load of this chat, but not if we have AI responses already
     const isFirstLoad = firstLoadRef.current;
     if (isFirstLoad) {
       firstLoadRef.current = false;
     }
 
-    // Don't load messages if we already have AI responses (optimistic or real)
+    // Don't load messages if we have AI responses and we're not explicitly loading after sending
     const hasAIResponses = messagesRef.current.some(msg => msg.role === 'model');
-    if (!hasAIResponses) {
-      loadMessages(activeChatId, 0, isFirstLoad);
+    if (hasAIResponses && !isFirstLoad) {
+      // Allow loading on first load even with AI responses (for navigation to existing chats)
+      return;
     }
+
+    loadMessages(activeChatId, 0, isFirstLoad);
 
     return () => {
       messageFetchControllerRef.current?.abort();
@@ -557,12 +558,20 @@ export default function ChatPage() {
     rawText: (modelResponse.rawText || '').substring(0, 100) + '...',
     sessionId: currentChatId,
   });
-  setMessages(prev => [...(prev || []), modelResponse]);
+      setMessages(prev => {
+        const newMessages = [...(prev || []), modelResponse];
+        return newMessages;
+      });
       // Refresh chat history to show the new chat in the sidebar
       forceRefresh();
       // Reset isNewChat flag now that messages are saved
       setIsNewChat(false);
-      // Don't call loadMessages - keep optimistic messages for immediate display
+      // Load messages from database to ensure we have the latest
+      setTimeout(() => {
+        if (currentChatId) {
+          loadMessages(currentChatId);
+        }
+      }, 500);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
