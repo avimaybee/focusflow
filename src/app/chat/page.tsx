@@ -8,6 +8,7 @@ import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
+import { useChatRealtime } from '@/hooks/use-chat-realtime';
 import { Attachment, type PersonaDetails as ChatPersonaDetails } from '@/types/chat-types';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
@@ -96,7 +97,7 @@ export default function ChatPage() {
   const hasOptimisticMessages = useCallback((list: ChatMessageProps[]) => {
     return list.some((msg) => {
       const id = msg.id ?? '';
-      return id.startsWith('user-') || id.startsWith('guest-ai-') || id.startsWith('err-');
+      return id.startsWith('user-') || id.startsWith('model-') || id.startsWith('err-');
     });
   }, []);
 
@@ -167,8 +168,15 @@ export default function ChatPage() {
 
         const prevList = prev || [];
         const fetchedIds = new Set(fetched.map((msg) => msg.id));
+
+        // If we fetched more messages than we had before, or if we have the same number
+        // but we're loading after sending a message, replace all messages
+        if (fetched.length >= prevList.length) {
+          return fetched;
+        }
+
         const hasMissingOptimistic = prevList.some((msg) => {
-          const optimistic = (msg.id ?? '').startsWith('user-') || (msg.id ?? '').startsWith('guest-ai-') || (msg.id ?? '').startsWith('err-');
+          const optimistic = (msg.id ?? '').startsWith('user-') || (msg.id ?? '').startsWith('model-') || (msg.id ?? '').startsWith('err-');
           return optimistic && msg.id && !fetchedIds.has(msg.id);
         });
 
@@ -212,6 +220,120 @@ export default function ChatPage() {
     }
   }, [session?.access_token, hasOptimisticMessages, selectedPersonaId, setSelectedPersonaId, personaWasExplicitlySet]);
 
+  // Handle incoming Realtime messages with deduplication
+  const handleRealtimeMessage = useCallback((incomingMessage: ChatMessageProps) => {
+    setMessages((prev) => {
+      if (!prev) {
+        return [incomingMessage];
+      }
+
+      // Deduplicate by DB id first (highest priority)
+      const alreadyExists = prev.some(m => m.id === incomingMessage.id);
+      if (alreadyExists) {
+        console.debug('[Realtime] Message already exists by DB id, skipping', { id: incomingMessage.id });
+        return prev;
+      }
+
+      // Strategy: replace optimistic messages with their real DB counterparts
+      // This prevents duplicates by identifying and removing the optimistic version
+      
+      if (incomingMessage.role === 'model') {
+        // For AI responses: find the last optimistic AI message with same text
+        // (most recent optimistic message, since there should only be one)
+        for (let i = prev.length - 1; i >= 0; i--) {
+          const m = prev[i];
+          const isOptimistic = m.id && (m.id.startsWith('ai-') || m.id.startsWith('model-'));
+          if (!isOptimistic) continue;
+          
+          // Strong match: exact text match (trimmed, ignoring HTML)
+          const incomingTextNorm = (incomingMessage.rawText || '').trim();
+          const prevTextNorm = (m.rawText || '').trim();
+          if (incomingTextNorm === prevTextNorm && incomingTextNorm.length > 0) {
+            console.debug('[Realtime] Replacing optimistic model message (text match)', {
+              optimisticId: m.id,
+              dbId: incomingMessage.id,
+            });
+            const updated = [...prev];
+            updated[i] = incomingMessage;
+            return updated;
+          }
+          
+          // Fallback: timing-based match if no text match (within 3 seconds after optimistic creation)
+          if (m.createdAt && incomingMessage.createdAt) {
+            const timeDiff = incomingMessage.createdAt.getTime() - m.createdAt.getTime();
+            if (timeDiff >= 0 && timeDiff < 3000) {
+              console.debug('[Realtime] Replacing optimistic model message (timing match)', {
+                optimisticId: m.id,
+                dbId: incomingMessage.id,
+                timeDiffMs: timeDiff,
+              });
+              const updated = [...prev];
+              updated[i] = incomingMessage;
+              return updated;
+            }
+          }
+        }
+      }
+
+      if (incomingMessage.role === 'user') {
+        // For user messages: find the last optimistic user message with same text
+        for (let i = prev.length - 1; i >= 0; i--) {
+          const m = prev[i];
+          const isOptimistic = m.id && m.id.startsWith('user-');
+          if (!isOptimistic || m.role !== 'user') continue;
+          
+          // Strong match: exact text match (trimmed)
+          const incomingTextNorm = (incomingMessage.rawText || '').trim();
+          const prevTextNorm = (m.rawText || '').trim();
+          if (incomingTextNorm === prevTextNorm && incomingTextNorm.length > 0) {
+            console.debug('[Realtime] Replacing optimistic user message (text match)', {
+              optimisticId: m.id,
+              dbId: incomingMessage.id,
+            });
+            const updated = [...prev];
+            updated[i] = incomingMessage;
+            return updated;
+          }
+          
+          // Fallback: timing-based match (within 5 seconds)
+          if (m.createdAt && incomingMessage.createdAt) {
+            const timeDiff = incomingMessage.createdAt.getTime() - m.createdAt.getTime();
+            if (timeDiff >= 0 && timeDiff < 5000) {
+              console.debug('[Realtime] Replacing optimistic user message (timing match)', {
+                optimisticId: m.id,
+                dbId: incomingMessage.id,
+                timeDiffMs: timeDiff,
+              });
+              const updated = [...prev];
+              updated[i] = incomingMessage;
+              return updated;
+            }
+          }
+        }
+      }
+
+      // No duplicate/optimistic match found, append new message
+      console.debug('[Realtime] Appending new message (no optimistic match)', { 
+        id: incomingMessage.id, 
+        role: incomingMessage.role,
+        rawText: (incomingMessage.rawText || '').substring(0, 50),
+      });
+      return [...prev, incomingMessage];
+    });
+  }, []);
+
+  // Subscribe to Realtime chat messages
+  // Enable subscription whenever we have an active chat ID, including new chats
+  // that have been created. The subscription will receive INSERT events for both
+  // user messages and AI responses as they're saved to the database.
+  useChatRealtime({
+    sessionId: activeChatId,
+    onMessageInsert: handleRealtimeMessage,
+    personas,
+    activePersona: selectedPersona,
+    enabled: !!activeChatId, // Subscribe to any active chat, including newly created ones
+  });
+
   useEffect(() => {
     const chatId = params.chatId as string | undefined;
     if (chatId) {
@@ -235,15 +357,21 @@ export default function ChatPage() {
       return;
     }
 
-    if (previousChatId !== activeChatId && !hasOptimisticMessages(messagesRef.current)) {
-      setMessages([]);
-    }
-
-    // Load messages on first load of this chat
+  if (previousChatId !== activeChatId && !hasOptimisticMessages(messagesRef.current) && !isSending) {
+    setMessages([]);
+  }    // Load messages on first load of this chat, but not if we have AI responses already
     const isFirstLoad = firstLoadRef.current;
     if (isFirstLoad) {
       firstLoadRef.current = false;
     }
+
+    // Don't load messages if we have AI responses and we're not explicitly loading after sending
+    const hasAIResponses = messagesRef.current.some(msg => msg.role === 'model');
+    if (hasAIResponses && !isFirstLoad) {
+      // Allow loading on first load even with AI responses (for navigation to existing chats)
+      return;
+    }
+
     loadMessages(activeChatId, 0, isFirstLoad);
 
     return () => {
@@ -254,12 +382,6 @@ export default function ChatPage() {
       }
     };
   }, [activeChatId, isNewChat, loadMessages, hasOptimisticMessages]);
-
-  // Debug: log messages changes to help identify when messages becomes undefined or malformed
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.debug('[ChatPage] messages changed, length:', Array.isArray(messages) ? messages.length : typeof messages, messages && messages.slice ? messages.slice(-5) : messages);
-  }, [messages]);
 
   const handleSetSidebarOpen = (isOpen: boolean) => {
     setSidebarOpen(isOpen);
@@ -411,6 +533,12 @@ export default function ChatPage() {
           currentChatId = newChatId;
           setIsNewChat(true); // Mark as new chat to prevent loading from DB
           setActiveChatId(newChatId);
+          // Ensure ref is in sync immediately so subsequent loadMessages
+          // calls (which check activeChatIdRef.current) won't bail out
+          // due to the ref still being the old value in the same tick.
+          activeChatIdRef.current = newChatId;
+          // Also keep currentChatIdRef in sync for any other usages
+          currentChatIdRef.current = newChatId;
           // Move the user into the newly created chat route to keep layout in sync
           router.replace(`/chat/${newChatId}`);
           forceRefresh();
@@ -529,7 +657,7 @@ export default function ChatPage() {
       const autoSelectedPersonaName = typeof autoSelection?.personaName === 'string' ? autoSelection.personaName : undefined;
       
       const modelResponse: ChatMessageProps = {
-          id: `guest-ai-${Date.now()}`,
+          id: `ai-${Date.now()}`,
           role: 'model',
           text: await marked.parse(result.response),
           rawText: result.response,
@@ -544,24 +672,28 @@ export default function ChatPage() {
           autoSelectedPersonaId,
           autoSelectedPersonaName,
       };
-  console.debug('[Client] Adding model response to messages', {
+
+      console.log('[DEBUG] Created modelResponse:', { id: modelResponse.id, role: modelResponse.role, textLength: modelResponse.rawText?.length });
+  console.debug('[Client] Adding AI response to messages', {
     id: modelResponse.id,
-    rawText: modelResponse.rawText,
+    rawText: (modelResponse.rawText || '').substring(0, 100) + '...',
     sessionId: currentChatId,
   });
-  setMessages(prev => {
-    const next = ([...(prev || []), modelResponse]);
-    // eslint-disable-next-line no-console
-    console.debug('[Client] messages length after model append:', next.length);
-    return next;
-  });
+      setMessages(prev => {
+        const newMessages = [...(prev || []), modelResponse];
+        return newMessages;
+      });
+      
       // Refresh chat history to show the new chat in the sidebar
       forceRefresh();
+      
       // Reset isNewChat flag now that messages are saved
       setIsNewChat(false);
-      if (currentChatId) {
-        loadMessages(currentChatId);
-      }
+      
+      // Note: No need to manually reload messages - Supabase Realtime will 
+      // automatically push the server-saved user and model messages to the client.
+      // The Realtime subscription will handle deduplication and replace any
+      // optimistic messages with the real DB messages.
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
