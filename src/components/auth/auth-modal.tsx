@@ -39,6 +39,30 @@ export function AuthModal() {
   const { toast } = useToast();
 
   const [formState, setFormState] = useState<FormState>('idle');
+  const [activeLayoutId, setActiveLayoutId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setActiveLayoutId(null);
+      return;
+    }
+
+    if (!layoutId) {
+      setActiveLayoutId(null);
+      return;
+    }
+
+    setActiveLayoutId(layoutId);
+
+    const raf = requestAnimationFrame(() => {
+      // Detach from shared layout after the opening animation so Framer Motion
+      // stops re-parenting the modal content on every render (which was
+      // forcing the inputs to lose focus after the first keystroke).
+      setActiveLayoutId(null);
+    });
+
+    return () => cancelAnimationFrame(raf);
+  }, [isOpen, layoutId]);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -194,7 +218,7 @@ export function AuthModal() {
           onClick={onClose}
         >
           <motion.div
-            layoutId={layoutId || 'auth-modal-fallback'}
+            layoutId={activeLayoutId ?? 'auth-modal-fallback'}
             className="bg-secondary rounded-lg shadow-xl w-full max-w-sm"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
