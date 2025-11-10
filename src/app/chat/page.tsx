@@ -8,6 +8,7 @@ import { useAuthModal } from '@/hooks/use-auth-modal';
 import { useToast } from '@/hooks/use-toast';
 import { usePersonaManager } from '@/hooks/use-persona-manager';
 import { useChatHistory } from '@/hooks/use-chat-history';
+import { useChatRealtime } from '@/hooks/use-chat-realtime';
 import { Attachment, type PersonaDetails as ChatPersonaDetails } from '@/types/chat-types';
 import { useContextHubStore } from '@/stores/use-context-hub-store';
 import { ChatSidebar } from '@/components/chat/chat-sidebar';
@@ -218,6 +219,89 @@ export default function ChatPage() {
       }
     }
   }, [session?.access_token, hasOptimisticMessages, selectedPersonaId, setSelectedPersonaId, personaWasExplicitlySet]);
+
+  // Handle incoming Realtime messages with deduplication
+  const handleRealtimeMessage = useCallback((incomingMessage: ChatMessageProps) => {
+    setMessages((prev) => {
+      // Deduplicate by DB id first
+      const alreadyExists = prev.some(m => m.id === incomingMessage.id);
+      if (alreadyExists) {
+        console.debug('[Realtime] Message already exists, skipping', { id: incomingMessage.id });
+        return prev;
+      }
+
+      // Check for optimistic messages that should be replaced
+      // If incoming message is a 'model' role, look for optimistic AI messages with similar content/timing
+      if (incomingMessage.role === 'model') {
+        const optimisticIndex = prev.findIndex(m => {
+          const isOptimistic = m.id && (m.id.startsWith('ai-') || m.id.startsWith('model-'));
+          if (!isOptimistic) return false;
+          
+          // Check if rawText matches (for replacing optimistic AI response)
+          const textMatches = m.rawText && incomingMessage.rawText && 
+            m.rawText.trim() === incomingMessage.rawText.trim();
+          
+          // Or check if timing is very close (within 2 seconds)
+          const timeClose = m.createdAt && incomingMessage.createdAt &&
+            Math.abs(m.createdAt.getTime() - incomingMessage.createdAt.getTime()) < 2000;
+          
+          return textMatches || timeClose;
+        });
+
+        if (optimisticIndex !== -1) {
+          console.debug('[Realtime] Replacing optimistic model message', {
+            optimisticId: prev[optimisticIndex].id,
+            dbId: incomingMessage.id,
+          });
+          const updated = [...prev];
+          updated[optimisticIndex] = incomingMessage;
+          return updated;
+        }
+      }
+
+      // Check for optimistic user messages that should be replaced
+      if (incomingMessage.role === 'user') {
+        const optimisticIndex = prev.findIndex(m => {
+          const isOptimistic = m.id && m.id.startsWith('user-');
+          if (!isOptimistic || m.role !== 'user') return false;
+          
+          // Match by content and timing
+          const textMatches = m.rawText && incomingMessage.rawText && 
+            m.rawText.trim() === incomingMessage.rawText.trim();
+          const timeClose = m.createdAt && incomingMessage.createdAt &&
+            Math.abs(m.createdAt.getTime() - incomingMessage.createdAt.getTime()) < 5000;
+          
+          return textMatches && timeClose;
+        });
+
+        if (optimisticIndex !== -1) {
+          console.debug('[Realtime] Replacing optimistic user message', {
+            optimisticId: prev[optimisticIndex].id,
+            dbId: incomingMessage.id,
+          });
+          const updated = [...prev];
+          updated[optimisticIndex] = incomingMessage;
+          return updated;
+        }
+      }
+
+      // No duplicate found, append new message
+      console.debug('[Realtime] Appending new message', { id: incomingMessage.id, role: incomingMessage.role });
+      return [...prev, incomingMessage];
+    });
+  }, []);
+
+  // Subscribe to Realtime chat messages
+  // Enable subscription whenever we have an active chat ID, including new chats
+  // that have been created. The subscription will receive INSERT events for both
+  // user messages and AI responses as they're saved to the database.
+  useChatRealtime({
+    sessionId: activeChatId,
+    onMessageInsert: handleRealtimeMessage,
+    personas,
+    activePersona: selectedPersona,
+    enabled: !!activeChatId, // Subscribe to any active chat, including newly created ones
+  });
 
   useEffect(() => {
     const chatId = params.chatId as string | undefined;
@@ -568,59 +652,17 @@ export default function ChatPage() {
         const newMessages = [...(prev || []), modelResponse];
         return newMessages;
       });
+      
       // Refresh chat history to show the new chat in the sidebar
       forceRefresh();
+      
       // Reset isNewChat flag now that messages are saved
       setIsNewChat(false);
-      // Immediately attempt to refresh messages from the DB so the saved AI
-      // response (which may have been persisted server-side) is reflected in
-      // the UI without requiring the user to refresh or send another message.
-      // loadMessages will internally retry if optimistic messages are present
-      // or if the saved messages haven't appeared yet.
-      try {
-        if (currentChatId) {
-          // First, attempt to load messages via existing loader which contains
-          // retry logic and optimistic-preservation behavior.
-          await loadMessages(currentChatId);
-
-          // Additionally, do a short polling loop to handle transient
-          // eventual-consistency issues where the AI reply may not be
-          // visible immediately from the DB. We fetch directly from the API
-          // and replace messages once we detect a model reply.
-          const maxAttempts = 6;
-          const attemptDelayMs = 300;
-          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-            try {
-              const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-              if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
-              const url = `/api/chat?sessionId=${currentChatId}` + (session?.access_token ? `&accessToken=${encodeURIComponent(session.access_token)}` : '');
-              const res = await fetch(url, { headers });
-              if (!res.ok) {
-                console.debug('[Client] Poll fetch /api/chat failed', { status: res.status, attempt });
-              } else {
-                const data = await res.json();
-                const fetched = Array.isArray(data) ? (data as ChatMessageProps[]) : [];
-                const hasModel = fetched.some(m => m.role === 'model');
-                if (hasModel) {
-                  console.debug('[Client] Poll detected model reply, updating messages', { sessionId: currentChatId, attempt, fetchedCount: fetched.length });
-                  setMessages(fetched);
-                  break;
-                }
-              }
-            } catch (pollErr) {
-              console.debug('[Client] Poll attempt error', { attempt, error: pollErr });
-            }
-
-            // If not last attempt, wait a bit before trying again
-            if (attempt < maxAttempts) {
-              await new Promise((r) => setTimeout(r, attemptDelayMs));
-            }
-          }
-        }
-      } catch (e) {
-        // swallow - this polling is best-effort and non-blocking
-        console.debug('[Client] post-send polling failed (non-blocking)', e);
-      }
+      
+      // Note: No need to manually reload messages - Supabase Realtime will 
+      // automatically push the server-saved user and model messages to the client.
+      // The Realtime subscription will handle deduplication and replace any
+      // optimistic messages with the real DB messages.
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
