@@ -579,14 +579,47 @@ export default function ChatPage() {
       // or if the saved messages haven't appeared yet.
       try {
         if (currentChatId) {
-          // await here so the UI updates from the latest DB state before
-          // finishing the send flow. If the fetch is slow, loadMessages has
-          // retry logic to re-attempt fetching.
+          // First, attempt to load messages via existing loader which contains
+          // retry logic and optimistic-preservation behavior.
           await loadMessages(currentChatId);
+
+          // Additionally, do a short polling loop to handle transient
+          // eventual-consistency issues where the AI reply may not be
+          // visible immediately from the DB. We fetch directly from the API
+          // and replace messages once we detect a model reply.
+          const maxAttempts = 6;
+          const attemptDelayMs = 300;
+          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+              const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+              if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+              const url = `/api/chat?sessionId=${currentChatId}` + (session?.access_token ? `&accessToken=${encodeURIComponent(session.access_token)}` : '');
+              const res = await fetch(url, { headers });
+              if (!res.ok) {
+                console.debug('[Client] Poll fetch /api/chat failed', { status: res.status, attempt });
+              } else {
+                const data = await res.json();
+                const fetched = Array.isArray(data) ? (data as ChatMessageProps[]) : [];
+                const hasModel = fetched.some(m => m.role === 'model');
+                if (hasModel) {
+                  console.debug('[Client] Poll detected model reply, updating messages', { sessionId: currentChatId, attempt, fetchedCount: fetched.length });
+                  setMessages(fetched);
+                  break;
+                }
+              }
+            } catch (pollErr) {
+              console.debug('[Client] Poll attempt error', { attempt, error: pollErr });
+            }
+
+            // If not last attempt, wait a bit before trying again
+            if (attempt < maxAttempts) {
+              await new Promise((r) => setTimeout(r, attemptDelayMs));
+            }
+          }
         }
       } catch (e) {
-        // swallow - loadMessages already logs errors and will retry where appropriate
-        console.debug('[Client] loadMessages after send failed (non-blocking)', e);
+        // swallow - this polling is best-effort and non-blocking
+        console.debug('[Client] post-send polling failed (non-blocking)', e);
       }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
