@@ -65,7 +65,7 @@ export function MessageList({
         ) : (
           <AIConversationContent
             className={cn(
-              'max-w-3xl mx-auto space-y-6 p-4 md:p-6',
+              'max-w-3xl mx-auto space-y-3 p-4 md:p-6',
               contentClassName
             )}
           >
