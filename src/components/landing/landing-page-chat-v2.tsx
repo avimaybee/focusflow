@@ -24,16 +24,20 @@ import type { ChatMessageProps } from '@/components/chat/chat-message';
 import type { Attachment } from '@/types/chat-types';
 
 const suggestedPrompts = [
-  "Explain the theory of relativity like I'm five",
-  'Hit me with a 3-question quiz about the Roman Empire',
-  'Summarize this for me: [Paste text here]',
-  'Give me some flashcards for basic Spanish vocabulary',
+  "Explain photosynthesis in simple, kid-friendly steps",
+  'Give 3 targeted exam strategy tips for a calculus final ',
+  'Draft a 200-word academic intro on climate change',
+  'Debug this JavaScript snippet and explain fixes step-by-step: [Paste code here]',
+  'Create 5 flashcards for World War II causes with spaced-recall hints',
+  'Brainstorm 10 project ideas for a class presentation — be playful and creative',
+  'Summarize this paragraph concisely: [Paste text here]',
+  'Generate a 3-question multiple-choice quiz on cellular respiration',
 ];
 
 const welcomeMessage: ChatMessageProps = {
-    id: 'welcome-1',
-    role: 'model',
-    text: 'Hey there! I\'m FocusFlow, your AI study buddy. Think of me as that friend who\'s weirdly good at explaining things. I can help you summarize stuff, make quizzes, create flashcards, you name it. <br/><br/> So, what are we diving into today? Pick a suggestion below or just tell me what you need!',
+  id: 'welcome-1',
+  role: 'model',
+  text: 'Welcome to FocusFlow — meet the Personas. Each Persona has a different teaching style: Milo explains things simply, Lexi likes the Tea, Clairo crafts polished academic writing, Dex walks through code fixes step-by-step, Remi turns facts into memorable flashcards, and The Chef sparks creative ideas. <br/><br/> Pick a persona or paste a paragraph and see how that persona responds. Which one should we try first?',
 };
 
 const limitMessage: ChatMessageProps = {
@@ -546,8 +550,8 @@ export function LandingPageChatV2() {
             </AnimatePresence>
 
             {/* Input Form - inspired by MultimodalInput.tsx and Gemini */}
-            <TooltipProvider>
-              <form onSubmit={handleSendMessage} className="relative flex items-end gap-3 rounded-3xl border border-border/60 bg-card/50 backdrop-blur-sm px-1.5 py-1.5 shadow-sm hover:border-border/80 focus-within:border-primary/40 focus-within:shadow-md focus-within:hover:border-primary/40 transition-all duration-200">
+          <TooltipProvider>
+                <form onSubmit={handleSendMessage} className="relative flex items-end gap-3 rounded-3xl border border-border/60 bg-card/50 backdrop-blur-sm px-1.5 py-1.5 shadow-sm hover:border-border/80 focus-within:border-primary/40 focus-within:shadow-md focus-within:hover:border-primary/40 transition-all duration-200">
                 
                 <div className="flex items-center gap-1 pl-2">
                   <PersonaSelector
@@ -607,24 +611,42 @@ export function LandingPageChatV2() {
                   multiple
                 />
                 
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder={`Try: "${suggestedPrompts[placeholderIndex]}"`}
-                  className="flex-1 w-full px-2 py-2 bg-transparent text-[15px] leading-6 text-foreground placeholder:text-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 font-normal outline-none"
-                  disabled={isSending || limitReached}
-                  onKeyDown={(event) => {
-                    if (
-                      event.key === 'Enter' &&
-                      !event.shiftKey &&
-                      !event.nativeEvent.isComposing
-                    ) {
-                      event.preventDefault();
-                      handleSendMessage(event);
-                    }
-                  }}
-                />
+                <div className="relative flex-1">
+                  {/* Animated ghost suggestion overlay (smooth crossfade between prompts) */}
+                  <AnimatePresence mode="wait">
+                    {(!input && !isSending && !limitReached) && (
+                      <motion.span
+                        key={placeholderIndex}
+                        initial={{ opacity: 0, x: -6 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 6 }}
+                        transition={{ duration: 0.28, ease: 'easeInOut' }}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-[15px] leading-6 text-foreground/40"
+                      >
+                        Try: "{suggestedPrompts[placeholderIndex]}"
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder={''}
+                    className="flex-1 w-full px-2 py-2 bg-transparent text-[15px] leading-6 text-foreground placeholder:text-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 font-normal outline-none"
+                    disabled={isSending || limitReached}
+                    onKeyDown={(event) => {
+                      if (
+                        event.key === 'Enter' &&
+                        !event.shiftKey &&
+                        !event.nativeEvent.isComposing
+                      ) {
+                        event.preventDefault();
+                        handleSendMessage(event);
+                      }
+                    }}
+                  />
+                </div>
 
                 <Tooltip>
                   <TooltipTrigger asChild>
